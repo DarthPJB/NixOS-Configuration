@@ -9,6 +9,8 @@
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./enviroments/i3wm.nix
+      ./machines/terminalzero.nix
+      ./users/darthpjb.nix
     ];
 	
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
