@@ -11,6 +11,7 @@
       ./enviroments/i3wm.nix
       ./machines/terminalzero.nix
       ./users/darthpjb.nix
+      ./locale/en_gb.nix
     ];
 	
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
@@ -20,19 +21,6 @@
   networking.networkmanager.enable = true;  # Enables wireless support via wpa_supplicant.
   networking.networkmanager.wifi.backend = "wpa_supplicant";
   networking.networkmanager.dhcp = "dhclient";
-
-  # Set your time zone.
-  time.timeZone = "Europe/London";
-
- #  Select internationalisation properties.
-   i18n.defaultLocale = "en_GB.UTF-8";
-   console = {
-     font = "Lat2-Terminus16";
-     keyMap = "uk";
-   };
-
-  # Configure keymap in X11
-  services.xserver.layout = "gb";
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
