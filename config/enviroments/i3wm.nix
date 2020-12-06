@@ -7,7 +7,7 @@
         displayManager.sddm =
         {
             enable = true;
-            numlock.enable = true;
+            autoNumlock.enable = true;
         };
         windowManager.i3 = 
         {
