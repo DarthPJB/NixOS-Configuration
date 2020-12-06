@@ -34,7 +34,7 @@
         # Enable touchpad support (enabled default in most desktopManager).
         xserver = { 
             # TODO: update this with appropriate entries
-            displayManager.setupCommands = 
+            #displayManager.setupCommands = 
             libinput.enable = true;
         };
         # Enable CUPS to print documents.
