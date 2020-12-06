@@ -12,7 +12,7 @@
         windowManager.i3 = 
         {
             enable = true;
-            package = "pkgs.i3-gaps";
+            package = [ pkgs.i3-gaps ];
             extraPackages = [ pkgs.dmenu pkgs.i3status pkgs.i3lock ];
         };
     };
