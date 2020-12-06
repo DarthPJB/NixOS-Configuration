@@ -8,7 +8,7 @@
         {
             enable = true;
             numlock.enable = true;
-        }
+        };
         windowManager.i3 = 
         {
             enable = true;
