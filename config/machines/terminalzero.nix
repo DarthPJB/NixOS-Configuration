@@ -1,28 +1,43 @@
 { config, pkgs, ... }:
 {
   # Use the GRUB 2 boot loader.
-  boot.loader.grub.enable = true;
-  boot.loader.grub.version = 2;
-  boot.loader.grub.configurationLimit = 5;
-  boot.loader.grub.device = "/dev/sda"; # or "nodev" for efi only
+  boot.loader.grub = {
+    enable = true;
+    version = 2;
+    configurationLimit = 5;
+    device = "/dev/sda"; # or "nodev" for efi only
+  };
 
   # Networking 
-  networking.hostName = "terminalzero"; # Define your hostname.
-  networking.interfaces.enp0s25.useDHCP = true;
-  networking.interfaces.wlp3s0.useDHCP = true;
-  networking.interfaces.wwp0s29u1u4i6.useDHCP = true;
+  networking = {
+    hostName = "terminalzero"; # Define your hostname.
+    interfaces = {
+        enp0s25.useDHCP = true;
+        wlp3s0.useDHCP = true;
+        wwp0s29u1u4i6.useDHCP = true;
+    };
+  };
   
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
+  hardware = {
+    opengl.enable = true;
+    pulseaudio.enable = true;
+  };
+
+  powerManagement.enable = true;
+
   # Enable sound.
   sound.enable = true;
-  hardware.pulseaudio.enable = true;
-  # Enable touchpad support (enabled default in most desktopManager).
-  services.xserver.libinput.enable = true;
 
-  # TODO: update this with appropriate entries
-  # services.xserver.displayManager.setupCommands = 
-
-  # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
+    services = {
+        # Enable the OpenSSH daemon.
+        openssh.enable = true;
+        # Enable touchpad support (enabled default in most desktopManager).
+        xserver = { 
+            # TODO: update this with appropriate entries
+            displayManager.setupCommands = 
+            libinput.enable = true;
+        };
+        # Enable CUPS to print documents.
+        printing.enable = true;
+    };
 }
