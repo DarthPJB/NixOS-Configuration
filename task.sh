@@ -9,7 +9,7 @@ cp -a ./dotfiles/.config/* /home/pokej/.config/ -r
 #cp ./dotfiles/ /home/pokej/ -r
 
 echo "Push config into position"
-cp ./config/* /etc/nixos/ -r
+sudo cp ./config/* /etc/nixos/ -r
 
 echo "Generate new Nix-config"
 nixos-rebuild dry-build
