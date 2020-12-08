@@ -8,7 +8,7 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      ./enviroments/i3wm.nix
+      ./enviroments/i3wm_darthpjb.nix
       ./machines/terminalzero.nix
       ./users/darthpjb.nix
       ./locale/en_gb.nix

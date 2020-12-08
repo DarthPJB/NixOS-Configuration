@@ -1,6 +1,7 @@
 { config, pkgs, ... }: 
 
 {
+    # https://nixos.wiki/wiki/I3
     services.compton.enable = true;
     services.xserver = 
     {
@@ -14,7 +15,7 @@
         {
             enable = true;
             package = pkgs.i3-gaps;
-            extraPackages = [ pkgs.dmenu pkgs.i3status pkgs.i3lock ];
+            extraPackages = [ pkgs.rofi pkgs.i3status pkgs.i3lock ];
         };
     };
 }
