@@ -15,7 +15,7 @@
    };
 
   # TODO: update this with appropriate entries
-   services.xserver.windowManager.i3.extraSessionCommands = "conky";
+   services.xserver.windowManager.i3.extraSessionCommands = "conky&";
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
    users.users.DarthPJB = {
