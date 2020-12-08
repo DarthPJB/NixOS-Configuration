@@ -1,14 +1,14 @@
 #! /bin/sh
 
-# Pull the latest version
+echo "Pull the latest version"
 git pull origin
 
-# Copy dotfiles into place
-cp ./dotfiles/* ~/ -r
-cp ./dotfiles/.* ~/ -r
+echo "Copy dotfiles into place"
+cp ./dotfiles/* /home/pokej/  -r
+#cp ./dotfiles/ /home/pokej/ -r
 
-# Push config into position
+echo "Push config into position"
 cp ./config/* /etc/nixos/ -r
 
-# Generate new Nix-config
+echo "Generate new Nix-config"
 nixos-rebuild dry-build
