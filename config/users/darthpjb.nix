@@ -31,7 +31,7 @@
 	pkgs.firefox 
 	pkgs.cool-retro-term 
 	pkgs.conky
-	pkga.arandr
+	pkgs.arandr
 	pkgs.atom
 	pkgs.cmatrix
 	pkgs.element-desktop
