@@ -9,6 +9,7 @@
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./enviroments/i3wm_darthpjb.nix
+      ./enviroments/general_fonts.nix
       ./machines/terminalzero.nix
       ./users/darthpjb.nix
       ./locale/en_gb.nix
