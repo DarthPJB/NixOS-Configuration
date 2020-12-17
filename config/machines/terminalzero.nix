@@ -1,5 +1,6 @@
 { config, pkgs, ... }:
 {
+
   # Use the GRUB 2 boot loader.
   boot.loader.grub = {
     enable = true;
@@ -36,6 +37,7 @@
             # TODO: update this with appropriate entries
             #displayManager.setupCommands = 
             libinput.enable = true;
+	    digimend.enable = true;
         };
         # Enable CUPS to print documents.
         printing.enable = true;
