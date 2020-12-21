@@ -2,20 +2,26 @@
 {
 
   # Use the GRUB 2 boot loader.
-  boot.loader.grub = {
-    enable = true;
-    version = 2;
-    configurationLimit = 5;
-    device = "/dev/sda"; # or "nodev" for efi only
-  };
+  boot.loader = {
+	grub = {
+	    enable = true;
+	    version = 2;
+	    configurationLimit = 5;
+	    efiSupport = true;
+	    efiInstallAsRemovable = true;
+	    device = "nodev"; # or "nodev" for efi only
+	  };
+        systemd-boot = {
+	    enable = true;
+	    };
+	};
 
   # Networking 
   networking = {
-    hostName = "terminalzero"; # Define your hostname.
+    hostName = "megajohn"; # Define your hostname.
     interfaces = {
-        enp0s25.useDHCP = true;
-        wlp3s0.useDHCP = true;
-        wwp0s29u1u4i6.useDHCP = true;
+	enp0s31f6.useDHCP = true;
+	wlp4s0.useDHCP = true;
     };
   };
   
@@ -36,8 +42,8 @@
         xserver = { 
             # TODO: update this with appropriate entries
             #displayManager.setupCommands = 
-            libinput.enable = true;
 	    digimend.enable = true;
+            videoDrivers = [ "nvida" ];
         };
         # Enable CUPS to print documents.
         printing.enable = true;

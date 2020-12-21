@@ -10,7 +10,8 @@
       ./hardware-configuration.nix
       ./enviroments/i3wm_darthpjb.nix
       ./enviroments/general_fonts.nix
-      ./machines/terminalzero.nix
+      ./enviroments/cad_and_graphics.nix
+      ./machines/megajohn.nix
       ./users/darthpjb.nix
       ./locale/en_gb.nix
     ];
@@ -31,7 +32,11 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
    environment.systemPackages = [
-     pkgs.wget pkgs.nano pkgs.git pkgs.mkpasswd
+     pkgs.wget 
+     pkgs.nano 
+     pkgs.git 
+     pkgs.mkpasswd 
+     pkgs.htop
    ];
 
   system.stateVersion = "20.09"; # Did you read the comment?

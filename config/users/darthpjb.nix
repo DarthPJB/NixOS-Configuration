@@ -15,13 +15,13 @@
    };
 
   # TODO: update this with appropriate entries
-   services.xserver.windowManager.i3.extraSessionCommands = "conky&";
+   services.xserver.windowManager.i3.extraSessionCommands = "conky& nextcloud&";
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
    users.users.DarthPJB = {
      isNormalUser = true;
      name = "John88";
-     description = "ultimate digital being's user account";
+     description = "Eighty Eight";
      createHome = true;
      home = "/home/pokej";
      hashedPassword = "$6$vWIrHl4Fzv$n9I5isw5aWL4v0ha3z4A1Nf.sRygfmuaOnPq7ji/9cW7w.c.UCdIbwdz6L32vVee2GDOou8tgleJkcl66vPlf/";
@@ -38,6 +38,8 @@
 	pkgs.firefox
 	pkgs.nextcloud-client
 	pkgs.openscad
+	pkgs.sl
+	pkgs.cmatrix
 	];
    };
 }
