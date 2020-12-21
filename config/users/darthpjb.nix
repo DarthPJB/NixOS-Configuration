@@ -18,7 +18,7 @@
    services.xserver.windowManager.i3.extraSessionCommands = "conky& nextcloud&";
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
-   users.users.DarthPJB = {
+   users.users.John88 = {
      isNormalUser = true;
      name = "John88";
      description = "Eighty Eight";
@@ -29,15 +29,11 @@
      extraGroups = [ "wheel" "vboxusers" "dialout" "networkManager" ]; # Enable ‘sudo’ for the user.
      packages = [ 
 	pkgs.firefox 
-	pkgs.cool-retro-term 
-	pkgs.conky
-	pkgs.arandr
 	pkgs.atom
 	pkgs.cmatrix
 	pkgs.element-desktop
 	pkgs.firefox
 	pkgs.nextcloud-client
-	pkgs.openscad
 	pkgs.sl
 	pkgs.cmatrix
 	];
