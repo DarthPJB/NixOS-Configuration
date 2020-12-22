@@ -15,11 +15,11 @@
       ./users/darthpjb.nix
       ./locale/en_gb.nix
     ];
-	
+
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
-  networking = 
+  networking =
   {
     useDHCP = false;
     networkmanager = {
@@ -29,14 +29,16 @@
     };
   };
 
+  boot.plymouth.enable = true;
   # List packages installed in system profile. To search, run:
   # $ nix search wget
    environment.systemPackages = [
-     pkgs.wget 
-     pkgs.nano 
-     pkgs.git 
-     pkgs.mkpasswd 
+     pkgs.wget
+     pkgs.nano
+     pkgs.git
+     pkgs.mkpasswd
      pkgs.htop
+     pkgs.pciutils
    ];
 
   system.stateVersion = "20.09"; # Did you read the comment?
