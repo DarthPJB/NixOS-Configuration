@@ -12,4 +12,4 @@ echo "Push config into position"
 sudo cp -r -a ./config/* /etc/nixos/
 
 echo "Generate new Nix-config"
-nixos-rebuild dry-build
+nixos-rebuild switch
