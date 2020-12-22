@@ -17,9 +17,9 @@
               };
         };
       kernelModules = [ "vfio_virqfd" "vfio_pci" "vfio_iommu_type1" "vfio" ];
-      blacklistedKernelModules = ["nouveau" "nvidia"];
+#      blacklistedKernelModules = ["nouveau" "nvidia"];
       kernelParams = ["intel_iommu=on"];
-      extraModprobeConfig = "options vfio-pci ids=10de:1401,8086:1912";
+#      extraModprobeConfig = "options vfio-pci ids=10de:1401,8086:1912";
 #        postBootCommands = ''
 #        DEVS="0000:0f:00.0 0000:0f:00.1"
 
@@ -57,7 +57,7 @@
             # TODO: update this with appropriate entries
             #displayManager.setupCommands =
 	           digimend.enable = true;
-            #videoDrivers = [ "nvida" ];
+            videoDrivers = [ "nvida" ];
         };
         # Enable CUPS to print documents.
         printing.enable = true;
