@@ -16,7 +16,12 @@
 	               enable = true;
               };
         };
-      kernelModules = [ "vfio_virqfd" "vfio_pci" "vfio_iommu_type1" "vfio" ];
+      kernelModules = [
+      "vfio_virqfd"
+      "vfio_pci"
+      "vfio_iommu_type1"
+      "vfio"
+      "kvm-intel" ];
 #      blacklistedKernelModules = ["nouveau" "nvidia"];
       kernelParams = ["intel_iommu=on"];
 #      extraModprobeConfig = "options vfio-pci ids=10de:1401,8086:1912";
@@ -38,6 +43,23 @@
 	      wlp4s0.useDHCP = true;
     };
   };
+
+  environment.systemPackages = with pkgs; [
+    virtmanager
+  ];
+
+## VIRTUALISATION BULLMANURE
+programs.dconf.enable = true;
+
+  virtualisation.libvirtd = {
+    enable = true;
+    qemuOvmf = true;
+    qemuRunAsRoot = false;
+    onBoot = "ignore";
+    onShutdown = "shutdown";
+  };
+
+  #hardware settings
 
   hardware = {
     opengl.enable = true;
