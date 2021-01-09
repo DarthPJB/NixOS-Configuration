@@ -40,5 +40,9 @@
      pkgs.pciutils
    ];
 
+   services.ipfs = {
+     enable = true;
+  };
+
   system.stateVersion = "20.09"; # Did you read the comment?
 }
