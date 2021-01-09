@@ -1,7 +1,7 @@
 { config, pkgs, ... }: 
 
 {
-fonts.fonts = with pkgs; [
+enviroment.systemPackages = with pkgs; [
 	gimp
 	inkscape
 	blender
