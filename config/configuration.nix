@@ -11,7 +11,7 @@
       ./enviroments/i3wm_darthpjb.nix
       ./enviroments/general_fonts.nix
       ./enviroments/cad_and_graphics.nix
-      ./machines/terminalzero.nix
+      ./machines/megajohn.nix
       ./users/darthpjb.nix
       ./locale/en_gb.nix
     ];
