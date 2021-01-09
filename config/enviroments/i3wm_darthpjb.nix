@@ -20,5 +20,5 @@
 	pkgs.conky
 	pkgs.lxappearance
 	pkgs.arandr
-	pkgs.firefox];
+	pkgs.brave];
 }
