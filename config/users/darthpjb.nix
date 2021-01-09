@@ -18,7 +18,7 @@
    services.xserver.windowManager.i3.extraSessionCommands = "conky& nextcloud& pnmixer& sleep 5; ~/screen_layout.sh";
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
-   users.users.John88 = {
+   users.users.DarthPJB = {
      isNormalUser = true;
      name = "John88";
      description = "Eighty Eight";
