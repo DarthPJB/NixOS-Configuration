@@ -5,6 +5,7 @@ fonts.fonts = with pkgs; [
 	atom
 	gpp
 	emscripten
-	stdenv-linux
+	emscriptenStdenv
+	emscriptenPackages.zlib
 ];
 }
