@@ -14,7 +14,6 @@
     };
     programs.dconf.enable = true;
     services.gnome3.gnome-keyring.enable = true;
-    programs.seahorse.enable = true;
     environment.systemPackages = [
 	pkgs.cool-retro-term
 	pkgs.conky
