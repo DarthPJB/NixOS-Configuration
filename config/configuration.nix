@@ -12,7 +12,7 @@
       ./enviroments/general_fonts.nix
       ./enviroments/cad_and_graphics.nix
       ./enviroments/code.nix
-      ./machines/megajohn.nix
+      ./machines/terminalzero.nix
       ./users/darthpjb.nix
       ./locale/en_gb.nix
     ];
