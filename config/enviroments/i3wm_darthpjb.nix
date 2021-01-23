@@ -15,7 +15,7 @@
     programs.dconf.enable = true;
     services.gnome3.gnome-keyring.enable = true;
     environment.systemPackages = [
-	pkgs.cool-retro-term
+	pkgs.enlightenment.terminology
 	pkgs.conky
 	pkgs.lxappearance
 	pkgs.arandr
