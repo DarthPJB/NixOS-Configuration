@@ -3,6 +3,7 @@
 
   # Use the GRUB 2 boot loader.
   boot = {
+    blacklistedKernelModules = ["nouveau"];
     loader = {
 	     grub = {
 	        enable = true;
@@ -16,14 +17,14 @@
 	               enable = true;
               };
         };
-      kernelModules = [
-      "vfio_virqfd"
-      "vfio_pci"
-      "vfio_iommu_type1"
-      "vfio"
-      "kvm-intel" ];
+#      kernelModules = [
+#      "vfio_virqfd"
+#      "vfio_pci"
+#      "vfio_iommu_type1"
+#      "vfio"
+#      "kvm-intel" ];
 #      blacklistedKernelModules = ["nouveau" "nvidia"];
-      kernelParams = ["intel_iommu=on"];
+#      kernelParams = ["intel_iommu=on"];
 #      extraModprobeConfig = "options vfio-pci ids=10de:1401,8086:1912";
 #        postBootCommands = ''
 #        DEVS="0000:0f:00.0 0000:0f:00.1"
@@ -34,7 +35,10 @@
 #        modprobe -i vfio-pci
 #     '';
 	};
-
+  
+  nixpkgs.config = {
+    allowUnfree = true;
+  };
   # Networking
   networking = {
     hostName = "megajohn"; # Define your hostname.
@@ -78,7 +82,7 @@ programs.dconf.enable = true;
         xserver = {
             # TODO: update this with appropriate entries
             #displayManager.setupCommands =
-	           digimend.enable = true;
+	          digimend.enable = true;
             videoDrivers = [ "nvida" ];
         };
         # Enable CUPS to print documents.
