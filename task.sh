@@ -1,7 +1,8 @@
 #! /bin/sh
 
 echo "Pull the latest version"
-git pull origin
+git fetch
+git pull origin --ff-only
 
 echo "Copy dotfiles into place"
 cp -a -r ./dotfiles/.background-image /home/pokej/
