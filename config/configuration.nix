@@ -8,19 +8,13 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      ./enviroments/i3wm_darthpjb.nix
-      ./enviroments/general_fonts.nix
-      ./enviroments/cad_and_graphics.nix
-      ./enviroments/code.nix
       ./machines/megajohn.nix
-      ./users/darthpjb.nix
-      ./locale/en_gb.nix
     ];
 
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
-  
+
   networking =
   {
     useDHCP = false;
