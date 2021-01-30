@@ -8,7 +8,7 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      ./machines/megajohn.nix
+      ./machines/TerminalZero.nix
     ];
 
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
