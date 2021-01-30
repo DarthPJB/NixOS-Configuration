@@ -1,6 +1,15 @@
 { config, pkgs, ... }:
 {
-
+  imports =
+  [ # Include the results of the hardware scan.
+    ../enviroments/i3wm_darthpjb.nix
+    ../enviroments/general_fonts.nix
+    ../enviroments/cad_and_graphics.nix
+    ../enviroments/code.nix
+    ../enviroments/rtl-sdr.nix
+    ../users/darthpjb.nix
+    ../locale/en_gb.nix
+  ];
   # Use the GRUB 2 boot loader.
   boot = {
     blacklistedKernelModules = ["nouveau"];
@@ -35,7 +44,7 @@
 #        modprobe -i vfio-pci
 #     '';
 	};
-  
+
   nixpkgs.config = {
     allowUnfree = true;
   };
@@ -53,15 +62,15 @@
   ];
 
 ## VIRTUALISATION BULLMANURE
-programs.dconf.enable = true;
+#programs.dconf.enable = true;
 
-  virtualisation.libvirtd = {
-    enable = true;
-    qemuOvmf = true;
-    qemuRunAsRoot = false;
-    onBoot = "ignore";
-    onShutdown = "shutdown";
-  };
+#  virtualisation.libvirtd = {
+#    enable = true;
+#    qemuOvmf = true;
+#    qemuRunAsRoot = false;
+#    onBoot = "ignore";
+#    onShutdown = "shutdown";
+#  };
 
   #hardware settings
 
@@ -82,8 +91,8 @@ programs.dconf.enable = true;
         xserver = {
             # TODO: update this with appropriate entries
             #displayManager.setupCommands =
-	          digimend.enable = true;
-            videoDrivers = [ "nvida" ];
+            digimend.enable = true;
+            videoDrivers = [ "nvidiaBeta" ];
         };
         # Enable CUPS to print documents.
         printing.enable = true;
