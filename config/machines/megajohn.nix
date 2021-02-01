@@ -2,6 +2,7 @@
 {
   imports =
   [ # Include the results of the hardware scan.
+    ../enviroments/audio_visual_editing.nix
     ../enviroments/i3wm_darthpjb.nix
     ../enviroments/general_fonts.nix
     ../enviroments/cad_and_graphics.nix
