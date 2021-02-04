@@ -6,5 +6,7 @@ environment.systemPackages = with pkgs; [
 	ffmpeg
 	mplayer
 	vlc
+	kdenlive
+	shotcut
 ];
 }
