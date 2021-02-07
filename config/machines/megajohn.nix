@@ -7,8 +7,8 @@
     ../enviroments/general_fonts.nix
     ../enviroments/cad_and_graphics.nix
     ../enviroments/code.nix
-    ../environment/bluetooth.nix
-    ../environment/sshd.nix
+    ../enviroments/bluetooth.nix
+    ../enviroments/sshd.nix
     ../enviroments/rtl-sdr.nix
     ../users/darthpjb.nix
     ../locale/en_gb.nix
