@@ -1,4 +1,15 @@
 { config, pkgs, ... }:
+
+let
+  baseconfig = { allowUnfree = true; };
+  unstableTarball =
+    fetchTarball
+      https://github.com/NixOS/nixpkgs-channels/archive/nixos-unstable.tar.gz;
+  unstable = import unstableTarball
+  {
+    config = baseconfig;
+  };
+in
 {
   imports =
   [ # Include the results of the hardware scan.
@@ -16,6 +27,8 @@
   ];
   # Use the GRUB 2 boot loader.
   boot = {
+    supportedFilesystems = [ "ntfs" ];
+    kernelPackages = unstable.linuxPackages_latest;
     blacklistedKernelModules = ["nouveau"];
     loader = {
 	     grub = {
