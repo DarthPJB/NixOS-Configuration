@@ -15,7 +15,7 @@
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  
   networking =
   {
     useDHCP = false;
