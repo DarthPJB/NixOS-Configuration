@@ -98,7 +98,7 @@
             # TODO: update this with appropriate entries
             #displayManager.setupCommands =
             digimend.enable = true;
-            videoDrivers = [ "nvidiaBeta" ];
+            videoDrivers = [ "nvidia" ];
         };
         # Enable CUPS to print documents.
         printing.enable = true;
