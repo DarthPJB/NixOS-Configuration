@@ -15,7 +15,7 @@
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
 
-  
+
   networking =
   {
     useDHCP = false;
@@ -36,10 +36,6 @@
      pkgs.htop
      pkgs.pciutils
    ];
-
-   services.ipfs = {
-     enable = true;
-  };
 
   system.stateVersion = "20.09"; # Did you read the comment?
 }
