@@ -98,6 +98,10 @@ in
     pulseaudio.support32Bit = true;
   };
 
+  services.ipfs = {
+    enable = true;
+  };
+  
   powerManagement.enable = true;
 
   # Enable sound.
