@@ -2,11 +2,7 @@
 
 {
 environment.systemPackages = with pkgs; [
-	blender
-	ffmpeg
-	mplayer
-	vlc
-	kdenlive
-	shotcut
+cq-editor
 ];
+
 }
