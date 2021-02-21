@@ -7,7 +7,7 @@ git pull origin --ff-only
 echo "Copy dotfiles into place"
 cp -a -r ./dotfiles/.background-image /home/pokej/
 cp -a -r ./dotfiles/.config/* /home/pokej/.config/
-#cp ./dotfiles/ /home/pokej/ -r
+cp -a -r ./dotfiles/ /home/pokej/ 
 
 echo "Push config into position"
 sudo cp -r -a ./config/* /etc/nixos/

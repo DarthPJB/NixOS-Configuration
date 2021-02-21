@@ -8,14 +8,14 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      ./machines/terminalzero.nix
+      ./machines/megajohn.nix
     ];
 
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+
   networking =
   {
     useDHCP = false;
@@ -36,10 +36,6 @@
      pkgs.htop
      pkgs.pciutils
    ];
-
-   services.ipfs = {
-     enable = true;
-  };
 
   system.stateVersion = "20.09"; # Did you read the comment?
 }
