@@ -2,14 +2,20 @@
 
 
 let
-	baseconfig = { allowUnfree = true; };
-	unstable = import <nixos-unstable> { config = baseconfig; };
+  baseconfig = { allowUnfree = true; };
+  unstableTarball =
+    fetchTarball
+      https://github.com/NixOS/nixpkgs-channels/archive/nixos-unstable.tar.gz;
+  unstable = import unstableTarball
+  {
+    config = baseconfig;
+  };
 in
 {
 	environment.systemPackages = with pkgs; [
 		gimp
 		inkscape
-		blender
+		unstable.blender
 		solvespace
 		openscad
 		freecad
