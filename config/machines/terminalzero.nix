@@ -5,7 +5,6 @@
   ../enviroments/i3wm_darthpjb.nix
   ../enviroments/general_fonts.nix
   ../enviroments/cad_and_graphics.nix
-  ../enviroments/cadquery.nix
   ../enviroments/code.nix
   ../enviroments/bluetooth.nix
   ../enviroments/sshd.nix
