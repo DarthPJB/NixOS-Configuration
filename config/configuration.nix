@@ -33,6 +33,8 @@
      pkgs.git
      pkgs.mkpasswd
      pkgs.htop
+     pkgs.vim
+     pkgs.tmux
      pkgs.pciutils
    ];
 

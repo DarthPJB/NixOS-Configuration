@@ -1,14 +1,17 @@
 { config, pkgs, ... }:
 {
-  imports =
-  [ # Include the results of the hardware scan.
-    ../enviroments/i3wm_darthpjb.nix
-    ../enviroments/general_fonts.nix
-    ../enviroments/cad_and_graphics.nix
-    ../enviroments/code.nix
-    ../enviroments/rtl-sdr.nix
-    ../users/darthpjb.nix
-    ../locale/en_gb.nix
+  imports = [
+  ../enviroments/audio_visual_editing.nix
+  ../enviroments/i3wm_darthpjb.nix
+  ../enviroments/general_fonts.nix
+  ../enviroments/cad_and_graphics.nix
+  ../enviroments/cadquery.nix
+  ../enviroments/code.nix
+  ../enviroments/bluetooth.nix
+  ../enviroments/sshd.nix
+  ../enviroments/rtl-sdr.nix
+  ../users/darthpjb.nix
+  ../locale/en_gb.nix
   ];
   # Use the GRUB 2 boot loader.
   boot.loader.grub = {
