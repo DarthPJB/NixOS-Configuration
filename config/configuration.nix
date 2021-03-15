@@ -8,14 +8,13 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      ./machines/engineering.nix
+      ./machines/megajohn.nix
     ];
 
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
   networking =
   {
     useDHCP = false;
@@ -36,18 +35,6 @@
      pkgs.htop
      pkgs.pciutils
    ];
-
-   services.ipfs = {
-     enable = true;
-  };
-
-  # Enable sound.
-  sound.enable = true;
-  hardware.pulseaudio.enable = true;
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
-  # Enable touchpad support.
-  services.xserver.libinput.enable = true;
 
   system.stateVersion = "20.09"; # Did you read the comment?
 

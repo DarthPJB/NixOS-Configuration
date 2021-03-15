@@ -15,7 +15,8 @@
    };
 
   # TODO: update this with appropriate entries
-   services.xserver.windowManager.i3.extraSessionCommands = "sleep 5 && `conky & nextcloud & pnmixer &  ~/screen_layout.sh` &";
+   services.xserver.windowManager.i3.extraSessionCommands = "sleep 5 && `conky & nextcloud & pnmixer &  ~/screen_layout.sh` & flameshot & blueman-tray & nm-applet
+   &";
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
    users.users.John88 = {
@@ -34,9 +35,11 @@
     	pkgs.element-desktop
     	pkgs.firefox
       pkgs.pnmixer
+      pkgs.conky
     	pkgs.nextcloud-client
     	pkgs.sl
     	pkgs.cmatrix
+      pkgs.networkmanagerapplet
     	];
    };
 }

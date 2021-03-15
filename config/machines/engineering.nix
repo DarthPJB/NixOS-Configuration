@@ -6,6 +6,7 @@
     ../enviroments/general_fonts.nix
     ../enviroments/cad_and_graphics.nix
     ../enviroments/code.nix
+    ../enviroments/sshd.nix
     ../enviroments/bluetooth.nix
     ../enviroments/rtl-sdr.nix
     ../users/darthpjb.nix
@@ -13,14 +14,23 @@
   ];
 
   # Use the systemd-boot EFI boot loader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  boot={
+    loader={
+      efi.canTouchEfiVariables = true;
+      systemd-boot.enable = true;
+    };
+    initrd.kernelModules  = ["amdgpu"];
+  };
 
-  networking.useDHCP = false;
-  networking.interfaces.enp1s0.useDHCP = true;
-  networking.interfaces.wlp2s0.useDHCP = true;
-  networking.hostName = "Engineering";
-  boot.initrd.kernelModules  = ["amdgpu"];
+  networking={
+    useDHCP = false;
+    hostName = "Engineering";
+    interfaces={
+      enp1s0.useDHCP = true;
+      wlp2s0.useDHCP = true;
+    };
+  };
+
   services.xserver.videoDrivers = ["amdgpu"];
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -33,5 +43,5 @@
   networking.firewall.allowedUDPPorts = [];
 
 
-system.stateVersion = "20.09"; # Did you read the comment?
+  system.stateVersion = "20.09"; # Did you read the comment?
 }
