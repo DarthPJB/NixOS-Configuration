@@ -31,17 +31,30 @@
     };
   };
 
-  services.xserver.videoDrivers = ["amdgpu"];
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
+
   # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
-  services.openssh.ports = [ 1108 ];
-  services.openssh.passwordAuthentication = false;
  # Open ports in the firewall.
   networking.firewall.allowedTCPPorts = [ 1108 ];
   networking.firewall.allowedUDPPorts = [];
 
+  services = {
+      # Enable the OpenSSH daemon.
+      openssh = {
+        enable = true;
+        ports = [ 1108 ];
+        passwordAuthentication = false;
+      };
+      # Enable touchpad support (enabled default in most desktopManager).
+      xserver = {
+          # TODO: update this with appropriate entries
+          #displayManager.setupCommands =
+          libinput.enable = true;
+          digimend.enable = true;
+          videoDrivers = ["amdgpu"];
+      };
+      # Enable CUPS to print documents.
+      printing.enable = true;
+  };
 
   system.stateVersion = "20.09"; # Did you read the comment?
 }
