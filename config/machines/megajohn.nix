@@ -96,12 +96,13 @@ in
     pulseaudio.enable = true;
     opengl.driSupport32Bit = true;
     pulseaudio.support32Bit = true;
+    spacenavd.enable = true;
   };
 
   services.ipfs = {
     enable = true;
   };
-  
+
   powerManagement.enable = true;
 
   # Enable sound.
