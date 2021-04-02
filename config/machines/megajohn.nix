@@ -14,6 +14,7 @@
   imports =
   [ # Include the results of the hardware scan.
 #    ../modifier_imports/unstable_nixpkgs.nix todo: figure out if this is possible
+    ../modifier_imports/flakes.nix
     ../enviroments/audio_visual_editing.nix
     ../enviroments/i3wm_darthpjb.nix
     ../enviroments/general_fonts.nix
