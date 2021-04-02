@@ -1,18 +1,19 @@
 { config, pkgs, ... }:
 
-let
+  let
   baseconfig = { allowUnfree = true; };
   unstableTarball =
     fetchTarball
-      https://github.com/NixOS/nixpkgs-channels/archive/nixos-unstable.tar.gz;
+      https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz;
   unstable = import unstableTarball
   {
     config = baseconfig;
   };
-in
+  in
 {
   imports =
   [ # Include the results of the hardware scan.
+#    ../modifier_imports/unstable_nixpkgs.nix todo: figure out if this is possible
     ../enviroments/audio_visual_editing.nix
     ../enviroments/i3wm_darthpjb.nix
     ../enviroments/general_fonts.nix
