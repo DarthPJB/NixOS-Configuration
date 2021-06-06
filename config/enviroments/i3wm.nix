@@ -2,7 +2,7 @@
 
 {
     # https://nixos.wiki/wiki/I3
-    services.compton.enable = true;
+#    services.compton.enable = true;
     services.xserver = 
     {
         enable = true;
