@@ -1,18 +1,19 @@
 { config, pkgs, ... }:
 
-let
+  let
   baseconfig = { allowUnfree = true; };
   unstableTarball =
     fetchTarball
-      https://github.com/NixOS/nixpkgs-channels/archive/nixos-unstable.tar.gz;
+      https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz;
   unstable = import unstableTarball
   {
     config = baseconfig;
   };
-in
+  in
 {
   imports =
   [ # Include the results of the hardware scan.
+#    ../modifier_imports/unstable_nixpkgs.nix todo: figure out if this is possible
     ../enviroments/audio_visual_editing.nix
     ../enviroments/i3wm_darthpjb.nix
     ../enviroments/general_fonts.nix
@@ -24,6 +25,7 @@ in
     ../enviroments/rtl-sdr.nix
     ../users/darthpjb.nix
     ../locale/en_gb.nix
+#    <unstable/nixos/modules/services/hardware/spacenavd.nix>
   ];
   # Use the GRUB 2 boot loader.
   boot = {
@@ -90,18 +92,22 @@ in
 #  };
 
   #hardware settings
+  nixpkgs.config.packageOverrides = pkgs: {
+    spacenavd = unstable.spacenavd;
+  };
 
   hardware = {
     opengl.enable = true;
     pulseaudio.enable = true;
     opengl.driSupport32Bit = true;
     pulseaudio.support32Bit = true;
+#    spacenavd.enable = true;
   };
 
   services.ipfs = {
     enable = true;
   };
-  
+
   powerManagement.enable = true;
 
   # Enable sound.

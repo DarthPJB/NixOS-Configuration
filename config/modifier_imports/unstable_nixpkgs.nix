@@ -1,7 +1,5 @@
 { config, pkgs, ... }:
-
-
-let
+{
   baseconfig = { allowUnfree = true; };
   unstableTarball =
     fetchTarball
@@ -10,16 +8,4 @@ let
   {
     config = baseconfig;
   };
-in
-{
-	environment.systemPackages = with pkgs; [
-		gimp
-		inkscape
-		unstable.blender
-		solvespace
-		openscad
-		freecad
-		krita
-	#	tiled
-	];
 }
