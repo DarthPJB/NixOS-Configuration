@@ -31,7 +31,8 @@
     };
   };
 
-
+  sound.enable = true;
+  hardware.pulseaudio.enable = true;
   # Enable the OpenSSH daemon.
  # Open ports in the firewall.
   networking.firewall.allowedTCPPorts = [ 1108 ];
