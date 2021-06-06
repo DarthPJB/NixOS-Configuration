@@ -9,7 +9,7 @@
     ../enviroments/sshd.nix
     ../enviroments/bluetooth.nix
     ../enviroments/rtl-sdr.nix
-    ../users/darthpjb.nix
+    ../users/pirate.nix
     ../locale/en_gb.nix
   ];
 
