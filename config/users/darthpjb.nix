@@ -38,7 +38,8 @@
     	pkgs.nextcloud-client
     	pkgs.sl
     	pkgs.cmatrix
-      pkgs.networkmanagerapplet
+        pkgs.networkmanagerapplet
+        pkgs.bpytop
     	];
    };
 }
