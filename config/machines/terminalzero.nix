@@ -40,9 +40,21 @@
   # Enable sound.
   sound.enable = true;
 
+
+  nixpkgs.config.permittedInsecurePackages = [
+          "openssl-1.0.2u"
+        ];
+
+
     services = {
         # Enable the OpenSSH daemon.
         openssh.enable = true;
+        #enable shellinabox
+        shellinabox = {
+          enable = true;
+          extraOptions = [ "--port=443" "--service /:LOGIN" ];
+        };
+
         # Enable touchpad support (enabled default in most desktopManager).
         xserver = {
             # TODO: update this with appropriate entries
