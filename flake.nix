@@ -3,16 +3,24 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    croughanator.url = "github:MatthewCroughan/nixcfg";
   };
 
-  outputs = { self, nixpkgs, ... }@inputs: {
-    nixosConfigurations = {
-      terminalzero = nixpkgs.lib.nixosSystem {
+  outputs = { self, nixpkgs, ... }@inputs:
+  {
+    nixosConfigurations =
+    {
+      terminalzero = nixpkgs.lib.nixosSystem
+      {
         system = "x86_64-linux";
-        modules = [
+        modules =
+        [
           (import ./config/configuration.nix)
         ];
-        specialArgs = { inherit inputs; };
+        specialArgs =
+        {
+          inherit inputs;
+        };
       };
     };
   };
