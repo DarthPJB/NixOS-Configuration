@@ -97,6 +97,7 @@
      git
      ranger
      killall
+     bpytop
      nextcloud-client
      inputs.croughanator.packages.x86_64-linux.parsecgaming
    ];
