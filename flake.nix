@@ -4,9 +4,10 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     croughanator.url = "github:MatthewCroughan/nixcfg";
+    nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
-  outputs = { self, nixpkgs, ... }@inputs:
+  outputs = { self, nixpkgs, nixos-hardware, ... }@inputs:
   {
     nixosConfigurations =
     {
@@ -16,6 +17,7 @@
         modules =
         [
           (import ./config/configuration.nix)
+           nixos-hardware.nixosModules.lenovo-thinkpad-x220
         ];
         specialArgs =
         {
