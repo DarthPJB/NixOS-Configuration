@@ -94,6 +94,7 @@
      brightnessctl
      atom
      alacritty
+     git
      inputs.croughanator.packages.x86_64-linux.parsecgaming
    ];
 
