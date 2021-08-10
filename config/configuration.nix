@@ -95,6 +95,7 @@
      atom
      alacritty
      git
+     killall
      inputs.croughanator.packages.x86_64-linux.parsecgaming
    ];
 
