@@ -96,6 +96,7 @@
      alacritty
      git
      killall
+     nextcloud-client
      inputs.croughanator.packages.x86_64-linux.parsecgaming
    ];
 
