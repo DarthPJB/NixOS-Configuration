@@ -8,6 +8,7 @@
   imports =
     [ # Include the results of the hardware scan.
       ./terminal-zero-hardware.nix
+      ./cachix.nix 
     ];
 
   # Use the GRUB 2 boot loader.
@@ -101,7 +102,7 @@
      nextcloud-client
      inputs.croughanator.packages.x86_64-linux.parsecgaming
    ];
-
+    nix.trustedUsers = [ "root" "darthpjb" ];
    nix = {
     package = pkgs.nixUnstable;
     extraOptions = ''
