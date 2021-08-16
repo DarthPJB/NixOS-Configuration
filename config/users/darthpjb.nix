@@ -1,11 +1,6 @@
 
 { config, pkgs, ... }:
 {
-    imports =
-    [
-      ../enviroments/i3wm.nix
-    ];
-
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;
@@ -13,10 +8,6 @@
      enable = true;
     enableSSHSupport = true;
    };
-
-  # TODO: update this with appropriate entries
-   services.xserver.windowManager.i3.extraSessionCommands = "sleep 5 && `conky & nextcloud & pnmixer &  ~/screen_layout.sh` & flameshot & blueman-tray & nm-applet &";
-
   # Define a user account. Don't forget to set a password with ‘passwd’.
    users.users.John88 = {
      isNormalUser = true;
