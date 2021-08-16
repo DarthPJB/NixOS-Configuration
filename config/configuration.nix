@@ -8,6 +8,7 @@
   imports =
     [ # Include the results of the hardware scan.
       ./terminal-zero-hardware.nix
+      ./users/darthpjb.nix
       ./cachix.nix
     ];
 
@@ -102,6 +103,9 @@
      nextcloud-client
      inputs.croughanator.packages.x86_64-linux.parsecgaming
      cmatrix
+     magic-wormhole
+     emscripten
+     wasm3
    ];
     nix.trustedUsers = [ "root" "darthpjb" ];
    nix = {
