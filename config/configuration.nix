@@ -111,6 +111,7 @@
      magic-wormhole
      emscripten
      wasm3
+     wpa_supplicant_gui
    ];
     nix.trustedUsers = [ "root" "darthpjb" ];
    nix = {
