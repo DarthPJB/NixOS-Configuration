@@ -61,6 +61,7 @@
   programs.sway = {
   enable = true;
   wrapperFeatures.gtk = true; # so that gtk works properly
+  #extraSessionCommands = "wpa_gui & nextcloud & parsecd & blueman-applet &";
   extraPackages = with pkgs; [
     swaylock
     swayidle
@@ -82,6 +83,8 @@
   # Enable sound.
   sound.enable = true;
   hardware.pulseaudio.enable = true;
+  hardware.bluetooth.enable = true;
+
 
   # Enable touchpad support (enabled default in most desktopManager).
   services.xserver.libinput.enable = true;
@@ -96,7 +99,7 @@
  #  List packages installed in system profile. To search, run:
   # $ nix search wget
    environment.systemPackages = with pkgs; [
-     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+     nano
      wget
      firefox
      brightnessctl
@@ -108,11 +111,16 @@
      bpytop
      nextcloud-client
      inputs.croughanator.packages.x86_64-linux.parsecgaming
+     #development
      cmatrix
      magic-wormhole
      emscripten
      wasm3
+     #wifi
      wpa_supplicant_gui
+     #bluetooth
+     blueman
+     btlejack
    ];
     nix.trustedUsers = [ "root" "darthpjb" ];
    nix = {
