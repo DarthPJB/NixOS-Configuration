@@ -78,12 +78,14 @@
   # services.xserver.xkbOptions = "eurosign:e";
 
   # Enable CUPS to print documents.
+
   # services.printing.enable = true;
 
   # Enable sound.
   sound.enable = true;
   hardware.pulseaudio.enable = true;
   hardware.bluetooth.enable = true;
+  services.blueman.enable = true;
 
 
   # Enable touchpad support (enabled default in most desktopManager).
@@ -119,8 +121,8 @@
      #wifi
      wpa_supplicant_gui
      #bluetooth
-     blueman
-     btlejack
+     #blueman
+     #btlejack
    ];
     nix.trustedUsers = [ "root" "darthpjb" ];
    nix = {
