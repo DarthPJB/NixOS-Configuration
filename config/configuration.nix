@@ -10,7 +10,7 @@
       ./terminal-zero-hardware.nix
       ./users/darthpjb.nix
       ./cachix.nix
-      ./enviroments/sshd.nix
+      ./environments/sshd.nix
       ./locale/en_gb.nix
     ];
 
