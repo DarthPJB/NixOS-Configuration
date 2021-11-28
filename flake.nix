@@ -17,6 +17,7 @@
         modules =
         [
           (import ./config/configuration.nix)
+          (import ./config/machines/terminalzero.nix)
            nixos-hardware.nixosModules.lenovo-thinkpad-x250
         ];
         specialArgs =
