@@ -13,15 +13,19 @@
     ];
 
   # Use the GRUB 2 boot loader.
-  boot.loader.grub.enable = true;
-  boot.loader.grub.version = 2;
-  # boot.loader.grub.efiSupport = true;
+  # Use the systemd-boot EFI boot loader.
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+ 
+# boot.loader.grub.enable = true;
+# boot.loader.grub.version = 2;
+# boot.loader.grub.efiSupport = true;
   # boot.loader.grub.efiInstallAsRemovable = true;
   # boot.loader.efi.efiSysMountPoint = "/boot/efi";
   # Define on which hard drive you want to install Grub.
-  boot.loader.grub.device = "/dev/sda"; # or "nodev" for efi only
+ # boot.loader.grub.device = "/dev/sda"; # or "nodev" for efi only
 
-  networking.hostName = "terminalzero"; # Define your hostname.
+  networking.hostName = "Terminal-zero"; # Define your hostname.
   networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   networking.wireless.userControlled.enable = true;
   networking.wireless.interfaces = [ "wlp3s0" ];
@@ -112,7 +116,7 @@
      killall
      bpytop
      nextcloud-client
-     inputs.croughanator.packages.x86_64-linux.parsecgaming
+#     inputs.croughanator.packages.x86_64-linux.parsecgaming
      #development
      cmatrix
      magic-wormhole
