@@ -122,6 +122,7 @@
      magic-wormhole
      emscripten
      wasm3
+     brave
      #wifi
      wpa_supplicant_gui
      #bluetooth
