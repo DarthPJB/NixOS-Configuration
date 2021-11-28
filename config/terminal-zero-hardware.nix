@@ -14,17 +14,17 @@
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "/dev/disk/by-uuid/f77317e5-1a80-4223-a21f-61b4d85df37c";
+    { device = "/dev/disk/by-label/terminal-zero";
       fsType = "ext4";
     };
 
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/8086-42E4";
+    { device = "/dev/disk/by-label/BOOT-TERMIN";
       fsType = "vfat";
     };
 
   swapDevices =
-    [ { device = "/dev/disk/by-uuid/7e55865f-d8c1-41ba-8280-ea8d4ba14e2d"; }
+    [ { device = "/dev/disk/by-label/swap-terminal-z"; }
     ];
 
 }
