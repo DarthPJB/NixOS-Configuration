@@ -31,10 +31,43 @@
         "type": "github"
       }
     },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1638484569,
+        "narHash": "sha256-am6w/9sH9yK7EFYxqkM+KHiJYC2v+G6sLNdS2CwJBEk=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "0d03c4318bbdf7475fe3fc3dbbb38d75c06fb960",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "type": "indirect"
+      }
+    },
+    "parsecgaming": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_2"
+      },
+      "locked": {
+        "lastModified": 1638486983,
+        "narHash": "sha256-HWroNJpYD/Un7Dh0BDKoKxcK6ZNw5x8ebRKjxPswXAQ=",
+        "owner": "DarthPJB",
+        "repo": "parsec-gaming-nix",
+        "rev": "6610278873cef9371b338788c06cb0b53d860b25",
+        "type": "github"
+      },
+      "original": {
+        "owner": "DarthPJB",
+        "repo": "parsec-gaming-nix",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "nixos-hardware": "nixos-hardware",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "parsecgaming": "parsecgaming"
       }
     }
   },

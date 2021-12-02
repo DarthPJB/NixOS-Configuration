@@ -56,7 +56,7 @@
      killall
      bpytop
      nextcloud-client
-#     inputs.croughanator.packages.x86_64-linux.parsecgaming
+     inputs.parsecgaming.packages.x86_64-linux.parsecgaming
      #development
      cmatrix
      magic-wormhole
