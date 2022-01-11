@@ -65,4 +65,8 @@
   };
 
   swapDevices = [ { device = "/dev/disk/by-label/swap-terminal-z"; }];
+
+  # This value determines the NixOS release from which the default
+  # settings for stateful data
+  system.stateVersion = "21.05"; # Did you read the comment?
 }

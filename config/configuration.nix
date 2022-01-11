@@ -66,9 +66,4 @@
      wpa_supplicant_gui
    ];
 
-
-  # This value determines the NixOS release from which the default
-  # settings for stateful data
-  system.stateVersion = "21.05"; # Did you read the comment?
-
 }
