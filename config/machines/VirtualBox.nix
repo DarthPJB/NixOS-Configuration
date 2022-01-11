@@ -7,7 +7,7 @@
 
   # Use the GRUB 2 boot loader.
   # Use the systemd-boot EFI boot loader.
-  boot.loader.grub. =
+  boot.loader.grub =
   {
     # Use the GRUB 2 boot loader.
     enable = true;
