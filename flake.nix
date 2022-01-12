@@ -17,7 +17,7 @@
         modules =
         [
           (import ./config/configuration.nix)
-          (import ./enviroments/sway.nix)
+          (import ./config/environments/sway.nix)
           (import ./config/machines/terminalzero.nix)
            nixos-hardware.nixosModules.lenovo-thinkpad-x250
         ];
@@ -32,7 +32,7 @@
         modules =
         [
           (import ./config/configuration.nix)
-          (import ./enviroments/i3wm_darthpjb.nix)
+          (import ./config/environments/i3wm_darthpjb.nix)
           (import ./config/machines/VirtualBox.nix)
         ];
         specialArgs =
