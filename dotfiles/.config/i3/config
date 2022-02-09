@@ -38,9 +38,13 @@ font pango:DejaVu Sans Mono 10
 # screen before suspend. Use loginctl lock-session to lock your screen.
 exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
 
-# NetworkManager is the most popular way to manage wireless networks on Linux,
-# and nm-applet is a desktop environment-independent system tray GUI for it.
-exec --no-startup-id nm-applet
+# fire up blumane-applet
+exec --no-startup-id blueman-applet
+#activate volume-icon
+exec --no-startup-id volumeicon
+
+exec --no-startup-id "~/winwrap.sh"
+
 
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
