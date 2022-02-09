@@ -13,6 +13,7 @@
       ./environments/sshd.nix
       ./locale/en_gb.nix
       ./locale/astralship.nix
+      ./locale/home_networks.nix
     ];
 
 
