@@ -25,13 +25,27 @@
     kernelModules = [ "kvm-intel" ];
     extraModulePackages = [ ];
   };
-  powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
 
-  hardware = {
-    pulseaudio.enable = true;
-    bluetooth.enable = true;
-    cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+  powerManagement =
+  {
+    enable = false;
+    cpuFreqGovernor = lib.mkDefault "powersave";
   };
+  services = {
+    xserver = {
+        videoDrivers = [ "nvidia" ];
+    };
+    printing.enable = true;
+  };
+  hardware = {
+    opengl.enable = true;
+    pulseaudio.enable = true;
+    cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+    opengl.driSupport32Bit = true;
+    pulseaudio.support32Bit = true;
+  };
+  # Enable sound.
+  sound.enable = true;
 
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
   # Per-interface useDHCP will be mandatory in the future, so this generated config
@@ -39,7 +53,7 @@
   networking =
   {
     useDHCP = false;
-    hostName = "Terminal-zero"; # Define your hostname.
+    hostName = "LINDA"; # Define your hostname.
     interfaces =
     {
       enp0s31f6.useDHCP = true;
@@ -52,14 +66,9 @@
       interfaces = [ "wlp4s0" ];
     };
   };
-  services = {
-  printing.enable = true;
-  blueman.enable = true;
-  };
-  # Enable sound.
-  sound.enable = true;
 
-  fileSystems  = {
+  fileSystems =
+  {
     "/" =
     {
       device = "/dev/disk/by-label/nixos-linda";
@@ -77,5 +86,5 @@
 
   # This value determines the NixOS release from which the default
   # settings for stateful data
-  system.stateVersion = "21.05"; # Did you read the comment?
+  system.stateVersion = "21.11"; # Did you read the comment?
 }

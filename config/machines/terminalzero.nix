@@ -35,33 +35,36 @@
   };
 
   # Enable CUPS to print documents.
-  services.printing.enable = true;
+  # Enable touchpad support (enabled default in most desktopManager).
+  services =
+  {
+    xserver.libinput.enable = true;
+    printing.enable = true;
+  };
 
   # Enable sound.
   sound.enable = true;
   hardware.pulseaudio.enable = true;
-  hardware.bluetooth.enable = true;
-  services.blueman.enable = true;
 
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
   boot =
   {
     initrd.availableKernelModules = [ "xhci_pci" "ehci_pci" "ahci" "usb_storage" "uas" "sd_mod" "rtsx_pci_sdmmc" ];
-    initrd.kernelModules = [ ];
     kernelModules = [ "kvm-intel" ];
-    extraModulePackages = [ ];
   };
 
-  fileSystems."/" =
-  {
-    device = "/dev/disk/by-label/terminal-zero";
-    fsType = "ext4";
-  };
+  fileSystems = {
+    "/" =
+    {
+      device = "/dev/disk/by-label/terminal-zero";
+      fsType = "ext4";
+    };
 
-  fileSystems."/boot" =
-  {
-    device = "/dev/disk/by-label/BOOT-TERMIN";
-    fsType = "vfat";
+    "/boot" =
+    {
+      device = "/dev/disk/by-label/BOOT-TERMIN";
+      fsType = "vfat";
+    };
   };
 
   swapDevices = [ { device = "/dev/disk/by-label/swap-terminal-z"; }];

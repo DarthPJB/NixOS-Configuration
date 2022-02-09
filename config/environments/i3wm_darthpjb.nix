@@ -13,11 +13,12 @@
       activeOpacity = 0.99;
     };
     programs.dconf.enable = true;
-    services.gnome3.kg.enable = true;
-    environment.systemPackages = [
-	pkgs.enlightenment.terminology
-	pkgs.conky
-	pkgs.lxappearance
-	pkgs.arandr
-	pkgs.brave];
+    environment.systemPackages =
+    [
+    	pkgs.enlightenment.terminology
+    	pkgs.conky
+    	pkgs.lxappearance
+    	pkgs.arandr
+    	pkgs.brave
+    ];
 }

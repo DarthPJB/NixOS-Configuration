@@ -17,7 +17,10 @@
         modules =
         [
           (import ./config/configuration.nix)
-          (import ./config/machines/terminalzero.nix)
+          (import ./config/environments/sway.nix)
+          (import ./config/environments/rtl-sdr.nix)
+          (import ./config/environments/bluetooth.nix)
+          (import ./config/config/machines/terminalzero.nix)
            nixos-hardware.nixosModules.lenovo-thinkpad-x250
         ];
         specialArgs =
@@ -31,6 +34,7 @@
         modules =
         [
           (import ./config/configuration.nix)
+          (import ./config/environments/i3wm_darthpjb.nix)
           (import ./config/machines/VirtualBox.nix)
         ];
         specialArgs =
@@ -45,6 +49,11 @@
         [
           (import ./config/configuration.nix)
           (import ./config/machines/LINDA.nix)
+          (import ./config/environments/i3wm_darthpjb.nix)
+          (import ./config/environments/bluetooth.nix)
+          (import ./config/environments/cad_and_graphics.nix)
+          (import ./config/environments/audio_visual_editing.nix)
+          (import ./config/environments/general_fonts.nix)
         ];
         specialArgs =
         {
