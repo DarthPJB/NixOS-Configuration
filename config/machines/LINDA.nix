@@ -31,8 +31,11 @@
     enable = false;
     cpuFreqGovernor = lib.mkDefault "powersave";
   };
-  services = {
-    xserver = {
+  services = 
+  {
+    xserver = 
+    {
+        libinput.enable = true;
         videoDrivers = [ "nvidia" ];
     };
     printing.enable = true;

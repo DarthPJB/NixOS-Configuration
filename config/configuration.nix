@@ -31,8 +31,10 @@
      pkgs.ranger
      pkgs.killall
      pkgs.nextcloud-client
+     pkgs.cool-retro-term
      inputs.parsecgaming.packages.x86_64-linux.parsecgaming
      #development
+     pkgs.volumeicon
      pkgs.cmatrix
      pkgs.magic-wormhole
      pkgs.wpa_supplicant_gui

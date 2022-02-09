@@ -9,10 +9,9 @@ shopt -s dotglob
 echo "Copy dotfiles into place"
 cp -a -r ./dotfiles/.background-image /home/pokej/
 cp -a -r ./dotfiles/.config/* /home/pokej/.config/
-#cp ./dotfiles/ /home/pokej/ -r
 
-echo "Push config into position"
-sudo cp -r -a ./config/* /etc/nixos/
+cp ascetics_bin /home/pokej/ -r
 
-#echo "Generate new Nix-config"
-#sudo nixos-rebuild switch -I nixpkgs=./nixpkgs
+cp winwrap.sh /home/pokej/
+
+#./task.sh
