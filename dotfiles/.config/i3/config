@@ -41,8 +41,9 @@ exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
 # fire up blumane-applet
 exec --no-startup-id blueman-applet
 #activate volume-icon
-exec --no-startup-id volumeicon
-
+exec --no-startup-id volumeicon#
+#set background wallpaper
+exec --no-startup-id xsetroot -solid "#000000"
 exec --no-startup-id "~/winwrap.sh"
 
 
