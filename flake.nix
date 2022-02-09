@@ -38,6 +38,19 @@
           inherit inputs;
         };
       };
+      LINDA = nixpkgs.lib.nixosSystem
+      {
+        system = "x86_64-linux";
+        modules =
+        [
+          (import ./config/configuration.nix)
+          (import ./config/machines/LINDA.nix)
+        ];
+        specialArgs =
+        {
+          inherit inputs;
+        };
+      };
     };
   };
 }
