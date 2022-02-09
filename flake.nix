@@ -51,6 +51,7 @@
           (import ./config/machines/LINDA.nix)
           (import ./config/environments/i3wm_darthpjb.nix)
           (import ./config/environments/bluetooth.nix)
+          (import ./config/environments/steam.nix)
           (import ./config/environments/cad_and_graphics.nix)
           (import ./config/environments/audio_visual_editing.nix)
           (import ./config/environments/general_fonts.nix)
