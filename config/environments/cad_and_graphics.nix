@@ -20,6 +20,5 @@
 		openscad
 		#freecad
 		krita
-	#	tiled
 	];
 }
