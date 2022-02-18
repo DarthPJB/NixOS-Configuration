@@ -8,6 +8,6 @@ environment.systemPackages = with pkgs; [
 	vlc
 	kdenlive
 	shotcut
-	obs-studio
+	shutter
 ];
 }
