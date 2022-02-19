@@ -18,8 +18,7 @@
 		blender
 		solvespace
 		openscad
-		freecad
+		#freecad
 		krita
-	#	tiled
 	];
 }
