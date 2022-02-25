@@ -55,6 +55,7 @@
           (import ./config/environments/audio_visual_editing.nix)
           (import ./config/environments/general_fonts.nix)
           (import ./config/environments/video_call_streaming.nix)
+          (import ./config/locale/tailscale.nix)
         ];
         specialArgs =
         {
