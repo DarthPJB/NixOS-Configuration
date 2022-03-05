@@ -20,7 +20,7 @@
           (import ./config/environments/sway.nix)
           (import ./config/environments/rtl-sdr.nix)
           (import ./config/environments/bluetooth.nix)
-          (import ./config/config/machines/terminalzero.nix)
+          (import ./config/machines/terminalzero.nix)
            nixos-hardware.nixosModules.lenovo-thinkpad-x250
         ];
         specialArgs =
