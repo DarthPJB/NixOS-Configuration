@@ -19,10 +19,10 @@
     };
     initrd =
     {
-      availableKernelModules = [ "xhci_pci" "ahci" "usbhid" "usb_storage" "uas" "sd_mod" ];
+      availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "uas" "sd_mod"  ];
       kernelModules = [ ];
     };
-    kernelModules = [ "kvm-intel" ];
+    kernelModules = [ "kvm-amd"];
     extraModulePackages = [ ];
   };
 
@@ -31,9 +31,9 @@
     enable = false;
     cpuFreqGovernor = lib.mkDefault "powersave";
   };
-  services = 
+  services =
   {
-    xserver = 
+    xserver =
     {
         libinput.enable = true;
         videoDrivers = [ "nvidia" ];
@@ -43,7 +43,7 @@
   hardware = {
     opengl.enable = true;
     pulseaudio.enable = true;
-    cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+    cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
     opengl.driSupport32Bit = true;
     pulseaudio.support32Bit = true;
   };
@@ -59,14 +59,15 @@
     hostName = "LINDA"; # Define your hostname.
     interfaces =
     {
-      enp0s31f6.useDHCP = true;
-      wlp4s0.useDHCP = true;
+      enp69s0f0.useDHCP = true;
+      enp69s0f1.useDHCP = true;
+      wlp72s0.useDHCP = true;
     };
     wireless =
     {
       enable = true;  # Enables wireless support via wpa_supplicant.
       userControlled.enable = true;
-      interfaces = [ "wlp4s0" ];
+      interfaces = [ "wlp72s0" ];
     };
   };
 
@@ -74,18 +75,18 @@
   {
     "/" =
     {
-      device = "/dev/disk/by-label/nixos-linda";
+      device = "/dev/disk/by-label/linda5-core";
       fsType = "ext4";
     };
 
     "/boot" =
     {
-      device = "/dev/disk/by-label/LINDA-BOOT";
+      device = "/dev/disk/by-label/LINDA5BOOT";
       fsType = "vfat";
     };
   };
 
-  swapDevices = [ { device = "/dev/disk/by-label/linda-swap"; }];
+  swapDevices = [ { device = "/dev/disk/by-label/linda5-swap"; }];
 
   # This value determines the NixOS release from which the default
   # settings for stateful data
