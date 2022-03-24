@@ -38,15 +38,20 @@ font pango:DejaVu Sans Mono 10
 # screen before suspend. Use loginctl lock-session to lock your screen.
 exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
 
+# set display settings from arandr
+exec --no-startup-id "~/.screenlayout/layout.sh"
 # fire up blumane-applet
 exec --no-startup-id blueman-applet
 #activate volume-icon
 exec --no-startup-id volumeicon
 #set background wallpaper
 exec --no-startup-id xsetroot -solid "#000000"
-exec --no-startup-id "~/.screenlayout/layout.sh"
-
 exec --no-startup-id "~/winwrap.sh"
+#open screenshot tool
+exec --no-startup-id shutter
+#open nextcloud
+exec --no-startup-id nextcloud
+
 
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
