@@ -57,6 +57,7 @@
           (import ./config/environments/general_fonts.nix)
           (import ./config/environments/video_call_streaming.nix)
           (import ./config/locale/tailscale.nix)
+          (import ./config/modifier_imports/ckb-next.nix)
         ];
         specialArgs =
         {
