@@ -40,6 +40,7 @@
     };
     printing.enable = true;
   };
+  options.hardware.ckb-next.enable = true;
   hardware = {
     opengl.enable = true;
     pulseaudio.enable = true;
