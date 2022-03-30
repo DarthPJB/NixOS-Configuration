@@ -2,10 +2,14 @@
 
 {
 environment.systemPackages = with pkgs; [
-	atom
-	gpp
-	emscripten
-	emscriptenStdenv
-	emscriptenPackages.zlib
+	pkgs.gpp
+	pkgs.emscripten
+	pkgs.emscriptenStdenv
+	pkgs.emscriptenPackages.zlib
+	pkgs.atom
+	pkgs.cool-retro-term
+	pkgs.terminator
+	pkgs.enlightenment.terminology
+	pkgs.neovim
 ];
 }

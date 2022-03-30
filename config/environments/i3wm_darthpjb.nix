@@ -15,10 +15,14 @@
     programs.dconf.enable = true;
     environment.systemPackages =
     [
-    	pkgs.enlightenment.terminology
+      pkgs.brightnessctl
+      pkgs.pavucontrol
+      pkgs.volumeicon
+      pkgs.enlightenment.terminology
     	pkgs.conky
     	pkgs.lxappearance
     	pkgs.arandr
-    	pkgs.brave
+      pkgs.nextcloud-client
+      inputs.parsecgaming.packages.x86_64-linux.parsecgaming
     ];
 }

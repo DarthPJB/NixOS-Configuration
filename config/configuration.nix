@@ -19,19 +19,5 @@
   {
     allowUnfree = true;
   };
-  #  List packages installed in system profile. To search, run:
-  # $ nix search wget
-   environment.systemPackages = [
-
-     pkgs.brightnessctl
-     pkgs.atom
-     pkgs.nextcloud-client
-     pkgs.cool-retro-term
-     inputs.parsecgaming.packages.x86_64-linux.parsecgaming
-     #development
-     pkgs.terminator
-     pkgs.volumeicon
-     pkgs.cmatrix
-   ];
 
 }
