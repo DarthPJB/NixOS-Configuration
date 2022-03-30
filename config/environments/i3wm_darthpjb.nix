@@ -23,6 +23,5 @@
     	pkgs.lxappearance
     	pkgs.arandr
       pkgs.nextcloud-client
-      inputs.parsecgaming.packages.x86_64-linux.parsecgaming
     ];
 }
