@@ -12,6 +12,8 @@
       ./locale/home_networks.nix
       ./cachix.nix
       ./environments/sshd.nix
+      ./environments/browsers.nix
+      ./environments/tools.nix
     ];
   nixpkgs.config =
   {
@@ -20,16 +22,9 @@
   #  List packages installed in system profile. To search, run:
   # $ nix search wget
    environment.systemPackages = [
-     pkgs.btop
-     pkgs.nano
-     pkgs.wget
-     pkgs.firefox
-     pkgs.brave
+
      pkgs.brightnessctl
      pkgs.atom
-     pkgs.git
-     pkgs.ranger
-     pkgs.killall
      pkgs.nextcloud-client
      pkgs.cool-retro-term
      inputs.parsecgaming.packages.x86_64-linux.parsecgaming
@@ -37,8 +32,6 @@
      pkgs.terminator
      pkgs.volumeicon
      pkgs.cmatrix
-     pkgs.magic-wormhole
-     pkgs.wpa_supplicant_gui
    ];
 
 }
