@@ -29,7 +29,7 @@
   powerManagement =
   {
     enable = false;
-    cpuFreqGovernor = lib.mkDefault "powersave";
+    cpuFreqGovernor = lib.mkDefault "performance";
   };
   services =
   {
