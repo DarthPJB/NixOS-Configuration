@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 {
   environment.systemPackages = [
-  cudatoolkit
+    pkgs.cudatoolkit
   ];
   nixpkgs.config = {
     cudaSupport = true;
