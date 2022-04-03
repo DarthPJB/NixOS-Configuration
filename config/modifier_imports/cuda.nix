@@ -5,5 +5,6 @@
   ];
   nixpkgs.config = {
     cudaSupport = true;
+    cudnnSupport = true;
   };
 }
