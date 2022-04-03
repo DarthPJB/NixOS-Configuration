@@ -15,7 +15,7 @@
 	environment.systemPackages = with pkgs; [
 		gimp
 		inkscape
-		blender
+  	(blender.override { cudaSupport = true; })
 		solvespace
 		openscad
 		#freecad
