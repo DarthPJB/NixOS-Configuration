@@ -7,7 +7,6 @@
     [ (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
-
   # Use the GRUB 2 boot loader.
   # Use the systemd-boot EFI boot loader.
   boot =
