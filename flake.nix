@@ -7,7 +7,7 @@
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
-  outputs = { self, nixpkgs, nixos-hardware, ... }@inputs:
+  outputs = { self, nixpkgs, nixos-hardware,blender-bin, ... }@inputs:
   {
     nixosConfigurations =
     {
@@ -47,9 +47,12 @@
         system = "x86_64-linux";
         modules =
         [
+          ({ config, pkgs, ... }:
+                 { nixpkgs.overlays = [ blender-bin.overlay ];
+                   environment.systemPackages = [ pkgs.blender_3_1];
+                 })
           (import ./config/configuration.nix)
           (import ./config/machines/LINDA.nix)
-          (import ./config/modifier_imports/memtest.nix)
           (import ./config/environments/i3wm_darthpjb.nix)
           (import ./config/environments/bluetooth.nix)
           (import ./config/environments/steam.nix)
@@ -58,6 +61,8 @@
           (import ./config/environments/general_fonts.nix)
           (import ./config/environments/video_call_streaming.nix)
           (import ./config/locale/tailscale.nix)
+          (import ./config/modifier_imports/memtest.nix)
+          (import ./config/modifier_imports/cuda.nix)
 #          (import ./config/modifier_imports/ckb-next.nix)
         ];
         specialArgs =
