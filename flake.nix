@@ -49,6 +49,7 @@
         [
           (import ./config/configuration.nix)
           (import ./config/machines/LINDA.nix)
+          (import ./config/modifier_imports/memtest.nix)
           (import ./config/environments/i3wm_darthpjb.nix)
           (import ./config/environments/bluetooth.nix)
           (import ./config/environments/steam.nix)
