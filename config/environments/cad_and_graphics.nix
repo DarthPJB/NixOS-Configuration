@@ -18,7 +18,7 @@
   	(blender.override { cudaSupport = true; })
 		solvespace
 		openscad
-		(colmap.override { cudaSupport = true; cudatoolkit = cudatoolkit_10;})
+		(colmap.override { cudaSupport = true; cudatoolkit = cudatoolkit_11;})
 		#freecad
 		krita
 	];
