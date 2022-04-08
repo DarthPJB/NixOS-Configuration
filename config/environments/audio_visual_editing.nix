@@ -3,7 +3,7 @@
 {
 environment.systemPackages = with pkgs; [
 	blender
-	ffmpeg
+	ffmpeg-full
 	mplayer
 	vlc
 	kdenlive
