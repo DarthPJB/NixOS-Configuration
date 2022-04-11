@@ -7,6 +7,8 @@ environment.systemPackages = with pkgs; [
 	pkgs.emscriptenStdenv
 	pkgs.emscriptenPackages.zlib
 	pkgs.atom
+	pkgs.vscode
+	pkgs.neovim
 	pkgs.cool-retro-term
 	pkgs.terminator
 	pkgs.enlightenment.terminology
