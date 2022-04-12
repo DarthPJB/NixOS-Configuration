@@ -4,8 +4,8 @@
 environment.systemPackages = with pkgs; [
 	pkgs.gpp
 	pkgs.emscripten
-	pkgs.emscriptenStdenv
-	pkgs.emscriptenPackages.zlib
+#	pkgs.emscriptenStdenv
+#	pkgs.emscriptenPackages.zlib
 	pkgs.atom
 	pkgs.vscode
 	pkgs.neovim

@@ -22,6 +22,9 @@
       kernelModules = [ ];
     };
     kernelModules = [ "kvm-amd"];
+    kernelParams = [
+    "processor.max_cstate=1"
+    ];
     extraModulePackages = [ ];
   };
 
@@ -58,9 +61,9 @@
     hostName = "LINDA"; # Define your hostname.
     interfaces =
     {
-      enp69s0f0.useDHCP = true;
-      enp69s0f1.useDHCP = true;
-      wlp72s0.useDHCP = true;
+      enp68s0f0.useDHCP = true;
+      enp68s0f1.useDHCP = true;
+      wlp71s0.useDHCP = true;
     };
 # wireless disabled
 #    wireless =
