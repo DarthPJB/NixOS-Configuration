@@ -6,6 +6,10 @@
   imports =
     [ (modulesPath + "/installer/scan/not-detected.nix")
     ];
+  environment.systemPackages = [
+    pkgs.gwe
+    pkgs.nvtop
+  ];
 
   # Use the GRUB 2 boot loader.
   # Use the systemd-boot EFI boot loader.
