@@ -21,7 +21,7 @@
 		solvespace
 		openscad
 		(colmap.override { cudaSupport = true; cudatoolkit = cudaPackages_11_6.cudatoolkit;})
-		#colmapWithCuda
+		meshlab
 		#freecad
 		krita
 	];
