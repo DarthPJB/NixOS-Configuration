@@ -39,10 +39,19 @@
     {
         libinput.enable = true;
         videoDrivers = [ "nvidia" ];
+	deviceSection = ''
+	  Option "Coolbits" "24"
+	'';
     };
-    printing.enable = true;
+    printing = 
+    { 
+        enable = true;
+        drivers = [ pkgs.epson-escpr ];
+    };
+
   };
   hardware = {
+    sane.enable = true;
     opengl.enable = true;
     pulseaudio.enable = true;
     cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;

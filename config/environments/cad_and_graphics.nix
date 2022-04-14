@@ -13,12 +13,15 @@
 #in
 {
 	environment.systemPackages = with pkgs; [
-		gimp
+		gimp-with-plugins
+		digikam
 		inkscape
+		lensfun
   	(blender.override { cudaSupport = true; })
 		solvespace
 		openscad
-		(colmap.override { cudaSupport = true; cudatoolkit = cudatoolkit_11;})
+		(colmap.override { cudaSupport = true; cudatoolkit = cudaPackages_11_6.cudatoolkit;})
+		#colmapWithCuda
 		#freecad
 		krita
 	];
