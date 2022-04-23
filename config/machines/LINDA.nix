@@ -62,6 +62,9 @@
     cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
     opengl.driSupport32Bit = true;
     pulseaudio.support32Bit = true;
+    nvidia = {
+        powerManagement.enable = true;
+    };
   };
   # Enable sound.
   sound.enable = true;
