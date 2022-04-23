@@ -5,9 +5,10 @@
     [ # Include the results of the hardware scan.
         ./i3wm.nix
     ];
-    services.compton =
+    services.picom =
     {
       enable = true;
+      backend = "glx"; # try "glx" if xrender doesn't help
       shadow = true;
       inactiveOpacity = 0.8;
       activeOpacity = 0.99;
