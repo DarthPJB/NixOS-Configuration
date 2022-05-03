@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
+#    parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
@@ -17,11 +17,11 @@
         modules =
         [
           (import ./config/configuration.nix)
-          (import ./config/environments/sway.nix)
+          (import ./config/environments/i3wm_darthpjb.nix)
           (import ./config/environments/rtl-sdr.nix)
-          (import ./config/environments/bluetooth.nix)
+#          (import ./config/environments/bluetooth.nix)
           (import ./config/machines/terminalzero.nix)
-           nixos-hardware.nixosModules.lenovo-thinkpad-x250
+           nixos-hardware.nixosModules.lenovo-thinkpad-x220
         ];
         specialArgs =
         {

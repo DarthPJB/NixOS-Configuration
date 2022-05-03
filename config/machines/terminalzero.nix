@@ -24,13 +24,13 @@
     {
       enp0s25.useDHCP = true;
       wlp3s0.useDHCP = true;
-      wwp0s20u4i6.useDHCP = true;
+      wwp0s29u1u4i6.useDHCP = true;
     };
     wireless =
     {
       enable = true;  # Enables wireless support via wpa_supplicant.
       userControlled.enable = true;
-      interfaces = [ "wwp0s20u4i6" ];
+      interfaces = [ "wwp0s29u1u4i6" "wlp3s0"];
     };
   };
 
@@ -56,18 +56,18 @@
   fileSystems = {
     "/" =
     {
-      device = "/dev/disk/by-label/terminal-zero";
+      device = "/dev/disk/by-label/TerminalZero";
       fsType = "ext4";
     };
 
     "/boot" =
     {
-      device = "/dev/disk/by-label/BOOT-TERMIN";
+      device = "/dev/disk/by-label/TZBOOT";
       fsType = "vfat";
     };
   };
 
-  swapDevices = [ { device = "/dev/disk/by-label/swap-terminal-z"; }];
+  swapDevices = [ { device = "/dev/disk/by-label/swap"; }];
 
   # This value determines the NixOS release from which the default
   # settings for stateful data
