@@ -7,6 +7,10 @@ environment.systemPackages = with pkgs; [
 	pkgs.atom
 	pkgs.vscode
 	pkgs.neovim
+	pkgs.dnsutils
+	pkgs.openssl
+	pkgs.upterm
+	pkgs.tmux
 	pkgs.cool-retro-term
 	pkgs.terminator
 	pkgs.enlightenment.terminology
