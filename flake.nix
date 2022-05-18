@@ -47,10 +47,10 @@
         system = "x86_64-linux";
         modules =
         [
-          ({ config, pkgs, ... }:
-                 { nixpkgs.overlays = [ blender-bin.overlay ];
-                   environment.systemPackages = [ pkgs.blender_3_1];
-                 })
+#          ({ config, pkgs, ... }:
+#                 { nixpkgs.overlays = [ blender-bin.overlays ];
+#                   environment.systemPackages = [ pkgs.blender_3_1];
+#                 })
           (import ./config/configuration.nix)
           (import ./config/machines/LINDA.nix)
           (import ./config/environments/i3wm_darthpjb.nix)
