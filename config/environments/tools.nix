@@ -10,5 +10,6 @@
   pkgs.killall
   pkgs.magic-wormhole
   pkgs.wpa_supplicant_gui
+  pkgs.freemind
   ];
 }
