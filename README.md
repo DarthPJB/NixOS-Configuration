@@ -6,6 +6,5 @@ In an ideal scenario this repository will eventually allow me to deploy to any h
 
 TODO:
  - Manage those pesky public keys better
- - potentially move to nix-flakes
+ - Test agenix
  - provision better data-deployment post-install
- - make more use of custom nix-channels
