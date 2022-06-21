@@ -22,15 +22,15 @@
     	pkgs.firefox
     	pkgs.atom
     	pkgs.cmatrix
-    	pkgs.element-desktop
-    	pkgs.firefox
-      pkgs.pnmixer
-      pkgs.conky
+        pkgs.conky
     	pkgs.nextcloud-client
     	pkgs.sl
     	pkgs.cmatrix
-        pkgs.networkmanagerapplet
-        pkgs.bpytop
+        pkgs.nms
+        pkgs.chafa
+        pkgs.lolcat
+        pkgs.figlet
+        pkgs.cowsay
     	];
    };
 }

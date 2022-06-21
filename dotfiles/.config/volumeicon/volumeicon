@@ -1,5 +1,5 @@
 [Alsa]
-card=default
+card=HDA NVidia
 
 [Notification]
 show_notification=true
@@ -7,7 +7,7 @@ notification_type=0
 
 [StatusIcon]
 stepsize=5
-onclick=xterm -e 'alsamixer'
+onclick=pavucontrol
 theme=tango
 use_panel_specific_icons=false
 lmb_slider=true
