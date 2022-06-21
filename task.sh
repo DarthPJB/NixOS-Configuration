@@ -1,1 +1,1 @@
-sudo nixos-rebuild --flake . switch
+nixos-rebuild --flake .#LINDA switch --use-remote-sudo
