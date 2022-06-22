@@ -38,8 +38,6 @@ font pango:DejaVu Sans Mono 10
 # screen before suspend. Use loginctl lock-session to lock your screen.
 exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
 
-# set display settings from arandr
-exec --no-startup-id "~/.screenlayout/layout.sh"
 # fire up blumane-applet
 exec --no-startup-id blueman-applet
 #activate volume-icon
@@ -48,9 +46,11 @@ exec --no-startup-id volumeicon
 exec --no-startup-id xsetroot -solid "#000000"
 exec --no-startup-id "~/winwrap.sh > /dev/null"
 #open screenshot tool
-#exec --no-startup-id shutter
+exec --no-startup-id "sleep 1; shutter"
 #open nextcloud
 exec --no-startup-id nextcloud
+# set display settings from arandr
+exec --no-startup-id "sleep 2; ~/.screenlayout/layout.sh"
 
 
 # Use pactl to adjust volume in PulseAudio.
