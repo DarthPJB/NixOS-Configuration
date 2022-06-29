@@ -83,12 +83,12 @@
 #      wlp72s0.useDHCP = true;
     };
 # wireless disabled
-#    wireless =
-#    {
-#      enable = true;  # Enables wireless support via wpa_supplicant.
-#      userControlled.enable = true;
-#      interfaces = [ "wlp72s0" ];
-#    };
+    wireless =
+    {
+      enable = true;  # Enables wireless support via wpa_supplicant.
+      userControlled.enable = true;
+      interfaces = [ "wlp72s0" ];
+    };
   };
 
   fileSystems =
