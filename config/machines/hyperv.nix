@@ -7,12 +7,14 @@
 
   # Use the GRUB 2 boot loader.
   # Use the systemd-boot EFI boot loader.
-  boot.loader.grub =
+  boot =
   {
-    # Use the GRUB 2 boot loader.
-    enable = true;
-    version = 2;
-    device = "/dev/sda"; # or "nodev" for efi only
+    supportedFilesystems = [ "ntfs" ];
+    loader =
+    {
+      systemd-boot.enable = true;
+      efi.canTouchEfiVariables = true;
+    };
   };
 
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
@@ -21,37 +23,35 @@
   networking =
   {
     useDHCP = false;
-    hostName = "TerminalVM1"; # Define your hostname.
-    interfaces =
-    {
-      enp0s3.useDHCP = true;
-    };
+    hostName = "TerminalVM2"; # Define your hostname.
+#    interfaces =
+#    {
+#      enp0s3.useDHCP = true;
+#    };
   };
-
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
-
-  # Enable sound.
-  sound.enable = false;
-
-
-  hardware.pulseaudio.enable = false;
-  hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+  hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
   virtualisation.hypervGuest.enable = true;
 
   boot =
   {
-    initrd.availableKernelModules = [ "ata_piix" "ohci_pci" "sd_mod" "sr_mod" ];
+    initrd.availableKernelModules = [ "sd_mod" "sr_mod" ];
     initrd.kernelModules = [ ];
     kernelModules = [  ];
     extraModulePackages = [ ];
   };
 
-  fileSystems."/" =
+  fileSystems = {
+  "/" =
     {
       device = "/dev/disk/by-label/TerminalVM2";
       fsType = "ext4";
     };
+    "/boot" =
+    {
+      device = "/dev/disk/by-label/VMBOOT";
+      fsType = "vfat";
+    };
+  };
 
   swapDevices = [ { device = "/dev/disk/by-label/swapbox"; } ];
   system.stateVersion = "21.11"; # Did you read the comment?
