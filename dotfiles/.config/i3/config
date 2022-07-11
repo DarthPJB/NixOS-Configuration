@@ -12,6 +12,7 @@
 gaps inner 5
 gaps outer 8
 
+
 # You can also use any non-zero value if you'd like to have a border
 for_window [class=".*"] border pixel 0
 
@@ -44,9 +45,9 @@ exec --no-startup-id blueman-applet
 exec --no-startup-id volumeicon
 #set background wallpaper
 exec --no-startup-id xsetroot -solid "#000000"
-exec --no-startup-id "~/winwrap.sh > /dev/null"
+exec --no-startup-id "sleep 3; ~/winwrap.sh > /dev/null"
 #open screenshot tool
-exec --no-startup-id "sleep 1; shutter"
+exec --no-startup-id "sleep 3; shutter"
 #open nextcloud
 exec --no-startup-id nextcloud
 # set display settings from arandr
