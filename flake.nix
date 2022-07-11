@@ -4,7 +4,7 @@
   inputs = {
     inputs.agenix.url = "github:ryantm/agenix";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
+    #parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
@@ -37,6 +37,20 @@
           (import ./config/configuration.nix)
           (import ./config/environments/i3wm_darthpjb.nix)
           (import ./config/machines/VirtualBox.nix)
+        ];
+        specialArgs =
+        {
+          inherit inputs;
+        };
+      };
+      Terminal-VM2 = nixpkgs.lib.nixosSystem
+      {
+        system = "x86_64-linux";
+        modules =
+        [
+          (import ./config/configuration.nix)
+          (import ./config/environments/i3wm_darthpjb.nix)
+          (import ./config/machines/hyperv.nix)
         ];
         specialArgs =
         {
