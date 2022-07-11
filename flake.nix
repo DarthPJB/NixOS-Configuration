@@ -2,6 +2,7 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
+    inputs.agenix.url = "github:ryantm/agenix";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
@@ -47,10 +48,6 @@
         system = "x86_64-linux";
         modules =
         [
-#          ({ config, pkgs, ... }:
-#                 { nixpkgs.overlays = [ blender-bin.overlays ];
-#                   environment.systemPackages = [ pkgs.blender_3_1];
-#                 })
           (import ./config/configuration.nix)
           (import ./config/machines/LINDA.nix)
           (import ./config/environments/i3wm_darthpjb.nix)
@@ -68,7 +65,7 @@
           (import ./config/modifier_imports/ipfs.nix)
           (import ./config/modifier_imports/hosts.nix)
 	  (import ./config/modifier_imports/virtualisation-virtualbox.nix)
-          #          (import ./config/modifier_imports/ckb-next.nix)
+          agenix.nixosModule
         ];
         specialArgs =
         {
