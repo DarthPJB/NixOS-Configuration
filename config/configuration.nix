@@ -19,10 +19,5 @@
   {
     allowUnfree = true;
   };
-  #  List packages installed in system profile. To search, run:
-  # $ nix search wget
-   environment.systemPackages = [
-      #inputs.parsecgaming.packages.x86_64-linux.parsecgaming
-   ];
 
 }

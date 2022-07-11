@@ -2,13 +2,13 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
-    inputs.agenix.url = "github:ryantm/agenix";
+    agenix.url = "github:ryantm/agenix";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    #parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
+    parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
-  outputs = { self, nixpkgs, nixos-hardware,blender-bin, ... }@inputs:
+  outputs = { self, nixpkgs, nixos-hardware, agenix, parsecgaming }@inputs:
   {
     nixosConfigurations =
     {
@@ -80,6 +80,13 @@
           (import ./config/modifier_imports/hosts.nix)
 	  (import ./config/modifier_imports/virtualisation-virtualbox.nix)
           agenix.nixosModule
+          {
+            environment.systemPackages = 
+            [
+              inputs.parsecgaming.packages.x86_64-linux.parsecgaming
+            ];
+          }
+
         ];
         specialArgs =
         {
