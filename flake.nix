@@ -20,7 +20,7 @@
           (import ./config/configuration.nix)
           (import ./config/environments/i3wm_darthpjb.nix)
           (import ./config/environments/rtl-sdr.nix)
-#          (import ./config/environments/bluetooth.nix)
+          (import ./config/environments/pio.nix)
           (import ./config/machines/terminalzero.nix)
            nixos-hardware.nixosModules.lenovo-thinkpad-x220
         ];
