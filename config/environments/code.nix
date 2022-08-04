@@ -13,6 +13,7 @@ environment.systemPackages = with pkgs; [
 	pkgs.tmux
 	pkgs.cool-retro-term
 	pkgs.terminator
-	pkgs.enlightenment.terminology
+        pkgs.enlightenment.terminology
+        pkgs.platformio
 ];
 }
