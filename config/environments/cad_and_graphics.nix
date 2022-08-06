@@ -17,7 +17,7 @@
 		digikam
 		inkscape-with-extensions 
 		lensfun
-  	(blender.override { cudaSupport = true; })
+  	        (blender.override { cudaSupport = true; })
 		solvespace
 		openscad
 		(colmap.override { cudaSupport = true; })
