@@ -82,7 +82,6 @@
       enp69s0f1.useDHCP = true;
       wlp72s0.useDHCP = true;
     };
-# wireless disabled
     wireless =
     {
       enable = true;  # Enables wireless support via wpa_supplicant.

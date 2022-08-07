@@ -8,7 +8,6 @@
   {
     enable = true;
     wrapperFeatures.gtk = true; # so that gtk works properly
-    #extraSessionCommands = "wpa_gui & nextcloud & parsecd & blueman-applet &";
     extraPackages = with pkgs;
     [
       swaylock
