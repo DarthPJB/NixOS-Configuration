@@ -22,6 +22,7 @@
           (import ./config/environments/rtl-sdr.nix)
           (import ./config/environments/pio.nix)
           (import ./config/machines/terminalzero.nix)
+          (import ./config/environments/code.nix)
           nixos-hardware.nixosModules.lenovo-thinkpad-x220
           {
             environment.systemPackages = 
@@ -42,6 +43,7 @@
         [
           (import ./config/configuration.nix)
           (import ./config/environments/i3wm_darthpjb.nix)
+          (import ./config/locale/tailscale.nix)
           (import ./config/machines/VirtualBox.nix)
         ];
         specialArgs =
@@ -85,7 +87,7 @@
           (import ./config/modifier_imports/cuda.nix)
           (import ./config/modifier_imports/ipfs.nix)
           (import ./config/modifier_imports/hosts.nix)
-	        (import ./config/modifier_imports/virtualisation-virtualbox.nix)
+          (import ./config/modifier_imports/virtualisation-virtualbox.nix)
           {
             environment.systemPackages =
             [   
