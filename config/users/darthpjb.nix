@@ -31,6 +31,7 @@
         pkgs.lolcat
         pkgs.figlet
         pkgs.cowsay
-    	];
+        pkgs.betterlockscreen
+      ];
    };
 }

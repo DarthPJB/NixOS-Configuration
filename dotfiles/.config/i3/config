@@ -37,7 +37,7 @@ font pango:DejaVu Sans Mono 10
 
 # xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
 # screen before suspend. Use loginctl lock-session to lock your screen.
-exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
+# exec --no-startup-id xss-lock --transfer-sleep-lock -- betterlockscreen --lock blur
 
 # fire up blumane-applet
 exec --no-startup-id blueman-applet
@@ -73,23 +73,15 @@ bindsym $mod+Shift+q kill
 # start rofi (a program launcher)
 bindsym $mod+d exec rofi -show run
 
-# change focus
-bindsym $mod+j focus left
-bindsym $mod+k focus down
-bindsym $mod+l focus up
-bindsym $mod+semicolon focus right
+# Lock screen
+bindsym $mod+l exec betterlockscreen --lock blur
+
 
 # alternatively, you can use the cursor keys:
 bindsym $mod+Left focus left
 bindsym $mod+Down focus down
 bindsym $mod+Up focus up
 bindsym $mod+Right focus right
-
-# move focused window
-bindsym $mod+Shift+j move left
-bindsym $mod+Shift+k move down
-bindsym $mod+Shift+l move up
-bindsym $mod+Shift+semicolon move right
 
 # alternatively, you can use the cursor keys:
 bindsym $mod+Shift+Left move left

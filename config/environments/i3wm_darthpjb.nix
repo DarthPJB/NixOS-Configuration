@@ -10,12 +10,13 @@
       enable = true;
       backend = "glx"; # try "glx" if xrender doesn't help
       shadow = true;
-      inactiveOpacity = 0.8;
-      activeOpacity = 0.99;
+      inactiveOpacity = 0.95;
+      activeOpacity = 1.0;
     };
     programs.dconf.enable = true;
     environment.systemPackages =
-    [
+      [
+        pkgs.betterlockscreen
       pkgs.brightnessctl
       pkgs.pavucontrol
       pkgs.volumeicon
