@@ -17,6 +17,7 @@
         system = "x86_64-linux";
         modules =
         [
+          (import ./config/locale/hotel_wifi.nix)
           (import ./config/configuration.nix)
           (import ./config/environments/i3wm_darthpjb.nix)
           (import ./config/environments/rtl-sdr.nix)
