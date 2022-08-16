@@ -3,7 +3,8 @@
 {
     imports =
     [ # Include the results of the hardware scan.
-        ./i3wm.nix
+      ./i3wm.nix
+      ./browsers.nix
     ];
     services.picom =
     {
@@ -16,7 +17,7 @@
     programs.dconf.enable = true;
     environment.systemPackages =
       [
-        pkgs.betterlockscreen
+      pkgs.betterlockscreen
       pkgs.brightnessctl
       pkgs.pavucontrol
       pkgs.volumeicon
