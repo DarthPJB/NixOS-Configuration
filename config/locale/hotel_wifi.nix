@@ -19,7 +19,7 @@
       networks =
       {
       "ibis".authProtocols = [ "NONE" ];
-      "Imperial_Mobile".psk = "Ecto!234";
+      "Imperial_Mobile".pskRaw = "f9e57e756a9c8d3866f38211dbf3be05fb090097793cd46253e69c8cc7055e09";
       };
     };
   };

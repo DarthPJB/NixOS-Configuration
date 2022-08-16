@@ -11,6 +11,7 @@
 
   outputs = { self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate}@inputs:
   {
+    apps = nixinate.nixinate.x86_64-linux self;
     nixosConfigurations =
     {
       Terminal-zero = nixpkgs.lib.nixosSystem
@@ -34,10 +35,6 @@
             ];
           }
         ];
-        specialArgs =
-        {
-          inherit inputs;
-        };
       };
       Terminal-VM1 = nixpkgs.lib.nixosSystem
       {
@@ -61,8 +58,8 @@
         ];
       };
 
- apps = nixinate.nixinate.x86_64-linux self;
-      nixosConfigurations.RemoteWorker-1 = nixpkgs.lib.nixosSystem {
+      RemoteWorker-1 = nixpkgs.lib.nixosSystem 
+      {
         system = "x86_64-linux";
         modules = [ 
           (import ./config/configuration.nix)
@@ -72,6 +69,8 @@
             _module.args.nixinate =  {
               host = "193.16.42.101";
               sshUser = "nixos";
+              substituteOnTarget = true;
+              hermetic = true;
               buildOn = "remote";
             };
           }
