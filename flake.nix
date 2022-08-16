@@ -2,13 +2,14 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
+    nixinate.url = "github:matthewcroughan/nixinate";
     agenix.url = "github:ryantm/agenix";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
-  outputs = { self, nixpkgs, nixos-hardware, agenix, parsecgaming }@inputs:
+  outputs = { self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate}@inputs:
   {
     nixosConfigurations =
     {
@@ -24,6 +25,7 @@
           (import ./config/environments/pio.nix)
           (import ./config/machines/terminalzero.nix)
           (import ./config/environments/code.nix)
+          (import ./config/locale/tailscale.nix)
           nixos-hardware.nixosModules.lenovo-thinkpad-x220
           {
             environment.systemPackages = 
@@ -47,10 +49,6 @@
           (import ./config/locale/tailscale.nix)
           (import ./config/machines/VirtualBox.nix)
         ];
-        specialArgs =
-        {
-          inherit inputs;
-        };
       };
       Terminal-VM2 = nixpkgs.lib.nixosSystem
       {
@@ -61,11 +59,25 @@
           (import ./config/environments/i3wm_darthpjb.nix)
           (import ./config/machines/hyperv.nix)
         ];
-        specialArgs =
-        {
-          inherit inputs;
-        };
       };
+
+ apps = nixinate.nixinate.x86_64-linux self;
+      nixosConfigurations.RemoteWorker-1 = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [ 
+          (import ./config/configuration.nix)
+          (import ./config/machines/openstack.nix)
+          {
+            imports = [ "${nixpkgs}/nixos/modules/virtualisation/openstack-config.nix" ];
+            _module.args.nixinate =  {
+              host = "193.16.42.101";
+              sshUser = "nixos";
+              buildOn = "remote";
+            };
+          }
+        ];
+     };
+
       LINDA = nixpkgs.lib.nixosSystem
       {
         system = "x86_64-linux";

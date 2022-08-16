@@ -18,7 +18,8 @@
     {
       networks =
       {
-      "ibis"
+      "ibis".authProtocols = [ "NONE" ];
+      "Imperial_Mobile".psk = "Ecto!234";
       };
     };
   };
