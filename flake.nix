@@ -27,11 +27,13 @@
           (import ./config/machines/terminalzero.nix)
           (import ./config/environments/code.nix)
           (import ./config/locale/tailscale.nix)
+	  agenix.nixosModule
           nixos-hardware.nixosModules.lenovo-thinkpad-x220
           {
             environment.systemPackages = 
             [   
               inputs.parsecgaming.packages.x86_64-linux.parsecgaming
+	      inputs.agenix.defaultPackage.x86_64-linux
             ];
           }
         ];
@@ -100,10 +102,14 @@
           (import ./config/modifier_imports/ipfs.nix)
           (import ./config/modifier_imports/hosts.nix)
           (import ./config/modifier_imports/virtualisation-virtualbox.nix)
+	  agenix.nixosModule
+
           {
             environment.systemPackages =
             [   
               inputs.parsecgaming.packages.x86_64-linux.parsecgaming
+	      inputs.agenix.defaultPackage.x86_64-linux
+
             ];
           }
         ];
