@@ -9,7 +9,7 @@
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
-  outputs = { self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate}@inputs:
+  outputs = { self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate}:
   {
     apps = nixinate.nixinate.x86_64-linux self;
     nixosConfigurations =
@@ -31,7 +31,7 @@
           {
             environment.systemPackages = 
             [   
-              inputs.parsecgaming.packages.x86_64-linux.parsecgaming
+              parsecgaming.packages.x86_64-linux.parsecgaming
             ];
           }
         ];
@@ -64,10 +64,11 @@
         modules = [ 
           (import ./config/configuration.nix)
           (import ./config/machines/openstack.nix)
+          (import ./config/locale/tailscale.nix)
           {
             imports = [ "${nixpkgs}/nixos/modules/virtualisation/openstack-config.nix" ];
             _module.args.nixinate =  {
-              host = "193.16.42.101";
+              host = "remote-worker";
               sshUser = "nixos";
               substituteOnTarget = true;
               hermetic = true;
@@ -102,16 +103,12 @@
           (import ./config/modifier_imports/virtualisation-virtualbox.nix)
           {
             environment.systemPackages =
-            [   
-              inputs.parsecgaming.packages.x86_64-linux.parsecgaming
+            [ 
+              agenix.defaultPackage.x86_64-linux
+              parsecgaming.packages.x86_64-linux.parsecgaming
             ];
           }
         ];
-
-        specialArgs =
-        {
-          inherit inputs;
-        };
       };
     };
   };
