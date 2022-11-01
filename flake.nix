@@ -9,7 +9,7 @@
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
-  outputs = { self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate}:
+  outputs = inputs@{ self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate}:
   {
     apps = nixinate.nixinate.x86_64-linux self;
     nixosConfigurations =
@@ -62,10 +62,10 @@
       {
         system = "x86_64-linux";
         modules = [ 
-          (import ./config/configuration.nix)
-          (import ./config/machines/openstack.nix)
-          (import ./config/locale/tailscale.nix)
-          (import ./config/server_services/nextcloud.nix)
+          ./config/configuration.nix
+          ./config/machines/openstack.nix
+          ./config/locale/tailscale.nix
+          ./config/server_services/nextcloud.nix
           {
             imports = [ "${nixpkgs}/nixos/modules/virtualisation/openstack-config.nix" ];
             _module.args.nixinate =  {
