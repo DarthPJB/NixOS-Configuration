@@ -65,11 +65,12 @@
           (import ./config/configuration.nix)
           (import ./config/machines/openstack.nix)
           (import ./config/locale/tailscale.nix)
+          (import ./config/server_services/nextcloud.nix)
           {
             imports = [ "${nixpkgs}/nixos/modules/virtualisation/openstack-config.nix" ];
             _module.args.nixinate =  {
-              host = "remote-worker";
-              sshUser = "nixos";
+              host = "remote.worker";
+              sshUser = "John88";
               substituteOnTarget = true;
               hermetic = true;
               buildOn = "remote";
