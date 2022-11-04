@@ -21,9 +21,11 @@
       adminpassFile = config.age.secrets.nextcloud_password_file.path;
       objectstore.s3 = 
       {
+        autocreate = true;
+        bucket = "nextcloud-darthpjb";
         enable = true;
         hostname = "s3.eu-central-003.backblazeb2.com";
-        key = config.age.secrets.nextcloud_s3_key.file;
+        key = config.age.secrets.nextcloud_s3_key.file; #TODO: convert to string
       };
     };
   };
