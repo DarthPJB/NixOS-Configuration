@@ -62,6 +62,7 @@
       {
         system = "x86_64-linux";
         modules = [ 
+          agenix.nixosModule
           ./config/configuration.nix
           ./config/machines/openstack.nix
           ./config/locale/tailscale.nix
