@@ -1,14 +1,24 @@
 { config, pkgs, ... }:
+let
+  inherit (builtins) readFile;
+in
 {
-
   age.secrets.nextcloud_password_file = 
   { 
     file = ../../secrets/nextcloud_password_file.age;
+    owner = "nextcloud";
+    group = "nextcloud";
+    mode = "770";
   };
-  age.secrets.nextcloud_s3_key = 
+  age.secrets.nextcloud_s3_key =
   {
     file = ../../secrets/nextcloud_s3_key.age;
+    owner = "nextcloud";
+    group = "nextcloud";
+    mode = "770";
   };
+
+  networking.firewall.allowedTCPPorts = [ 80 443 ];
   
   services.nextcloud = 
   {
@@ -17,7 +27,8 @@
     hostName = "nextcloud.johnbargman.com";
     enableImagemagick = true;
     maxUploadSize = "2048M";
-    config = {
+    config =
+    {
       adminpassFile = config.age.secrets.nextcloud_password_file.path;
       objectstore.s3 = 
       {
@@ -25,7 +36,8 @@
         bucket = "nextcloud-darthpjb";
         enable = true;
         hostname = "s3.eu-central-003.backblazeb2.com";
-        key = config.age.secrets.nextcloud_s3_key.file; #TODO: convert to string
+        key = "003e3241026f9950000000001";
+        secretFile = config.age.secrets.nextcloud_s3_key.path;
       };
     };
   };
