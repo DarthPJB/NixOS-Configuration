@@ -8,5 +8,6 @@
 	216.24.131.6 acropolis.platonic
         216.24.131.5 tumulus.platonic
         193.16.42.101 nextcloud.johnbargman.com
+        192.168.1.104 nasa.astral
     '';
 }
