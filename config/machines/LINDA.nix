@@ -80,11 +80,11 @@
     {
       enp69s0f0.useDHCP = true;
       enp69s0f1.useDHCP = true;
-      wlp72s0.useDHCP = true;
+#      wlp72s0.useDHCP = true;
     };
     wireless =
     {
-      enable = true;  # Enables wireless support via wpa_supplicant.
+      enable = false;  # Enables wireless support via wpa_supplicant.
       userControlled.enable = true;
       interfaces = [ "wlp72s0" ];
     };
