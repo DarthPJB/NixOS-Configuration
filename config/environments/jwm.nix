@@ -1,0 +1,19 @@
+{ config, pkgs, ... }:
+
+{
+    imports =
+    [ # Include the results of the hardware scan.
+    ];
+    services.picom =
+    {
+      enable = true;
+      backend = "glx"; # try "glx" if xrender doesn't help
+    };
+    programs.dconf.enable = true;
+    environment.systemPackages =
+      [
+      pkgs.neovim
+      pkgs.firefox
+    ];
+   services.xserver.windowManager.jwm.enable = true;
+}
