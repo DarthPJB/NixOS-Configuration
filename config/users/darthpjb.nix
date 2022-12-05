@@ -24,19 +24,22 @@
     ];
      extraGroups = [ "wheel" "vboxusers" "dialout" "disk" "networkManager" ]; # Enable ‘sudo’ for the user.
      packages = [
-    	pkgs.firefox
-    	pkgs.atom
-    	pkgs.cmatrix
-      pkgs.conky
-    	pkgs.nextcloud-client
-    	pkgs.sl
-    	pkgs.cmatrix
-      pkgs.nms
-      pkgs.chafa
-      pkgs.lolcat
-      pkgs.figlet
-      pkgs.cowsay
-      pkgs.betterlockscreen
+     pkgs.firefox
+     pkgs.atom
+     pkgs.cmatrix
+     pkgs.conky
+     pkgs.nextcloud-client
+     pkgs.sl
+     pkgs.cmatrix
+     pkgs.nms
+     pkgs.chafa
+     pkgs.lolcat
+     pkgs.figlet
+     pkgs.cowsay
+     pkgs.betterlockscreen
+     pkgs.nmap
+     pkgs.tree
+     pkgs.ripgrep
       ];
    };
 }
