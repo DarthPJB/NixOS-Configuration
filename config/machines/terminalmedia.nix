@@ -22,14 +22,14 @@
     hostName = "Terminal-media"; # Define your hostname.
     interfaces =
     {
-      enp3s0.useDHCP = true;
-      wlp4s0.useDHCP = true;
+      enp4s0.useDHCP = true;
+      wlp3s0.useDHCP = true;
     };
     wireless =
     {
       enable = true;  # Enables wireless support via wpa_supplicant.
       userControlled.enable = true;
-      interfaces = [ "wlp4s0"];
+      interfaces = [ "wlp3s0"];
     };
   };
 
@@ -67,9 +67,3 @@
 
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
-{ config, pkgs, ... }:
-
