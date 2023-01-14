@@ -6,7 +6,7 @@
   # programs.mtr.enable = true;
    programs.gnupg.agent = 
    {
-    pinentryFlavor = tty;
+    pinentryFlavor = "tty";
     enable = true;
     enableSSHSupport = true;
    };
