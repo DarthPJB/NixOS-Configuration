@@ -118,11 +118,11 @@
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1671560265,
-        "narHash": "sha256-41wm4PuajKbtz1P7vgdu3O7t1K5FImRUP8BCWAK08J0=",
+        "lastModified": 1674630699,
+        "narHash": "sha256-+2RslsI+UJxYIOp3hMaPtU1NJpme18bQZKm3zDKI+O0=",
         "owner": "DarthPJB",
         "repo": "parsec-gaming-nix",
-        "rev": "7e5e29c69c2b78066928469b98da91446f0a6385",
+        "rev": "6b7465b192b6f6faf1f0f8e2789f08d7035e772d",
         "type": "github"
       },
       "original": {
