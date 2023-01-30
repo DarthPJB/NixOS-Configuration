@@ -5,11 +5,12 @@
     nixinate.url = "github:matthewcroughan/nixinate";
     agenix.url = "github:ryantm/agenix";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-22.11";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
-  outputs = inputs@{ self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate}:
+  outputs = inputs@{ self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_stable}:
   {
     apps = nixinate.nixinate.x86_64-linux self;
     nixosConfigurations =
@@ -82,7 +83,7 @@
       {
         system = "x86_64-linux";
         modules = [ 
-          agenix.nixosModule
+          agenix.nixosModules.default
           ./config/configuration.nix
           ./config/machines/openstack.nix
           ./config/locale/tailscale.nix
@@ -128,6 +129,7 @@
             environment.systemPackages =
             [ 
               agenix.packages.x86_64-linux.default
+              #nixpkgs_stable.legacyPackages.x86_64-linux.gimp-with-plugins
               parsecgaming.packages.x86_64-linux.parsecgaming
             ];
           }
