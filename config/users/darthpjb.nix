@@ -42,6 +42,7 @@
      pkgs.nmap
      pkgs.tree
      pkgs.ripgrep
+     pkgs.obsidian
       ];
    };
 }
