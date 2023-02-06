@@ -6,7 +6,7 @@ in
   environment.systemPackages = [ pkgs.rclone];
 
   # Syncthing ports
-  networking.firewall.allowedTCPPorts = [ 8384 22000];
+  networking.firewall.allowedTCPPorts = [ 8080 22000];
   networking.firewall.allowedUDPPorts = [ 22000 21027];
 
   age.secrets.futureNAS_s3_key =
@@ -77,10 +77,11 @@ services = {
   syncthing = {
     enable = true;
     dataDir = "/futureNAS";
-    configDir = "/futureNAS.config/syncthing";
+    configDir = "/futureNAS/.config/syncthing";
     guiAddress = "0.0.0.0:8080";
-    overrideDevices = true;     # overrides any devices added or deleted through the WebUI
-    overrideFolders = true;     # overrides any folders added or deleted through the WebUI
+    #TODO: add cert and pem files
+    #overrideDevices = true;     # overrides any devices added or deleted through the WebUI
+    #overrideFolders = true;     # overrides any folders added or deleted through the WebUI
   };
 };
 }
