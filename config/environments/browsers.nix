@@ -6,4 +6,10 @@
     pkgs.brave
     pkgs.vivaldi
   ];
+
+  services = {
+  syncthing = {
+    enable = true;
+    };
+  };
 }
