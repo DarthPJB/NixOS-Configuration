@@ -88,6 +88,7 @@
           ./config/machines/openstack.nix
           ./config/locale/tailscale.nix
           ./config/server_services/nextcloud.nix
+          ./config/server_services/syncthing_server.nix
           {
             imports = [ "${nixpkgs}/nixos/modules/virtualisation/openstack-config.nix" ];
             _module.args.nixinate =  {

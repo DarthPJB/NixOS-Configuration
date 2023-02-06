@@ -10,6 +10,7 @@ let
   allKeys = attrValues keys;
 in
 {
+  "futureNAS_s3_key.age".publicKeys = allKeys;
   "nextcloud_password_file.age".publicKeys = allKeys;
   "nextcloud_s3_key.age".publicKeys = allKeys;
 }
