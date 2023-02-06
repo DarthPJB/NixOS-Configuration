@@ -41,8 +41,11 @@ in
       let
         script = pkgs.writeScript "myuser-start" ''
           #!${pkgs.runtimeShell}
+          set -x
+          key_id=$(/run/current-system/sw/bin/cat ${config.age.secrets.futureNAS_s3_key.path})
           /run/current-system/sw/bin/mkdir -p /futureNAS
-          /run/current-system/sw/bin/sed -i "s/NOT_the_Password/$(cat ${config.age.secrets.futureNAS_s3_key.path})/" /etc/rclone/rclone.conf
+          echo $key_id
+          /run/current-system/sw/bin/sed -i "s|NOT_the_Password|$key_id|g" /etc/rclone/rclone.conf
         '';
       in "${script}";
       ExecStart = 
@@ -62,7 +65,7 @@ in
             --vfs-read-chunk-size-limit=256M
         '';
       in "${script}";
-      ExecStop = "/run/wrappers/bin/fusermount -u /mnt/media";
+      ExecStop = "/run/wrappers/bin/fusermount -u /futureNAS";
       Type = "notify";
       Restart = "always";
       RestartSec = "10s";
