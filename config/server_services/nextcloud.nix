@@ -22,7 +22,7 @@ in
   services.nextcloud = 
   {
     enable = true;                   
-    package = pkgs.nextcloud24;
+    package = pkgs.nextcloud25;
     hostName = "nextcloud.johnbargman.com";
     enableImagemagick = true;
     maxUploadSize = "2048M";
