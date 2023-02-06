@@ -41,9 +41,8 @@ in
       let
         script = pkgs.writeScript "myuser-start" ''
           #!${pkgs.runtimeShell}
-          key_id = $(cat ${config.age.secrets.futureNAS_s3_key.path} )
           /run/current-system/sw/bin/mkdir -p /futureNAS
-          /run/current-system/sw/bin/sed -i 's/NOT_the_Password/$key_id' /etc/rclone/rclone.conf
+          /run/current-system/sw/bin/sed -i "s/NOT_the_Password/$(cat ${config.age.secrets.futureNAS_s3_key.path})/" /etc/rclone/rclone.conf
         '';
       in "${script}";
       ExecStart = 
