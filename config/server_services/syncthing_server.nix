@@ -23,7 +23,7 @@ in
       text = ''
         [b2]
         type = b2
-        account = 5e0312b4815022568f690915
+        account = 003e3241026f9950000000002
         key = NOT_the_Password
         hard_delete = true
         versions = false
@@ -39,12 +39,12 @@ in
     serviceConfig = {
       ExecStartPre = 
       let
+      # TODO: replace with ${pkgs.coreutils}
         script = pkgs.writeScript "myuser-start" ''
           #!${pkgs.runtimeShell}
-          set -x
           key_id=$(/run/current-system/sw/bin/cat ${config.age.secrets.futureNAS_s3_key.path})
           /run/current-system/sw/bin/mkdir -p /futureNAS
-          echo $key_id
+          /run/current-system/sw/bin/chmod 777 /futureNAS
           /run/current-system/sw/bin/sed -i "s|NOT_the_Password|$key_id|g" /etc/rclone/rclone.conf
         '';
       in "${script}";
@@ -66,7 +66,7 @@ in
         '';
       in "${script}";
       ExecStop = "/run/wrappers/bin/fusermount -u /futureNAS";
-      Type = "notify";
+      Type = "simple";
       Restart = "always";
       RestartSec = "10s";
       Environment = ["PATH=${pkgs.fuse}/bin:$PATH"];
@@ -75,9 +75,10 @@ in
 
 services = {
   syncthing = {
-    enable = false;
+    enable = true;
     dataDir = "/futureNAS";
     configDir = "/futureNAS.config/syncthing";
+    guiAddress = "0.0.0.0:8080";
     overrideDevices = true;     # overrides any devices added or deleted through the WebUI
     overrideFolders = true;     # overrides any folders added or deleted through the WebUI
   };
