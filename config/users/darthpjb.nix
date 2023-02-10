@@ -4,8 +4,10 @@
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;
-   programs.gnupg.agent = {
-     enable = true;
+   programs.gnupg.agent = 
+   {
+    pinentryFlavor = "tty";
+    enable = true;
     enableSSHSupport = true;
    };
   # Define a user account. Don't forget to set a password with ‘passwd’.
@@ -24,19 +26,23 @@
     ];
      extraGroups = [ "wheel" "vboxusers" "dialout" "disk" "networkManager" ]; # Enable ‘sudo’ for the user.
      packages = [
-    	pkgs.firefox
-    	pkgs.atom
-    	pkgs.cmatrix
-      pkgs.conky
-    	pkgs.nextcloud-client
-    	pkgs.sl
-    	pkgs.cmatrix
-      pkgs.nms
-      pkgs.chafa
-      pkgs.lolcat
-      pkgs.figlet
-      pkgs.cowsay
-      pkgs.betterlockscreen
+     pkgs.firefox
+     pkgs.atom
+     pkgs.cmatrix
+     pkgs.conky
+     pkgs.nextcloud-client
+     pkgs.sl
+     pkgs.cmatrix
+     pkgs.nms
+     pkgs.chafa
+     pkgs.lolcat
+     pkgs.figlet
+     pkgs.cowsay
+     pkgs.betterlockscreen
+     pkgs.nmap
+     pkgs.tree
+     pkgs.ripgrep
+     pkgs.obsidian
       ];
    };
 }
