@@ -1,6 +1,6 @@
 { config, pkgs, ... }:
 {
-  services.ipfs = {
+  services.kubo = {
     enable = true;
   };
 }
