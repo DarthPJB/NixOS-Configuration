@@ -4,4 +4,3 @@
     services.openssh.ports = [ 22 ];
     networking.firewall.allowedTCPPorts = [ 22 ];
 }
-
