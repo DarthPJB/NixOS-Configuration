@@ -2,7 +2,7 @@
 
 {
 environment.systemPackages = with pkgs; [
-	blender
+	# blender
 	ffmpeg-full
 	mplayer
 	vlc
