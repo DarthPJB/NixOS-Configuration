@@ -92,8 +92,8 @@
           {
             imports = [ "${nixpkgs}/nixos/modules/virtualisation/openstack-config.nix" ];
             _module.args.nixinate =  {
-              host = "remote.worker";
-              sshUser = "John88";
+              host = "193.16.42.101";
+              sshUser = "nixos";
               substituteOnTarget = true;
               hermetic = true;
               buildOn = "remote";
@@ -126,6 +126,7 @@
           (import ./config/modifier_imports/ipfs.nix)
           (import ./config/modifier_imports/hosts.nix)
           (import ./config/modifier_imports/virtualisation-virtualbox.nix)
+
           {
             environment.systemPackages =
             [ 
