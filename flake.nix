@@ -12,22 +12,23 @@
 
   outputs = inputs@{ self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_stable }: {
       apps = nixinate.nixinate.x86_64-linux self;
-      nixosConfigurations = {
         images = {
           pi = (self.nixosConfigurations.pi.extendModules {
             modules = [
-              "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+              (import  "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix")
+              
             ];
           }).config.system.build.sdImage;
         };
-        nixosConfigurations = {
-          pi = nixpkgs.lib.nixosSystem {
-            system = "aarch64-linux";
-            modules = [
-              nixos-hardware.nixosModules.raspberry-pi-4
-              ./machines/rPI.nix
-            ];
-          };
+      nixosConfigurations = {
+        pi = nixpkgs.lib.nixosSystem {
+          system = "aarch64-linux";
+          modules = [
+            nixos-hardware.nixosModules.raspberry-pi-4
+            ./config/machines/rPI.nix
+            ./config/locale/home_networks.nix
+            ./config/server_services/klipper.nix
+          ];
         };
         Terminal-zero = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
@@ -127,7 +128,7 @@
             (import ./config/modifier_imports/ipfs.nix)
             (import ./config/modifier_imports/hosts.nix)
             (import ./config/modifier_imports/virtualisation-virtualbox.nix)
-
+            (import ./config/modifier_imports/arm-emulation.nix)
             {
               environment.systemPackages = [
                 agenix.packages.x86_64-linux.default
