@@ -17,6 +17,7 @@
             enable = true;
             package = pkgs.i3-gaps;
             extraPackages = [ 
+        pkgs.betterlockscreen
 		pkgs.rofi 
 		pkgs.i3status 
 		pkgs.i3lock

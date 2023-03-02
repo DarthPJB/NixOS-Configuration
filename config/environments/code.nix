@@ -13,7 +13,18 @@ environment.systemPackages = with pkgs; [
 	pkgs.tmux
 	pkgs.cool-retro-term
 	pkgs.terminator
-        pkgs.enlightenment.terminology
-        pkgs.platformio
+	pkgs.enlightenment.terminology
+	pkgs.platformio
+  pkgs.conky
+  pkgs.sl
+  pkgs.cmatrix
+  pkgs.nms
+  pkgs.chafa
+  pkgs.lolcat
+  pkgs.figlet
+  pkgs.cowsay
+  pkgs.nmap
+  pkgs.tree
+  pkgs.ripgrep
 ];
 }
