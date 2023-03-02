@@ -16,7 +16,7 @@
     };
     programs.dconf.enable = true;
     environment.systemPackages =
-      [
+    [
       pkgs.betterlockscreen
       pkgs.brightnessctl
       pkgs.pavucontrol

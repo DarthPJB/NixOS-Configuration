@@ -24,8 +24,8 @@
         pi = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
-            nixos-hardware.nixosModules.raspberry-pi-4
             ./config/machines/rPI.nix
+            ./config/users/darthpjb.nix
             ./config/locale/home_networks.nix
             ./config/server_services/klipper.nix
           ];
