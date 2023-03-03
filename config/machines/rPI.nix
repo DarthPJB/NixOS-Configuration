@@ -1,7 +1,13 @@
 { pkgs, config, lib, ... }:
 {
   boot = {
-
+#    loader.raspberryPi = {
+#      enable = true;
+#      version = 3;
+#      firmwareConfig = ''
+#        core_freq=250
+#      '';
+#    };
     # Cleanup tmp on startup
     cleanTmpDir = true;
     kernelParams = [ "console=ttyS1,115200n8" "cma=32M" ];
