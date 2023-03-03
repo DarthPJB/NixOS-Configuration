@@ -15,17 +15,18 @@
         images = {
           pi = (self.nixosConfigurations.pi.extendModules {
             modules = [
-              "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-raspberrypi.nix"
+              "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
               {
-                nixpkgs.config.allowUnsupportedSystem = true;
-                nixpkgs.crossSystem.system = "armv7l-linux";
+                
+                #nixpkgs.config.allowUnsupportedSystem = true;
+                #nixpkgs.crossSystem.system = "aarch64-linux";
               }
             ];
           }).config.system.build.sdImage;
         };
       nixosConfigurations = {
         pi = nixpkgs_stable.lib.nixosSystem {
-          system = "armv7l-linux";
+          system = "aarch64-linux";
           modules = [
             ./config/machines/rPI.nix
             ./config/users/darthpjb.nix
