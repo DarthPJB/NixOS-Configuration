@@ -1,4 +1,5 @@
 { config, pkgs, ... }: {
+  networking.firewall.allowedTCPPorts = [ 80 8080 443 ];
   services = {
     klipper = {
       enable = true;
@@ -8,7 +9,6 @@
       enable = true;
       nginx.locations."/webcam".proxyPass = "http://127.0.0.1:8080/stream";
     };
-
     nginx.clientMaxBodySize = "1000m";
     moonraker = {
       user = "root";
