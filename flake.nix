@@ -17,9 +17,7 @@
             modules = [
               "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
               {
-                
-                #nixpkgs.config.allowUnsupportedSystem = true;
-                #nixpkgs.crossSystem.system = "aarch64-linux";
+
               }
             ];
           }).config.system.build.sdImage;
