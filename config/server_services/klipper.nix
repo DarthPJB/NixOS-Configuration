@@ -1,9 +1,11 @@
 { config, pkgs, ... }: {
   networking.firewall.allowedTCPPorts = [ 80 8080 443 ];
+  security.polkit.enable = true;
   services = {
     klipper = {
       enable = true;
       configFile = ./klipper/skr-e3.cfg;
+      mutableConfig = true;
     };
     fluidd = {
       enable = true;
