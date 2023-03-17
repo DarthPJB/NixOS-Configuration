@@ -130,6 +130,7 @@
             (import ./config/modifier_imports/ipfs.nix)
             (import ./config/modifier_imports/hosts.nix)
             (import ./config/modifier_imports/virtualisation-virtualbox.nix)
+            (import ./config/modifier_imports/virtualisation-libvirtd.nix)
             (import ./config/modifier_imports/arm-emulation.nix)
             {
               environment.systemPackages = [
