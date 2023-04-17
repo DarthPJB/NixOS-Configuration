@@ -5,7 +5,7 @@ environment.systemPackages = with pkgs; [
 	pkgs.gpp
 	pkgs.emscripten
 	pkgs.atom
-	pkgs.vscode.fhs
+	pkgs.vscode
 	pkgs.neovim
 	pkgs.dnsutils
 	pkgs.openssl
