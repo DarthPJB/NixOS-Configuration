@@ -23,7 +23,7 @@
           force_logins = true;
           cors_domains =
             [ "*.local" "*.lan" "*://app.fluidd.xyz" "*://my.mainsail.xyz" ];
-          trusted_clients = [ "127.0.0.0/8" "192.168.1.0/24" ];
+          trusted_clients = [ "127.0.0.0/8" "192.168.1.0/24" "192.168.0.0/24" ];
         };
       };
     };
