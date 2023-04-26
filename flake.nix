@@ -4,13 +4,15 @@
   inputs = {
     nixinate.url = "github:matthewcroughan/nixinate";
     agenix.url = "github:ryantm/agenix";
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-22.11";
     nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-22.11";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
-  outputs = inputs@{ self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_stable }: {
+  outputs = inputs@{ self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_stable, nixpkgs_unstable }: 
+  {
       apps = nixinate.nixinate.x86_64-linux self;
         images = {
           pi = (self.nixosConfigurations.pi.extendModules {
@@ -61,7 +63,10 @@
             (import ./config/environments/code.nix)
             {
               environment.systemPackages =
-                [ parsecgaming.packages.x86_64-linux.parsecgaming ];
+                [ 
+                  nixpkgs.legacyPackages.x86_64-linux.ffmpeg
+                  parsecgaming.packages.x86_64-linux.parsecgaming 
+                ];
             }
 
           ];
@@ -133,6 +138,9 @@
             (import ./config/modifier_imports/virtualisation-libvirtd.nix)
             (import ./config/modifier_imports/arm-emulation.nix)
             {
+	          nixpkgs.config.permittedInsecurePackages = [
+                "electron-21.4.0"
+              ];
 	      networking.nameservers = [ "1.1.1.1" "8.8.8.8" "8.8.4.4" ];
               environment.systemPackages = [
                 agenix.packages.x86_64-linux.default

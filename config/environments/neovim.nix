@@ -1,22 +1,11 @@
 { pkgs, ... }:
 
 {
-	environment.systemPackages = with pkgs; 
-	let
-    myNvim = pkgs.neovim.override {
-	    vimAlias = true;
-	    configure = {
-				vam = {
-		    	knownPlugins = pkgs.vimPlugins;
-		    	pluginDictionaries = [
-						{ name = "nvim-treesitter";	}
-						{ name = "vim-nix"; }
-		    	];
-				};
-	    };
-		};
-	in 
-	[
-		myNvim
-	];
+  environment.systemPackages = with pkgs;
+    let
+        myNvim = pkgs.neovim.override {
+          vimAlias = true;
+          configure = (import ./chloe/nvim { inherit pkgs; });
+        };
+    in [ myNvim ];
 }
