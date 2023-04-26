@@ -4,6 +4,7 @@
   inputs = {
     nixinate.url = "github:matthewcroughan/nixinate";
     agenix.url = "github:ryantm/agenix";
+    nixpkgs_2205.url = "github:nixos/nixpkgs/nixos-22.05";
     nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-22.11";
     nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-22.11";
@@ -11,7 +12,7 @@
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
-  outputs = inputs@{ self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_stable, nixpkgs_unstable }: 
+  outputs = inputs@{ self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_stable, nixpkgs_unstable, nixpkgs_2205 }: 
   {
       apps = nixinate.nixinate.x86_64-linux self;
         images = {
@@ -115,6 +116,7 @@
 
         LINDA = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
           modules = [
             (import ./config/configuration.nix)
             (import ./config/machines/LINDA.nix)
