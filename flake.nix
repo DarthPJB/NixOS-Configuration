@@ -146,7 +146,6 @@
 	      networking.nameservers = [ "1.1.1.1" "8.8.8.8" "8.8.4.4" ];
               environment.systemPackages = [
                 agenix.packages.x86_64-linux.default
-                nixpkgs_stable.legacyPackages.x86_64-linux.gimp-with-plugins
                 parsecgaming.packages.x86_64-linux.parsecgaming
               ];
             }
