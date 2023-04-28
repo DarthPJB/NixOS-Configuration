@@ -46,6 +46,9 @@ in
     extraConfig = "fastcgi_read_timeout 86400;\n";
   };
   services.phpfpm.pools.nextcloud = {
-    phpOptions = "php_admin_value[max_input_time] = 86400\nphp_admin_value[max_execution_time] = 86400\n";
+    phpOptions = "php_admin_value[max_input_time] = 86400\n
+    php_admin_value[max_execution_time] = 86400\n
+    php_admin_value[upload_max_filesize] = 16G
+    php_admin_value[post_max_size] = 16G";
   }; 
 }

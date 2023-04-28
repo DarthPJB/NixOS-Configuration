@@ -80,17 +80,6 @@ in {
         dependencies = [];
     };
 
-    coc-nvim = vp rec {
-        name = "coc-nvim";
-        version = "0.0.74";
-        src = pkgs.fetchFromGitHub {
-            owner = "neoclide";
-            repo = "coc.nvim";
-            rev = "v${version}";
-            sha256 = "1s4nib2mnhagd0ymx254vf7l1iijwrh2xdqn3bdm4f1jnip81r10";
-        };
-    };
-
     rnix-lsp = vp rec {
         name = "rnix-lsp";
         version = "0.1.0";
@@ -102,13 +91,4 @@ in {
         };
     };
 
-#     typescript-vim = vp rec {
-#         name = "typescript-vim";
-#         src = pkgs.fetchFromGitHub {
-#             owner = "leafgarland";
-#             repo = "typescript-vim";
-#             rev = "master";
-#             sha256 = "1mpp4n7qgz3yq4vka8h5sbngc14w5bzd9s9c2csbv9ds8w0lpi0g";
-#         };
-#     };
 }
