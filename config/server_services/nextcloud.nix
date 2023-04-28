@@ -25,7 +25,7 @@ in
     package = pkgs.nextcloud25;
     hostName = "nextcloud.johnbargman.com";
     enableImagemagick = true;
-    maxUploadSize = "2048M";
+    maxUploadSize = "50G";
     config =
     {
       adminpassFile = config.age.secrets.nextcloud_password_file.path;
