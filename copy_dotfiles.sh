@@ -1,8 +1,8 @@
 #! /bin/sh
 
 echo "Pull the latest version"
-git fetch
-git pull  --ff-only
+#git fetch
+#git pull  --ff-only
 
 shopt -s dotglob
 
