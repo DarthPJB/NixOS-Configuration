@@ -9,7 +9,17 @@
   environment.systemPackages = [
     pkgs.gwe
     pkgs.nvtop
+    pkgs.virtmanager
   ];
+# ------------ custom doom ------------------
+virtualisation.libvirtd = 
+{
+  enable = true;
+  qemu.ovmf.enable = true;
+  qemu.runAsRoot = false;
+  onBoot = "ignore";
+  onShutdown = "shutdown";
+};
 
   # Use the GRUB 2 boot loader.
   # Use the systemd-boot EFI boot loader.
@@ -23,14 +33,22 @@
     };
     initrd =
     {
-      availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "uas" "sd_mod"  ];
+      availableKernelModules = [ "vfio-pci" "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "uas" "sd_mod"  ];
       kernelModules = [ ];
     };
     kernelModules = [ "kvm-amd"];
     kernelParams = [
-    "processor.max_cstate=1"
+#    "processor.max_cstate=1"
+    "amd_iommu=on"
     ];
     extraModulePackages = [ ];
+    initrd.preDeviceCommands = ''
+   DEVS="0000:21:00:.0 0000:21:00.1"
+   for DEV in $DEVS; do
+       echo "vfio-pci > /sys/bus/pci/devices/$DEV/driver_override"
+   done
+   modprobe -i vfio-pci
+'';
   };
 
   powerManagement =
@@ -44,9 +62,9 @@
     {
         libinput.enable = true;
         videoDrivers = [ "nvidia" ];
-	deviceSection = ''
-	  Option "Coolbits" "24"
-	'';
+#	deviceSection = ''
+#	  Option "Coolbits" "24"
+#	'';
     };
     printing = 
     { 
