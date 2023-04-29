@@ -14,7 +14,7 @@ endif
 
 " Vundle
 filetype off
-let &rtp = &rtp . ',' . s:editor_root . '/bundle/Vundle.vim'
+let &outPath = &outPath . ',' . s:editor_root . '/bundle/Vundle.vim'
 " call vundle#rc()
 " Plugin 'VundleVim/Vundle.vim'
 
@@ -107,7 +107,8 @@ let g:python3_host_prog="/usr/local/bin/python3"
 let g:python_host_prog="/usr/local/bin/python"
 
 let @f = '^f DJr.jdd'
-let @b='^f.r>>kA = {jo};O'
+let @b='^f.r
+>>kA = {jo};O'
 
 
 

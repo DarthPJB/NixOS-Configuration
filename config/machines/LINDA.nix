@@ -93,7 +93,8 @@ virtualisation.libvirtd =
   networking =
   {
     useDHCP = false;
-    hostName = "LINDA"; # Define your hostname.
+    hostId = "b4120de4";
+    hostName = "LINDA_CORE";
     interfaces =
     {
       enp69s0f0.useDHCP = true;
@@ -108,22 +109,42 @@ virtualisation.libvirtd =
     };
   };
 
-  fileSystems =
-  {
-    "/" =
-    {
-      device = "/dev/disk/by-label/linda5-core";
+  fileSystems."/" =
+    { device = "none";
+      fsType = "tmpfs";
+    };
+
+  fileSystems."/home" =
+    { device = "/dev/disk/by-uuid/8f73e910-ebff-49fa-9529-55bc0f06ceba";
       fsType = "ext4";
     };
 
-    "/boot" =
-    {
-      device = "/dev/disk/by-label/LINDA5BOOT";
+  fileSystems."/boot" =
+    { device = "/dev/disk/by-uuid/7CFB-80B3";
       fsType = "vfat";
     };
-  };
 
-  swapDevices = [ { device = "/dev/disk/by-label/linda5-swap"; }];
+  fileSystems."/etc/ssh" =
+    { device = "bulk-storage/etc-ssh";
+      fsType = "zfs";
+    };
+
+  fileSystems."/var/log" =
+    { device = "bulk-storage/var-log";
+      fsType = "zfs";
+    };
+
+  fileSystems."/nix" =
+    { device = "speed-storage/nix";
+      fsType = "zfs";
+    };
+
+  fileSystems."/etc/nixos" =
+    { device = "bulk-storage/etc-nixos";
+      fsType = "zfs";
+    };
+
+  swapDevices = [ ];
 
   # This value determines the NixOS release from which the default
   # settings for stateful data
