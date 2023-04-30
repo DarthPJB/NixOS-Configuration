@@ -33,22 +33,22 @@ virtualisation.libvirtd =
     };
     initrd =
     {
-      availableKernelModules = [ "vfio-pci" "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "uas" "sd_mod"  ];
-      kernelModules = [ ];
+      availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "uas" "sd_mod"  ];
+      kernelModules = [  ];
     };
-    kernelModules = [ "kvm-amd"];
+    kernelModules = [ "kvm-amd" "vfio_virqfd" "vfio_pci" "vfio_iommu_type1" "vfio" ];
     kernelParams = [
-#    "processor.max_cstate=1"
-    "amd_iommu=on"
+      "amd_iommu=on"
     ];
     extraModulePackages = [ ];
+    
     initrd.preDeviceCommands = ''
-   DEVS="0000:21:00:.0 0000:21:00.1"
-   for DEV in $DEVS; do
-       echo "vfio-pci > /sys/bus/pci/devices/$DEV/driver_override"
-   done
-   modprobe -i vfio-pci
-'';
+      DEVS="0000:21:00:.0 0000:21:00.1"
+      for DEV in $DEVS; do
+         echo "vfio-pci > /sys/bus/pci/devices/$DEV/driver_override"
+      done
+      modprobe -i vfio-pci
+    '';
   };
 
   powerManagement =
@@ -81,6 +81,7 @@ virtualisation.libvirtd =
     opengl.driSupport32Bit = true;
     pulseaudio.support32Bit = true;
     nvidia = {
+	modesetting.enable = false;
         powerManagement.enable = true;
     };
   };

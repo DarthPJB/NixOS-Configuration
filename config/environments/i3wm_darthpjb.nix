@@ -8,7 +8,7 @@
     ];
     services.picom =
     {
-      enable = true;
+      enable = false;
       backend = "glx"; # try "glx" if xrender doesn't help
       shadow = true;
       inactiveOpacity = 0.95;
