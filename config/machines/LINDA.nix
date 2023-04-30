@@ -7,6 +7,7 @@
     [ (modulesPath + "/installer/scan/not-detected.nix")
     ];
   environment.systemPackages = [
+    pkgs.looking-glass-client
     pkgs.gwe
     pkgs.nvtop
     pkgs.virtmanager
@@ -15,11 +16,21 @@
 virtualisation.libvirtd = 
 {
   enable = true;
-  qemu.ovmf.enable = true;
-  qemu.runAsRoot = false;
+  qemu = { 
+	swtpm.enable = true;
+  	ovmf = { 
+	   enable = true;
+	   packages = [  pkgs.OVMFFull.fd ] ;
+	   };
+  	runAsRoot = false;
+	};
   onBoot = "ignore";
   onShutdown = "shutdown";
 };
+
+systemd.tmpfiles.rules = [
+  "f /dev/shm/looking-glass 0660 John88 qemu-libvirtd -"
+];
 
   # Use the GRUB 2 boot loader.
   # Use the systemd-boot EFI boot loader.
@@ -33,8 +44,8 @@ virtualisation.libvirtd =
     };
     initrd =
     {
-      availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "uas" "sd_mod"  ];
-      kernelModules = [  ];
+      availableKernelModules = [ "vfio_virqfd" "vfio_pci" "vfio_iommu_type1" "vfio" "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "uas" "sd_mod"  ];
+      kernelModules = [ "vfio_pci" ];
     };
     kernelModules = [ "kvm-amd" "vfio_virqfd" "vfio_pci" "vfio_iommu_type1" "vfio" ];
     kernelParams = [
@@ -42,6 +53,11 @@ virtualisation.libvirtd =
     ];
     extraModulePackages = [ ];
     
+
+    #this can be done better with boot.extraModProbeConfig?
+    extraModprobeConfig = ''
+        options vfio-pci ids=10de:2487,10de:228b
+	'';
     initrd.preDeviceCommands = ''
       DEVS="0000:21:00:.0 0000:21:00.1"
       for DEV in $DEVS; do
@@ -144,6 +160,11 @@ virtualisation.libvirtd =
     { device = "bulk-storage/etc-nixos";
       fsType = "zfs";
     };
+
+  fileSystems."/etc/nixos" =
+  { device = "speed-storage/var-lib-libvirt";
+    fsType = "zfs";
+  };
 
   swapDevices = [ ];
 
