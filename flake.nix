@@ -139,6 +139,7 @@
             (import ./config/modifier_imports/virtualisation-virtualbox.nix)
             (import ./config/modifier_imports/virtualisation-libvirtd.nix)
             (import ./config/modifier_imports/arm-emulation.nix)
+            (import ./config/server_services/samba_server.nix)
             {
 	          nixpkgs.config.permittedInsecurePackages = [
                 "electron-21.4.0"

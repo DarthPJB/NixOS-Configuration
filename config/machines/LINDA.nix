@@ -8,11 +8,13 @@
     ];
   environment.systemPackages = [
     inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.looking-glass-client
+    inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.scream
     pkgs.gwe
     pkgs.nvtop
     pkgs.virtmanager
   ];
 # ------------ custom doom ------------------
+networking.firewall.enable = false;
 virtualisation.libvirtd = 
 {
   enable = true;
@@ -30,19 +32,19 @@ virtualisation.libvirtd =
 
 systemd.tmpfiles.rules = [
   "f /dev/shm/looking-glass 0660 John88 qemu-libvirtd -"
-  "f /dev/shm/scream 0660 alex qemu-libvirtd -"
+#  "f /dev/shm/scream 0660 John88 qemu-libvirtd -"
 ];
 
-systemd.user.services.scream-ivshmem = {
-  enable = true;
-  description = "Scream IVSHMEM";
-  serviceConfig = {
-    ExecStart = "${pkgs.scream}/bin/scream-ivshmem-pulse /dev/shm/scream";
-    Restart = "always";
-  };
-  wantedBy = [ "multi-user.target" ];
-  requires = [ "pulseaudio.service" ];
-};
+#systemd.user.services.scream-ivshmem = {
+#  enable = true;
+#  description = "Scream IVSHMEM";
+#  serviceConfig = {
+#    ExecStart = "${pkgs.scream}/bin/scream -m /dev/shm/scream";
+#    Restart = "always";
+#  };
+#  wantedBy = [ "multi-user.target" ];
+#  requires = [ "pulseaudio.service" ];
+#};
 
   # Use the GRUB 2 boot loader.
   # Use the systemd-boot EFI boot loader.
