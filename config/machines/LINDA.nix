@@ -15,7 +15,7 @@
     pkgs.virtmanager
   ];
 # ------------ custom doom ------------------
-networking.firewall.enable = false;
+networking.firewall.trustedInterfaces = [ "virbr0" ];
 virtualisation.libvirtd = 
 {
   enable = true;
