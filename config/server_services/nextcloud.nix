@@ -48,7 +48,7 @@ in
   services.phpfpm.pools.nextcloud = {
     phpOptions = "php_admin_value[max_input_time] = 86400\n
     php_admin_value[max_execution_time] = 86400\n
-    php_admin_value[upload_max_filesize] = 16G
-    php_admin_value[post_max_size] = 16G";
+    php_admin_value[upload_max_filesize] = 16G\n
+    php_admin_value[post_max_size] = 16G\n";
   }; 
 }
