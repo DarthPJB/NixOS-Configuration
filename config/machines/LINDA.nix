@@ -9,6 +9,7 @@
   environment.systemPackages = [
     inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.looking-glass-client
     inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.scream
+    pkgs.virtiofsd
     pkgs.gwe
     pkgs.nvtop
     pkgs.virtmanager
