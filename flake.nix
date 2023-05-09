@@ -75,6 +75,7 @@
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
+            ./config/modifier_imports/zfs.nix
             ./config/machines/local-nas.nix
             ./config/configuration.nix
             ./config/users/darthpjb.nix
@@ -139,7 +140,7 @@
             ./config/modifier_imports/cuda.nix
             ./config/modifier_imports/ipfs.nix
             ./config/modifier_imports/hosts.nix
-#            ./config/modifier_imports/virtualisation-virtualbox.nix
+            ./config/modifier_imports/zfs.nix
             ./config/modifier_imports/virtualisation-libvirtd.nix
             ./config/modifier_imports/arm-emulation.nix
             ./config/server_services/samba_server.nix
