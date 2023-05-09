@@ -16,7 +16,7 @@
   {
       apps = nixinate.nixinate.x86_64-linux self;
         images = {
-          pi = (self.nixosConfigurations.pi.extendModules {
+          pi = (self.nixosConfigurations.printerController.extendModules {
             modules = [
               "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
               {
@@ -26,7 +26,7 @@
           }).config.system.build.sdImage;
         };
       nixosConfigurations = {
-        pi = nixpkgs_stable.lib.nixosSystem {
+        printerController = nixpkgs_stable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
             ./config/machines/rPI.nix
@@ -38,14 +38,13 @@
         Terminal-zero = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            (import ./config/locale/hotel_wifi.nix)
-            (import ./config/configuration.nix)
-            (import ./config/environments/i3wm_darthpjb.nix)
-            (import ./config/environments/rtl-sdr.nix)
-            (import ./config/environments/pio.nix)
-            (import ./config/machines/terminalzero.nix)
-            (import ./config/environments/code.nix)
-            (import ./config/locale/tailscale.nix)
+            ./config/configuration.nix
+            ./config/environments/i3wm_darthpjb.nix
+            ./config/environments/rtl-sdr.nix
+            ./config/environments/pio.nix
+            ./config/machines/terminalzero.nix
+            ./config/environments/code.nix
+            ./config/locale/tailscale.nix
             nixos-hardware.nixosModules.lenovo-thinkpad-x220
             {
               environment.systemPackages =
@@ -56,12 +55,12 @@
         Terminal-media = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            (import ./config/locale/hotel_wifi.nix)
-            (import ./config/configuration.nix)
-            (import ./config/environments/xfce.nix)
-            (import ./config/environments/rtl-sdr.nix)
-            (import ./config/machines/terminalmedia.nix)
-            (import ./config/environments/code.nix)
+            ./config/locale/hotel_wifi.nix
+            ./config/configuration.nix
+            ./config/environments/xfce.nix
+            ./config/environments/rtl-sdr.nix
+            ./config/machines/terminalmedia.nix
+            ./config/environments/code.nix
             {
               environment.systemPackages =
                 [ 
@@ -69,27 +68,31 @@
                   parsecgaming.packages.x86_64-linux.parsecgaming 
                 ];
             }
-
-          ];
-        };
-        Terminal-VM1 = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          modules = [
-            (import ./config/configuration.nix)
-            (import ./config/environments/i3wm_darthpjb.nix)
-            (import ./config/locale/tailscale.nix)
-            (import ./config/machines/VirtualBox.nix)
-          ];
-        };
-        Terminal-VM2 = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          modules = [
-            (import ./config/configuration.nix)
-            (import ./config/environments/i3wm_darthpjb.nix)
-            (import ./config/machines/hyperv.nix)
           ];
         };
 
+        local-nas = nixpkgs_stable.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [
+            ./config/machines/local-nas.nix
+            ./config/configuration.nix
+            ./config/users/darthpjb.nix
+            ./config/environments/neovim.nix
+            ./config/environments/sshd.nix
+            {
+              _module.args.nixinate = {
+                host = "192.168.0.200";
+                sshUser = "John88";
+                substituteOnTarget = true;
+                hermetic = true;
+                buildOn = "remote";
+              };
+              services.openssh.ports = [ 22 ];
+              networking.firewall.allowedTCPPorts = [ 22 ];
+            }
+          ];
+        };
         RemoteWorker-1 = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
@@ -118,33 +121,30 @@
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
-            (import ./config/configuration.nix)
-            (import ./config/machines/LINDA.nix)
-            (import ./config/environments/i3wm_darthpjb.nix)
-            (import ./config/environments/steam.nix)
-            (import ./config/environments/code.nix)
-            (import ./config/environments/communications.nix)
-            (import ./config/environments/neovim.nix)
-            (import ./config/environments/cad_and_graphics.nix)
-            (import ./config/environments/3dPrinting.nix)
-            (import ./config/environments/audio_visual_editing.nix)
-            (import ./config/environments/general_fonts.nix)
-            (import ./config/environments/video_call_streaming.nix)
-            (import ./config/locale/tailscale.nix)
-            (import ./config/modifier_imports/bluetooth.nix)
-            (import ./config/modifier_imports/memtest.nix)
-            (import ./config/modifier_imports/cuda.nix)
-            (import ./config/modifier_imports/ipfs.nix)
-            (import ./config/modifier_imports/hosts.nix)
-            (import ./config/modifier_imports/virtualisation-virtualbox.nix)
-            (import ./config/modifier_imports/virtualisation-libvirtd.nix)
-            (import ./config/modifier_imports/arm-emulation.nix)
-            (import ./config/server_services/samba_server.nix)
+            ./config/configuration.nix
+            ./config/machines/LINDA.nix
+            ./config/environments/i3wm_darthpjb.nix
+            ./config/environments/steam.nix
+            ./config/environments/code.nix
+            ./config/environments/communications.nix
+            ./config/environments/neovim.nix
+            ./config/environments/cad_and_graphics.nix
+            ./config/environments/3dPrinting.nix
+            ./config/environments/audio_visual_editing.nix
+            ./config/environments/general_fonts.nix
+            ./config/environments/video_call_streaming.nix
+            ./config/locale/tailscale.nix
+            ./config/modifier_imports/bluetooth.nix
+            ./config/modifier_imports/memtest.nix
+            ./config/modifier_imports/cuda.nix
+            ./config/modifier_imports/ipfs.nix
+            ./config/modifier_imports/hosts.nix
+#            ./config/modifier_imports/virtualisation-virtualbox.nix
+            ./config/modifier_imports/virtualisation-libvirtd.nix
+            ./config/modifier_imports/arm-emulation.nix
+            ./config/server_services/samba_server.nix
             {
-	          nixpkgs.config.permittedInsecurePackages = [
-                "electron-21.4.0"
-              ];
-	      networking.nameservers = [ "1.1.1.1" "8.8.8.8" "8.8.4.4" ];
+            #networking.nameservers = [ "1.1.1.1" "8.8.8.8" "8.8.4.4" ];
               environment.systemPackages = [
                 agenix.packages.x86_64-linux.default
                 parsecgaming.packages.x86_64-linux.parsecgaming
