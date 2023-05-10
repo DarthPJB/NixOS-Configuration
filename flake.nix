@@ -70,7 +70,28 @@
             }
           ];
         };
-
+        local-worker = nixpkgs_stable.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [
+            ./config/machines/local-worker.nix
+            ./config/configuration.nix
+            ./config/users/darthpjb.nix
+            ./config/environments/neovim.nix
+            ./config/environments/sshd.nix
+            {
+              _module.args.nixinate = {
+                host = "192.168.122.69";
+                sshUser = "John88";
+                substituteOnTarget = true;
+                hermetic = true;
+                buildOn = "remote";
+              };
+              services.openssh.ports = [ 22 ];
+              networking.firewall.allowedTCPPorts = [ 22 ];
+            }
+          ];
+        };
         local-nas = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
@@ -130,6 +151,7 @@
             ./config/environments/communications.nix
             ./config/environments/neovim.nix
             ./config/environments/cad_and_graphics.nix
+            ./config/environments/blender.nix
             ./config/environments/3dPrinting.nix
             ./config/environments/audio_visual_editing.nix
             ./config/environments/general_fonts.nix
