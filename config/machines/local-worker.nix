@@ -16,6 +16,17 @@
   ### ------ VIRT BABY, YEAH!
   services.qemuGuest.enable = true;
   services.spice-vdagentd.enable = true;
+  services.xserver =
+  {
+      libinput.enable = true;
+      videoDrivers = [ "nvidia" ];
+  };
+  hardware = {
+    nvidia = {
+	      modesetting.enable = false;
+        powerManagement.enable = true;
+    };
+  };
 
   system.stateVersion = "22.11"; # Did you read the comment?
 
