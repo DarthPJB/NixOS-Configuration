@@ -14,6 +14,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.supportedFilesystems = [ "zfs" ];
+  boot.zfs.extraPools = [ "archive" ];
   
   networking.hostId = "d5710c9a";
   networking.hostName = "DataStorage"; # Define your hostname.
