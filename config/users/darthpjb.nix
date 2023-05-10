@@ -14,6 +14,7 @@
   # Define a user account. Don't forget to set a password with ‘passwd’.
    users.users.John88 = {
      isNormalUser = true;
+     uid = 1108;
      name = "John88";
      description = "Eighty Eight";
      createHome = true;

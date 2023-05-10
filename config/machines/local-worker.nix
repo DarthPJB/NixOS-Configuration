@@ -14,6 +14,16 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   ### ------ VIRT BABY, YEAH!
+  systemd.mounts = [
+    {
+      what = "public_share";
+      where = "/public_share";
+      type = "virtiofs";
+      wantedBy = [ "multi-user.target" ];
+      enable = true;
+    }
+  ];
+
   services.qemuGuest.enable = true;
   services.spice-vdagentd.enable = true;
   services.xserver =
