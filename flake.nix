@@ -4,31 +4,35 @@
   inputs = {
     nixinate.url = "github:matthewcroughan/nixinate";
     agenix.url = "github:ryantm/agenix";
-    nixpkgs_2205.url = "github:nixos/nixpkgs/nixos-22.05";
     nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-22.11";
-    nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-22.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
-  outputs = inputs@{ self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_stable, nixpkgs_unstable, nixpkgs_2205 }: 
+  outputs = inputs@{ self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_unstable }: 
   {
       apps = nixinate.nixinate.x86_64-linux self;
         images = {
           pi-print-controller = (self.nixosConfigurations.pi-print-controller.extendModules {
             modules = [
-              "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+              "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             ];
           }).config.system.build.sdImage;
           pi-display-module = (self.nixosConfigurations.pi-display-module.extendModules {
             modules = [
-              "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+              "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+              {
+                services.xserver.displayManager.sddm.enable = false;
+                services.xserver.displayManager.lightdm.enable = true;
+                hardware.bluetooth.enable = false;
+                nixpkgs.config.allowUnfree = true; 
+              }
             ];
           }).config.system.build.sdImage;
         };
       nixosConfigurations = {
-        pi-print-controller = nixpkgs_stable.lib.nixosSystem {
+        pi-print-controller = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
             ./config/machines/rPI.nix
@@ -37,7 +41,7 @@
             ./config/server_services/klipper.nix
           ];
         };
-        pi-display-module = nixpkgs_stable.lib.nixosSystem {
+        pi-display-module = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
             ./config/machines/rPI.nix
@@ -84,7 +88,7 @@
             }
           ];
         };
-        local-worker = nixpkgs_stable.lib.nixosSystem {
+        local-worker = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
@@ -108,7 +112,7 @@
             }
           ];
         };
-        local-nas = nixpkgs_stable.lib.nixosSystem {
+        local-nas = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
@@ -185,6 +189,7 @@
             {
             #networking.nameservers = [ "1.1.1.1" "8.8.8.8" "8.8.4.4" ];
               environment.systemPackages = [
+                nixpkgs_unstable.vivaldi
                 agenix.packages.x86_64-linux.default
                 parsecgaming.packages.x86_64-linux.parsecgaming
               ];

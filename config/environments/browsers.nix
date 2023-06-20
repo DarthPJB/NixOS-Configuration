@@ -3,8 +3,6 @@
 {
   environment.systemPackages = [
     pkgs.firefox
-    pkgs.brave
-    pkgs.vivaldi
     pkgs.obsidian
   ];
 

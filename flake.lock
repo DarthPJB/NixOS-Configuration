@@ -106,34 +106,18 @@
         "type": "github"
       }
     },
-    "nixpkgs_2205": {
-      "locked": {
-        "lastModified": 1672580127,
-        "narHash": "sha256-3lW3xZslREhJogoOkjeZtlBtvFMyxHku7I/9IVehhT8=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "0874168639713f547c05947c76124f78441ea46c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-22.05",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixpkgs_3": {
       "locked": {
-        "lastModified": 1681696129,
-        "narHash": "sha256-Ba2y1lmsWmmAOAoTD5G9UnTS/UqV0ZFyzysgdfu7qag=",
+        "lastModified": 1687193290,
+        "narHash": "sha256-3bknptEbd9LLlCiFRFkMwmciHB+QXET41gH/RX+Nr1A=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "de66115c552acc4e0c0f92c5a5efb32e37dfa216",
+        "rev": "ad157fe26e74211e7dde0456cb3fd9ab78b6e552",
         "type": "github"
       },
       "original": {
         "owner": "nixos",
-        "ref": "nixos-22.11",
+        "ref": "nixos-23.05",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -150,22 +134,6 @@
       "original": {
         "id": "nixpkgs",
         "type": "indirect"
-      }
-    },
-    "nixpkgs_stable": {
-      "locked": {
-        "lastModified": 1681696129,
-        "narHash": "sha256-Ba2y1lmsWmmAOAoTD5G9UnTS/UqV0ZFyzysgdfu7qag=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "de66115c552acc4e0c0f92c5a5efb32e37dfa216",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-22.11",
-        "repo": "nixpkgs",
-        "type": "github"
       }
     },
     "nixpkgs_unstable": {
@@ -208,8 +176,6 @@
         "nixinate": "nixinate",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_3",
-        "nixpkgs_2205": "nixpkgs_2205",
-        "nixpkgs_stable": "nixpkgs_stable",
         "nixpkgs_unstable": "nixpkgs_unstable",
         "parsecgaming": "parsecgaming"
       }
