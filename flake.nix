@@ -23,8 +23,8 @@
             modules = [
               "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
               {
-                services.xserver.displayManager.sddm.enable = false;
-                services.xserver.displayManager.lightdm.enable = true;
+                services.xserver.displayManager.sddm.enable = nixpkgs.lib.mkForce false;
+                services.xserver.displayManager.lightdm.enable = nixpkgs.lib.mkForce true;
                 hardware.bluetooth.enable = false;
                 nixpkgs.config.allowUnfree = true; 
               }
