@@ -12,25 +12,20 @@
 
   outputs = inputs@{ self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_unstable }: 
   {
-      apps = nixinate.nixinate.x86_64-linux self;
-        images = {
-          pi-print-controller = (self.nixosConfigurations.pi-print-controller.extendModules {
-            modules = [
-              "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-            ];
-          }).config.system.build.sdImage;
-          pi-display-module = (self.nixosConfigurations.pi-display-module.extendModules {
-            modules = [
-              "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-              {
-                services.xserver.displayManager.sddm.enable = nixpkgs.lib.mkForce false;
-                services.xserver.displayManager.lightdm.enable = nixpkgs.lib.mkForce true;
-                hardware.bluetooth.enable = false;
-                nixpkgs.config.allowUnfree = true; 
-              }
-            ];
-          }).config.system.build.sdImage;
-        };
+      formatter.x86_64-linux = pkgs.nixpkgs-fmt;
+      apps.x86_64-linux = (inputs.nixinate.nixinate.x86_64-linux inputs.self).nixinate;
+      images = {
+        pi-print-controller = (self.nixosConfigurations.pi-print-controller.extendModules {
+          modules = [
+            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+          ];
+        }).config.system.build.sdImage;
+        pi-display-module = (self.nixosConfigurations.pi-display-module.extendModules {
+          modules = [
+            
+          ];
+        }).config.system.build.sdImage;
+      };
       nixosConfigurations = {
         pi-print-controller = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
@@ -44,11 +39,31 @@
         pi-display-module = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
+            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             ./config/machines/rPI.nix
             ./config/users/darthpjb.nix
+            ./config/configuration.nix
             ./config/locale/home_networks.nix
             ./config/environments/browsers.nix
             ./config/environments/i3wm_darthpjb.nix
+            {
+                fileSystems."/home/pokej/obisidan-archive" =
+                  { device = "/dev/disk/by-uuid/8c501c5c-9fbe-4e9d-b8fc-fbf2987d80ca";
+                    fsType = "ext4";
+                  };
+                services.xserver.displayManager.sddm.enable = nixpkgs.lib.mkForce false;
+                services.xserver.displayManager.lightdm.enable = nixpkgs.lib.mkForce true;
+                hardware.bluetooth.enable = false;
+                nixpkgs.config.allowUnfree = true;    
+                _module.args.nixinate = {
+                  host = "192.168.0.115";
+                  sshUser = "John88";
+                  substituteOnTarget = true;
+                  hermetic = true;
+                  buildOn = "local";
+                };
+            }
+
           ];
         };
         Terminal-zero = nixpkgs.lib.nixosSystem {

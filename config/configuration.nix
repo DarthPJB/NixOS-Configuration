@@ -14,6 +14,7 @@
       ./environments/sshd.nix
       ./environments/tools.nix
     ];
+  nix.settings.trusted-users = [ "root" "John88" ];
   nixpkgs.config =
   {
     allowUnfree = true;
