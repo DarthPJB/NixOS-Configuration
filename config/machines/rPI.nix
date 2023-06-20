@@ -2,7 +2,7 @@
 {
   boot = {
     # Cleanup tmp on startup
-    cleanTmpDir = true;
+    boot.tmp.cleanOnBoot = true;
     kernelParams = [ "console=ttyS1,115200n8" "cma=32M" ];
   };
 
