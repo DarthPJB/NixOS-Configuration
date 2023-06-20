@@ -99,8 +99,8 @@ systemd.user.services.scream-ivshmem = {
     opengl.driSupport32Bit = true;
     pulseaudio.support32Bit = true;
     nvidia = {
-	modesetting.enable = false;
-        powerManagement.enable = true;
+	    modesetting.enable = false;
+      powerManagement.enable = true;
     };
   };
   # Enable sound.

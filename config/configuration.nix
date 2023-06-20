@@ -9,12 +9,12 @@
       ./modifier_imports/hosts.nix
       ./users/darthpjb.nix
       ./locale/en_gb.nix
-      ./locale/astralship.nix
       ./locale/home_networks.nix
       ./cachix.nix
       ./environments/sshd.nix
       ./environments/tools.nix
     ];
+  nix.settings.trusted-users = [ "root" "John88" ];
   nixpkgs.config =
   {
     allowUnfree = true;
