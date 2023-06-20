@@ -4,29 +4,30 @@
   inputs = {
     nixinate.url = "github:matthewcroughan/nixinate";
     agenix.url = "github:ryantm/agenix";
-    nixpkgs_2205.url = "github:nixos/nixpkgs/nixos-22.05";
     nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-22.11";
-    nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-22.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
-  outputs = inputs@{ self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_stable, nixpkgs_unstable, nixpkgs_2205 }: 
+  outputs = inputs@{ self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_unstable }: 
   {
-      apps = nixinate.nixinate.x86_64-linux self;
-        images = {
-          pi = (self.nixosConfigurations.printerController.extendModules {
-            modules = [
-              "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-              {
-
-              }
-            ];
-          }).config.system.build.sdImage;
-        };
+      formatter.x86_64-linux = pkgs.nixpkgs-fmt;
+      apps.x86_64-linux = (inputs.nixinate.nixinate.x86_64-linux inputs.self).nixinate;
+      images = {
+        pi-print-controller = (self.nixosConfigurations.pi-print-controller.extendModules {
+          modules = [
+            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+          ];
+        }).config.system.build.sdImage;
+        pi-display-module = (self.nixosConfigurations.pi-display-module.extendModules {
+          modules = [
+            
+          ];
+        }).config.system.build.sdImage;
+      };
       nixosConfigurations = {
-        printerController = nixpkgs_stable.lib.nixosSystem {
+        pi-print-controller = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
             ./config/machines/rPI.nix
@@ -35,16 +36,47 @@
             ./config/server_services/klipper.nix
           ];
         };
+        pi-display-module = nixpkgs.lib.nixosSystem {
+          system = "aarch64-linux";
+          modules = [
+            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            ./config/machines/rPI.nix
+            ./config/users/darthpjb.nix
+            ./config/configuration.nix
+            ./config/locale/home_networks.nix
+            ./config/environments/browsers.nix
+            ./config/environments/i3wm_darthpjb.nix
+            {
+                fileSystems."/home/pokej/obisidan-archive" =
+                  { device = "/dev/disk/by-uuid/8c501c5c-9fbe-4e9d-b8fc-fbf2987d80ca";
+                    fsType = "ext4";
+                  };
+                services.xserver.displayManager.sddm.enable = nixpkgs.lib.mkForce false;
+                services.xserver.displayManager.lightdm.enable = nixpkgs.lib.mkForce true;
+                hardware.bluetooth.enable = false;
+                nixpkgs.config.allowUnfree = true;    
+                _module.args.nixinate = {
+                  host = "192.168.0.115";
+                  sshUser = "John88";
+                  substituteOnTarget = true;
+                  hermetic = true;
+                  buildOn = "local";
+                };
+            }
+
+          ];
+        };
         Terminal-zero = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            ./config/configuration.nix
-            ./config/environments/i3wm_darthpjb.nix
-            ./config/environments/rtl-sdr.nix
-            ./config/environments/pio.nix
-            ./config/machines/terminalzero.nix
-            ./config/environments/code.nix
-            ./config/locale/tailscale.nix
+            (import ./config/environments/browsers.nix)
+            (import ./config/configuration.nix)
+            (import ./config/environments/i3wm_darthpjb.nix)
+            (import ./config/environments/rtl-sdr.nix)
+            (import ./config/environments/pio.nix)
+            (import ./config/machines/terminalzero.nix)
+            (import ./config/environments/code.nix)
+            (import ./config/locale/tailscale.nix)
             nixos-hardware.nixosModules.lenovo-thinkpad-x220
             {
               environment.systemPackages =
@@ -55,12 +87,13 @@
         Terminal-media = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            ./config/locale/hotel_wifi.nix
-            ./config/configuration.nix
-            ./config/environments/xfce.nix
-            ./config/environments/rtl-sdr.nix
-            ./config/machines/terminalmedia.nix
-            ./config/environments/code.nix
+            (import ./config/locale/hotel_wifi.nix)
+            (import ./config/environments/browsers.nix)
+            (import ./config/configuration.nix)
+            (import ./config/environments/xfce.nix)
+            (import ./config/environments/rtl-sdr.nix)
+            (import ./config/machines/terminalmedia.nix)
+            (import ./config/environments/code.nix)
             {
               environment.systemPackages =
                 [ 
@@ -70,7 +103,7 @@
             }
           ];
         };
-        local-worker = nixpkgs_stable.lib.nixosSystem {
+        local-worker = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
@@ -94,7 +127,7 @@
             }
           ];
         };
-        local-nas = nixpkgs_stable.lib.nixosSystem {
+        local-nas = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
@@ -152,6 +185,7 @@
             ./config/environments/code.nix
             ./config/environments/communications.nix
             ./config/environments/neovim.nix
+            ./config/environments/browsers.nix
             ./config/environments/cad_and_graphics.nix
             ./config/environments/blender.nix
             ./config/environments/3dPrinting.nix
@@ -162,7 +196,6 @@
             ./config/modifier_imports/bluetooth.nix
             ./config/modifier_imports/memtest.nix
             ./config/modifier_imports/cuda.nix
-#            ./config/modifier_imports/ipfs.nix
             ./config/modifier_imports/hosts.nix
             ./config/modifier_imports/zfs.nix
             ./config/modifier_imports/virtualisation-libvirtd.nix
@@ -172,6 +205,7 @@
               nixpkgs.config.permittedInsecurePackages = [ "tightvnc-1.3.10" ];
             #networking.nameservers = [ "1.1.1.1" "8.8.8.8" "8.8.4.4" ];
               environment.systemPackages = [
+                nixpkgs_unstable.vivaldi
                 agenix.packages.x86_64-linux.default
                 parsecgaming.packages.x86_64-linux.parsecgaming
               ];
