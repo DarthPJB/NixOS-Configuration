@@ -2,9 +2,8 @@
 
 {
     imports =
-    [ # Include the results of the hardware scan.
+    [ 
       ./i3wm.nix
-      ./browsers.nix
     ];
     services.picom =
     {
