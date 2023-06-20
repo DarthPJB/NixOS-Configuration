@@ -16,17 +16,19 @@
   {
       apps = nixinate.nixinate.x86_64-linux self;
         images = {
-          pi = (self.nixosConfigurations.pi.extendModules {
+          pi-print-controller = (self.nixosConfigurations.pi-print-controller.extendModules {
             modules = [
               "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-              {
-
-              }
+            ];
+          }).config.system.build.sdImage;
+          pi-display-module = (self.nixosConfigurations.pi-display-module.extendModules {
+            modules = [
+              "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             ];
           }).config.system.build.sdImage;
         };
       nixosConfigurations = {
-        pi = nixpkgs_stable.lib.nixosSystem {
+        pi-print-controller = nixpkgs_stable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
             ./config/machines/rPI.nix
@@ -35,9 +37,20 @@
             ./config/server_services/klipper.nix
           ];
         };
+        pi-display-module = nixpkgs_stable.lib.nixosSystem {
+          system = "aarch64-linux";
+          modules = [
+            ./config/machines/rPI.nix
+            ./config/users/darthpjb.nix
+            ./config/locale/home_networks.nix
+            ./config/environments/browsers.nix
+            ./config/environments/i3wm_darthpjb.nix
+          ];
+        };
         Terminal-zero = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
+            (import ./config/environments/browsers.nix)
             (import ./config/locale/hotel_wifi.nix)
             (import ./config/configuration.nix)
             (import ./config/environments/i3wm_darthpjb.nix)
@@ -57,6 +70,7 @@
           system = "x86_64-linux";
           modules = [
             (import ./config/locale/hotel_wifi.nix)
+            (import ./config/environments/browsers.nix)
             (import ./config/configuration.nix)
             (import ./config/environments/xfce.nix)
             (import ./config/environments/rtl-sdr.nix)
@@ -125,6 +139,7 @@
             (import ./config/environments/code.nix)
             (import ./config/environments/communications.nix)
             (import ./config/environments/neovim.nix)
+            (import ./config/environments/browsers.nix)
             (import ./config/environments/cad_and_graphics.nix)
             (import ./config/environments/3dPrinting.nix)
             (import ./config/environments/audio_visual_editing.nix)
