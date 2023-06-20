@@ -47,6 +47,8 @@
             ./config/environments/browsers.nix
             ./config/environments/i3wm_darthpjb.nix
             {
+              services.openssh.ports = [ 22 ];
+              networking.firewall.allowedTCPPorts = [ 22 ];
                 fileSystems."/home/pokej/obisidan-archive" =
                   { device = "/dev/disk/by-uuid/8c501c5c-9fbe-4e9d-b8fc-fbf2987d80ca";
                     fsType = "ext4";
