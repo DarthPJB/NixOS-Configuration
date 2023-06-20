@@ -51,7 +51,6 @@
           system = "x86_64-linux";
           modules = [
             (import ./config/environments/browsers.nix)
-            (import ./config/locale/hotel_wifi.nix)
             (import ./config/configuration.nix)
             (import ./config/environments/i3wm_darthpjb.nix)
             (import ./config/environments/rtl-sdr.nix)
@@ -83,27 +82,55 @@
                   parsecgaming.packages.x86_64-linux.parsecgaming 
                 ];
             }
-
           ];
         };
-        Terminal-VM1 = nixpkgs.lib.nixosSystem {
+        local-worker = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
           modules = [
-            (import ./config/configuration.nix)
-            (import ./config/environments/i3wm_darthpjb.nix)
-            (import ./config/locale/tailscale.nix)
-            (import ./config/machines/VirtualBox.nix)
+            ./config/machines/local-worker.nix
+            ./config/environments/blender.nix
+            ./config/modifier_imports/cuda.nix
+            ./config/configuration.nix
+            ./config/users/darthpjb.nix
+            ./config/environments/neovim.nix
+            ./config/environments/sshd.nix
+            {
+              _module.args.nixinate = {
+                host = "192.168.122.69";
+                sshUser = "John88";
+                substituteOnTarget = true;
+                hermetic = true;
+                buildOn = "local";
+              };
+              services.openssh.ports = [ 22 ];
+              networking.firewall.allowedTCPPorts = [ 22 ];
+            }
           ];
         };
-        Terminal-VM2 = nixpkgs.lib.nixosSystem {
+        local-nas = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
           modules = [
-            (import ./config/configuration.nix)
-            (import ./config/environments/i3wm_darthpjb.nix)
-            (import ./config/machines/hyperv.nix)
+            ./config/modifier_imports/zfs.nix
+            ./config/machines/local-nas.nix
+            ./config/configuration.nix
+            ./config/users/darthpjb.nix
+            ./config/environments/neovim.nix
+            ./config/environments/sshd.nix
+            {
+              _module.args.nixinate = {
+                host = "192.168.0.200";
+                sshUser = "John88";
+                substituteOnTarget = true;
+                hermetic = true;
+                buildOn = "local";
+              };
+              services.openssh.ports = [ 22 ];
+              networking.firewall.allowedTCPPorts = [ 22 ];
+            }
           ];
         };
-
         RemoteWorker-1 = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
@@ -132,34 +159,31 @@
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
-            (import ./config/configuration.nix)
-            (import ./config/machines/LINDA.nix)
-            (import ./config/environments/i3wm_darthpjb.nix)
-            (import ./config/environments/steam.nix)
-            (import ./config/environments/code.nix)
-            (import ./config/environments/communications.nix)
-            (import ./config/environments/neovim.nix)
-            (import ./config/environments/browsers.nix)
-            (import ./config/environments/cad_and_graphics.nix)
-            (import ./config/environments/3dPrinting.nix)
-            (import ./config/environments/audio_visual_editing.nix)
-            (import ./config/environments/general_fonts.nix)
-            (import ./config/environments/video_call_streaming.nix)
-            (import ./config/locale/tailscale.nix)
-            (import ./config/modifier_imports/bluetooth.nix)
-            (import ./config/modifier_imports/memtest.nix)
-            (import ./config/modifier_imports/cuda.nix)
-            (import ./config/modifier_imports/ipfs.nix)
-            (import ./config/modifier_imports/hosts.nix)
-            (import ./config/modifier_imports/virtualisation-virtualbox.nix)
-            (import ./config/modifier_imports/virtualisation-libvirtd.nix)
-            (import ./config/modifier_imports/arm-emulation.nix)
-            (import ./config/server_services/samba_server.nix)
+            ./config/configuration.nix
+            ./config/machines/LINDA.nix
+            ./config/environments/i3wm_darthpjb.nix
+            ./config/environments/steam.nix
+            ./config/environments/code.nix
+            ./config/environments/communications.nix
+            ./config/environments/neovim.nix
+            ./config/environments/browsers.nix
+            ./config/environments/cad_and_graphics.nix
+            ./config/environments/blender.nix
+            ./config/environments/3dPrinting.nix
+            ./config/environments/audio_visual_editing.nix
+            ./config/environments/general_fonts.nix
+            ./config/environments/video_call_streaming.nix
+            ./config/locale/tailscale.nix
+            ./config/modifier_imports/bluetooth.nix
+            ./config/modifier_imports/memtest.nix
+            ./config/modifier_imports/cuda.nix
+            ./config/modifier_imports/hosts.nix
+            ./config/modifier_imports/zfs.nix
+            ./config/modifier_imports/virtualisation-libvirtd.nix
+            ./config/modifier_imports/arm-emulation.nix
+            ./config/server_services/samba_server.nix
             {
-	          nixpkgs.config.permittedInsecurePackages = [
-                "electron-21.4.0"
-              ];
-	      networking.nameservers = [ "1.1.1.1" "8.8.8.8" "8.8.4.4" ];
+            #networking.nameservers = [ "1.1.1.1" "8.8.8.8" "8.8.4.4" ];
               environment.systemPackages = [
                 agenix.packages.x86_64-linux.default
                 parsecgaming.packages.x86_64-linux.parsecgaming

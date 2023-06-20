@@ -4,6 +4,7 @@
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;
+   programs.ssh.enableAskPassword = false;
    programs.gnupg.agent = 
    {
     pinentryFlavor = "tty";
@@ -13,6 +14,7 @@
   # Define a user account. Don't forget to set a password with ‘passwd’.
    users.users.John88 = {
      isNormalUser = true;
+     uid = 1108;
      name = "John88";
      description = "Eighty Eight";
      createHome = true;
@@ -24,6 +26,6 @@
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5 darthpjb@gmail.com"
       
     ];
-     extraGroups = [ "wheel" "vboxusers" "dialout" "disk" "networkManager" ]; # Enable ‘sudo’ for the user.
+     extraGroups = [ "wheel" "libvirtd" "vboxusers" "dialout" "disk" "networkManager" ]; # Enable ‘sudo’ for the user.
    };
 }

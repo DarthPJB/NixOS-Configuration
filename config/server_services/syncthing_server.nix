@@ -8,7 +8,17 @@ in
   # Syncthing ports
   networking.firewall.allowedTCPPorts = [ 8080 22000];
   networking.firewall.allowedUDPPorts = [ 22000 21027];
-
+  services = {
+    syncthing = {
+      enable = true;
+      dataDir = "/futureNAS";
+      configDir = "/futureNAS/.config/syncthing";
+      guiAddress = "0.0.0.0:8080";
+      #TODO: add cert and pem files
+      #overrideDevices = true;     # overrides any devices added or deleted through the WebUI
+      #overrideFolders = true;     # overrides any folders added or deleted through the WebUI
+    };
+  };
   age.secrets.futureNAS_s3_key =
   {
     file = ../../secrets/futureNAS_s3_key.age;
@@ -70,18 +80,6 @@ in
       Restart = "always";
       RestartSec = "10s";
       Environment = ["PATH=${pkgs.fuse}/bin:$PATH"];
-    };
-  };
-
-services = {
-  syncthing = {
-    enable = true;
-    dataDir = "/futureNAS";
-    configDir = "/futureNAS/.config/syncthing";
-    guiAddress = "0.0.0.0:8080";
-    #TODO: add cert and pem files
-    #overrideDevices = true;     # overrides any devices added or deleted through the WebUI
-    #overrideFolders = true;     # overrides any folders added or deleted through the WebUI
     };
   };
 }
