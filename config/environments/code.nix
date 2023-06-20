@@ -15,6 +15,7 @@ environment.systemPackages = with pkgs; [
 	pkgs.terminator
 	pkgs.enlightenment.terminology
 	pkgs.platformio
+    pkgs.tightvnc
   pkgs.conky
   pkgs.sl
   pkgs.cmatrix
