@@ -204,6 +204,7 @@
             ./config/modifier_imports/arm-emulation.nix
             ./config/server_services/samba_server.nix
             {
+              nixpkgs.config.permittedInsecurePackages = [ "tightvnc-1.3.10" ];
             #networking.nameservers = [ "1.1.1.1" "8.8.8.8" "8.8.4.4" ];
               environment.systemPackages = [
                 nixpkgs_unstable.vivaldi
