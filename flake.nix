@@ -206,8 +206,16 @@
             {
               nixpkgs.config.permittedInsecurePackages = [ "tightvnc-1.3.10" ];
             #networking.nameservers = [ "1.1.1.1" "8.8.8.8" "8.8.4.4" ];
-              environment.systemPackages = [
-                nixpkgs_unstable.vivaldi
+            
+            environment.systemPackages = 
+            let
+                system = "x86_64-linux";
+                pkgs_unstable = import inputs.nixpkgs_unstable {
+                  inherit system;
+                  config.allowUnfree = true; 
+                };
+              in [
+                pkgs_unstable.vivaldi
                 agenix.packages.x86_64-linux.default
                 parsecgaming.packages.x86_64-linux.parsecgaming
               ];
