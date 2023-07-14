@@ -8,7 +8,7 @@
 			config.allowUnfree = true; 
 		};
 	in [
-		pkgs.digikam
+		#pkgs.digikam
 		pkgs.inkscape-with-extensions 
 		pkgs.lensfun
 		pkgs.gimp-with-plugins
