@@ -15,8 +15,8 @@
 		pkgs_unstable.ffmpeg-full
 		pkgs.mplayer
 		pkgs.vlc
-		pkgs.kdenlive
-		pkgs.shotcut
+#		pkgs.kdenlive
+#		pkgs.shotcut
 		pkgs.shutter
 	];
 }
