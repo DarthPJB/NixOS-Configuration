@@ -7,8 +7,6 @@
 			inherit system;
 			config.allowUnfree = true; 
 		};
-
-		#pkgs_unstable = inputs.nixpkgs_unstable.legacyPackages.x86_64-linux;
 	in [
 		(pkgs_unstable.blender.override { cudaSupport = true; })
 	];
