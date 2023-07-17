@@ -37,7 +37,7 @@
       device = "nixstore";
       fsType = "virtiofs";
     };
-fileSystems."/nix/store" =
+    "/nix/store" =
     {
       fsType = "overlay";
       device = "overlay";
