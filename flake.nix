@@ -15,16 +15,23 @@
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixpkgs-fmt;
       apps.x86_64-linux = (inputs.nixinate.nixinate.x86_64-linux inputs.self).nixinate;
       images = {
+
         pi-print-controller = (self.nixosConfigurations.pi-print-controller.extendModules {
           modules = [
             "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
           ];
         }).config.system.build.sdImage;
+
         pi-display-module = (self.nixosConfigurations.pi-display-module.extendModules {
           modules = [
             
           ];
         }).config.system.build.sdImage;
+
+        nixos-local-image = (self.nixosConfigurations.local-worker.extendModules {
+          modules = [
+          ];
+        }).config.system.build.vmWithBootLoader;
       };
       nixosConfigurations = {
         pi-print-controller = nixpkgs.lib.nixosSystem {
@@ -110,8 +117,8 @@
           specialArgs = { inherit inputs; };
           modules = [
             ./config/machines/local-worker.nix
-            ./config/environments/blender.nix
-            ./config/modifier_imports/cuda.nix
+            #./config/environments/blender.nix
+            #./config/modifier_imports/cuda.nix
             ./config/configuration.nix
             ./config/users/darthpjb.nix
             ./config/environments/neovim.nix
