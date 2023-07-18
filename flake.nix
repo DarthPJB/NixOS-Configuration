@@ -28,6 +28,32 @@
           ];
         }).config.system.build.sdImage;
 
+        local-image = import "${inputs.nixpkgs.outPath}/nixos/lib/make-disk-image.nix" 
+        rec {
+          pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
+          inherit (pkgs) lib;
+          inherit (self.nixosConfigurations.local-worker) config;
+          additionalPaths = [ ];
+          format = "qcow2";
+          onlyNixStore = false;
+          label = "rootFilesystemLabel";
+          partitionTableType = "efi";
+          # Bootloader should be installed on the system image only if we are booting through bootloaders.
+          # Though, if a user is not using our default filesystems, it is possible to not have any ESP
+          # or a strange partition table that's incompatible with GRUB configuration.
+          # As a consequence, this may lead to disk image creation failures.
+          # To avoid this, we prefer to let the user find out about how to install the bootloader on its ESP/disk.
+          # Usually, this can be through building your own disk image.
+          # TODO: If a user is interested into a more fine grained heuristic for `installBootLoader`
+          # by examining the actual contents of `cfg.fileSystems`, please send a PR.
+          installBootLoader = true;
+          touchEFIVars = true;
+          diskSize = "auto";
+          additionalSpace = "0M";
+          copyChannel = false;
+          OVMF = pkgs.OVMF;
+        };
+
         nixos-local-image = (self.nixosConfigurations.local-worker.extendModules {
           modules = [
           ];
@@ -116,6 +142,7 @@
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
+             "${nixpkgs}/nixos/modules/virtualisation/libvirtd.nix"
             ./config/machines/local-worker.nix
             #./config/environments/blender.nix
             #./config/modifier_imports/cuda.nix
