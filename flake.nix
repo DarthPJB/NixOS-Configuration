@@ -43,8 +43,9 @@
           installBootLoader = true;
           touchEFIVars = true;
           diskSize = "auto";
+          #diskSize = "4096";
           additionalSpace = "2048M";
-          copyChannel = false;
+          copyChannel = true;
           OVMF = pkgs.OVMF.fd;
         };
       };
@@ -140,6 +141,9 @@
             ./config/environments/neovim.nix
             ./config/environments/sshd.nix
             {
+              nix.nixPath = [
+                "nixpkgs=${inputs.nixpkgs}"
+              ];
               _module.args.nixinate = {
                 host = "192.168.122.69";
                 sshUser = "John88";
