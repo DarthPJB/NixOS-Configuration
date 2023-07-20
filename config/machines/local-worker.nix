@@ -9,13 +9,19 @@
       ./libvirt-qemu/hardware-configuration.nix
     ];
 
-  # Use the systemd-boot EFI boot loader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  boot = { 
+    kernelParams = [
+      "console=ttyS0,115200"
+      "console=tty1"
+    ];
+    # Use the systemd-boot EFI boot loader.
+    loader.systemd-boot.enable = true;
+    loader.efi.canTouchEfiVariables = true;
 
-  #special filesystems
-  boot.initrd.supportedFilesystems = [ "overlay" "virtiofs" ];
-  boot.initrd.availableKernelModules = [ "overlay" "virtiofs"];
+    #special filesystems
+    initrd.supportedFilesystems = [ "overlay" "virtiofs" ];
+    initrd.availableKernelModules = [ "overlay" "virtiofs"];
+  };
 
   #fileSystems."/nix/.rw-store" = { fsType = "tmpfs"; options = [ "mode=0755" "size=8G" ]; neededForBoot = true; };
 
@@ -56,16 +62,23 @@
     };
   };
 
-
-  ### ------ VIRT BABY, YEAH!
-  systemd.mounts = [
-#    {
-#      what = "public_share";
-#      where = "/public_share";
-#      type = "virtiofs";
-#      wantedBy = [ "multi-user.target" ];
-#      enable = true;
-#    }
+  environment.systemPackages = with pkgs; [
+    cudatoolkit
+    linuxPackages.nvidia_x11
+    #cudaPackages.cudnn
+    libGLU libGL
+    xorg.libXi xorg.libXmu freeglut
+    xorg.libXext xorg.libX11 xorg.libXv xorg.libXrandr zlib
+    ncurses5 stdenv.cc binutils
+    ffmpeg
+    python39
+    python39Packages.pip
+    python39Packages.numpy
+    python39Packages.pytorch-bin
+    python39Packages.virtualenv
+    tmux
+    btop
+    nvtop
   ];
 
   services.qemuGuest.enable = true;

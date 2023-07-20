@@ -311,6 +311,7 @@ let format' = format; in let
       config.system.build.nixos-install
       config.system.build.nixos-enter
       nix
+      bindfs
       systemdMinimal
     ]
     ++ lib.optional deterministic gptfdisk
@@ -433,6 +434,11 @@ let format' = format; in let
       nix --extra-experimental-features nix-command copy --to $root --no-check-sigs ${concatStringsSep " " additionalPaths'}
     ''}
 
+    #mkdir /dev/shm/lulz
+    #mkdir $root/nix/store -p
+    #ln -s /dev/shm/lulz $root/nix/store
+    #rm $root/nix/store -r
+    
     diskImage=nixos.raw
 
     ${if diskSize == "auto" then ''
@@ -511,7 +517,10 @@ let format' = format; in let
     ${if format == "raw" then ''
       mv $diskImage $out/${filename}
     '' else ''
-      ${pkgs.qemu-utils}/bin/qemu-img convert -f raw -O ${format} ${compress} $diskImage $out/${filename}
+      ${pkgs.qemu-utils}/bin/qemu-img convert -f raw -O ${format} ${compress} $diskImage $out/${filename}.lrg
+      ${pkgs.qemu-utils}/bin/qemu-img convert -O qcow2 -c $out/${filename}.lrg $out/${filename}
+      rm $out/${filename}.lrg
+#       mv $out/${filename}.lrg $out/${filename}
     ''}
     diskImage=$out/${filename}
   '';
@@ -598,10 +607,15 @@ let format' = format; in let
         fi
       done
       
+#      nixos-enter --root $mountPoint -- nix-channel --update
+
+      #create overlay mountpoints
       mkdir -p $mountPoint/nix/.ro-store
       mkdir -p $mountPoint/nix/.rw-store/store
       mkdir -p $mountPoint/nix/.rw-store/work
-      mv $mountPoint/nix/store/* $mountPoint/nix/.rw-store/store/
+
+      #remove nix-store from image.
+      rm $mountPoint/nix/store/* -r
 
       umount -R /mnt
 
