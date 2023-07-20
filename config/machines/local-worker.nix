@@ -14,8 +14,8 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   #special filesystems
-  boot.initrd.supportedFilesystems = [ "overlay" ];
-  boot.initrd.availableKernelModules = [ "overlay" ];
+  boot.initrd.supportedFilesystems = [ "overlay" "virtiofs" ];
+  boot.initrd.availableKernelModules = [ "overlay" "virtiofs"];
 
   #fileSystems."/nix/.rw-store" = { fsType = "tmpfs"; options = [ "mode=0755" "size=8G" ]; neededForBoot = true; };
 
@@ -34,6 +34,7 @@
       fsType = "virtiofs";
     };
     "/nix/.ro-store" = {
+      neededForBoot = true;
       device = "nixstore";
       fsType = "virtiofs";
     };
