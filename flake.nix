@@ -28,7 +28,7 @@
           ];
         }).config.system.build.sdImage;
 
-        local-image = import "${self}/lib/make-storeless-image.nix" 
+        local-worker-image = import "${self}/lib/make-storeless-image.nix" 
         #local-image = import "${inputs.nixpkgs.outPath}/nixos/lib/make-disk-image.nix" 
         rec {
           pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
@@ -43,7 +43,7 @@
           installBootLoader = true;
           touchEFIVars = true;
           diskSize = "auto";
-          additionalSpace = "512M";
+          additionalSpace = "2048M";
           copyChannel = false;
           OVMF = pkgs.OVMF.fd;
         };
