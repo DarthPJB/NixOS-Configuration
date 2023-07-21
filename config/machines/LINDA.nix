@@ -167,10 +167,18 @@ systemd.user.services.scream-ivshmem = {
   { device = "speed-storage/var-lib-libvirt";
     fsType = "zfs";
   };
-  fileSystems."/bulk-storage/nas-archive/remote.worker/88/88-FS-V2/rendercache" = {
-  device = "/speed-storage/rendercache";
-  options = [ "bind" ];
-};
+
+  fileSystems."/tmp" = 
+  {
+    device = "/speed-storage/tmp";
+    options = [ "bind" ];
+  };
+
+  fileSystems."/bulk-storage/nas-archive/remote.worker/88/88-FS-V2/rendercache" = 
+  {
+    device = "/speed-storage/rendercache";
+    options = [ "bind" ];
+  };
 
   swapDevices = [ ];
 
