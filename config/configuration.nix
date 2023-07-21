@@ -4,7 +4,8 @@
 
 {
   imports =
-    [ # Include the results of the hardware scan.
+    [
+      # Include the results of the hardware scan.
       ./modifier_imports/flakes.nix
       ./modifier_imports/hosts.nix
       ./users/darthpjb.nix
@@ -16,8 +17,8 @@
     ];
   nix.settings.trusted-users = [ "root" "John88" ];
   nixpkgs.config =
-  {
-    allowUnfree = true;
-  };
+    {
+      allowUnfree = true;
+    };
 
 }

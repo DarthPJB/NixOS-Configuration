@@ -8,5 +8,5 @@
   services.openssh.settings.PasswordAuthentication = false;
   # Open ports in the firewall.
   networking.firewall.allowedTCPPorts = [ 1108 ];
-  networking.firewall.allowedUDPPorts = [];
+  networking.firewall.allowedUDPPorts = [ ];
 }

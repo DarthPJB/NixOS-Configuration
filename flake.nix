@@ -10,8 +10,8 @@
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
-  outputs = inputs@{ self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_unstable }: 
-  {
+  outputs = inputs@{ self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_unstable }:
+    {
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixpkgs-fmt;
       apps.x86_64-linux = (inputs.nixinate.nixinate.x86_64-linux inputs.self).nixinate;
       images = {
@@ -24,30 +24,30 @@
 
         pi-display-module = (self.nixosConfigurations.pi-display-module.extendModules {
           modules = [
-            
+
           ];
         }).config.system.build.sdImage;
 
-        local-worker-image = import "${self}/lib/make-storeless-image.nix" 
-        #local-image = import "${inputs.nixpkgs.outPath}/nixos/lib/make-disk-image.nix" 
-        rec {
-          pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
-          inherit (pkgs) lib;
-          inherit (self.nixosConfigurations.local-worker) config;
-          additionalPaths = [ ];
-          name = "local.worker-image";
-          format = "qcow2";
-          onlyNixStore = false;
-          label = "root_FS_nixos";
-          partitionTableType = "efi";
-          installBootLoader = true;
-          touchEFIVars = true;
-          diskSize = "auto";
-          #diskSize = "4096";
-          additionalSpace = "2048M";
-          copyChannel = true;
-          OVMF = pkgs.OVMF.fd;
-        };
+        local-worker-image = import "${self}/lib/make-storeless-image.nix"
+          #local-image = import "${inputs.nixpkgs.outPath}/nixos/lib/make-disk-image.nix" 
+          rec {
+            pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
+            inherit (pkgs) lib;
+            inherit (self.nixosConfigurations.local-worker) config;
+            additionalPaths = [ ];
+            name = "local.worker-image";
+            format = "qcow2";
+            onlyNixStore = false;
+            label = "root_FS_nixos";
+            partitionTableType = "efi";
+            installBootLoader = true;
+            touchEFIVars = true;
+            diskSize = "auto";
+            #diskSize = "4096";
+            additionalSpace = "2048M";
+            copyChannel = true;
+            OVMF = pkgs.OVMF.fd;
+          };
       };
       nixosConfigurations = {
         pi-print-controller = nixpkgs.lib.nixosSystem {
@@ -72,21 +72,22 @@
             {
               services.openssh.ports = [ 22 ];
               networking.firewall.allowedTCPPorts = [ 22 ];
-                fileSystems."/home/pokej/obisidan-archive" =
-                  { device = "/dev/disk/by-uuid/8c501c5c-9fbe-4e9d-b8fc-fbf2987d80ca";
-                    fsType = "ext4";
-                  };
-                services.xserver.displayManager.sddm.enable = nixpkgs.lib.mkForce false;
-                services.xserver.displayManager.lightdm.enable = nixpkgs.lib.mkForce true;
-                hardware.bluetooth.enable = false;
-                nixpkgs.config.allowUnfree = true;    
-                _module.args.nixinate = {
-                  host = "192.168.0.115";
-                  sshUser = "John88";
-                  substituteOnTarget = true;
-                  hermetic = true;
-                  buildOn = "local";
+              fileSystems."/home/pokej/obisidan-archive" =
+                {
+                  device = "/dev/disk/by-uuid/8c501c5c-9fbe-4e9d-b8fc-fbf2987d80ca";
+                  fsType = "ext4";
                 };
+              services.xserver.displayManager.sddm.enable = nixpkgs.lib.mkForce false;
+              services.xserver.displayManager.lightdm.enable = nixpkgs.lib.mkForce true;
+              hardware.bluetooth.enable = false;
+              nixpkgs.config.allowUnfree = true;
+              _module.args.nixinate = {
+                host = "192.168.0.115";
+                sshUser = "John88";
+                substituteOnTarget = true;
+                hermetic = true;
+                buildOn = "local";
+              };
             }
 
           ];
@@ -121,9 +122,9 @@
             (import ./config/environments/code.nix)
             {
               environment.systemPackages =
-                [ 
+                [
                   nixpkgs.legacyPackages.x86_64-linux.ffmpeg
-                  parsecgaming.packages.x86_64-linux.parsecgaming 
+                  parsecgaming.packages.x86_64-linux.parsecgaming
                 ];
             }
           ];
@@ -132,7 +133,7 @@
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
-             "${nixpkgs}/nixos/modules/virtualisation/libvirtd.nix"
+            "${nixpkgs}/nixos/modules/virtualisation/libvirtd.nix"
             ./config/machines/local-worker.nix
             ./config/environments/blender.nix
             ./config/modifier_imports/cuda.nix
@@ -232,20 +233,21 @@
             ./config/server_services/samba_server.nix
             {
               nixpkgs.config.permittedInsecurePackages = [ "tightvnc-1.3.10" ];
-            #networking.nameservers = [ "1.1.1.1" "8.8.8.8" "8.8.4.4" ];
-            
-            environment.systemPackages = 
-            let
-                system = "x86_64-linux";
-                pkgs_unstable = import inputs.nixpkgs_unstable {
-                  inherit system;
-                  config.allowUnfree = true; 
-                };
-              in [
-                pkgs_unstable.vivaldi
-                agenix.packages.x86_64-linux.default
-                parsecgaming.packages.x86_64-linux.parsecgaming
-              ];
+              #networking.nameservers = [ "1.1.1.1" "8.8.8.8" "8.8.4.4" ];
+
+              environment.systemPackages =
+                let
+                  system = "x86_64-linux";
+                  pkgs_unstable = import inputs.nixpkgs_unstable {
+                    inherit system;
+                    config.allowUnfree = true;
+                  };
+                in
+                [
+                  pkgs_unstable.vivaldi
+                  agenix.packages.x86_64-linux.default
+                  parsecgaming.packages.x86_64-linux.parsecgaming
+                ];
             }
           ];
         };

@@ -8,25 +8,25 @@
   # Use the GRUB 2 boot loader.
   # Use the systemd-boot EFI boot loader.
   boot.loader.grub =
-  {
-    # Use the GRUB 2 boot loader.
-    enable = true;
-    version = 2;
-    device = "/dev/sda"; # or "nodev" for efi only
-  };
+    {
+      # Use the GRUB 2 boot loader.
+      enable = true;
+      version = 2;
+      device = "/dev/sda"; # or "nodev" for efi only
+    };
 
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
   networking =
-  {
-    useDHCP = false;
-    hostName = "TerminalVM1"; # Define your hostname.
-    interfaces =
     {
-      enp0s3.useDHCP = true;
+      useDHCP = false;
+      hostName = "TerminalVM1"; # Define your hostname.
+      interfaces =
+        {
+          enp0s3.useDHCP = true;
+        };
     };
-  };
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -40,12 +40,12 @@
   virtualisation.virtualbox.guest.enable = true;
 
   boot =
-  {
-    initrd.availableKernelModules = [ "ata_piix" "ohci_pci" "sd_mod" "sr_mod" ];
-    initrd.kernelModules = [ ];
-    kernelModules = [  ];
-    extraModulePackages = [ ];
-  };
+    {
+      initrd.availableKernelModules = [ "ata_piix" "ohci_pci" "sd_mod" "sr_mod" ];
+      initrd.kernelModules = [ ];
+      kernelModules = [ ];
+      extraModulePackages = [ ];
+    };
 
   fileSystems."/" =
     {
@@ -53,6 +53,6 @@
       fsType = "ext4";
     };
 
-  swapDevices = [ { device = "/dev/disk/by-label/swapbox"; } ];
+  swapDevices = [{ device = "/dev/disk/by-label/swapbox"; }];
   system.stateVersion = "21.11"; # Did you read the comment?
 }
