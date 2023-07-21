@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 
 {
-environment.systemPackages = with pkgs; [
-	pkgs.platformio
-];
+  environment.systemPackages = with pkgs; [
+    pkgs.platformio
+  ];
 }

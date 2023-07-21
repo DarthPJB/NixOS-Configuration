@@ -4,7 +4,8 @@
 { config, lib, pkgs, modulesPath, inputs, ... }:
 {
   imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
+    [
+      (modulesPath + "/installer/scan/not-detected.nix")
     ];
   environment.systemPackages = [
     inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.looking-glass-client
@@ -15,82 +16,82 @@
     pkgs.virtmanager
     pkgs.tightvnc
   ];
-# ------------ custom doom ------------------
+  # ------------ custom doom ------------------
 
 
-systemd.tmpfiles.rules = [
-  "f /dev/shm/looking-glass 0660 John88 qemu-libvirtd -"
-  "f /dev/shm/scream 0660 John88 qemu-libvirtd -"
-];
+  systemd.tmpfiles.rules = [
+    "f /dev/shm/looking-glass 0660 John88 qemu-libvirtd -"
+    "f /dev/shm/scream 0660 John88 qemu-libvirtd -"
+  ];
 
-systemd.user.services.scream-ivshmem = {
-  enable = true;
-  description = "Scream virBr0";
-  serviceConfig = {
-    ExecStart = "${pkgs.scream}/bin/scream -i virbr0";
-    Restart = "always";
+  systemd.user.services.scream-ivshmem = {
+    enable = true;
+    description = "Scream virBr0";
+    serviceConfig = {
+      ExecStart = "${pkgs.scream}/bin/scream -i virbr0";
+      Restart = "always";
+    };
+    wantedBy = [ "multi-user.target" ];
+    requires = [ "pulseaudio.service" ];
   };
-  wantedBy = [ "multi-user.target" ];
-  requires = [ "pulseaudio.service" ];
-};
 
   # Use the GRUB 2 boot loader.
   # Use the systemd-boot EFI boot loader.
   boot =
-  {
-    supportedFilesystems = [ "ntfs" ];
-    loader =
     {
-      systemd-boot.enable = true;
-      efi.canTouchEfiVariables = true;
-    };
-    initrd =
-    {
-      availableKernelModules = [ "vfio_virqfd" "vfio_pci" "vfio_iommu_type1" "vfio" "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "uas" "sd_mod"  ];
-      kernelModules = [ "vfio_pci" ];
-    };
-    kernelModules = [ "kvm-amd" "vfio_virqfd" "vfio_pci" "vfio_iommu_type1" "vfio" ];
-    kernelParams = [
-      "amd_iommu=on"
-    ];
-    extraModulePackages = [ ];
-    
+      supportedFilesystems = [ "ntfs" ];
+      loader =
+        {
+          systemd-boot.enable = true;
+          efi.canTouchEfiVariables = true;
+        };
+      initrd =
+        {
+          availableKernelModules = [ "vfio_virqfd" "vfio_pci" "vfio_iommu_type1" "vfio" "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "uas" "sd_mod" ];
+          kernelModules = [ "vfio_pci" ];
+        };
+      kernelModules = [ "kvm-amd" "vfio_virqfd" "vfio_pci" "vfio_iommu_type1" "vfio" ];
+      kernelParams = [
+        "amd_iommu=on"
+      ];
+      extraModulePackages = [ ];
 
-    #this can be done better with boot.extraModProbeConfig?
-    extraModprobeConfig = ''
-        options vfio-pci ids=10de:2487,10de:228b
-	'';
-    initrd.preDeviceCommands = ''
-      DEVS="0000:21:00:.0 0000:21:00.1"
-      for DEV in $DEVS; do
-         echo "vfio-pci > /sys/bus/pci/devices/$DEV/driver_override"
-      done
-      modprobe -i vfio-pci
-    '';
-  };
+
+      #this can be done better with boot.extraModProbeConfig?
+      extraModprobeConfig = ''
+                options vfio-pci ids=10de:2487,10de:228b
+        	'';
+      initrd.preDeviceCommands = ''
+        DEVS="0000:21:00:.0 0000:21:00.1"
+        for DEV in $DEVS; do
+           echo "vfio-pci > /sys/bus/pci/devices/$DEV/driver_override"
+        done
+        modprobe -i vfio-pci
+      '';
+    };
 
   powerManagement =
-  {
-    enable = false;
-    cpuFreqGovernor = lib.mkDefault "performance";
-  };
-  services =
-  {
-    xserver =
     {
-        libinput.enable = true;
-        videoDrivers = [ "nvidia" ];
-#	deviceSection = ''
-#	  Option "Coolbits" "24"
-#	'';
+      enable = false;
+      cpuFreqGovernor = lib.mkDefault "performance";
     };
-    printing = 
-    { 
-        enable = true;
-        drivers = [ pkgs.epson-escpr ];
-    };
+  services =
+    {
+      xserver =
+        {
+          libinput.enable = true;
+          videoDrivers = [ "nvidia" ];
+          #	deviceSection = ''
+          #	  Option "Coolbits" "24"
+          #	'';
+        };
+      printing =
+        {
+          enable = true;
+          drivers = [ pkgs.epson-escpr ];
+        };
 
-  };
+    };
   hardware = {
     sane.enable = true;
     opengl.enable = true;
@@ -99,7 +100,7 @@ systemd.user.services.scream-ivshmem = {
     opengl.driSupport32Bit = true;
     pulseaudio.support32Bit = true;
     nvidia = {
-	    modesetting.enable = false;
+      modesetting.enable = false;
       powerManagement.enable = true;
     };
   };
@@ -110,75 +111,85 @@ systemd.user.services.scream-ivshmem = {
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
   networking =
-  {
-    useDHCP = false;
-    hostId = "b4120de4";
-    hostName = "LINDA_CORE";
-    interfaces =
     {
-      enp69s0f0.useDHCP = true;
-      enp69s0f1.useDHCP = true;
-#      wlp72s0.useDHCP = true;
+      useDHCP = false;
+      hostId = "b4120de4";
+      hostName = "LINDA_CORE";
+      interfaces =
+        {
+          enp69s0f0.useDHCP = true;
+          enp69s0f1.useDHCP = true;
+          #      wlp72s0.useDHCP = true;
+        };
+      wireless =
+        {
+          enable = false; # Enables wireless support via wpa_supplicant.
+          userControlled.enable = true;
+          interfaces = [ "wlp72s0" ];
+        };
     };
-    wireless =
-    {
-      enable = false;  # Enables wireless support via wpa_supplicant.
-      userControlled.enable = true;
-      interfaces = [ "wlp72s0" ];
-    };
-  };
 
   fileSystems."/" =
-    { device = "none";
+    {
+      device = "none";
       fsType = "tmpfs";
     };
 
   fileSystems."/home" =
-    { device = "/dev/disk/by-uuid/8f73e910-ebff-49fa-9529-55bc0f06ceba";
+    {
+      device = "/dev/disk/by-uuid/8f73e910-ebff-49fa-9529-55bc0f06ceba";
       fsType = "ext4";
     };
 
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/7CFB-80B3";
+    {
+      neededForBoot = true;
+      device = "/dev/disk/by-uuid/7CFB-80B3";
       fsType = "vfat";
     };
 
   fileSystems."/etc/ssh" =
-    { device = "bulk-storage/etc-ssh";
+    {
+      device = "bulk-storage/etc-ssh";
       fsType = "zfs";
     };
 
   fileSystems."/var/log" =
-    { device = "bulk-storage/var-log";
+    {
+      device = "bulk-storage/var-log";
       fsType = "zfs";
     };
 
   fileSystems."/nix" =
-    { device = "speed-storage/nix";
+    {
+      device = "speed-storage/nix";
       fsType = "zfs";
     };
 
   fileSystems."/etc/nixos" =
-    { device = "bulk-storage/etc-nixos";
+    {
+      device = "bulk-storage/etc-nixos";
       fsType = "zfs";
     };
 
   fileSystems."/var/lib/libvirt" =
-  { device = "speed-storage/var-lib-libvirt";
-    fsType = "zfs";
-  };
+    {
+      device = "speed-storage/var-lib-libvirt";
+      fsType = "zfs";
+    };
 
-  fileSystems."/tmp" = 
-  {
-    device = "/speed-storage/tmp";
-    options = [ "bind" ];
-  };
+  fileSystems."/tmp" =
+    {
+      neededForBoot = true;
+      device = "/speed-storage/tmp";
+      options = [ "bind" ];
+    };
 
-  fileSystems."/bulk-storage/nas-archive/remote.worker/88/88-FS-V2/rendercache" = 
-  {
-    device = "/speed-storage/rendercache";
-    options = [ "bind" ];
-  };
+  fileSystems."/bulk-storage/nas-archive/remote.worker/88/88-FS-V2/rendercache" =
+    {
+      device = "/speed-storage/rendercache";
+      options = [ "bind" ];
+    };
 
   swapDevices = [ ];
 

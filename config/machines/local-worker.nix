@@ -5,11 +5,12 @@
 { config, pkgs, ... }:
 {
   imports =
-    [ # Include the results of the hardware scan.
+    [
+      # Include the results of the hardware scan.
       ./libvirt-qemu/hardware-configuration.nix
     ];
 
-  boot = { 
+  boot = {
     kernelParams = [
       "console=ttyS0,115200"
       "console=tty1"
@@ -20,56 +21,65 @@
 
     #special filesystems
     initrd.supportedFilesystems = [ "overlay" "virtiofs" ];
-    initrd.availableKernelModules = [ "overlay" "virtiofs"];
+    initrd.availableKernelModules = [ "overlay" "virtiofs" ];
   };
 
   #fileSystems."/nix/.rw-store" = { fsType = "tmpfs"; options = [ "mode=0755" "size=8G" ]; neededForBoot = true; };
 
   fileSystems =
-  { 
-    "/public_share" = {
-      device = "public_share";
-      fsType = "virtiofs";
-    };
-    "/rendercache" = {
-      device = "rendercache";
-      fsType = "virtiofs";
-    };
-    "/88_FS" = {
-      device = "88_FS";
-      fsType = "virtiofs";
-    };
-    "/nix/.ro-store" = {
-      neededForBoot = true;
-      device = "nixstore";
-      fsType = "virtiofs";
-    };
-    "/nix/store" =
     {
-      fsType = "overlay";
-      device = "overlay";
-      neededForBoot = true;
-      options = [
-        "lowerdir=/nix/.ro-store"
-        "upperdir=/nix/.rw-store/store"
-        "workdir=/nix/.rw-store/work"
-      ];
-      depends = [
-        "/nix/.ro-store"
-        "/nix/.rw-store/store"
-        "/nix/.rw-store/work"
-      ];
+      "/public_share" = {
+        device = "public_share";
+        fsType = "virtiofs";
+      };
+      "/rendercache" = {
+        device = "rendercache";
+        fsType = "virtiofs";
+      };
+      "/88_FS" = {
+        device = "88_FS";
+        fsType = "virtiofs";
+      };
+      "/nix/.ro-store" = {
+        neededForBoot = true;
+        device = "nixstore";
+        fsType = "virtiofs";
+      };
+      "/nix/store" =
+        {
+          fsType = "overlay";
+          device = "overlay";
+          neededForBoot = true;
+          options = [
+            "lowerdir=/nix/.ro-store"
+            "upperdir=/nix/.rw-store/store"
+            "workdir=/nix/.rw-store/work"
+          ];
+          depends = [
+            "/nix/.ro-store"
+            "/nix/.rw-store/store"
+            "/nix/.rw-store/work"
+          ];
+        };
     };
-  };
 
   environment.systemPackages = with pkgs; [
     cudatoolkit
     linuxPackages.nvidia_x11
     #cudaPackages.cudnn
-    libGLU libGL
-    xorg.libXi xorg.libXmu freeglut
-    xorg.libXext xorg.libX11 xorg.libXv xorg.libXrandr zlib
-    ncurses5 stdenv.cc binutils
+    libGLU
+    libGL
+    xorg.libXi
+    xorg.libXmu
+    freeglut
+    xorg.libXext
+    xorg.libX11
+    xorg.libXv
+    xorg.libXrandr
+    zlib
+    ncurses5
+    stdenv.cc
+    binutils
     ffmpeg
     python39
     python39Packages.pip
@@ -84,14 +94,14 @@
   services.qemuGuest.enable = true;
   services.spice-vdagentd.enable = true;
   services.xserver =
-  {
+    {
       libinput.enable = true;
       videoDrivers = [ "nvidia" ];
-  };
+    };
   hardware = {
     nvidia = {
-	      modesetting.enable = false;
-        powerManagement.enable = true;
+      modesetting.enable = false;
+      powerManagement.enable = true;
     };
   };
 

@@ -5,32 +5,33 @@
 
 {
   imports =
-    [ (modulesPath + "/profiles/qemu-guest.nix")
+    [
+      (modulesPath + "/profiles/qemu-guest.nix")
     ];
 
-  boot.initrd.availableKernelModules = [ "ahci" "xhci_pci" "sr_mod" "virtio_net" "virtio_pci" "virtio_mmio" "virtio_blk" "virtio_scsi" "virtio_balloon" "virtio_console"];
+  boot.initrd.availableKernelModules = [ "ahci" "xhci_pci" "sr_mod" "virtio_net" "virtio_pci" "virtio_mmio" "virtio_blk" "virtio_scsi" "virtio_balloon" "virtio_console" ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
- fileSystems."/" = {
+  fileSystems."/" = {
     device = "/dev/disk/by-label/root_FS_nixos";
     autoResize = true;
     fsType = "ext4";
   };
-#  fileSystems."/" =
-#    { device = "/dev/disk/by-uuid/97993bfe-7cf1-48ee-acbe-7625baee3e9f";
-#      fsType = "ext4";
-#    };
+  #  fileSystems."/" =
+  #    { device = "/dev/disk/by-uuid/97993bfe-7cf1-48ee-acbe-7625baee3e9f";
+  #      fsType = "ext4";
+  #    };
 
-#  fileSystems."/boot" =
-#    { device = "/dev/disk/by-uuid/CD40-D6B4";
-#      fsType = "vfat";
-#    };
+  #  fileSystems."/boot" =
+  #    { device = "/dev/disk/by-uuid/CD40-D6B4";
+  #      fsType = "vfat";
+  #    };
 
-#  swapDevices =
-#    [ { device = "/dev/disk/by-uuid/b1c69178-3dd9-4621-95ae-25b3d0ce3485"; }
-#    ];
+  #  swapDevices =
+  #    [ { device = "/dev/disk/by-uuid/b1c69178-3dd9-4621-95ae-25b3d0ce3485"; }
+  #    ];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
   # (the default) this is the recommended approach. When using systemd-networkd it's

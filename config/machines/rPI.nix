@@ -6,7 +6,7 @@
     kernelParams = [ "console=ttyS1,115200n8" "cma=32M" ];
   };
 
-  swapDevices = [ { device = "/swapfile"; size = 1024; } ];
+  swapDevices = [{ device = "/swapfile"; size = 1024; }];
   hardware.enableRedistributableFirmware = true;
   services.openssh.enable = true;
   networking = {

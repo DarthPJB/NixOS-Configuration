@@ -13,13 +13,13 @@
 
 {
   networking =
-  {
-    wireless =
     {
-      networks =
-      {
-      "MI5-Monitoring-System".pskRaw = "0e4974085e4edb6fe8318604d0c8ca6e371c697c59577721b7473bbba302f85f";
-      };
+      wireless =
+        {
+          networks =
+            {
+              "MI5-Monitoring-System".pskRaw = "0e4974085e4edb6fe8318604d0c8ca6e371c697c59577721b7473bbba302f85f";
+            };
+        };
     };
-  };
 }

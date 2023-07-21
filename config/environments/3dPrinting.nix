@@ -1,8 +1,8 @@
 { config, pkgs, ... }:
 
 {
-    environment.systemPackages = [
-      pkgs.slic3r
-      pkgs.platformio
-    ];
+  environment.systemPackages = [
+    pkgs.slic3r
+    pkgs.platformio
+  ];
 }

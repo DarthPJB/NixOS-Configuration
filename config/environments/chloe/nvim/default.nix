@@ -3,7 +3,8 @@
 let
   vimrc = builtins.readFile ./init.vim;
   plugins = import ./plugins.nix { inherit pkgs; };
-in {
+in
+{
   customRC = vimrc;
   vam = {
     knownPlugins = pkgs.vimPlugins // plugins;

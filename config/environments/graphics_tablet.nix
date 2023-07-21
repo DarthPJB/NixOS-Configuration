@@ -1,5 +1,5 @@
 { config, pkgs, ... }:
 
 {
-      digimend.enable = true;
+  digimend.enable = true;
 }
