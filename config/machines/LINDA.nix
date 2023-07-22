@@ -39,7 +39,9 @@
   # Use the systemd-boot EFI boot loader.
   boot =
     {
-      tmp.useTmpfs = false;
+
+      #tmp.useTmpfs = false;
+      tmpOnTmpfs = true;
       supportedFilesystems = [ "ntfs" ];
       loader =
         {
@@ -51,6 +53,7 @@
           availableKernelModules = [ "vfio_virqfd" "vfio_pci" "vfio_iommu_type1" "vfio" "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "uas" "sd_mod" ];
           kernelModules = [ "vfio_pci" ];
         };
+      #kernelPackages= pkgs.linuxPackages_5_18;
       kernelModules = [ "kvm-amd" "vfio_virqfd" "vfio_pci" "vfio_iommu_type1" "vfio" ];
       kernelParams = [
         "amd_iommu=on"
@@ -178,11 +181,17 @@
     device = "speed-storage/var-lib-libvirt";
     fsType = "zfs";
   };
-systemd.mounts = [{
-    where = "/tmp";
-    what = "/speed-storage/tmp";
-    options = "bind";
-  }];
+  systemd.mounts = [{
+      where = "/var/tmp";
+      what = "/speed-storage/tmp";
+      options = "bind";
+    }];
+  #nix.envVars.TMPDIR = "/var/tmp";
+  fileSystems."/tmp" =
+  {
+    device = "speed-storage/tmp";
+    fsType = "zfs";
+  };
 
   fileSystems."/bulk-storage/nas-archive/remote.worker/88/88-FS-V2/rendercache" =
   {

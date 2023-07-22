@@ -5,7 +5,8 @@
     nixinate.url = "github:matthewcroughan/nixinate";
     agenix.url = "github:ryantm/agenix";
     nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
+    #nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-22.11";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
@@ -216,6 +217,7 @@
             ./config/environments/communications.nix
             ./config/environments/neovim.nix
             ./config/environments/browsers.nix
+            ./config/environments/mudd.nix
             ./config/environments/cad_and_graphics.nix
             ./config/environments/blender.nix
             ./config/environments/3dPrinting.nix
