@@ -106,10 +106,6 @@ let g:netrw_list_hide='.git,node_modules'
 let g:python3_host_prog="/usr/local/bin/python3"
 let g:python_host_prog="/usr/local/bin/python"
 
-let @f = '^f DJr.jdd'
-let @b='^f.r
->>kA = {jo};O'
-
 
 
 

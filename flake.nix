@@ -29,7 +29,7 @@
           ];
         }).config.system.build.sdImage;
 
-        local-worker-image = import "${self}/lib/make-storeless-image.nix"
+        local-worker = import "${self}/lib/make-storeless-image.nix"
           #local-image = import "${inputs.nixpkgs.outPath}/nixos/lib/make-disk-image.nix" 
           rec {
             pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
@@ -170,11 +170,11 @@
             ./config/environments/sshd.nix
             {
               _module.args.nixinate = {
-                host = "192.168.0.200";
+                host = "192.168.0.206";
                 sshUser = "John88";
                 substituteOnTarget = true;
                 hermetic = true;
-                buildOn = "local";
+                buildOn = "remote";
               };
               services.openssh.ports = [ 22 ];
               networking.firewall.allowedTCPPorts = [ 22 ];
