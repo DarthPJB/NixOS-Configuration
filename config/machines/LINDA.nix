@@ -41,7 +41,7 @@
     {
 
       #tmp.useTmpfs = false;
-      tmpOnTmpfs = true;
+      tmpOnTmpfs = false;
       supportedFilesystems = [ "ntfs" ];
       loader =
         {
@@ -63,10 +63,10 @@
 
       #this can be done better with boot.extraModProbeConfig?
       extraModprobeConfig = ''
-                options vfio-pci ids=10de:2487,10de:228b
+                options vfio-pci ids=10de:2487,10de:228b,1d6b:0002
         	'';
       initrd.preDeviceCommands = ''
-        DEVS="0000:21:00:.0 0000:21:00.1"
+        DEVS="0000:21:00:.0 0000:21:00.1 0000:46:00.0" 
         for DEV in $DEVS; do
            echo "vfio-pci > /sys/bus/pci/devices/$DEV/driver_override"
         done

@@ -10,6 +10,29 @@
       ./libvirt-qemu/hardware-configuration.nix
     ];
 
+  hardware = {
+    sane.enable = true;
+    opengl.enable = true;
+    pulseaudio.enable = true;
+    opengl.driSupport32Bit = true;
+    pulseaudio.support32Bit = true;
+    nvidia = {
+      modesetting.enable = false;
+      powerManagement.enable = true;
+    };
+  };
+  services =
+  {
+    xserver =
+      {
+        libinput.enable = true;
+        videoDrivers = [ "nvidia" ];
+          deviceSection = ''
+            Option "Coolbits" "24"
+          '';
+      };
+  };
+
   boot = {
     kernelParams = [
       "console=ttyS0,115200"
@@ -66,7 +89,7 @@
   environment.systemPackages = with pkgs; [
     cudatoolkit
     linuxPackages.nvidia_x11
-    #cudaPackages.cudnn
+    cudaPackages.cudnn
     libGLU
     libGL
     xorg.libXi
@@ -81,11 +104,6 @@
     stdenv.cc
     binutils
     ffmpeg
-    python39
-    python39Packages.pip
-    python39Packages.numpy
-    python39Packages.pytorch-bin
-    python39Packages.virtualenv
     tmux
     btop
     nvtop
@@ -93,17 +111,6 @@
 
   services.qemuGuest.enable = true;
   services.spice-vdagentd.enable = true;
-  services.xserver =
-    {
-      libinput.enable = true;
-      videoDrivers = [ "nvidia" ];
-    };
-  hardware = {
-    nvidia = {
-      modesetting.enable = false;
-      powerManagement.enable = true;
-    };
-  };
 
   system.stateVersion = "22.11"; # Did you read the comment?
 
