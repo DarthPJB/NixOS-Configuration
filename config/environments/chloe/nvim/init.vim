@@ -14,10 +14,9 @@ endif
 
 " Vundle
 filetype off
-let &outPath = &outPath . ',' . s:editor_root . '/bundle/Vundle.vim'
+" let &outPath = &outPath . ',' . s:editor_root . '/bundle/Vundle.vim'
 " call vundle#rc()
 " Plugin 'VundleVim/Vundle.vim'
-
 " Plugins
 " Plugin 'tpope/vim-fugitive'
 " Plugin 'tpope/vim-commentary'
@@ -141,7 +140,7 @@ function! SetUpHighlightingBecauseColorschemeFucksEverythingUp()
 endfunction
 
 " Fix colors
-autocmd ColorScheme * call SetUpHighlightingBecauseColorschemeFucksEverythingUp()
+" autocmd ColorScheme * call SetUpHighlightingBecauseColorschemeFucksEverythingUp()
 
 " Set up solarized for the terminal
 let g:solarized_termcolors=256
