@@ -1,12 +1,8 @@
 { pkgs, inputs, ... }:
 
 {
-  environment.systemPackages = with pkgs;
-    let
-      myNvim = inputs.nixpkgs.legacyPackages.x86_64-linux.neovim.override {
-        vimAlias = true;
-        configure = (import ./chloe/nvim { inherit pkgs; });
-      };
-    in
-    [ myNvim ];
+  environment.systemPackages =
+  [
+    inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.neovim
+  ];
 }
