@@ -171,7 +171,7 @@
             {
               _module.args.nixinate = {
                 host = "192.168.0.206";
-                sshUser = "John88";
+                sshUser = "setup";
                 substituteOnTarget = true;
                 hermetic = true;
                 buildOn = "remote";
