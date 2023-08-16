@@ -17,9 +17,28 @@
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
+  boot.kernel.sysctl = {
+    "fs.inotify.max_user_watches" = "1048576"; # 128 times the default 8192
+  };
   boot.loader.efi.canTouchEfiVariables = true;
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.extraPools = [ "archive" "bulk-storage"];
+
+    fileSystems."/bulk-storage/NAS-ARCHIVE/ARCHIVE" = 
+    {
+        device = "/archive/general";
+        options = [ "bind" ];
+    };
+    fileSystems."/bulk-storage/NAS-ARCHIVE/remote.worker/Astralship Master Archive/ARCHIVE" = 
+    {
+        device = "/archive/astral";
+        options = [ "bind" ];
+    };
+    fileSystems."/bulk-storage/NAS-ARCHIVE/remote.worker/88/88-FS-V2/ARCHIVE" = 
+    {
+        device = "/archive/personal";
+        options = [ "bind" ];
+    };
 
   networking.hostId = "d5710c9a";
   networking.hostName = "DataStorage"; # Define your hostname.
