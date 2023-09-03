@@ -34,7 +34,7 @@
       pkgs.firefox
       pkgs.pnmixer
       pkgs.conky
-      pkgs.nextcloud-client
+      #pkgs.nextcloud-client
       pkgs.sl
       pkgs.cmatrix
       pkgs.networkmanagerapplet
