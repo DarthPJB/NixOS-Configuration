@@ -24,6 +24,6 @@
       pkgs.conky
       pkgs.lxappearance
       pkgs.arandr
-      pkgs.nextcloud-client
+      #pkgs.nextcloud-client
     ];
 }

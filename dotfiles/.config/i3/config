@@ -49,9 +49,9 @@ exec --no-startup-id "sleep 3; ~/winwrap.sh > /dev/null"
 #open screenshot tool
 exec --no-startup-id "sleep 3; shutter"
 #open nextcloud
-exec --no-startup-id nextcloud
+#exec --no-startup-id nextcloud
 # set display settings from arandr
-exec --no-startup-id "sleep 2; ~/.screenlayout/layout.sh"
+exec --no-startup-id "sleep 1; ~/.screenlayout/layout.sh"
 
 
 # Use pactl to adjust volume in PulseAudio.
