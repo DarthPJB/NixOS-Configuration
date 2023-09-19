@@ -40,8 +40,8 @@
   boot =
     {
 
-      #tmp.useTmpfs = false;
-      tmpOnTmpfs = false;
+      tmp.useTmpfs = false;
+      #tmpOnTmpfs = false;
       supportedFilesystems = [ "ntfs" ];
       loader =
         {

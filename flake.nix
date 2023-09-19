@@ -5,12 +5,15 @@
     nixinate.url = "github:matthewcroughan/nixinate";
     agenix.url = "github:ryantm/agenix";
     nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-22.11";
+#    nixpkgs.url = "github:nixos/nixpkgs/nixos-22.11";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
-  outputs = inputs@{ self, nixpkgs, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_unstable }:
+  outputs = inputs@{ self, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_unstable }:
+  let
+  nixpkgs = nixpkgs_unstable;
+  in
     {
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixpkgs-fmt;
       apps.x86_64-linux = (inputs.nixinate.nixinate.x86_64-linux inputs.self).nixinate;
@@ -233,6 +236,8 @@
             ./config/modifier_imports/arm-emulation.nix
             ./config/server_services/samba_server.nix
             {
+              networking.firewall.allowedTCPPorts = [ 6666 8080 6669];
+              networking.firewall.allowedUDPPorts = [ 6666 ];
               nixpkgs.config.permittedInsecurePackages = [ "tightvnc-1.3.10" ];
               #networking.nameservers = [ "1.1.1.1" "8.8.8.8" "8.8.4.4" ];
 
