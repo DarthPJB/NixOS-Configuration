@@ -13,7 +13,7 @@
     pkgs.virtiofsd
     pkgs.gwe
     pkgs.nvtop
-    pkgs.virtmanager
+    pkgs.virt-manager
     pkgs.tightvnc
   ];
   # ------------ custom doom ------------------
