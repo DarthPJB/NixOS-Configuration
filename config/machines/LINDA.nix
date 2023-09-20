@@ -99,10 +99,16 @@
   hardware = {
     sane.enable = true;
     opengl.enable = true;
-    pulseaudio.enable = true;
+    #pulseaudio.enable = true;
     cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
     opengl.driSupport32Bit = true;
-    pulseaudio.support32Bit = true;
+    #pulseaudio.support32Bit = true;
+    services.pipewire = {
+        enable = true;
+        alsa.enable = true;
+        alsa.support32Bit = true;
+        pulse.enable = true;
+    };
     nvidia = {
       modesetting.enable = false;
       powerManagement.enable = true;
