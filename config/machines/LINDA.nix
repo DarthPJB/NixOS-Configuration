@@ -96,6 +96,12 @@
         };
 
     };
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+  };
   hardware = {
     sane.enable = true;
     opengl.enable = true;
@@ -103,12 +109,6 @@
     cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
     opengl.driSupport32Bit = true;
     #pulseaudio.support32Bit = true;
-    services.pipewire = {
-        enable = true;
-        alsa.enable = true;
-        alsa.support32Bit = true;
-        pulse.enable = true;
-    };
     nvidia = {
       modesetting.enable = false;
       powerManagement.enable = true;
@@ -140,76 +140,76 @@
     };
 
   fileSystems."/" =
-  {
-    device = "none";
-    fsType = "tmpfs";
-  };
+    {
+      device = "none";
+      fsType = "tmpfs";
+    };
 
   fileSystems."/home" =
-  {
-    device = "/dev/disk/by-uuid/8f73e910-ebff-49fa-9529-55bc0f06ceba";
-    fsType = "ext4";
-  };
+    {
+      device = "/dev/disk/by-uuid/8f73e910-ebff-49fa-9529-55bc0f06ceba";
+      fsType = "ext4";
+    };
 
   fileSystems."/boot" =
-  {
-    neededForBoot = true;
-    device = "/dev/disk/by-uuid/7CFB-80B3";
-    fsType = "vfat";
-  };
+    {
+      neededForBoot = true;
+      device = "/dev/disk/by-uuid/7CFB-80B3";
+      fsType = "vfat";
+    };
 
   fileSystems."/etc/ssh" =
-  {
-    device = "bulk-storage/etc-ssh";
-    fsType = "zfs";
-  };
+    {
+      device = "bulk-storage/etc-ssh";
+      fsType = "zfs";
+    };
 
   fileSystems."/var/log" =
-  {
-    device = "bulk-storage/var-log";
-    fsType = "zfs";
-  };
+    {
+      device = "bulk-storage/var-log";
+      fsType = "zfs";
+    };
 
   fileSystems."/nix" =
-  {
-    device = "speed-storage/nix";
-    fsType = "zfs";
-  };
+    {
+      device = "speed-storage/nix";
+      fsType = "zfs";
+    };
 
   fileSystems."/etc/nixos" =
-  {
-    device = "bulk-storage/etc-nixos";
-    fsType = "zfs";
-  };
+    {
+      device = "bulk-storage/etc-nixos";
+      fsType = "zfs";
+    };
 
   fileSystems."/var/lib/libvirt" =
-  {
-    device = "speed-storage/var-lib-libvirt";
-    fsType = "zfs";
-  };
+    {
+      device = "speed-storage/var-lib-libvirt";
+      fsType = "zfs";
+    };
   systemd.mounts = [{
-      where = "/var/tmp";
-      what = "/speed-storage/tmp";
-      options = "bind";
-    }];
+    where = "/var/tmp";
+    what = "/speed-storage/tmp";
+    options = "bind";
+  }];
   #nix.envVars.TMPDIR = "/var/tmp";
   fileSystems."/tmp" =
-  {
-    device = "speed-storage/tmp";
-    fsType = "zfs";
-  };
+    {
+      device = "speed-storage/tmp";
+      fsType = "zfs";
+    };
 
   fileSystems."/rendercache" =
-  {
-    device = "/speed-storage/rendercache";
-    options = [ "bind" ];
-  };
+    {
+      device = "/speed-storage/rendercache";
+      options = [ "bind" ];
+    };
 
   fileSystems."/bulk-storage/nas-archive/remote.worker/88/88-FS-V2/rendercache" =
-  {
-    device = "/speed-storage/rendercache";
-    options = [ "bind" ];
-  };
+    {
+      device = "/speed-storage/rendercache";
+      options = [ "bind" ];
+    };
 
   swapDevices = [ ];
 
