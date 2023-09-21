@@ -22,22 +22,22 @@
   };
   boot.loader.efi.canTouchEfiVariables = true;
   boot.supportedFilesystems = [ "zfs" ];
-  boot.zfs.extraPools = [ "archive" "bulk-storage"];
+  boot.zfs.extraPools = [ "archive" "bulk-storage" ];
 
-    fileSystems."/bulk-storage/NAS-ARCHIVE/ARCHIVE" = 
+  fileSystems."/bulk-storage/NAS-ARCHIVE/ARCHIVE" =
     {
-        device = "/archive/general";
-        options = [ "bind" ];
+      device = "/archive/general";
+      options = [ "bind" ];
     };
-    fileSystems."/bulk-storage/NAS-ARCHIVE/remote.worker/Astralship Master Archive/ARCHIVE" = 
+  fileSystems."/bulk-storage/NAS-ARCHIVE/remote.worker/Astralship Master Archive/ARCHIVE" =
     {
-        device = "/archive/astral";
-        options = [ "bind" ];
+      device = "/archive/astral";
+      options = [ "bind" ];
     };
-    fileSystems."/bulk-storage/NAS-ARCHIVE/remote.worker/88/88-FS-V2/ARCHIVE" = 
+  fileSystems."/bulk-storage/NAS-ARCHIVE/remote.worker/88/88-FS-V2/ARCHIVE" =
     {
-        device = "/archive/personal";
-        options = [ "bind" ];
+      device = "/archive/personal";
+      options = [ "bind" ];
     };
 
   networking.hostId = "d5710c9a";

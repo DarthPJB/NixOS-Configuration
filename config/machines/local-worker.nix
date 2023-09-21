@@ -22,16 +22,16 @@
     };
   };
   services =
-  {
-    xserver =
-      {
-        libinput.enable = true;
-        videoDrivers = [ "nvidia" ];
+    {
+      xserver =
+        {
+          libinput.enable = true;
+          videoDrivers = [ "nvidia" ];
           deviceSection = ''
             Option "Coolbits" "24"
           '';
-      };
-  };
+        };
+    };
 
   boot = {
     kernelParams = [
