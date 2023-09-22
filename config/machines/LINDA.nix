@@ -14,7 +14,7 @@
     pkgs.gwe
     pkgs.nvtop
     pkgs.virt-manager
-    pkgs.tightvnc
+    pkgs.tigervnc
   ];
   # ------------ custom doom ------------------
 
