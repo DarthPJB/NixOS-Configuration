@@ -259,7 +259,6 @@
             {
               networking.firewall.allowedTCPPorts = [ 6666 8080 6669 ];
               networking.firewall.allowedUDPPorts = [ 6666 ];
-              nixpkgs.config.permittedInsecurePackages = [ "tightvnc-1.3.10" ];
               #networking.nameservers = [ "1.1.1.1" "8.8.8.8" "8.8.4.4" ];
 
               environment.systemPackages =
