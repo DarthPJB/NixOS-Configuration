@@ -255,10 +255,11 @@
             ./config/modifier_imports/zfs.nix
             ./config/modifier_imports/virtualisation-libvirtd.nix
             ./config/modifier_imports/arm-emulation.nix
+            ./config/environments/sshd.nix
             #            ./config/server_services/samba_server.nix
             {
-              networking.firewall.allowedTCPPorts = [ 6666 8080 6669 ];
-              networking.firewall.allowedUDPPorts = [ 6666 ];
+              #networking.firewall.allowedTCPPorts = [ 6666 8080 6669 ];
+              #networking.firewall.allowedUDPPorts = [ 6666 ];
               #networking.nameservers = [ "1.1.1.1" "8.8.8.8" "8.8.4.4" ];
 
               environment.systemPackages =
