@@ -205,27 +205,28 @@
             }
           ];
         };
-        obs-box = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          modules = [
-            ./config/configuration.nix
-            ./config/machines/obs-box.nix
-            ./config/environments/i3wm_darthpjb.nix
-            ./config/environments/video_call_streaming.nix
-            ./config/modifier_imports/zfs.nix
-            {
-              networking.firewall.allowedTCPPorts = [ 6666 8080 6669 ];
-              networking.firewall.allowedUDPPorts = [ 6666 ];
-              _module.args.nixinate = {
-                host = "192.168.0.186";
-                sshUser = "John88";
-                substituteOnTarget = true;
-                hermetic = true;
-                buildOn = "remote";
-              };
-            }
-          ];
-        };
+        obs-box = nixpkgs.lib.nixosSystem
+          {
+            system = "x86_64-linux";
+            modules = [
+              ./config/configuration.nix
+              ./config/machines/obs-box.nix
+              ./config/environments/i3wm_darthpjb.nix
+              ./config/environments/video_call_streaming.nix
+              ./config/modifier_imports/zfs.nix
+              {
+                networking.firewall.allowedTCPPorts = [ 6666 8080 6669 ];
+                networking.firewall.allowedUDPPorts = [ 6666 ];
+                _module.args.nixinate = {
+                  host = "192.168.0.186";
+                  sshUser = "John88";
+                  substituteOnTarget = true;
+                  hermetic = true;
+                  buildOn = "remote";
+                };
+              }
+            ];
+          };
 
         LINDA = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
