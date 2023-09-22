@@ -32,7 +32,7 @@
       Restart = "always";
     };
     wantedBy = [ "multi-user.target" ];
-    requires = [ "pulseaudio.service" ];
+    requires = [ "pipewire.service" ];
   };
 
   # Use the GRUB 2 boot loader.
