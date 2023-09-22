@@ -105,10 +105,8 @@
   hardware = {
     sane.enable = true;
     opengl.enable = true;
-    #pulseaudio.enable = true;
     cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
     opengl.driSupport32Bit = true;
-    #pulseaudio.support32Bit = true;
     nvidia = {
       modesetting.enable = false;
       powerManagement.enable = true;
@@ -129,7 +127,6 @@
         {
           enp69s0f0.useDHCP = true;
           enp69s0f1.useDHCP = true;
-          #      wlp72s0.useDHCP = true;
         };
       wireless =
         {
@@ -143,6 +140,7 @@
     {
       device = "none";
       fsType = "tmpfs";
+      options = ["defaults" "size=2G" "mode=755" ];
     };
 
   fileSystems."/home" =
