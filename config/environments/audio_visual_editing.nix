@@ -8,7 +8,8 @@
         inherit system;
         config.allowUnfree = true;
       };
-
+    services.gvfs.enable = true; # Mount, trash, and other functionalities
+    services.tumbler.enable = true; # Thumbnail support for images
       #pkgs_unstable = inputs.nixpkgs_unstable.legacyPackages.x86_64-linux;
     in
     [
@@ -18,7 +19,6 @@
       pkgs.vlc
       pkgs.pcmanfm 
       pkgs.ffmpegthumbnailer 
-      pkgs.xfce.tumbler
       pkgs.kdenlive
       #		pkgs.shotcut
       pkgs.shutter
