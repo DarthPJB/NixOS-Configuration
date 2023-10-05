@@ -16,7 +16,10 @@
       pkgs_unstable.ffmpeg-full
       pkgs.mplayer
       pkgs.vlc
-      #		pkgs.kdenlive
+      pkgs.pcmanfm 
+      pkgs.ffmpegthumbnailer 
+      pkgs.xfce.tumbler
+      pkgs.kdenlive
       #		pkgs.shotcut
       pkgs.shutter
     ];
