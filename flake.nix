@@ -235,6 +235,7 @@
             ./config/modifier_imports/virtualisation-libvirtd.nix
             ./config/modifier_imports/arm-emulation.nix
             ./config/environments/sshd.nix
+            ./config/modifier_imports/remote-builder.nix
             {
               environment.systemPackages =
                 let
