@@ -152,7 +152,7 @@
                 sshUser = "John88";
                 substituteOnTarget = true;
                 hermetic = true;
-                buildOn = "local";
+                buildOn = "remote";
               };
               services.openssh.ports = [ 22 ];
               networking.firewall.allowedTCPPorts = [ 22 ];
@@ -182,6 +182,70 @@
             }
           ];
         };
+        RemoteWorker-2 = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [
+            agenix.nixosModules.default
+            ./config/configuration.nix
+            ./config/machines/ethan-net.nix
+            #            ./config/locale/tailscale.nix
+            #            ./config/server_services/nextcloud.nix
+            #            ./config/server_services/syncthing_server.nix
+
+
+            {
+              networking.firewall.allowedTCPPorts = [ 22000 ];
+              networking.firewall.allowedUDPPorts = [ 22000 21027 ];
+              services = {
+                syncthing = {
+
+                  guiAddress = "127.0.0.1:8384";
+
+
+                  openDefaultPorts = true;
+                  enable = true;
+                  user = "syncthing";
+                  dataDir = "/bulk-storage/syncthing";
+                  configDir = "/bulk-storage/syncthing/.config/syncthing";
+                  overrideDevices = true; # overrides any devices added or deleted through the WebUI
+                  overrideFolders = true; # overrides any folders added or deleted through the WebUI
+                  settings = {
+                    extraOptions.gui = {
+                      user = "DarthPJB";
+                      password = "THIS_PASS_WORD_IS_HARD?";
+                    };
+                    devices = {
+                      "device1" = { id = "YSM4GLR-RVNNKB5-56ICTQG-7WJSIVC-VAYUBIO-ANZCL5W-3JIVSUY-IECJGQQ"; };
+                      "device2" = { id = "IBQ4OX7-QB5ON3R-WITXQ2A-IWHSM4Z-E4OES2K-RHCBUQU-YXXCNTX-TUDD5QE"; };
+                    };
+                    folders = {
+                      "obisidan-archive" = {
+                        # Name of folder in Syncthing, also the folder ID
+                        id = "hb36j-r9ffv";
+                        path = "/bulk-storage/syncthing/obsidian-archive"; # Which folder to add to Syncthing
+                        devices = [ "device1" "device2" ]; # Which devices to share the folder with
+                      };
+                      "NAS-ARCHIVE" = {
+                        # Name of folder in Syncthing, also the folder ID
+                        id = "gtpsy-rfgv5";
+                        path = "/bulk-storage/syncthing/remote.worker"; # Which folder to add to Syncthing
+                        devices = [ "device1" "device2" ]; # Which devices to share the folder with
+                      };
+                    };
+
+                  };
+                };
+              };
+              _module.args.nixinate = {
+                host = "149.5.115.141";
+                sshUser = "John88";
+                substituteOnTarget = true;
+                hermetic = true;
+                buildOn = "remote";
+              };
+            }
+          ];
+        };
         RemoteWorker-1 = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
@@ -205,7 +269,7 @@
             }
           ];
         };
-        
+
 
         LINDA = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";

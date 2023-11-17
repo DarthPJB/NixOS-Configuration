@@ -6,8 +6,9 @@
 
 {
   imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
+    [
+      # Include the results of the hardware scan.
+      ./ethan-net/hardware-configuration.nix
     ];
 
   # Use the systemd-boot EFI boot loader.
@@ -46,7 +47,7 @@
     pkgs.ripgrep
   ];
 
-   programs.ssh.enableAskPassword = false;
+  programs.ssh.enableAskPassword = false;
   programs.gnupg.agent =
     {
       pinentryFlavor = "tty";
@@ -70,14 +71,14 @@
     extraGroups = [ "wheel" "libvirtd" "vboxusers" "dialout" "disk" "networkManager" ]; # Enable ‘sudo’ for the user.
   };
 
-fileSystems."/" =
+  fileSystems."/" =
     {
       device = "none";
       fsType = "tmpfs";
-      options = ["defaults" "size=2G" "mode=755" ];
+      options = [ "defaults" "size=2G" "mode=755" ];
     };
 
-fileSystems."/etc/ssh" =
+  fileSystems."/etc/ssh" =
     {
       device = "bulk-storage/etc-ssh";
       fsType = "zfs";
@@ -101,7 +102,7 @@ fileSystems."/etc/ssh" =
       fsType = "zfs";
     };
 
-systemd.mounts = [{
+  systemd.mounts = [{
     where = "/var/tmp";
     what = "/bulk-storage/tmp";
     options = "bind";
@@ -122,7 +123,7 @@ systemd.mounts = [{
   # Open ports in the firewall.
   networking.firewall.allowedTCPPorts = [ 22 1108 ];
   networking.firewall.allowedUDPPorts = [ ];
-  # networking.hostName = "nixos"; # Define your hostname.
+  networking.hostName = "remote-worker-2"; # Define your hostname.
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
@@ -143,15 +144,16 @@ systemd.mounts = [{
   # };
 
   # Enable the X11 windowing system.
- # services.xserver.enable = true;
+  # services.xserver.enable = true;
 
 
   # Enable the Plasma 5 Desktop Environment.
- # services.xserver.displayManager.sddm.enable = true;
-#  services.xserver.desktopManager.plasma5.enable = true;
+  # services.xserver.displayManager.sddm.enable = true;
+  #  services.xserver.desktopManager.plasma5.enable = true;
 
 
 
   system.stateVersion = "23.05"; # Did you read the comment?
 
 }
+

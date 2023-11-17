@@ -5,7 +5,8 @@
 
 {
   imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
+    [
+      (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
   boot.initrd.availableKernelModules = [ "ehci_pci" "ahci" "usbhid" "usb_storage" "sd_mod" ];
@@ -13,44 +14,49 @@
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
 
-#  fileSystems."/" =
-#    { device = "/dev/disk/by-uuid/ad9c9e74-4e20-498e-b2db-64fd4906b4ed";
-#      fsType = "ext4";
-#    };
+  #  fileSystems."/" =
+  #    { device = "/dev/disk/by-uuid/ad9c9e74-4e20-498e-b2db-64fd4906b4ed";
+  #      fsType = "ext4";
+  #    };
 
   fileSystems."/etc/nixos" =
-    { device = "bulk-storage/etc-nixos";
+    {
+      device = "bulk-storage/etc-nixos";
       fsType = "zfs";
     };
 
   fileSystems."/etc/ssh" =
-    { device = "bulk-storage/etc-ssh";
+    {
+      device = "bulk-storage/etc-ssh";
       fsType = "zfs";
     };
 
   fileSystems."/var/log" =
-    { device = "bulk-storage/var-log";
+    {
+      device = "bulk-storage/var-log";
       fsType = "zfs";
     };
 
   fileSystems."/nix" =
-    { device = "bulk-storage/nix-store";
+    {
+      device = "bulk-storage/nix-store";
       fsType = "zfs";
     };
 
   fileSystems."/tmp" =
-    { device = "bulk-storage/tmp";
+    {
+      device = "bulk-storage/tmp";
       fsType = "zfs";
     };
 
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/F05B-E22F";
+    {
+      device = "/dev/disk/by-uuid/F05B-E22F";
       fsType = "vfat";
     };
 
   swapDevices =
-    [ { device = "/dev/disk/by-uuid/ccb735e9-0fd2-411c-86d2-5b3a38a96c29"; }
-    ];
+    [{ device = "/dev/disk/by-uuid/ccb735e9-0fd2-411c-86d2-5b3a38a96c29"; }];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
   # (the default) this is the recommended approach. When using systemd-networkd it's
@@ -59,16 +65,17 @@
   networking.useDHCP = lib.mkDefault false;
   # networking.interfaces.enp2s0.useDHCP = lib.mkDefault true;
   networking = {
-          defaultGateway = "149.5.115.129";
-          nameservers = [ "1.1.1.1" "8.8.8.8" ];
-          interfaces.enp2s0 = {
-                ipv4.addresses = [{
-                           address = "149.5.115.141";
-                           prefixLength = 28;
-                  }];
-          };
+    defaultGateway = "149.5.115.129";
+    nameservers = [ "1.1.1.1" "8.8.8.8" ];
+    interfaces.enp2s0 = {
+      ipv4.addresses = [{
+        address = "149.5.115.141";
+        prefixLength = 28;
+      }];
+    };
   };
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }
+

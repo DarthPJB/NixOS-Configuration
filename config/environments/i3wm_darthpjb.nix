@@ -7,11 +7,26 @@
     ];
   services.picom =
     {
-      enable = false;
-      backend = "glx"; # try "glx" if xrender doesn't help
-      shadow = true;
-      inactiveOpacity = 0.95;
-      activeOpacity = 1.0;
+      enable = true;
+      package = pkgs.picom-jonaburg;
+      backend = "glx";
+      settings = {
+        experimental-backends = true;
+        xrender-sync-fence = true;
+        blur = {
+          method = "dual_kawase";
+          strength = 7;
+        };
+        fading = true;
+        fade-in-step = 0.1;
+        fade-out-step = 0.1;
+        transition-length = 100;
+        transition-pow-x = 0.5;
+        transition-pow-y = 0.5;
+        transition-pow-w = 0.5;
+        transition-pow-h = 0.5;
+        size-transition = true;
+      };
     };
   programs.dconf.enable = true;
   environment.systemPackages =
