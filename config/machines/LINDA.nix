@@ -63,7 +63,7 @@
 
       #this can be done better with boot.extraModProbeConfig?
       extraModprobeConfig = ''
-                options vfio-pci ids=10de:2487,10de:228b,1d6b:0002
+                options vfio-pci ids=10de:2487,10de:228b,1d6b:0002,28de:2102,28de:2300,0424:2744,28de:2613,28de:2400
         	'';
       initrd.preDeviceCommands = ''
         DEVS="0000:21:00:.0 0000:21:00.1 0000:46:00.0" 
@@ -140,7 +140,7 @@
     {
       device = "none";
       fsType = "tmpfs";
-      options = ["defaults" "size=2G" "mode=755" ];
+      options = [ "defaults" "size=2G" "mode=755" ];
     };
 
   fileSystems."/home" =
