@@ -33,7 +33,7 @@
         local-worker = import "${self}/lib/make-storeless-image.nix"
           #local-image = import "${inputs.nixpkgs.outPath}/nixos/lib/make-disk-image.nix" 
           rec {
-            pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
+            pkgs = inputs.nixpkgs_unstable.legacyPackages.x86_64-linux;
             inherit (pkgs) lib;
             inherit (self.nixosConfigurations.local-worker) config;
             additionalPaths = [ ];
@@ -145,7 +145,7 @@
             ./config/environments/sshd.nix
             {
               nix.nixPath = [
-                "nixpkgs=${inputs.nixpkgs}"
+                "nixpkgs=${inputs.nixpkgs_unstable}"
               ];
               _module.args.nixinate = {
                 host = "192.168.122.69";
