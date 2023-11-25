@@ -18,7 +18,6 @@
   ];
   # ------------ custom doom ------------------
 
-
   systemd.tmpfiles.rules = [
     "f /dev/shm/looking-glass 0660 John88 qemu-libvirtd -"
     "f /dev/shm/scream 0660 John88 qemu-libvirtd -"
@@ -66,7 +65,7 @@
                 options vfio-pci ids=10de:2487,10de:228b,1d6b:0002,28de:2102,28de:2300,0424:2744,28de:2613,28de:2400
         	'';
       initrd.preDeviceCommands = ''
-        DEVS="0000:21:00:.0 0000:21:00.1 0000:46:00.0" 
+        DEVS="0000:21:00:.0 0000:21:00.1 0000:46:00.0"
         for DEV in $DEVS; do
            echo "vfio-pci > /sys/bus/pci/devices/$DEV/driver_override"
         done
@@ -140,13 +139,14 @@
     {
       device = "none";
       fsType = "tmpfs";
-      options = [ "defaults" "size=2G" "mode=755" ];
+      options = [ "defaults" "size=2G" "mode=755" "nofail" ];
     };
 
   fileSystems."/home" =
     {
       device = "/dev/disk/by-uuid/8f73e910-ebff-49fa-9529-55bc0f06ceba";
       fsType = "ext4";
+      options = [ "nofail" ];
     };
 
   fileSystems."/boot" =
@@ -154,59 +154,65 @@
       neededForBoot = true;
       device = "/dev/disk/by-uuid/7CFB-80B3";
       fsType = "vfat";
+      options = [ "nofail" ];
     };
 
   fileSystems."/etc/ssh" =
     {
       device = "bulk-storage/etc-ssh";
       fsType = "zfs";
+      options = [ "nofail" ];
     };
 
   fileSystems."/var/log" =
     {
       device = "bulk-storage/var-log";
       fsType = "zfs";
+      options = [ "nofail" ];
     };
 
   fileSystems."/nix" =
     {
       device = "speed-storage/nix";
       fsType = "zfs";
+      options = [ "nofail" ];
     };
 
   fileSystems."/etc/nixos" =
     {
       device = "bulk-storage/etc-nixos";
       fsType = "zfs";
+      options = [ "nofail" ];
     };
 
   fileSystems."/var/lib/libvirt" =
     {
       device = "speed-storage/var-lib-libvirt";
       fsType = "zfs";
+      options = [ "nofail" ];
     };
-  systemd.mounts = [{
-    where = "/var/tmp";
-    what = "/speed-storage/tmp";
-    options = "bind";
-  }];
+  systemd.mounts = [
+    {
+      where = "/rendercache";
+      what = "/speed-storage/rendercache";
+      options = "bind";
+    }
+    {
+      where = "/bulk-storage/nas-archive/remote.worker/88/88-FS-V2/rendercache";
+      what = "/speed-storage/rendercache";
+      options = "bind";
+    }
+    {
+      where = "/var/tmp";
+      what = "/speed-storage/tmp";
+      options = "bind";
+    }
+  ];
   #nix.envVars.TMPDIR = "/var/tmp";
   fileSystems."/tmp" =
     {
       device = "speed-storage/tmp";
       fsType = "zfs";
-    };
-
-  fileSystems."/rendercache" =
-    {
-      device = "/speed-storage/rendercache";
-      options = [ "bind" ];
-    };
-
-  fileSystems."/bulk-storage/nas-archive/remote.worker/88/88-FS-V2/rendercache" =
-    {
-      device = "/speed-storage/rendercache";
-      options = [ "bind" ];
     };
 
   swapDevices = [ ];
