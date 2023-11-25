@@ -5,12 +5,12 @@
     nixinate.url = "github:matthewcroughan/nixinate";
     agenix.url = "github:ryantm/agenix";
     nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-    #    nixpkgs.url = "github:nixos/nixpkgs/nixos-22.11";
+    nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-23.05";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
-  outputs = inputs@{ self, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_unstable }:
+  outputs = inputs@{ self, nixpkgs_stable, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_unstable }:
     let
       nixpkgs = nixpkgs_unstable;
     in
@@ -31,7 +31,7 @@
         }).config.system.build.sdImage;
 
         local-worker = import "${self}/lib/make-storeless-image.nix"
-          #local-image = import "${inputs.nixpkgs.outPath}/nixos/lib/make-disk-image.nix" 
+          #local-image = import "${inputs.nixpkgs.outPath}/nixos/lib/make-disk-image.nix"
           rec {
             pkgs = inputs.nixpkgs_unstable.legacyPackages.x86_64-linux;
             inherit (pkgs) lib;
@@ -285,7 +285,6 @@
             ./config/environments/browsers.nix
             ./config/environments/mudd.nix
             ./config/environments/cad_and_graphics.nix
-            ./config/environments/blender.nix
             ./config/environments/3dPrinting.nix
             ./config/environments/audio_visual_editing.nix
             ./config/environments/general_fonts.nix
@@ -301,6 +300,10 @@
             ./config/environments/sshd.nix
             ./config/modifier_imports/remote-builder.nix
             {
+              nixpkgs.config.permittedInsecurePackages = [
+                "pulsar-1.109.0"
+              ];
+
               environment.systemPackages =
                 let
                   system = "x86_64-linux";
