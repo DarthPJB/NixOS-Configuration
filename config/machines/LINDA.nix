@@ -21,6 +21,7 @@
   systemd.tmpfiles.rules = [
     "f /dev/shm/looking-glass 0660 John88 qemu-libvirtd -"
     "f /dev/shm/scream 0660 John88 qemu-libvirtd -"
+    "d /rendercache 0755 John88 users"
   ];
 
   systemd.user.services.scream-ivshmem = {
@@ -196,16 +197,19 @@
       where = "/rendercache";
       what = "/speed-storage/rendercache";
       options = "bind";
+      after = [ "systemd-tmpfiles-setup.service" ];
     }
     {
       where = "/bulk-storage/nas-archive/remote.worker/88/88-FS-V2/rendercache";
       what = "/speed-storage/rendercache";
       options = "bind";
+      after = [ "systemd-tmpfiles-setup.service" ];
     }
     {
       where = "/var/tmp";
       what = "/speed-storage/tmp";
       options = "bind";
+      after = [ "systemd-tmpfiles-setup.service" ];
     }
   ];
   #nix.envVars.TMPDIR = "/var/tmp";
