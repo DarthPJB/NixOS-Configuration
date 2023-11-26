@@ -197,19 +197,22 @@
       where = "/rendercache";
       what = "/speed-storage/rendercache";
       options = "bind";
-      after = [ "systemd-tmpfiles-setup.service" ];
+      after = [ "systemd-tmpfiles-setup.service"];
+      wantedBy = [ "multi-user.target" ];
     }
     {
       where = "/bulk-storage/nas-archive/remote.worker/88/88-FS-V2/rendercache";
       what = "/speed-storage/rendercache";
       options = "bind";
-      after = [ "systemd-tmpfiles-setup.service" ];
+      after = [ "systemd-tmpfiles-setup.service"];
+      wantedBy = [ "multi-user.target" ];
     }
     {
       where = "/var/tmp";
       what = "/speed-storage/tmp";
       options = "bind";
-      after = [ "systemd-tmpfiles-setup.service" ];
+      after = [ "systemd-tmpfiles-setup.service"];
+      wantedBy = [ "multi-user.target" ];
     }
   ];
   #nix.envVars.TMPDIR = "/var/tmp";
