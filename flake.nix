@@ -118,11 +118,26 @@
             (import ./config/locale/hotel_wifi.nix)
             (import ./config/environments/browsers.nix)
             (import ./config/configuration.nix)
-            (import ./config/environments/xfce.nix)
+            (import ./config/environments/i3wm_darthpjb.nix)
             (import ./config/environments/rtl-sdr.nix)
             (import ./config/machines/terminalmedia.nix)
             (import ./config/environments/code.nix)
             {
+	                  nixpkgs.config.permittedInsecurePackages = [
+                "pulsar-1.109.0"
+              ];
+           nixpkgs.config.allowUnfree = true;
+           nixpkgs.config.nvidia.acceptLicense = true;
+
+              _module.args.nixinate = {
+                host = "192.168.0.50";
+                sshUser = "John88";
+                substituteOnTarget = true;
+                hermetic = true;
+                buildOn = "local";
+              };
+              services.openssh.ports = [ 22 ];
+              networking.firewall.allowedTCPPorts = [ 22 ];
               environment.systemPackages =
                 [
                   nixpkgs.legacyPackages.x86_64-linux.ffmpeg
