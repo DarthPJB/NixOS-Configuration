@@ -4,13 +4,13 @@
   inputs = {
     nixinate.url = "github:matthewcroughan/nixinate";
     agenix.url = "github:ryantm/agenix";
-    nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-23.11";
-    #    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
+    nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-23.05";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
-  outputs = inputs@{ self, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_unstable }:
+  outputs = inputs@{ self, nixpkgs_stable, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_unstable }:
     let
       nixpkgs = nixpkgs_unstable;
     in
@@ -31,9 +31,9 @@
         }).config.system.build.sdImage;
 
         local-worker = import "${self}/lib/make-storeless-image.nix"
-          #local-image = import "${inputs.nixpkgs.outPath}/nixos/lib/make-disk-image.nix" 
+          #local-image = import "${inputs.nixpkgs.outPath}/nixos/lib/make-disk-image.nix"
           rec {
-            pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
+            pkgs = inputs.nixpkgs_unstable.legacyPackages.x86_64-linux;
             inherit (pkgs) lib;
             inherit (self.nixosConfigurations.local-worker) config;
             additionalPaths = [ ];
@@ -118,11 +118,26 @@
             (import ./config/locale/hotel_wifi.nix)
             (import ./config/environments/browsers.nix)
             (import ./config/configuration.nix)
-            (import ./config/environments/xfce.nix)
+            (import ./config/environments/i3wm_darthpjb.nix)
             (import ./config/environments/rtl-sdr.nix)
             (import ./config/machines/terminalmedia.nix)
             (import ./config/environments/code.nix)
             {
+	                  nixpkgs.config.permittedInsecurePackages = [
+                "pulsar-1.109.0"
+              ];
+           nixpkgs.config.allowUnfree = true;
+           nixpkgs.config.nvidia.acceptLicense = true;
+
+              _module.args.nixinate = {
+                host = "192.168.0.50";
+                sshUser = "John88";
+                substituteOnTarget = true;
+                hermetic = true;
+                buildOn = "local";
+              };
+              services.openssh.ports = [ 22 ];
+              networking.firewall.allowedTCPPorts = [ 22 ];
               environment.systemPackages =
                 [
                   nixpkgs.legacyPackages.x86_64-linux.ffmpeg
@@ -145,7 +160,7 @@
             ./config/environments/sshd.nix
             {
               nix.nixPath = [
-                "nixpkgs=${inputs.nixpkgs}"
+                "nixpkgs=${inputs.nixpkgs_unstable}"
               ];
               _module.args.nixinate = {
                 host = "192.168.122.69";
@@ -285,7 +300,6 @@
             ./config/environments/browsers.nix
             ./config/environments/mudd.nix
             ./config/environments/cad_and_graphics.nix
-            ./config/environments/blender.nix
             ./config/environments/3dPrinting.nix
             ./config/environments/audio_visual_editing.nix
             ./config/environments/general_fonts.nix
@@ -301,6 +315,10 @@
             ./config/environments/sshd.nix
             ./config/modifier_imports/remote-builder.nix
             {
+              nixpkgs.config.permittedInsecurePackages = [
+                "pulsar-1.109.0"
+              ];
+
               environment.systemPackages =
                 let
                   system = "x86_64-linux";
