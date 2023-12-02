@@ -4,8 +4,8 @@
   inputs = {
     nixinate.url = "github:matthewcroughan/nixinate";
     agenix.url = "github:ryantm/agenix";
-    nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-    #    nixpkgs.url = "github:nixos/nixpkgs/nixos-22.11";
+    nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-23.11";
+    #    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
@@ -276,7 +276,7 @@
           specialArgs = { inherit inputs; };
           modules = [
             ./config/configuration.nix
-            ./config/machines/LINDA.nix
+            ./config/machines/LINDACORE.nix
             ./config/environments/i3wm_darthpjb.nix
             ./config/environments/steam.nix
             ./config/environments/code.nix
@@ -293,7 +293,7 @@
             ./config/locale/tailscale.nix
             ./config/modifier_imports/bluetooth.nix
             ./config/modifier_imports/memtest.nix
-            ./config/modifier_imports/cuda.nix
+#            ./config/modifier_imports/cuda.nix
             ./config/modifier_imports/hosts.nix
             ./config/modifier_imports/zfs.nix
             ./config/modifier_imports/virtualisation-libvirtd.nix
@@ -312,7 +312,7 @@
                 [
                   pkgs_unstable.vivaldi
                   agenix.packages.x86_64-linux.default
-                  parsecgaming.packages.x86_64-linux.parsecgaming
+#                  parsecgaming.packages.x86_64-linux.parsecgaming
                 ];
             }
           ];
