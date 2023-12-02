@@ -23,12 +23,11 @@
     "f /dev/shm/scream 0660 John88 qemu-libvirtd -"
     "d /rendercache 0755 John88 users"
   ];
-
   systemd.user.services.scream-ivshmem = {
     enable = true;
     description = "Scream virBr0";
     serviceConfig = {
-      ExecStart = "${pkgs.scream}/bin/scream -i virbr0";
+      ExecStart = "${pkgs.scream}/bin/scream -i br0";
       Restart = "always";
     };
     wantedBy = [ "multi-user.target" ];
@@ -96,6 +95,7 @@
         };
 
     };
+    networking.firewall.allowedUDPPorts = [ 4010 ];
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -120,11 +120,17 @@
   # replicates the default behaviour.
   networking =
     {
+  bridges = {
+    "br0" = {
+      interfaces = [ "enp69s0f0" ];
+    };
+  };
       useDHCP = false;
       hostId = "b4120de4";
       hostName = "LINDA_CORE";
       interfaces =
         {
+br0.useDHCP = true;
           enp69s0f0.useDHCP = true;
           enp69s0f1.useDHCP = true;
         };
