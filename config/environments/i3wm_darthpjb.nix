@@ -8,7 +8,7 @@
   services.picom =
     {
       enable = true;
-      package = pkgs.picom-jonaburg;
+      package = pkgs.picom;
       backend = "glx";
       settings = {
         experimental-backends = true;
