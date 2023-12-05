@@ -4,7 +4,7 @@
   environment.systemPackages = with pkgs; [
     pkgs.gpp
     pkgs.emscripten
-#    pkgs.pulsar
+    #    pkgs.pulsar
     pkgs.vscode
     pkgs.neovim
     pkgs.dnsutils

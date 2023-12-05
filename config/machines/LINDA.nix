@@ -84,9 +84,6 @@
         {
           libinput.enable = true;
           videoDrivers = [ "nvidia" ];
-          #	deviceSection = ''
-          #	  Option "Coolbits" "24"
-          #	'';
         };
       printing =
         {
@@ -95,7 +92,7 @@
         };
 
     };
-    networking.firewall.allowedUDPPorts = [ 4010 ];
+  networking.firewall.allowedUDPPorts = [ 4010 ];
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -120,17 +117,17 @@
   # replicates the default behaviour.
   networking =
     {
-  bridges = {
-    "br0" = {
-      interfaces = [ "enp69s0f0" ];
-    };
-  };
+      bridges = {
+        "br0" = {
+          interfaces = [ "enp69s0f0" ];
+        };
+      };
       useDHCP = false;
       hostId = "b4120de4";
       hostName = "LINDA_CORE";
       interfaces =
         {
-br0.useDHCP = true;
+          br0.useDHCP = true;
           enp69s0f0.useDHCP = true;
           enp69s0f1.useDHCP = true;
         };
@@ -203,21 +200,21 @@ br0.useDHCP = true;
       where = "/rendercache";
       what = "/speed-storage/rendercache";
       options = "bind";
-      after = [ "systemd-tmpfiles-setup.service"];
+      after = [ "systemd-tmpfiles-setup.service" ];
       wantedBy = [ "multi-user.target" ];
     }
     {
       where = "/bulk-storage/nas-archive/remote.worker/88/88-FS-V2/rendercache";
       what = "/speed-storage/rendercache";
       options = "bind";
-      after = [ "systemd-tmpfiles-setup.service"];
+      after = [ "systemd-tmpfiles-setup.service" ];
       wantedBy = [ "multi-user.target" ];
     }
     {
       where = "/var/tmp";
       what = "/speed-storage/tmp";
       options = "bind";
-      after = [ "systemd-tmpfiles-setup.service"];
+      after = [ "systemd-tmpfiles-setup.service" ];
       wantedBy = [ "multi-user.target" ];
     }
   ];

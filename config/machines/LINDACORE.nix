@@ -2,102 +2,164 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   imports =
-    [ # Include the results of the hardware scan.
+    [
+      # Include the results of the hardware scan.
       ./LINDACORE/hardware-configuration.nix
     ];
+  environment.systemPackages = [
+    inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.looking-glass-client
+    inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.scream
+    pkgs.virtiofsd
+    pkgs.gwe
+    pkgs.nvtop
+    pkgs.virt-manager
+    pkgs.tigervnc
+  ];
+  systemd.mounts = [
+    {
+      where = "/rendercache";
+      what = "/speed-storage/rendercache";
+      options = "bind";
+      after = [ "systemd-tmpfiles-setup.service" ];
+      wantedBy = [ "multi-user.target" ];
+    }
+    {
+      where = "/bulk-storage/nas-archive/remote.worker/88/88-FS-V2/rendercache";
+      what = "/speed-storage/rendercache";
+      options = "bind";
+      after = [ "systemd-tmpfiles-setup.service" ];
+      wantedBy = [ "multi-user.target" ];
+    }
+    {
+      where = "/var/tmp";
+      what = "/speed-storage/tmp";
+      options = "bind";
+      after = [ "systemd-tmpfiles-setup.service" ];
+      wantedBy = [ "multi-user.target" ];
+    }
+  ];
+  fileSystems."/tmp" =
+    {
+      device = "speed-storage/tmp";
+      fsType = "zfs";
+    };
+  fileSystems."/var/lib/libvirt" =
+    {
+      device = "speed-storage/var-lib-libvirt";
+      fsType = "zfs";
+      options = [ "nofail" ];
+    };
+  systemd.tmpfiles.rules = [
+    "f /dev/shm/looking-glass 0660 John88 qemu-libvirtd -"
+    "f /dev/shm/scream 0660 John88 qemu-libvirtd -"
+    "d /rendercache 0755 John88 users"
+  ];
+  systemd.user.services.scream-ivshmem = {
+    enable = true;
+    description = "Scream br0";
+    serviceConfig = {
+      ExecStart = "${pkgs.scream}/bin/scream -i br0";
+      Restart = "always";
+      RuntimeMaxSec = "120";
+    };
+    wantedBy = [ "multi-user.target" ];
+    requires = [ "pipewire.service" ];
+  };
+  boot =
+    {
 
-  # Use the systemd-boot EFI boot loader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+      tmp.useTmpfs = false;
+      #tmpOnTmpfs = false;
+      supportedFilesystems = [ "zfs" "ntfs" ];
+      zfs.extraPools = [ "speed-storage" "bulk-storage" ];
+      loader =
+        {
+          systemd-boot.enable = true;
+          efi.canTouchEfiVariables = true;
+        };
+      initrd =
+        {
+          availableKernelModules = [ "vfio_virqfd" "vfio_pci" "vfio_iommu_type1" "vfio" "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "uas" "sd_mod" ];
+          kernelModules = [ "vfio_pci" ];
+        };
+      #kernelPackages= pkgs.linuxPackages_5_18;
+      kernelModules = [ "kvm-amd" "vfio_virqfd" "vfio_pci" "vfio_iommu_type1" "vfio" ];
+      kernelParams = [
+        "amd_iommu=on"
+      ];
+      extraModulePackages = [ ];
 
-  networking.hostName = "LINDACORE"; # Define your hostname.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  networking.hostId = "c83331dc";
+
+      #this can be done better with boot.extraModProbeConfig?
+      extraModprobeConfig = ''
+        options vfio-pci ids=10de:2487,10de:228b,1d6b:0002,28de:2102,28de:2300,0424:2744,28de:2613,28de:2400
+      '';
+      initrd.preDeviceCommands = ''
+        DEVS="0000:21:00:.0 0000:21:00.1 0000:46:00.0"
+        for DEV in $DEVS; do
+            echo "vfio-pci > /sys/bus/pci/devices/$DEV/driver_override"
+        done
+        modprobe -i vfio-pci
+      '';
+    };
+
+  fileSystems."/home" =
+    {
+      device = "/dev/disk/by-uuid/8f73e910-ebff-49fa-9529-55bc0f06ceba";
+      fsType = "ext4";
+      options = [ "nofail" ];
+    };
+
   # Set your time zone.
   time.timeZone = "Europe/London";
-
-  # The global useDHCP flag is deprecated, therefore explicitly set to false here.
-  # Per-interface useDHCP will be mandatory in the future, so this generated config
-  # replicates the default behaviour.
-  networking.useDHCP = false;
-  networking.interfaces.enp69s0f0.useDHCP = true;
-  networking.interfaces.enp69s0f1.useDHCP = true;
-  networking.interfaces.wlp72s0.useDHCP = true;
-
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Select internationalisation properties.
-  # i18n.defaultLocale = "en_US.UTF-8";
-  # console = {
-  #   font = "Lat2-Terminus16";
-  #   keyMap = "us";
-  # };
-
-  # Enable the X11 windowing system.
   services.xserver.enable = true;
-  services.xserver.windowManager.i3.enable = true;
+  services.xserver.videoDrivers = [ "nvidia" ];
+  sound.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+  };
 
-  
-
-  # Configure keymap in X11
-  # services.xserver.layout = "us";
-  # services.xserver.xkbOptions = "eurosign:e";
-
-  # Enable CUPS to print documents.
-  # services.printing.enable = true;
-
-  # Enable sound.
-  # sound.enable = true;
-  # hardware.pulseaudio.enable = true;
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
-
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-   users.users.setup = {
-     isNormalUser = true;
-     extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
-   };
-
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
-   environment.systemPackages = with pkgs; [
-     neovim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-     wget
-     firefox
-   ];
-
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
-
-  # List services that you want to enable:
-
-  # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
-
-  # This value determines the NixOS release from which the default
-  # settings for stateful data, like file locations and database versions
-  # on your system were taken. It‘s perfectly fine and recommended to leave
-  # this value at the release version of the first install of this system.
-  # Before changing this value read the documentation for this option
-  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
+  hardware = {
+    sane.enable = true;
+    opengl.enable = true;
+    cpu.amd.updateMicrocode = config.hardware.enableRedistributableFirmware;
+    opengl.driSupport32Bit = true;
+    nvidia = {
+      modesetting.enable = false;
+      powerManagement.enable = true;
+    };
+  };
+  networking =
+    {
+      firewall.allowedUDPPorts = [ 4010 ];
+      hostName = "LINDACORE";
+      hostId = "b4120de4";
+      bridges = {
+        "br0" = {
+          interfaces = [ "enp69s0f0" ];
+        };
+      };
+      useDHCP = false;
+      interfaces =
+        {
+          br0.useDHCP = true;
+          enp69s0f0.useDHCP = true;
+          enp69s0f1.useDHCP = true;
+        };
+      wireless =
+        {
+          enable = false; # Enables wireless support via wpa_supplicant.
+          userControlled.enable = true;
+          interfaces = [ "wlp72s0" ];
+        };
+    };
   system.stateVersion = "21.11"; # Did you read the comment?
 
 }

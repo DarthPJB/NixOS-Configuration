@@ -123,11 +123,11 @@
             (import ./config/machines/terminalmedia.nix)
             (import ./config/environments/code.nix)
             {
-	                  nixpkgs.config.permittedInsecurePackages = [
+              nixpkgs.config.permittedInsecurePackages = [
                 "pulsar-1.109.0"
               ];
-           nixpkgs.config.allowUnfree = true;
-           nixpkgs.config.nvidia.acceptLicense = true;
+              nixpkgs.config.allowUnfree = true;
+              nixpkgs.config.nvidia.acceptLicense = true;
 
               _module.args.nixinate = {
                 host = "192.168.0.50";
@@ -307,7 +307,7 @@
             ./config/locale/tailscale.nix
             ./config/modifier_imports/bluetooth.nix
             ./config/modifier_imports/memtest.nix
-#            ./config/modifier_imports/cuda.nix
+            #            ./config/modifier_imports/cuda.nix
             ./config/modifier_imports/hosts.nix
             ./config/modifier_imports/zfs.nix
             ./config/modifier_imports/virtualisation-libvirtd.nix
@@ -330,7 +330,7 @@
                 [
                   pkgs_unstable.vivaldi
                   agenix.packages.x86_64-linux.default
-#                  parsecgaming.packages.x86_64-linux.parsecgaming
+                  #                  parsecgaming.packages.x86_64-linux.parsecgaming
                 ];
             }
           ];
