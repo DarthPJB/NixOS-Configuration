@@ -3,6 +3,8 @@
 {
   environment.systemPackages = with pkgs; [
     obs-studio
+    mumble
+    dino
     #	obs-v4l2sink
   ];
   # Modules and kernel conf for obs
