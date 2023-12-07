@@ -5,7 +5,7 @@
     nixinate.url = "github:matthewcroughan/nixinate";
     agenix.url = "github:ryantm/agenix";
     nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-23.05";
+    nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-23.11";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
@@ -368,7 +368,7 @@
                 "pulsar-1.109.0"
               ];
               _module.args.nixinate = {
-                host = "193.16.42.93";
+                host = "192.168.0.93";
                 sshUser = "John88";
                 substituteOnTarget = true;
                 hermetic = true;

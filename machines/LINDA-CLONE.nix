@@ -25,7 +25,6 @@
       tmp.useTmpfs = false;
       #tmpOnTmpfs = false;
       supportedFilesystems = [ "zfs" "ntfs" ];
-      zfs.extraPools = [ "speed-storage" "bulk-storage" ];
       loader =
         {
           systemd-boot.enable = true;
