@@ -31,7 +31,7 @@
         }).config.system.build.sdImage;
 
         local-worker = import "${self}/lib/make-storeless-image.nix"
-          #local-image = import "${inputs.nixpkgs.outPath}/nixos/lib/make-disk-image.nix"
+          #local-image = import "${inputs.nixpkgs.cutPath}/nixos/lib/make-disk-image.nix"
           rec {
             pkgs = inputs.nixpkgs_unstable.legacyPackages.x86_64-linux;
             inherit (pkgs) lib;
@@ -55,22 +55,22 @@
         pi-print-controller = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
-            ./config/machines/rPI.nix
-            ./config/users/darthpjb.nix
-            ./config/locale/home_networks.nix
-            ./config/server_services/klipper.nix
+            ./machines/rPI.nix
+            ./users/darthpjb.nix
+            ./locale/home_networks.nix
+            ./server_services/klipper.nix
           ];
         };
         pi-display-module = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
             "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-            ./config/machines/rPI.nix
-            ./config/users/darthpjb.nix
-            ./config/configuration.nix
-            ./config/locale/home_networks.nix
-            ./config/environments/browsers.nix
-            ./config/environments/i3wm_darthpjb.nix
+            ./machines/rPI.nix
+            ./users/darthpjb.nix
+            ./configuration.nix
+            ./locale/home_networks.nix
+            ./environments/browsers.nix
+            ./environments/i3wm_darthpjb.nix
             {
               services.openssh.ports = [ 22 ];
               networking.firewall.allowedTCPPorts = [ 22 ];
@@ -97,14 +97,14 @@
         Terminal-zero = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            (import ./config/environments/browsers.nix)
-            (import ./config/configuration.nix)
-            (import ./config/environments/i3wm_darthpjb.nix)
-            (import ./config/environments/rtl-sdr.nix)
-            (import ./config/environments/pio.nix)
-            (import ./config/machines/terminalzero.nix)
-            (import ./config/environments/code.nix)
-            (import ./config/locale/tailscale.nix)
+            (import ./environments/browsers.nix)
+            (import ./configuration.nix)
+            (import ./environments/i3wm_darthpjb.nix)
+            (import ./environments/rtl-sdr.nix)
+            (import ./environments/pio.nix)
+            (import ./machines/terminalzero.nix)
+            (import ./environments/code.nix)
+            (import ./locale/tailscale.nix)
             nixos-hardware.nixosModules.lenovo-thinkpad-x220
             {
               environment.systemPackages =
@@ -115,13 +115,13 @@
         Terminal-media = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            (import ./config/locale/hotel_wifi.nix)
-            (import ./config/environments/browsers.nix)
-            (import ./config/configuration.nix)
-            (import ./config/environments/i3wm_darthpjb.nix)
-            (import ./config/environments/rtl-sdr.nix)
-            (import ./config/machines/terminalmedia.nix)
-            (import ./config/environments/code.nix)
+            (import ./locale/hotel_wifi.nix)
+            (import ./environments/browsers.nix)
+            (import ./configuration.nix)
+            (import ./environments/i3wm_darthpjb.nix)
+            (import ./environments/rtl-sdr.nix)
+            (import ./machines/terminalmedia.nix)
+            (import ./environments/code.nix)
             {
               nixpkgs.config.permittedInsecurePackages = [
                 "pulsar-1.109.0"
@@ -151,13 +151,13 @@
           specialArgs = { inherit inputs; };
           modules = [
             "${nixpkgs}/nixos/modules/virtualisation/libvirtd.nix"
-            ./config/machines/local-worker.nix
-            ./config/environments/blender.nix
-            ./config/modifier_imports/cuda.nix
-            ./config/configuration.nix
-            ./config/users/darthpjb.nix
-            ./config/environments/neovim.nix
-            ./config/environments/sshd.nix
+            ./machines/local-worker.nix
+            ./environments/blender.nix
+            ./modifier_imports/cuda.nix
+            ./configuration.nix
+            ./users/darthpjb.nix
+            ./environments/neovim.nix
+            ./environments/sshd.nix
             {
               nix.nixPath = [
                 "nixpkgs=${inputs.nixpkgs_unstable}"
@@ -178,12 +178,12 @@
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
-            ./config/modifier_imports/zfs.nix
-            ./config/machines/local-nas.nix
-            ./config/configuration.nix
-            ./config/users/darthpjb.nix
-            ./config/environments/neovim.nix
-            ./config/environments/sshd.nix
+            ./modifier_imports/zfs.nix
+            ./machines/local-nas.nix
+            ./configuration.nix
+            ./users/darthpjb.nix
+            ./environments/neovim.nix
+            ./environments/sshd.nix
             {
               _module.args.nixinate = {
                 host = "192.168.0.206";
@@ -201,11 +201,11 @@
           system = "x86_64-linux";
           modules = [
             agenix.nixosModules.default
-            ./config/configuration.nix
-            ./config/machines/ethan-net.nix
-            #            ./config/locale/tailscale.nix
-            #            ./config/server_services/nextcloud.nix
-            #            ./config/server_services/syncthing_server.nix
+            ./configuration.nix
+            ./machines/ethan-net.nix
+            #            ./locale/tailscale.nix
+            #            ./server_services/nextcloud.nix
+            #            ./server_services/syncthing_server.nix
 
 
             {
@@ -265,11 +265,11 @@
           system = "x86_64-linux";
           modules = [
             agenix.nixosModules.default
-            ./config/configuration.nix
-            ./config/machines/openstack.nix
-            ./config/locale/tailscale.nix
-            #./config/server_services/nextcloud.nix
-            ./config/server_services/syncthing_server.nix
+            ./configuration.nix
+            ./machines/openstack.nix
+            ./locale/tailscale.nix
+            #./server_services/nextcloud.nix
+            ./server_services/syncthing_server.nix
             {
               imports = [
                 "${nixpkgs}/nixos/modules/virtualisation/openstack-config.nix"
@@ -290,30 +290,30 @@
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
-            ./config/configuration.nix
-            ./config/machines/LINDACORE.nix
-            ./config/environments/i3wm_darthpjb.nix
-            ./config/environments/steam.nix
-            ./config/environments/code.nix
-            ./config/environments/communications.nix
-            ./config/environments/neovim.nix
-            ./config/environments/browsers.nix
-            ./config/environments/mudd.nix
-            ./config/environments/cad_and_graphics.nix
-            ./config/environments/3dPrinting.nix
-            ./config/environments/audio_visual_editing.nix
-            ./config/environments/general_fonts.nix
-            ./config/environments/video_call_streaming.nix
-            ./config/locale/tailscale.nix
-            ./config/modifier_imports/bluetooth.nix
-            ./config/modifier_imports/memtest.nix
-            #            ./config/modifier_imports/cuda.nix
-            ./config/modifier_imports/hosts.nix
-            ./config/modifier_imports/zfs.nix
-            ./config/modifier_imports/virtualisation-libvirtd.nix
-            ./config/modifier_imports/arm-emulation.nix
-            ./config/environments/sshd.nix
-            ./config/modifier_imports/remote-builder.nix
+            ./configuration.nix
+            ./machines/LINDACORE.nix
+            ./environments/i3wm_darthpjb.nix
+            ./environments/steam.nix
+            ./environments/code.nix
+            ./environments/communications.nix
+            ./environments/neovim.nix
+            ./environments/browsers.nix
+            ./environments/mudd.nix
+            ./environments/cad_and_graphics.nix
+            ./environments/3dPrinting.nix
+            ./environments/audio_visual_editing.nix
+            ./environments/general_fonts.nix
+            ./environments/video_call_streaming.nix
+            ./locale/tailscale.nix
+            ./modifier_imports/bluetooth.nix
+            ./modifier_imports/memtest.nix
+            #            ./modifier_imports/cuda.nix
+            ./modifier_imports/hosts.nix
+            ./modifier_imports/zfs.nix
+            ./modifier_imports/virtualisation-libvirtd.nix
+            ./modifier_imports/arm-emulation.nix
+            ./environments/sshd.nix
+            ./modifier_imports/remote-builder.nix
             {
               nixpkgs.config.permittedInsecurePackages = [
                 "pulsar-1.109.0"
