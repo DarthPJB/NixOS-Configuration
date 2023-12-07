@@ -26,22 +26,22 @@
 
   systemd.mounts = [
     {
-      where = "/archive/general";
-      what = "/bulk-storage/NAS-ARCHIVE/ARCHIVE";
+      what = "/archive/general";
+      where = "/bulk-storage/NAS-ARCHIVE/ARCHIVE";
       options = "bind";
       after = [ "systemd-tmpfiles-setup.service" ];
       wantedBy = [ "multi-user.target" ];
     }
     {
-      where = "/archive/astral";
-      what = "/bulk-storage/NAS-ARCHIVE/remote.worker/Astralship Master Archive/ARCHIVE";
+      what = "/archive/astral";
+      where = "/bulk-storage/NAS-ARCHIVE/remote.worker/Astralship Master Archive/ARCHIVE";
       options = "bind";
       after = [ "systemd-tmpfiles-setup.service" ];
       wantedBy = [ "multi-user.target" ];
     }
     {
-      where = "/archive/personal";
-      what = "/bulk-storage/NAS-ARCHIVE/remote.worker/88/88-FS-V2/ARCHIVE";
+      what = "/archive/personal";
+      where = "/bulk-storage/NAS-ARCHIVE/remote.worker/88/88-FS-V2/ARCHIVE";
       options = "bind";
       after = [ "systemd-tmpfiles-setup.service" ];
       wantedBy = [ "multi-user.target" ];
