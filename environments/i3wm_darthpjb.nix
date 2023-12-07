@@ -37,7 +37,8 @@
     {
       enable = true;
       package = pkgs.picom;
-      backend = "glx";
+      backend = "xrender";
+      vsync = true;
       settings = {
         experimental-backends = true;
         xrender-sync-fence = true;
@@ -45,6 +46,7 @@
           method = "dual_kawase";
           strength = 7;
         };
+        inactiveOpacity=0.95;
         fading = true;
         fade-in-step = 0.1;
         fade-out-step = 0.1;
