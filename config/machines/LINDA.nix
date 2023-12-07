@@ -29,6 +29,7 @@
     serviceConfig = {
       ExecStart = "${pkgs.scream}/bin/scream -i br0";
       Restart = "always";
+      RuntimeMaxSec = "160";
     };
     wantedBy = [ "multi-user.target" ];
     requires = [ "pipewire.service" ];
@@ -146,12 +147,7 @@
       options = [ "defaults" "size=2G" "mode=755" "nofail" ];
     };
 
-  fileSystems."/home" =
-    {
-      device = "/dev/disk/by-uuid/8f73e910-ebff-49fa-9529-55bc0f06ceba";
-      fsType = "ext4";
-      options = [ "nofail" ];
-    };
+  
 
   fileSystems."/boot" =
     {
@@ -189,41 +185,10 @@
       options = [ "nofail" ];
     };
 
-  fileSystems."/var/lib/libvirt" =
-    {
-      device = "speed-storage/var-lib-libvirt";
-      fsType = "zfs";
-      options = [ "nofail" ];
-    };
-  systemd.mounts = [
-    {
-      where = "/rendercache";
-      what = "/speed-storage/rendercache";
-      options = "bind";
-      after = [ "systemd-tmpfiles-setup.service" ];
-      wantedBy = [ "multi-user.target" ];
-    }
-    {
-      where = "/bulk-storage/nas-archive/remote.worker/88/88-FS-V2/rendercache";
-      what = "/speed-storage/rendercache";
-      options = "bind";
-      after = [ "systemd-tmpfiles-setup.service" ];
-      wantedBy = [ "multi-user.target" ];
-    }
-    {
-      where = "/var/tmp";
-      what = "/speed-storage/tmp";
-      options = "bind";
-      after = [ "systemd-tmpfiles-setup.service" ];
-      wantedBy = [ "multi-user.target" ];
-    }
-  ];
+
+
   #nix.envVars.TMPDIR = "/var/tmp";
-  fileSystems."/tmp" =
-    {
-      device = "speed-storage/tmp";
-      fsType = "zfs";
-    };
+
 
   swapDevices = [ ];
 
