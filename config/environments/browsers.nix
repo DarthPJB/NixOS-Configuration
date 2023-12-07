@@ -8,7 +8,7 @@
 
   services = {
     syncthing = {
-      enable = false;
+      enable = true;
       user = "John88";
       group = "users";
       dataDir = "/home/pokej";
