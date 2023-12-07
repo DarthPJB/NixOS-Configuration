@@ -24,21 +24,29 @@
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.extraPools = [ "archive" "bulk-storage" ];
 
-  fileSystems."/bulk-storage/NAS-ARCHIVE/ARCHIVE" =
+  systemd.mounts = [
     {
-      device = "/archive/general";
-      options = [ "bind" ];
-    };
-  fileSystems."/bulk-storage/NAS-ARCHIVE/remote.worker/Astralship Master Archive/ARCHIVE" =
+      where = "/archive/general";
+      what = "/bulk-storage/NAS-ARCHIVE/ARCHIVE";
+      options = "bind";
+      after = [ "systemd-tmpfiles-setup.service" ];
+      wantedBy = [ "multi-user.target" ];
+    }
     {
-      device = "/archive/astral";
-      options = [ "bind" ];
-    };
-  fileSystems."/bulk-storage/NAS-ARCHIVE/remote.worker/88/88-FS-V2/ARCHIVE" =
+      where = "/archive/astral";
+      what = "/bulk-storage/NAS-ARCHIVE/remote.worker/Astralship Master Archive/ARCHIVE";
+      options = "bind";
+      after = [ "systemd-tmpfiles-setup.service" ];
+      wantedBy = [ "multi-user.target" ];
+    }
     {
-      device = "/archive/personal";
-      options = [ "bind" ];
-    };
+      where = "/archive/personal";
+      what = "/bulk-storage/NAS-ARCHIVE/remote.worker/88/88-FS-V2/ARCHIVE";
+      options = "bind";
+      after = [ "systemd-tmpfiles-setup.service" ];
+      wantedBy = [ "multi-user.target" ];
+    }
+  ];
 
   networking.hostId = "d5710c9a";
   networking.hostName = "DataStorage"; # Define your hostname.
