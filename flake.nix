@@ -335,6 +335,63 @@
             }
           ];
         };
+        LINDACLONE = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [
+            ./configuration.nix
+            ./users/l33.nix
+            ./machines/LINDA-CLONE.nix
+            ./environments/i3wm_darthpjb.nix
+            ./environments/steam.nix
+            ./environments/code.nix
+            ./environments/communications.nix
+            ./environments/neovim.nix
+            ./environments/browsers.nix
+            ./environments/mudd.nix
+            ./environments/cad_and_graphics.nix
+            ./environments/3dPrinting.nix
+            ./environments/audio_visual_editing.nix
+            ./environments/general_fonts.nix
+            ./environments/video_call_streaming.nix
+            ./locale/tailscale.nix
+            ./modifier_imports/bluetooth.nix
+            ./modifier_imports/memtest.nix
+            ./modifier_imports/hosts.nix
+            ./modifier_imports/zfs.nix
+            ./modifier_imports/virtualisation-libvirtd.nix
+            ./modifier_imports/arm-emulation.nix
+            ./environments/sshd.nix
+            ./modifier_imports/remote-builder.nix
+            {
+              nixpkgs.config.permittedInsecurePackages = [
+                "pulsar-1.109.0"
+              ];
+              _module.args.nixinate = {
+                host = "193.16.42.93";
+                sshUser = "John88";
+                substituteOnTarget = true;
+                hermetic = true;
+                buildOn = "remote";
+              };
+              services.openssh.ports = [ 22 ];
+              networking.firewall.allowedTCPPorts = [ 22 ];
+              environment.systemPackages =
+                let
+                  system = "x86_64-linux";
+                  pkgs_unstable = import inputs.nixpkgs_unstable {
+                    inherit system;
+                    config.allowUnfree = true;
+                  };
+                in
+                [
+                  pkgs_unstable.vivaldi
+                  agenix.packages.x86_64-linux.default
+                  #                  parsecgaming.packages.x86_64-linux.parsecgaming
+                ];
+            }
+          ];
+        };
       };
     };
 }
