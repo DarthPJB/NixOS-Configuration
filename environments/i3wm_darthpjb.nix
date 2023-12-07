@@ -35,29 +35,47 @@
     };
   services.picom =
     {
-      enable = true;
-      package = pkgs.picom;
-      backend = "xrender";
-      vsync = true;
-      settings = {
-        experimental-backends = true;
-        xrender-sync-fence = true;
-        blur = {
-          method = "dual_kawase";
-          strength = 7;
-        };
-        inactiveOpacity=0.95;
-        fading = true;
-        fade-in-step = 0.1;
-        fade-out-step = 0.1;
-        transition-length = 100;
-        transition-pow-x = 0.5;
-        transition-pow-y = 0.5;
-        transition-pow-w = 0.5;
-        transition-pow-h = 0.5;
-        size-transition = true;
-      };
-    };
+        enable = true;
+		activeOpacity = 1;
+		inactiveOpacity = 0.96;
+		backend = "glx";
+		fade = true;
+		fadeDelta = 5;
+
+		#you can get the CLASS_NAME of any window by executing the following command and clicking on a window.
+		#xprop | grep "CLASS"
+		#Note: The CLASS_NAME value is actually the second one.
+
+		opacityRules = [
+            "100:class_g = 'looking-glass-client'"
+            "100:class_g = 'looking-glass-client' && focused"
+			"100:class_g = 'i3lock' && focused"
+			"100:class_g = 'i3lock' && !focused"
+			"100:class_g = 'i3lock-color' && focused"
+			"100:class_g = 'i3lock-color' && !focused"
+			"100:class_g = 'betterlockscreen' && focused"
+			"100:class_g = 'betterlockscreen' && !focused"
+			"80:class_g = 'i3bar'"
+			"80:class_g = 'Polybar'"
+			"100:class_g = 'firefox'"
+			"50:class_g = 'Alacritty' && focused"
+			"50:class_g = 'Alacritty' && !focused"
+			"100:class_g = 'Vivaldi-stable' && focused"
+			"100:class_g = 'Brave-browser' && focused"
+            "90:fullscreen"
+		];
+    	shadow = true;
+		shadowOpacity = 0.75;
+		settings = {
+			#blur = { 
+				#method = "gaussian";
+				#blur-strength = "10";
+				#size = 20;
+				#deviation = 5.0;
+				#blur-background = true;
+			#};
+		};
+	};
   programs.dconf.enable = true;
   environment.systemPackages =
     [
