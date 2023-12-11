@@ -6,9 +6,9 @@
     in
     [
       pkgs.nvtop
-      pkgs.cudaPackages_11_6.cudatoolkit
-      pkgs.cudaPackages_11_6.cudnn
-      pkgs.cudaPackages_11_6.cutensor
+      pkgs.cudaPackages.cudatoolkit
+      pkgs.cudaPackages.cudnn
+      pkgs.cudaPackages.cutensor
       (pkgs.colmap.override { cudaSupport = true; })
       (pkgs.blender.override { cudaSupport = true; })
     ];

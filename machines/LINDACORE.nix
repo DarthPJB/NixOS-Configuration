@@ -13,6 +13,7 @@
   environment.systemPackages = [
     inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.looking-glass-client
     inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.scream
+    pkgs.transmission
     pkgs.virtiofsd
     pkgs.gwe
     pkgs.nvtop
@@ -138,7 +139,8 @@
   };
   networking =
     {
-      firewall.allowedUDPPorts = [ 4010 ];
+      firewall.allowedUDPPorts = [ 4010 51413 ];
+      firewall.allowedTCPPorts = [ 51413 ];
       hostName = "LINDACORE";
       hostId = "b4120de4";
       bridges = {

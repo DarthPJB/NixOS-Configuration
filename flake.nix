@@ -307,13 +307,15 @@
             ./locale/tailscale.nix
             ./modifier_imports/bluetooth.nix
             ./modifier_imports/memtest.nix
-            #            ./modifier_imports/cuda.nix
+            ./modifier_imports/cuda.nix
             ./modifier_imports/hosts.nix
             ./modifier_imports/zfs.nix
             ./modifier_imports/virtualisation-libvirtd.nix
             ./modifier_imports/arm-emulation.nix
             ./environments/sshd.nix
-            ./modifier_imports/remote-builder.nix
+
+	    ./modifier_imports/cuda.nix
+	    ./modifier_imports/remote-builder.nix
             {
               nixpkgs.config.permittedInsecurePackages = [
                 "pulsar-1.109.0"
@@ -387,7 +389,7 @@
                 [
                   pkgs_unstable.vivaldi
                   agenix.packages.x86_64-linux.default
-                  #                  parsecgaming.packages.x86_64-linux.parsecgaming
+                  #  parsecgaming.packages.x86_64-linux.parsecgaming
                 ];
             }
           ];
