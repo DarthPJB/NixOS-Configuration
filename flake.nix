@@ -139,7 +139,6 @@
               environment.systemPackages =
                 [
                   pkgs.ffmpeg
-                  parsecgaming.packages.x86_64-linux.parsecgaming
                 ];
             }
           ];
