@@ -2,7 +2,6 @@
 {
   environment.systemPackages =
     [
-      #pkgs.digikam
       pkgs.inkscape-with-extensions
       pkgs.lensfun
       pkgs.gimp-with-plugins

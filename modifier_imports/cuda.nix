@@ -1,16 +1,16 @@
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, inputs, outputs, ... }:
 {
   environment.systemPackages =
     let
-      pkgs = import inputs.nixpkgs_stable { system = "x86_64-linux"; config.allowUnfree = true; };
+      pkgs_un = outputs.un_pkgs;
     in
     [
       pkgs.nvtop
       pkgs.cudaPackages.cudatoolkit
       pkgs.cudaPackages.cudnn
       pkgs.cudaPackages.cutensor
-      (pkgs.colmap.override { cudaSupport = true; })
-      (pkgs.blender.override { cudaSupport = true; })
+      (pkgs_un.colmap.override { cudaSupport = true; })
+      (pkgs_un.blender.override { cudaSupport = true; })
     ];
   nixpkgs.config = {
     cudaSupport = true;

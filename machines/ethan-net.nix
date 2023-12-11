@@ -30,7 +30,6 @@
   environment.systemPackages = with pkgs; [
     pkgs.gpp
     pkgs.emscripten
-    pkgs.pulsar
     pkgs.neovim
     pkgs.dnsutils
     pkgs.openssl
