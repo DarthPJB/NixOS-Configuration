@@ -109,7 +109,7 @@
     };
   fileSystems."/nix/store" = 
   {
-	device = "/speed-storage/nix-store";
+	device = "speed-storage/nix-store";
 	fsType = "zfs";
 	options = [ "nofail" ];
   };
