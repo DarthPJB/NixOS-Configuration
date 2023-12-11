@@ -109,7 +109,9 @@
             nixos-hardware.nixosModules.lenovo-thinkpad-x220
             {
               environment.systemPackages =
-                [ parsecgaming.packages.x86_64-linux.parsecgaming ];
+                [ 
+#parsecgaming.packages.x86_64-linux.parsecgaming 
+];
             }
           ];
         };
