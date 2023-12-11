@@ -1,8 +1,8 @@
-{ config, pkgs, inputs, outputs, ... }:
+{ config, pkgs, inputs, self, ... }:
 {
   environment.systemPackages =
     let
-      pkgs_un = outputs.un_pkgs;
+      pkgs_un = self.un_pkgs;
     in
     [
       pkgs.nvtop

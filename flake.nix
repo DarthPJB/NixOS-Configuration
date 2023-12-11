@@ -81,15 +81,18 @@
               services.xserver.displayManager.lightdm.enable = nixpkgs.lib.mkForce true;
               hardware.bluetooth.enable = false;
               nixpkgs.config.allowUnfree = true;
-              _module.args.nixinate = {
+              _module.args = 
+              {
+                self = self;
+                nixinate = {
                 host = "192.168.0.115";
                 sshUser = "John88";
                 substituteOnTarget = true;
                 hermetic = true;
                 buildOn = "local";
               };
+            };
             }
-
           ];
         };
         Terminal-zero = nixpkgs.lib.nixosSystem {
@@ -306,16 +309,16 @@
             ./modifier_imports/cuda.nix
             ./modifier_imports/remote-builder.nix
             {
+                _module.args = 
+                {
+                    self = self;
+                };
               environment.systemPackages =
                 let
                   system = "x86_64-linux";
-                  pkgs_unstable = import inputs.nixpkgs_unstable {
-                    inherit system;
-                    config.allowUnfree = true;
-                  };
                 in
                 [
-                  pkgs_unstable.vivaldi
+                  self.un_pkgs.vivaldi
                   agenix.packages.x86_64-linux.default
                   #parsecgaming.packages.x86_64-linux.parsecgaming
                 ];

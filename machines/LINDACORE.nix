@@ -107,7 +107,12 @@
         modprobe -i vfio-pci
       '';
     };
-
+  fileSystems."/nix/store" = 
+  {
+	device = "/speed-storage/nix-store";
+	fsType = "zfs";
+	options = [ "nofail" ];
+  };
   fileSystems."/home" =
     {
       device = "/dev/disk/by-uuid/8f73e910-ebff-49fa-9529-55bc0f06ceba";
