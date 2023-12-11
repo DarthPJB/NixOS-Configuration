@@ -12,28 +12,27 @@
 
   outputs = inputs@{ self, nixpkgs_stable, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_unstable }:
     let
-      nixpkgs = nixpkgs_unstable;
+      nixpkgs = nixpkgs_stable;
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      un_pkgs = import inputs.nixpkgs_unstable {
+        system = "x86_64-linux";
+        config.allowUnfree = true;
+      };
     in
     {
-      formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixpkgs-fmt;
+      formatter.x86_64-linux = pkgs.nixpkgs-fmt;
       apps.x86_64-linux = (inputs.nixinate.nixinate.x86_64-linux inputs.self).nixinate;
+      un_pkgs = un_pkgs;
       images = {
         pi-print-controller = (self.nixosConfigurations.pi-print-controller.extendModules {
           modules = [
             "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
           ];
         }).config.system.build.sdImage;
-
-        pi-display-module = (self.nixosConfigurations.pi-display-module.extendModules {
-          modules = [
-
-          ];
-        }).config.system.build.sdImage;
-
-        local-worker = import "${self}/lib/make-storeless-image.nix"
-          #local-image = import "${inputs.nixpkgs.cutPath}/nixos/lib/make-disk-image.nix"
+        local-worker = import "${inputs.nixpkgs.cutPath}/nixos/lib/make-disk-image.nix"
+          #local-image = import "${self}/lib/make-storeless-image.nix"
           rec {
-            pkgs = inputs.nixpkgs_unstable.legacyPackages.x86_64-linux;
+            pkgs = un_pkgs;
             inherit (pkgs) lib;
             inherit (self.nixosConfigurations.local-worker) config;
             additionalPaths = [ ];
@@ -45,7 +44,6 @@
             installBootLoader = true;
             touchEFIVars = true;
             diskSize = "auto";
-            #diskSize = "4096";
             additionalSpace = "2048M";
             copyChannel = true;
             OVMF = pkgs.OVMF.fd;
@@ -123,9 +121,6 @@
             (import ./machines/terminalmedia.nix)
             (import ./environments/code.nix)
             {
-              nixpkgs.config.permittedInsecurePackages = [
-                "pulsar-1.109.0"
-              ];
               nixpkgs.config.allowUnfree = true;
               nixpkgs.config.nvidia.acceptLicense = true;
 
@@ -140,7 +135,7 @@
               networking.firewall.allowedTCPPorts = [ 22 ];
               environment.systemPackages =
                 [
-                  nixpkgs.legacyPackages.x86_64-linux.ffmpeg
+                  pkgs.ffmpeg
                   parsecgaming.packages.x86_64-linux.parsecgaming
                 ];
             }
@@ -203,11 +198,6 @@
             agenix.nixosModules.default
             ./configuration.nix
             ./machines/ethan-net.nix
-            #            ./locale/tailscale.nix
-            #            ./server_services/nextcloud.nix
-            #            ./server_services/syncthing_server.nix
-
-
             {
               networking.firewall.allowedTCPPorts = [ 22000 ];
               networking.firewall.allowedUDPPorts = [ 22000 21027 ];
@@ -313,14 +303,9 @@
             ./modifier_imports/virtualisation-libvirtd.nix
             ./modifier_imports/arm-emulation.nix
             ./environments/sshd.nix
-
-	    ./modifier_imports/cuda.nix
-	    ./modifier_imports/remote-builder.nix
+            ./modifier_imports/cuda.nix
+            ./modifier_imports/remote-builder.nix
             {
-              nixpkgs.config.permittedInsecurePackages = [
-                "pulsar-1.109.0"
-              ];
-
               environment.systemPackages =
                 let
                   system = "x86_64-linux";
@@ -332,7 +317,7 @@
                 [
                   pkgs_unstable.vivaldi
                   agenix.packages.x86_64-linux.default
-                  #                  parsecgaming.packages.x86_64-linux.parsecgaming
+                  #parsecgaming.packages.x86_64-linux.parsecgaming
                 ];
             }
           ];
@@ -366,9 +351,6 @@
             ./environments/sshd.nix
             ./modifier_imports/remote-builder.nix
             {
-              nixpkgs.config.permittedInsecurePackages = [
-                "pulsar-1.109.0"
-              ];
               _module.args.nixinate = {
                 host = "192.168.0.93";
                 sshUser = "John88";
