@@ -15,15 +15,19 @@
       nixpkgs = nixpkgs_stable;
       pkgs = import inputs.nixpkgs_stable {
         system = "x86_64-linux";
-        allowUnfree = true;
-        cudaSupport = true;
-        cudnnSupport = true;
+	config= {
+	        allowUnfree = true;
+	        cudaSupport = true;
+	        cudnnSupport = true;
+	};
       };
       un_pkgs = import inputs.nixpkgs_unstable {
         system = "x86_64-linux";
-        allowUnfree = true;
-        cudaSupport = true;
-        cudnnSupport = true;
+	config = {
+	        allowUnfree = true;
+	        cudaSupport = true;
+	        cudnnSupport = true;
+	};
       };
     in
     {
@@ -326,7 +330,7 @@
                   system = "x86_64-linux";
                 in
                 [
-                  self.un_pkgs.vivaldi
+                  un_pkgs.vivaldi
                   agenix.packages.x86_64-linux.default
                   #parsecgaming.packages.x86_64-linux.parsecgaming
                 ];
@@ -371,18 +375,15 @@
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;
-                    buildOn = "local";
+                    buildOn = "remote";
                   };
                 };
+              nixpkgs.config.allowUnfree = true;
               services.openssh.ports = [ 22 ];
               networking.firewall.allowedTCPPorts = [ 22 ];
               environment.systemPackages =
-                let
-                  system = "x86_64-linux";
-                  pkgs_unstable = self.outputs.un_pkgs;
-                in
                 [
-                  pkgs_unstable.vivaldi
+                  un_pkgs.vivaldi
                   agenix.packages.x86_64-linux.default
                   #  parsecgaming.packages.x86_64-linux.parsecgaming
                 ];
