@@ -13,7 +13,9 @@
       (pkgs.colmap.override { cudaSupport = true; })
       (pkgs_un.blender.override { cudaSupport = true; })
     ];
+
   nixpkgs.config = {
+    allowUnfree = true;
     cudaSupport = true;
     cudnnSupport = true;
   };
