@@ -354,6 +354,7 @@
             ./modifier_imports/arm-emulation.nix
             ./environments/sshd.nix
             ./modifier_imports/remote-builder.nix
+            ./modifier_imports/cuda.nix
             {
               _module.args.nixinate = {
                 host = "192.168.0.93";
