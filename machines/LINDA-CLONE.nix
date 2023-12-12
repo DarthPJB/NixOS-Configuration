@@ -18,7 +18,6 @@
     pkgs.nvtop
     pkgs.virt-manager
     pkgs.tigervnc
-    inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.ollama
   ];
   boot =
     {
