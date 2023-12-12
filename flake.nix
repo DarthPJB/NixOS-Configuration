@@ -13,10 +13,17 @@
   outputs = inputs@{ self, nixpkgs_stable, nixos-hardware, agenix, parsecgaming, nixinate, nixpkgs_unstable }:
     let
       nixpkgs = nixpkgs_stable;
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      pkgs = import inputs.nixpkgs_stable {
+        system = "x86_64-linux";
+        allowUnfree = true;
+        cudaSupport = true;
+        cudnnSupport = true;
+      };
       un_pkgs = import inputs.nixpkgs_unstable {
         system = "x86_64-linux";
-        config.allowUnfree = true;
+        allowUnfree = true;
+        cudaSupport = true;
+        cudnnSupport = true;
       };
     in
     {
@@ -364,7 +371,7 @@
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;
-                    buildOn = "remote";
+                    buildOn = "local";
                   };
                 };
               services.openssh.ports = [ 22 ];
