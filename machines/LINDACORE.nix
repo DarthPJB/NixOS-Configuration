@@ -107,7 +107,7 @@
         modprobe -i vfio-pci
       '';
     };
- 
+
 
   # Set your time zone.
   time.timeZone = "Europe/London";

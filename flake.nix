@@ -81,17 +81,17 @@
               services.xserver.displayManager.lightdm.enable = nixpkgs.lib.mkForce true;
               hardware.bluetooth.enable = false;
               nixpkgs.config.allowUnfree = true;
-              _module.args = 
-              {
-                self = self;
-                nixinate = {
-                host = "192.168.0.115";
-                sshUser = "John88";
-                substituteOnTarget = true;
-                hermetic = true;
-                buildOn = "local";
-              };
-            };
+              _module.args =
+                {
+                  self = self;
+                  nixinate = {
+                    host = "192.168.0.115";
+                    sshUser = "John88";
+                    substituteOnTarget = true;
+                    hermetic = true;
+                    buildOn = "local";
+                  };
+                };
             }
           ];
         };
@@ -109,9 +109,9 @@
             nixos-hardware.nixosModules.lenovo-thinkpad-x220
             {
               environment.systemPackages =
-                [ 
-#parsecgaming.packages.x86_64-linux.parsecgaming 
-];
+                [
+                  #parsecgaming.packages.x86_64-linux.parsecgaming 
+                ];
             }
           ];
         };
@@ -310,9 +310,9 @@
             ./modifier_imports/cuda.nix
             ./modifier_imports/remote-builder.nix
             {
-                _module.args = 
+              _module.args =
                 {
-                    self = self;
+                  self = self;
                 };
               environment.systemPackages =
                 let
@@ -356,22 +356,23 @@
             ./modifier_imports/remote-builder.nix
             ./modifier_imports/cuda.nix
             {
-              _module.args.nixinate = {
-                host = "192.168.0.93";
-                sshUser = "John88";
-                substituteOnTarget = true;
-                hermetic = true;
-                buildOn = "remote";
-              };
+              _module.args =
+                {
+                  self = self;
+                  nixinate = {
+                    host = "192.168.0.93";
+                    sshUser = "John88";
+                    substituteOnTarget = true;
+                    hermetic = true;
+                    buildOn = "remote";
+                  };
+                };
               services.openssh.ports = [ 22 ];
               networking.firewall.allowedTCPPorts = [ 22 ];
               environment.systemPackages =
                 let
                   system = "x86_64-linux";
-                  pkgs_unstable = import inputs.nixpkgs_unstable {
-                    inherit system;
-                    config.allowUnfree = true;
-                  };
+                  pkgs_unstable = self.outputs.un_pkgs;
                 in
                 [
                   pkgs_unstable.vivaldi
