@@ -71,8 +71,14 @@
       hostName = "LINDACLONE";
       hostId = "b4122de6";
       useDHCP = false;
+      bridges = {
+        "br0" = {
+          interfaces = [ "enp69s0f1" ];
+        };
+      };
       interfaces =
         {
+          br0.useDHCP = true;
           enp69s0f0.useDHCP = true;
           enp69s0f1.useDHCP = true;
         };
