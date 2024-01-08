@@ -2,7 +2,7 @@
 
 { config, pkgs, self, ... }:
 let
-    # inherit (self) inputs;
+  # inherit (self) inputs;
 in
 {
   imports =

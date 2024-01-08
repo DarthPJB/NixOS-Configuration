@@ -1,28 +1,34 @@
-{ config, pkgs, ... }:
+{ config, pkgs, self, ... }:
 let
   inherit (builtins) readFile;
 in
 {
-  age.secrets.nextcloud_password_file =
-    {
-      file = ../secrets/nextcloud_password_file.age;
-      owner = "nextcloud";
-      group = "nextcloud";
-      mode = "770";
-    };
-  age.secrets.nextcloud_s3_key =
-    {
-      file = ../secrets/nextcloud_s3_key.age;
-      owner = "nextcloud";
-      group = "nextcloud";
-      mode = "770";
-    };
+  secrix.services.mattermost.secrets.mattermost-secrets = {
+    encrypted.file = ../secrets/mattermost-secrets;
+    decrypted.mode = "600";
+  };
+  secrix.services.nextcloud.secrets = {
+    nextcloud_password_file.encrypted.file = ../secrets/nextcloud_password_file;
+    nextcloud_password_file.decrypted =
+      {
+        user = "nextcloud";
+        group = "nextcloud";
+        mode = "770";
+      };
+    nextcloud_s3_key.encrypted.file = ../secrets/nextcloud_s3_key;
+    nextcloud_s3_key.decrypted =
+      {
+        user = "nextcloud";
+        group = "nextcloud";
+        mode = "770";
+      };
+  };
 
   networking.firewall.allowedTCPPorts = [ 80 443 ];
   services.nextcloud =
     {
-      enable = false;
-      package = pkgs.nextcloud28;
+      enable = true;
+      package = pkgs.nextcloud27;
       hostName = "nextcloud.johnbargman.com";
       enableImagemagick = true;
       maxUploadSize = "50G";
@@ -36,7 +42,7 @@ in
               enable = true;
               hostname = "s3.eu-central-003.backblazeb2.com";
               key = "003e3241026f9950000000001";
-              secretFile = config.age.secrets.nextcloud_s3_key.path;
+              secretFile = config.secrix.services.nextcloud.nextcloud_s3_key.path;
             };
         };
 
