@@ -67,7 +67,8 @@
   };
   networking =
     {
-      firewall.allowedUDPPorts = [ 4010 ];
+      firewall.allowedUDPPorts = [ 4010 9090 ];
+      firewall.allowedTCPPorts = [ 9090 ];
       hostName = "LINDACLONE";
       hostId = "b4122de6";
       useDHCP = false;

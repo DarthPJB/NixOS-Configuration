@@ -5,14 +5,14 @@ in
 {
   age.secrets.nextcloud_password_file =
     {
-      file = ../../secrets/nextcloud_password_file.age;
+      file = ../secrets/nextcloud_password_file.age;
       owner = "nextcloud";
       group = "nextcloud";
       mode = "770";
     };
   age.secrets.nextcloud_s3_key =
     {
-      file = ../../secrets/nextcloud_s3_key.age;
+      file = ../secrets/nextcloud_s3_key.age;
       owner = "nextcloud";
       group = "nextcloud";
       mode = "770";
@@ -21,14 +21,14 @@ in
   networking.firewall.allowedTCPPorts = [ 80 443 ];
   services.nextcloud =
     {
-      enable = true;
-      package = pkgs.nextcloud25;
+      enable = false;
+      package = pkgs.nextcloud28;
       hostName = "nextcloud.johnbargman.com";
       enableImagemagick = true;
       maxUploadSize = "50G";
       config =
         {
-          adminpassFile = config.age.secrets.nextcloud_password_file.path;
+          adminpassFile = config.secrix.services.nextcloud.nextcloud_password_file.decrypted.path;
           objectstore.s3 =
             {
               autocreate = true;
@@ -45,10 +45,11 @@ in
   services.nginx.virtualHosts."nextcloud.johnbargman.com" = {
     extraConfig = "fastcgi_read_timeout 86400;\n";
   };
-  services.phpfpm.pools.nextcloud = {
-    phpOptions = "php_admin_value[max_input_time] = 86400\n
-    php_admin_value[max_execution_time] = 86400\n
-    php_admin_value[upload_max_filesize] = 16G\n
-    php_admin_value[post_max_size] = 16G\n";
-  };
+  # services.phpfpm.pools.nextcloud = {
+  #  user = "nextcloud";
+  #  phpOptions = "php_admin_value[max_input_time] = 86400\n
+  #  php_admin_value[max_execution_time] = 86400\n
+  #  php_admin_value[upload_max_filesize] = 16G\n
+  #  php_admin_value[post_max_size] = 16G\n";
+  #};
 }

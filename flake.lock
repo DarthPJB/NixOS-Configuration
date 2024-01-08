@@ -142,6 +142,22 @@
         "type": "indirect"
       }
     },
+    "nixpkgs_4": {
+      "locked": {
+        "lastModified": 1694959747,
+        "narHash": "sha256-CXQ2MuledDVlVM5dLC4pB41cFlBWxRw4tCBsFrq3cRk=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "970a59bd19eff3752ce552935687100c46e820a5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs_stable": {
       "locked": {
         "lastModified": 1702233072,
@@ -199,7 +215,23 @@
         "nixos-hardware": "nixos-hardware",
         "nixpkgs_stable": "nixpkgs_stable",
         "nixpkgs_unstable": "nixpkgs_unstable",
-        "parsecgaming": "parsecgaming"
+        "parsecgaming": "parsecgaming",
+        "secrix": "secrix"
+      }
+    },
+    "secrix": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_4"
+      },
+      "locked": {
+        "lastModified": 1704327894,
+        "narHash": "sha256-cWoBfg1ljpW2U7Yk3wxfFckige+EalfsIZdVf16gGXw=",
+        "path": "/home/pokej/repo/platonic.systems/secrix",
+        "type": "path"
+      },
+      "original": {
+        "path": "/home/pokej/repo/platonic.systems/secrix",
+        "type": "path"
       }
     }
   },
