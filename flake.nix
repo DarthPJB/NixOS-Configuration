@@ -4,8 +4,8 @@
   inputs = {
     nixinate.url = "github:matthewcroughan/nixinate";
     agenix.url = "github:ryantm/agenix";
-    #secrix.url = "github:Platonic-Systems/secrix";
-    secrix.url = "path:/home/pokej/repo/platonic.systems/secrix";
+    secrix.url = "github:Platonic-Systems/secrix";
+    #secrix.url = "path:/home/pokej/repo/platonic.systems/secrix";
     nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-23.11";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
@@ -153,12 +153,12 @@
                 {
                   self = self;
                   nixinate = {
-                host = "192.168.0.50";
-                sshUser = "John88";
-                substituteOnTarget = true;
-                hermetic = true;
-                buildOn = "local";
-              };
+                    host = "192.168.0.50";
+                    sshUser = "John88";
+                    substituteOnTarget = true;
+                    hermetic = true;
+                    buildOn = "local";
+                  };
                 };
               services.openssh.ports = [ 22 ];
               networking.firewall.allowedTCPPorts = [ 22 ];
@@ -190,12 +190,12 @@
                 {
                   self = self;
                   nixinate = {
-                host = "192.168.122.69";
-                sshUser = "John88";
-                substituteOnTarget = true;
-                hermetic = true;
-                buildOn = "remote";
-              };
+                    host = "192.168.122.69";
+                    sshUser = "John88";
+                    substituteOnTarget = true;
+                    hermetic = true;
+                    buildOn = "remote";
+                  };
                 };
               services.openssh.ports = [ 22 ];
               networking.firewall.allowedTCPPorts = [ 22 ];
@@ -218,12 +218,12 @@
                 {
                   self = self;
                   nixinate = {
-                host = "192.168.0.206";
-                sshUser = "John88";
-                substituteOnTarget = true;
-                hermetic = true;
-                buildOn = "remote";
-              };
+                    host = "192.168.0.206";
+                    sshUser = "John88";
+                    substituteOnTarget = true;
+                    hermetic = true;
+                    buildOn = "remote";
+                  };
                 };
               services.openssh.ports = [ 22 ];
               networking.firewall.allowedTCPPorts = [ 22 ];
@@ -284,12 +284,12 @@
                 {
                   self = self;
                   nixinate = {
-                host = "149.5.115.141";
-                sshUser = "John88";
-                substituteOnTarget = true;
-                hermetic = true;
-                buildOn = "remote";
-              };
+                    host = "149.5.115.141";
+                    sshUser = "John88";
+                    substituteOnTarget = true;
+                    hermetic = true;
+                    buildOn = "remote";
+                  };
                 };
             }
           ];
@@ -298,7 +298,7 @@
           system = "x86_64-linux";
           modules = [
             inputs.agenix.nixosModules.default
-	        inputs.secrix.nixosModules.default
+            inputs.secrix.nixosModules.default
             ./configuration.nix
             ./machines/openstack.nix
             ./locale/tailscale.nix
@@ -313,12 +313,12 @@
                 {
                   self = self;
                   nixinate = {
-                host = "193.16.42.101";
-                sshUser = "John88";
-                substituteOnTarget = true;
-                hermetic = true;
-                buildOn = "remote";
-              };
+                    host = "193.16.42.101";
+                    sshUser = "John88";
+                    substituteOnTarget = true;
+                    hermetic = true;
+                    buildOn = "remote";
+                  };
                 };
             }
           ];

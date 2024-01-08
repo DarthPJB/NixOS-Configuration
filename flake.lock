@@ -224,14 +224,17 @@
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1704327894,
-        "narHash": "sha256-cWoBfg1ljpW2U7Yk3wxfFckige+EalfsIZdVf16gGXw=",
-        "path": "/home/pokej/repo/platonic.systems/secrix",
-        "type": "path"
+        "lastModified": 1701493419,
+        "narHash": "sha256-Aa6uQcHp1vABB0FlMsMVMI0Vhk91VozLoSkAT7L7PMU=",
+        "owner": "Platonic-Systems",
+        "repo": "secrix",
+        "rev": "c5d193ae564b93ffa3e5a950fb7666760e0ae324",
+        "type": "github"
       },
       "original": {
-        "path": "/home/pokej/repo/platonic.systems/secrix",
-        "type": "path"
+        "owner": "Platonic-Systems",
+        "repo": "secrix",
+        "type": "github"
       }
     }
   },
