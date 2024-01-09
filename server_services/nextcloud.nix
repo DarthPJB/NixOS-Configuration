@@ -3,11 +3,7 @@ let
   inherit (builtins) readFile;
 in
 {
-  secrix.services.mattermost.secrets.mattermost-secrets = {
-    encrypted.file = ../secrets/mattermost-secrets;
-    decrypted.mode = "600";
-  };
-  secrix.services.nextcloud.secrets = {
+  secrix.system.secrets = {
     nextcloud_password_file.encrypted.file = ../secrets/nextcloud_password_file;
     nextcloud_password_file.decrypted =
       {
@@ -34,7 +30,7 @@ in
       maxUploadSize = "50G";
       config =
         {
-          adminpassFile = config.secrix.services.nextcloud.nextcloud_password_file.decrypted.path;
+          adminpassFile = config.secrix.system.secrets.nextcloud_password_file.decrypted.path;
           objectstore.s3 =
             {
               autocreate = true;
@@ -42,7 +38,7 @@ in
               enable = true;
               hostname = "s3.eu-central-003.backblazeb2.com";
               key = "003e3241026f9950000000001";
-              secretFile = config.secrix.services.nextcloud.nextcloud_s3_key.path;
+              secretFile = config.secrix.system.secrets.nextcloud_s3_key.decrypted.path;
             };
         };
 
