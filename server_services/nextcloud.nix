@@ -23,11 +23,26 @@ in
   networking.firewall.allowedTCPPorts = [ 80 443 ];
   services.nextcloud =
     {
+        configureRedis = true;
       enable = true;
       package = pkgs.nextcloud27;
       hostName = "nextcloud.johnbargman.com";
+      https = true;
       enableImagemagick = true;
       maxUploadSize = "50G";
+      extraOptions.enabledPreviewProviders = [
+    "OC\\Preview\\BMP"
+    "OC\\Preview\\GIF"
+    "OC\\Preview\\JPEG"
+    "OC\\Preview\\Krita"
+    "OC\\Preview\\MarkDown"
+    "OC\\Preview\\MP3"
+    "OC\\Preview\\OpenDocument"
+    "OC\\Preview\\PNG"
+    "OC\\Preview\\TXT"
+    "OC\\Preview\\XBitmap"
+    "OC\\Preview\\HEIC"
+  ];
       config =
         {
           adminpassFile = config.secrix.system.secrets.nextcloud_password_file.decrypted.path;
@@ -44,7 +59,9 @@ in
 
     };
 
-  services.nginx.virtualHosts."nextcloud.johnbargman.com" = {
+services.nginx.virtualHosts.${config.services.nextcloud.hostName} = {
+  forceSSL = true;
+  enableACME = true;
     extraConfig = "fastcgi_read_timeout 86400;\n";
   };
   # services.phpfpm.pools.nextcloud = {
