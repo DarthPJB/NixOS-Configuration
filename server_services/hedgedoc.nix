@@ -1,9 +1,10 @@
 { pkgs, config, ... }:
 let
-    fqdn = "hedgedoc.johnbargman.com";
+  fqdn = "hedgedoc.johnbargman.com";
 in
 {
-nginx = {
+  services = {
+    nginx = {
       enable = true;
       recommendedProxySettings = true;
       recommendedTlsSettings = true;
@@ -15,13 +16,13 @@ nginx = {
         locations."/socket.io/" = {
           proxyPass = "http://localhost:3333";
           proxyWebsockets = true;
-          extraConfig = 
+          extraConfig =
             "proxy_ssl_server_name on;"
-            ;
+          ;
         };
       };
-     };
-
+    };
+            # DNS ENTRY NEEDED
     hedgedoc = {
       enable = true;
       settings = {
@@ -29,10 +30,11 @@ nginx = {
           dialect = "sqlite";
           storage = "/var/lib/hedgedoc/db.hedgedoc.sqlite";
         };
-        domain = "hedgedoc.${fqdn}.com";
+        domain = "${fqdn}";
         port = 3333;
         useSSL = false;
         protocolUseSSL = true;
       };
     };
+  };
 }

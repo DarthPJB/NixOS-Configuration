@@ -19,10 +19,10 @@ in
       # inputs.secrix.nixosModules.secrix
 
     ];
-    security.acme = 
+  security.acme =
     {
-        acceptTerms = true;
-        defaults.email = "darthpjb@gmail.com";
+      acceptTerms = true;
+      defaults.email = "darthpjb@gmail.com";
     };
   nix.settings.trusted-users = [ "root" "John88" ];
   nixpkgs.config =

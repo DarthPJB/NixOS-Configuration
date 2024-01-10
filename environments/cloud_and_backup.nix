@@ -6,7 +6,7 @@
     pkgs.rsync
   ];
   # ---- ADD SYSTEMD SERVICE HERE
-    systemd.user.services.nextcloud-client =
+  systemd.user.services.nextcloud-client =
     {
       description = "nextcloud-client";
       wantedBy = [ "graphical-session.target" ];
