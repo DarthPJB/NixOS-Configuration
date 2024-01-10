@@ -345,6 +345,7 @@
             ./environments/audio_visual_editing.nix
             ./environments/general_fonts.nix
             ./environments/video_call_streaming.nix
+            ./environments/cloud_and_backup.nix
             ./locale/tailscale.nix
             ./modifier_imports/bluetooth.nix
             ./modifier_imports/memtest.nix
@@ -388,6 +389,7 @@
             ./environments/neovim.nix
             ./environments/browsers.nix
             ./environments/mudd.nix
+            ./environments/cloud_and_backup.nix
             ./environments/cad_and_graphics.nix
             ./environments/3dPrinting.nix
             ./environments/audio_visual_editing.nix
