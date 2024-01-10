@@ -309,7 +309,7 @@
               imports = [
                 "${nixpkgs}/nixos/modules/virtualisation/openstack-config.nix"
               ];
-                secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M";
+              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M";
               _module.args =
                 {
                   self = self;
