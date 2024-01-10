@@ -303,8 +303,8 @@
             ./machines/openstack.nix
             ./locale/tailscale.nix
             ./server_services/nextcloud.nix
+            ./server_services/hedgedoc.nix
 
-            #./server_services/syncthing_server.nix
             {
               imports = [
                 "${nixpkgs}/nixos/modules/virtualisation/openstack-config.nix"
