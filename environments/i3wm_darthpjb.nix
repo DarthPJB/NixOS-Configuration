@@ -58,7 +58,7 @@
         "50:class_g = 'Alacritty' && !focused"
         "100:class_g = 'Vivaldi-stable' && focused"
         "100:class_g = 'Brave-browser' && focused"
-        "90:fullscreen"
+        "100:fullscreen"
         "80:class_g = 'i3lock' && focused"
         "80:class_g = 'i3lock' && !focused"
         "80:class_g = 'i3lock-color' && focused"
