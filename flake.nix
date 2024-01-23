@@ -414,7 +414,7 @@
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;
-                    buildOn = "remote";
+                    buildOn = "local";
                   };
                 };
               nixpkgs.config.allowUnfree = true;

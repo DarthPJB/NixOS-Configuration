@@ -20,6 +20,47 @@
     pkgs.virt-manager
     pkgs.tigervnc
   ];
+
+  systemd.user.services.element =
+    {
+      description = "mumble-autostart";
+      wantedBy = [ "graphical-session.target" ];
+      serviceConfig =
+        {
+          Restart = "always";
+          ExecStart = ''
+            ${pkgs.element-desktop}/bin/element-desktop
+          '';
+          PassEnvironment = "DISPLAY XAUTHORITY";
+        };
+    };
+  systemd.user.services.discord =
+    {
+      description = "mumble-autostart";
+      wantedBy = [ "graphical-session.target" ];
+      serviceConfig =
+        {
+          Restart = "always";
+          ExecStart = ''
+            ${pkgs.discord}/bin/discord
+          '';
+          PassEnvironment = "DISPLAY XAUTHORITY";
+        };
+    };
+  systemd.user.services.dino =
+    {
+      description = "mumble-autostart";
+      wantedBy = [ "graphical-session.target" ];
+      serviceConfig =
+        {
+          Restart = "always";
+          ExecStart = ''
+            ${pkgs.dino}/bin/dino
+          '';
+          PassEnvironment = "DISPLAY XAUTHORITY";
+        };
+    };
+
   systemd.mounts = [
     {
       where = "/rendercache";

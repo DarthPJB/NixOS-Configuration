@@ -22,7 +22,7 @@ in
         };
       };
     };
-            # DNS ENTRY NEEDED
+    # DNS ENTRY NEEDED
     hedgedoc = {
       enable = true;
       settings = {
