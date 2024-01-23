@@ -1,7 +1,7 @@
 { config, pkgs, inputs, self, ... }:
 {
 
-   nix.settings.trusted-public-keys = [
+  nix.settings.trusted-public-keys = [
     "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
   ];
   nix.settings.substituters = [
