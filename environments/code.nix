@@ -16,7 +16,6 @@
     pkgs.enlightenment.terminology
     pkgs.platformio
     pkgs.conky
-    pkgs.sl
     pkgs.cmatrix
     pkgs.nms
     pkgs.chafa
@@ -26,5 +25,14 @@
     pkgs.nmap
     pkgs.tree
     pkgs.ripgrep
-  ];
+ (import (fetchFromGitHub {
+        owner = "pinktrink";
+        repo = "sl";
+        rev = "a613b55b692304f8e020af8889ff996c0918fa7d";
+        sha256 = "sha256-xH1oXNTwsOvIKv3XhP6Riqp2FtfncyMDOWSAgVRpkT8=";
+      }) { inherit pkgs; })
+ ];
+    nixpkgs.config.permittedInsecurePackages = [
+    "electron-25.9.0"
+    ];
 }

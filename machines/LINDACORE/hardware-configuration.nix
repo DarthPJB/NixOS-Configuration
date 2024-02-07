@@ -8,7 +8,7 @@
     [
       (modulesPath + "/installer/scan/not-detected.nix")
     ];
-
+  boot.zfs.extraPools = [ "speed-storage" ];
   boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" "usb_storage" "uas" "sd_mod" "sr_mod" ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-amd" ];
