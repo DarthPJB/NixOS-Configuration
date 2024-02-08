@@ -21,7 +21,7 @@
   ];
   boot =
     {
-
+     zfs.extraPools = [ "speed-storage" ];
       tmp.useTmpfs = false;
       #tmpOnTmpfs = false;
       supportedFilesystems = [ "zfs" "ntfs" ];
