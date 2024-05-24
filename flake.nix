@@ -69,7 +69,7 @@
         pi-print-controller = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
-            inputs.secrix.nixosModules.default
+            #inputs.secrix.nixosModules.default
             ./machines/rPI.nix
             ./users/darthpjb.nix
             ./locale/home_networks.nix
