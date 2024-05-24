@@ -181,6 +181,7 @@
             ./configuration.nix
             ./users/darthpjb.nix
             ./environments/neovim.nix
+            ./environments/emacs.nix
             ./environments/sshd.nix
             {
               nix.nixPath = [
@@ -212,6 +213,7 @@
             ./configuration.nix
             ./users/darthpjb.nix
             ./environments/neovim.nix
+            ./environments/emacs.nix
             ./environments/sshd.nix
             {
               _module.args =
@@ -338,6 +340,7 @@
             ./environments/code.nix
             ./environments/communications.nix
             ./environments/neovim.nix
+            ./environments/emacs.nix
             ./environments/browsers.nix
             ./environments/mudd.nix
             ./environments/cad_and_graphics.nix
@@ -387,6 +390,7 @@
             ./environments/code.nix
             ./environments/communications.nix
             ./environments/neovim.nix
+            ./environments/emacs.nix
             ./environments/browsers.nix
             ./environments/mudd.nix
             ./environments/cloud_and_backup.nix
