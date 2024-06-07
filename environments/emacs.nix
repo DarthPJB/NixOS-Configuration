@@ -1,8 +1,11 @@
 { pkgs, inputs, ... }:
-
+let 
+pkgs = inputs.nixpkgs_stable.legacyPackages.x86_64-linux;
+in
 {
-  environment.systemPackages =
+  environment.systemPackages = with pkgs;
     [
-      inputs.nixpkgs_stable.legacyPackages.x86_64-linux.emacs
+      pkgs.emacs
+      pkgs.nix-top
     ];
 }

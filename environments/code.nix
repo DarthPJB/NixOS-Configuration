@@ -12,6 +12,7 @@
     pkgs.upterm
     pkgs.tmux
     pkgs.cool-retro-term
+    pkgs.tmate
     pkgs.terminator
     pkgs.enlightenment.terminology
     pkgs.platformio
