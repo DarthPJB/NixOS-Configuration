@@ -6,7 +6,6 @@
   programs.ssh.enableAskPassword = false;
   programs.gnupg.agent =
     {
-      pinentryFlavor = "tty";
       enable = true;
       enableSSHSupport = true;
     };
