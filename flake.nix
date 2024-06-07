@@ -22,6 +22,9 @@
           allowUnfree = true;
           cudaSupport = true;
           cudnnSupport = true;
+          permittedInsecurePackages = [
+            "freeimage"
+        ];
         };
       };
       un_pkgs = import inputs.nixpkgs_unstable {
@@ -30,6 +33,9 @@
           allowUnfree = true;
           cudaSupport = true;
           cudnnSupport = true;
+        permittedInsecurePackages = [
+            "freeimage"
+        ];
         };
       };
     in

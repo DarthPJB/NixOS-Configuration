@@ -25,10 +25,6 @@ in
       defaults.email = "darthpjb@gmail.com";
     };
   nix.settings.trusted-users = [ "root" "John88" ];
-  nixpkgs.config =
-    {
-      allowUnfree = true;
-    };
   secrix.defaultEncryptKeys = {
     John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ];
   };
