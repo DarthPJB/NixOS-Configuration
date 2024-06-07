@@ -18,29 +18,13 @@
       nixpkgs = inputs.nixpkgs_stable;
       pkgs = import inputs.nixpkgs_stable {
         system = "x86_64-linux";
-        config = {
-          allowUnfree = true;
-          cudaSupport = true;
-          cudnnSupport = true;
-          permittedInsecurePackages = [
-            "freeimage"
-        ];
-        };
       };
+      
       un_pkgs = import inputs.nixpkgs_unstable {
         system = "x86_64-linux";
-        config = {
-          allowUnfree = true;
-          cudaSupport = true;
-          cudnnSupport = true;
-        permittedInsecurePackages = [
-            "freeimage"
-        ];
-        };
       };
     in
     {
-
       formatter.x86_64-linux = pkgs.nixpkgs-fmt;
       apps.x86_64-linux = (inputs.nixinate.nixinate.x86_64-linux inputs.self).nixinate // ({ secrix = secrix self; });
       un_pkgs = un_pkgs;
@@ -369,14 +353,6 @@
                 {
                   self = self;
                 };
-              environment.systemPackages =
-                let
-                  system = "x86_64-linux";
-                in
-                [
-                  un_pkgs.vivaldi
-                  #parsecgaming.packages.x86_64-linux.parsecgaming
-                ];
             }
           ];
         };

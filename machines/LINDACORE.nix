@@ -16,7 +16,6 @@
     pkgs.transmission
     pkgs.virtiofsd
     pkgs.gwe
-    pkgs.nvtop
     pkgs.virt-manager
     pkgs.tigervnc
   ];

@@ -1,9 +1,11 @@
 { config, pkgs, ... }:
 
 {
+  nixpkgs.config.allowUnfree = true;
   environment.systemPackages = [
     pkgs.firefox
     pkgs.obsidian
+    pkgs.vivaldi
   ];
 
   services = {
