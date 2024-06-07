@@ -19,7 +19,7 @@
       pkgs = import inputs.nixpkgs_stable {
         system = "x86_64-linux";
       };
-      
+
       un_pkgs = import inputs.nixpkgs_unstable {
         system = "x86_64-linux";
       };
