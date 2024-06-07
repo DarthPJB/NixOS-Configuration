@@ -11,6 +11,6 @@
     keyMap = "uk";
   };
 
-  # Configure keymap in X11
-  services.xserver.layout = "gb";
+    # Configure keymap in X11
+  services.xserver.xkb.layout = "gb";
 }

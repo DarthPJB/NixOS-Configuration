@@ -15,7 +15,6 @@
     inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.scream
     pkgs.virtiofsd
     pkgs.gwe
-    pkgs.nvtop
     pkgs.virt-manager
     pkgs.tigervnc
   ];

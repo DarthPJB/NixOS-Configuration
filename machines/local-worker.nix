@@ -106,7 +106,6 @@
     ffmpeg
     tmux
     btop
-    nvtop
   ];
 
   services.qemuGuest.enable = true;

@@ -6,6 +6,11 @@
     GDK_PIXBUF_MODULE_FILE = "$(echo ${pkgs.librsvg.out}/lib/gdk-pixbuf-2.0/*/loaders.cache)";
   };
   environment.systemPackages = [ pkgs.arc-theme ];
+  services.displayManager.sddm =
+        {
+          enable = true;
+          autoNumlock = true;
+        };
   services.xserver =
     let
       xConfig = pkgs.writeText "i3.config" ''
@@ -165,11 +170,6 @@
     in
     {
       enable = true;
-      displayManager.sddm =
-        {
-          enable = true;
-          autoNumlock = true;
-        };
       desktopManager.gnome.extraGSettingsOverrides = ''
         [org.gnome.desktop.interface]
         gtk-theme='Arc-Dark'
