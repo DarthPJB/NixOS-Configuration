@@ -3,11 +3,10 @@
 
   inputs = {
     nixinate.url = "github:matthewcroughan/nixinate";
-    agenix.url = "github:ryantm/agenix";
     secrix.url = "github:Platonic-Systems/secrix";
     #secrix.url = "path:/home/pokej/repo/platonic.systems/secrix";
     nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-23.11";
+    nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-24.05";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
@@ -235,7 +234,6 @@
         RemoteWorker-2 = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            inputs.agenix.nixosModules.default
             inputs.secrix.nixosModules.default
             ./configuration.nix
             ./machines/ethan-net.nix
@@ -299,7 +297,6 @@
         RemoteWorker-1 = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            inputs.agenix.nixosModules.default
             inputs.secrix.nixosModules.default
             ./configuration.nix
             ./machines/openstack.nix
@@ -371,7 +368,6 @@
                 in
                 [
                   un_pkgs.vivaldi
-                  inputs.agenix.packages.x86_64-linux.default
                   #parsecgaming.packages.x86_64-linux.parsecgaming
                 ];
             }
@@ -427,7 +423,6 @@
               environment.systemPackages =
                 [
                   un_pkgs.vivaldi
-                  inputs.agenix.packages.x86_64-linux.default
                   #  parsecgaming.packages.x86_64-linux.parsecgaming
                 ];
             }
