@@ -5,6 +5,7 @@
     nixinate.url = "github:matthewcroughan/nixinate";
     secrix.url = "github:Platonic-Systems/secrix";
     #secrix.url = "path:/home/pokej/repo/platonic.systems/secrix";
+
     nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-24.05";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";

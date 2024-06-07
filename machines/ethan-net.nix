@@ -49,7 +49,7 @@
   programs.ssh.enableAskPassword = false;
   programs.gnupg.agent =
     {
-      pinentryFlavor = "tty";
+      pinentryPackage = pkgs.pinentry-curses;
       enable = true;
       enableSSHSupport = true;
     };
