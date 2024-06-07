@@ -7,10 +7,10 @@
   };
   environment.systemPackages = [ pkgs.arc-theme ];
   services.displayManager.sddm =
-        {
-          enable = true;
-          autoNumlock = true;
-        };
+    {
+      enable = true;
+      autoNumlock = true;
+    };
   services.xserver =
     let
       xConfig = pkgs.writeText "i3.config" ''

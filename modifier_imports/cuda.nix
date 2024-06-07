@@ -23,13 +23,13 @@
       (pkgs.blender.override { cudaSupport = true; })
     ];
 
-    nixpkgs.config = {
-          cudaSupport = true;
-          cudnnSupport = true;
-          permittedInsecurePackages = [
-            "freeimage"
-            "freeimage-unstable-2021-11-01"
-        ];
-    };
+  nixpkgs.config = {
+    cudaSupport = true;
+    cudnnSupport = true;
+    permittedInsecurePackages = [
+      "freeimage"
+      "freeimage-unstable-2021-11-01"
+    ];
+  };
 
 }
