@@ -4,6 +4,7 @@
   environment.systemPackages = with pkgs; [
     pkgs.gpp
     pkgs.emscripten
+    pkgs.nix-top
     #    pkgs.pulsar
     pkgs.vscode
     pkgs.neovim
