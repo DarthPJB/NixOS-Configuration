@@ -105,7 +105,7 @@
     serviceConfig = {
       ExecStart = "${pkgs.scream}/bin/scream -i br0";
       Restart = "always";
-      RuntimeMaxSec = "120";
+      RuntimeMaxSec = "240";
     };
     wantedBy = [ "multi-user.target" ];
     requires = [ "pipewire.service" ];
