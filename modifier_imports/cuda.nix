@@ -20,7 +20,7 @@
       #      pkgs.ollama
       #      (pkgs.llama-cpp.override { cudaSupport = true; })
 
-#      (pkgs.colmap.override { cudaSupport = true; })
+      #      (pkgs.colmap.override { cudaSupport = true; })
       (pkgs.blender.override { cudaSupport = true; })
     ];
 

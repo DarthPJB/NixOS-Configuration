@@ -31,7 +31,7 @@
         };
       initrd =
         {
-          availableKernelModules = [  "vfio_pci" "vfio_iommu_type1" "vfio" "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "uas" "sd_mod" ];
+          availableKernelModules = [ "vfio_pci" "vfio_iommu_type1" "vfio" "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "uas" "sd_mod" ];
           kernelModules = [ "vfio_pci" ];
         };
       #kernelPackages= pkgs.linuxPackages_5_18;
