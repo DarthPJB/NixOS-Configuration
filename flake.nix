@@ -292,7 +292,6 @@
             ./configuration.nix
             ./machines/openstack.nix
             ./locale/tailscale.nix
-            ./server_services/nextcloud.nix
             ./server_services/hedgedoc.nix
 
             {
