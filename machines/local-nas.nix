@@ -24,26 +24,30 @@
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.extraPools = [ "archive" "bulk-storage" ];
 
-  systemd.mounts = [
+  fileSystems = {
+    "/bulk-storage/NAS-ARCHIVE/ARCHIVE" =
     {
-      what = "/archive/general";
-      where = "/bulk-storage/NAS-ARCHIVE/ARCHIVE";
-      options = "bind";
-      wantedBy = [ "multi-user.target" ];
-    }
+      depends = [ "/archive" ];
+      device = "/archive/general";
+      fsType = "none";
+      options = [ "bind" ];
+    };
+
+    "/bulk-storage/NAS-ARCHIVE/remote.worker/Astralship Master Archive/ARCHIVE" =
     {
-      what = "/archive/astral";
-      where = "/bulk-storage/NAS-ARCHIVE/remote.worker/Astralship Master Archive/ARCHIVE";
-      options = "bind";
-      wantedBy = [ "multi-user.target" ];
-    }
+      depends = [ "/archive" ];
+      device = "/archive/astral";
+      fsType = "none";
+      options = [ "bind" ];
+    };
+    "/bulk-storage/NAS-ARCHIVE/remote.worker/88/88-FS-V2/ARCHIVE" =
     {
-      what = "/archive/personal";
-      where = "/bulk-storage/NAS-ARCHIVE/remote.worker/88/88-FS-V2/ARCHIVE";
-      options = "bind";
-      wantedBy = [ "multi-user.target" ];
-    }
-  ];
+      depends = [ "/archive" ];
+      device = "/archive/personal";
+      fsType = "none";
+      options = [ "bind" ];
+    };
+  };
 
   networking.hostId = "d5710c9a";
   networking.hostName = "DataStorage"; # Define your hostname.
@@ -57,7 +61,7 @@
   networking.firewall.allowedUDPPorts = [ 22000 21027 ];
   services = {
     syncthing = {
-      enable = true;
+      enable = false;
       dataDir = "/bulk-storage";
       configDir = "/syncthing";
       guiAddress = "0.0.0.0:8080";

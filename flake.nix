@@ -292,6 +292,7 @@
             ./configuration.nix
             ./machines/openstack.nix
             ./locale/tailscale.nix
+            ./server_services/nextcloud.nix
             ./server_services/hedgedoc.nix
 
             {
@@ -348,6 +349,10 @@
             ./modifier_imports/cuda.nix
             ./modifier_imports/remote-builder.nix
             {
+              environment.systemPackages = 
+              [
+                 pkgs.monero-gui
+              ];
               _module.args =
                 {
                   self = self;

@@ -178,7 +178,9 @@
   networking =
     {
       firewall.allowedUDPPorts = [ 4010 51413 ];
-      firewall.allowedTCPPorts = [ 51413 ];
+      firewall.allowedTCPPorts = [ 51413 ] ;
+      firewall.allowedUDPPortRanges = [ { from = 6881; to = 6999; } ];
+      firewall.allowedTCPPortRanges = [ { from = 6881; to = 6999; } ];
       hostName = "LINDACORE";
       hostId = "b4120de4";
       bridges = {
