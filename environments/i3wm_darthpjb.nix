@@ -21,7 +21,7 @@
     };
   services.picom =
     {
-      enable = false;
+      enable = true;
       activeOpacity = 1;
       inactiveOpacity = 0.96;
       backend = "glx";
