@@ -296,6 +296,10 @@
             ./server_services/hedgedoc.nix
 
             {
+                              nixpkgs.config.permittedInsecurePackages = [
+                "nextcloud-27.1.11"
+              ];
+
               imports = [
                 "${nixpkgs}/nixos/modules/virtualisation/openstack-config.nix"
               ];
