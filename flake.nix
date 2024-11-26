@@ -2,17 +2,20 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
+    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/0.1";
+    nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0.2405.0";
     nixinate.url = "github:matthewcroughan/nixinate";
     secrix.url = "github:Platonic-Systems/secrix";
     #secrix.url = "path:/home/pokej/repo/platonic.systems/secrix";
 
-    nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-24.05";
+#    nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs_unstable.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.0.tar.gz";
+    #nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-24.05";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
-  outputs = { self, nixpkgs_stable, ... }@inputs:
+  outputs = { self, nixpkgs_stable, determinate, ... }@inputs:
     let
       inherit (inputs.secrix) secrix;
       nixpkgs = inputs.nixpkgs_stable;
@@ -324,6 +327,7 @@
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
+            determinate.nixosModules.default
             inputs.secrix.nixosModules.default
             ./configuration.nix
             ./machines/LINDACORE.nix
