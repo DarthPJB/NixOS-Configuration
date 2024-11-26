@@ -24,19 +24,19 @@
     self.un_pkgs.rustup
   ];
 
-  systemd.user.services.element =
-    {
-      description = "mumble-autostart";
-      wantedBy = [ "graphical-session.target" ];
-      serviceConfig =
-        {
-          Restart = "always";
-          ExecStart = ''
-            ${pkgs.element-desktop}/bin/element-desktop
-          '';
-          PassEnvironment = "DISPLAY XAUTHORITY";
-        };
-    };
+#  systemd.user.services.element =
+#    {
+#      description = "mumble-autostart";
+#      wantedBy = [ "graphical-session.target" ];
+#      serviceConfig =
+#        {
+#          Restart = "always";
+#          ExecStart = ''
+#            ${pkgs.element-desktop}/bin/element-desktop
+#          '';
+# #         PassEnvironment = "DISPLAY XAUTHORITY";
+#        };
+#    };
   systemd.user.services.discord =
     {
       description = "mumble-autostart";
