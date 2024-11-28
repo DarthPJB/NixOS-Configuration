@@ -2,20 +2,20 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
-    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/0.1";
-    nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0.2405.0";
+  #  determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/0.1";
+    #nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0.2405.0";
     nixinate.url = "github:matthewcroughan/nixinate";
     secrix.url = "github:Platonic-Systems/secrix";
     #secrix.url = "path:/home/pokej/repo/platonic.systems/secrix";
 
-#    nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs_unstable.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.0.tar.gz";
-    #nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-24.05";
+    nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    #nixpkgs_unstable.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.0.tar.gz";
+    nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-24.05";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
 
-  outputs = { self, nixpkgs_stable, determinate, ... }@inputs:
+  outputs = { self, nixpkgs_stable, ... }@inputs:
     let
       inherit (inputs.secrix) secrix;
       nixpkgs = inputs.nixpkgs_stable;
@@ -238,8 +238,6 @@
                 syncthing = {
 
                   guiAddress = "127.0.0.1:8384";
-
-
                   openDefaultPorts = true;
                   enable = true;
                   user = "syncthing";
@@ -278,11 +276,11 @@
                 {
                   self = self;
                   nixinate = {
-                    host = "149.5.115.141";
+                    host = "181.215.32.40";
                     sshUser = "John88";
-                    substituteOnTarget = true;
-                    hermetic = true;
-                    buildOn = "remote";
+#                   substituteOnTarget = true;
+#                   hermetic = true;
+                    buildOn = "local";
                   };
                 };
             }
@@ -327,7 +325,7 @@
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
-            determinate.nixosModules.default
+#            determinate.nixosModules.default
             inputs.secrix.nixosModules.default
             ./configuration.nix
             ./machines/LINDACORE.nix
