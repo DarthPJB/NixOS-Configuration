@@ -65,12 +65,12 @@
   networking.useDHCP = lib.mkDefault false;
   # networking.interfaces.enp2s0.useDHCP = lib.mkDefault true;
   networking = {
-    defaultGateway = "149.5.115.129";
+    defaultGateway = "181.215.32.33";
     nameservers = [ "1.1.1.1" "8.8.8.8" ];
     interfaces.enp2s0 = {
       ipv4.addresses = [{
-        address = "149.5.115.141";
-        prefixLength = 28;
+        address = "181.215.32.40";
+        prefixLength = 27;
       }];
     };
   };

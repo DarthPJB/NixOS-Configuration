@@ -2,12 +2,12 @@
 {
   environment.systemPackages =
     [
-      pkgs.inkscape-with-extensions
-      pkgs.lensfun
-      pkgs.gimp-with-plugins
-      pkgs.solvespace
-      pkgs.openscad
-      pkgs.meshlab
-      pkgs.krita
+#      pkgs.inkscape-with-extensions
+#      pkgs.lensfun
+#      pkgs.gimp-with-plugins
+#      pkgs.solvespace
+#      pkgs.openscad
+#      pkgs.meshlab
+#      pkgs.krita
     ];
 }
