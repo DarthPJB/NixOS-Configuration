@@ -2,8 +2,8 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
-  #  determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/0.1";
-    #nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0.2405.0";
+#    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/0.1";
+#    nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0.2405.636213";
     nixinate.url = "github:matthewcroughan/nixinate";
     secrix.url = "github:Platonic-Systems/secrix";
     #secrix.url = "path:/home/pokej/repo/platonic.systems/secrix";
@@ -186,9 +186,9 @@
                   nixinate = {
                     host = "192.168.122.69";
                     sshUser = "John88";
-                    substituteOnTarget = true;
-                    hermetic = true;
-                    buildOn = "remote";
+#                    substituteOnTarget = true;
+#                    hermetic = true;
+                    buildOn = "local";
                   };
                 };
               services.openssh.ports = [ 22 ];
@@ -215,9 +215,9 @@
                   nixinate = {
                     host = "192.168.0.206";
                     sshUser = "John88";
-                    substituteOnTarget = true;
-                    hermetic = true;
-                    buildOn = "remote";
+#                    substituteOnTarget = true;
+#                    hermetic = true;
+                    buildOn = "local";
                   };
                 };
               services.openssh.ports = [ 22 ];
@@ -295,9 +295,10 @@
             ./locale/tailscale.nix
             ./server_services/nextcloud.nix
             ./server_services/hedgedoc.nix
-
+#            determinate.nixosModules.default
             {
-                              nixpkgs.config.permittedInsecurePackages = [
+   
+              nixpkgs.config.permittedInsecurePackages = [
                 "nextcloud-27.1.11"
               ];
 
@@ -311,9 +312,9 @@
                   nixinate = {
                     host = "193.16.42.101";
                     sshUser = "John88";
-                    substituteOnTarget = true;
-                    hermetic = true;
-                    buildOn = "remote";
+#                    substituteOnTarget = true;
+#                    hermetic = true;
+                    buildOn = "local";
                   };
                 };
             }
@@ -325,8 +326,8 @@
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
-#            determinate.nixosModules.default
             inputs.secrix.nixosModules.default
+#            determinate.nixosModules.default
             ./configuration.nix
             ./machines/LINDACORE.nix
             ./environments/i3wm_darthpjb.nix
@@ -346,13 +347,12 @@
             ./locale/tailscale.nix
             ./modifier_imports/bluetooth.nix
             ./modifier_imports/memtest.nix
-            ./modifier_imports/cuda.nix
             ./modifier_imports/hosts.nix
             ./modifier_imports/zfs.nix
             ./modifier_imports/virtualisation-libvirtd.nix
             ./modifier_imports/arm-emulation.nix
             ./environments/sshd.nix
-            ./modifier_imports/cuda.nix
+#            ./modifier_imports/cuda.nix
             ./modifier_imports/remote-builder.nix
             {
               environment.systemPackages = 

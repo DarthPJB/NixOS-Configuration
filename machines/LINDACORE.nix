@@ -23,7 +23,7 @@
     self.un_pkgs.rust-analyzer
     self.un_pkgs.rustup
   ];
-
+services.monado = { enable = true; defaultRuntime = true; };
 #  systemd.user.services.element =
 #    {
 #      description = "mumble-autostart";
