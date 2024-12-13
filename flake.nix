@@ -352,7 +352,7 @@
             ./modifier_imports/virtualisation-libvirtd.nix
             ./modifier_imports/arm-emulation.nix
             ./environments/sshd.nix
-#            ./modifier_imports/cuda.nix
+            ./modifier_imports/cuda.nix
             ./modifier_imports/remote-builder.nix
             {
               environment.systemPackages = 
