@@ -216,7 +216,7 @@
                     host = "192.168.0.206";
                     sshUser = "John88";
 #                    substituteOnTarget = true;
-#                    hermetic = true;
+                    hermetic = true;
                     buildOn = "local";
                   };
                 };
