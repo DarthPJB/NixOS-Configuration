@@ -23,31 +23,34 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.extraPools = [ "archive" "bulk-storage" ];
+  services.zfs.autoSnapshot.enable = true;
 
-  fileSystems = {
-    "/bulk-storage/NAS-ARCHIVE/ARCHIVE" =
+   systemd.mounts = [
     {
-      depends = [ "/archive" ];
-      device = "/archive/general";
-      fsType = "none";
-      options = [ "bind" ];
-    };
-
-    "/bulk-storage/NAS-ARCHIVE/remote.worker/Astralship Master Archive/ARCHIVE" =
+      #depends = [ "/archive" "/bulk-storage" ];
+      what = "/archive/general";
+      where = "/bulk-storage/NAS-ARCHIVE/ARCHIVE";
+      options = "bind";
+      after = [ "systemd-tmpfiles-setup.service" "zfs-mount.service" ];
+      wantedBy = [ "multi-user.target" ];
+    }
     {
-      depends = [ "/archive" ];
-      device = "/archive/astral";
-      fsType = "none";
-      options = [ "bind" ];
-    };
-    "/bulk-storage/NAS-ARCHIVE/remote.worker/88/88-FS-V2/ARCHIVE" =
+      #depends = [ "/archive" "/bulk-storage"];
+      what = "/archive/astral";
+      where = "/bulk-storage/NAS-ARCHIVE/remote.worker/Astralship Master Archive/ARCHIVE";
+      options = "bind";
+      after = [ "systemd-tmpfiles-setup.service" "zfs-mount.service"];
+      wantedBy = [ "multi-user.target" ];
+    }
     {
-      depends = [ "/archive" ];
-      device = "/archive/personal";
-      fsType = "none";
-      options = [ "bind" ];
-    };
-  };
+      #depends = [ "/archive" "/bulk-storage"];
+      what = "/archive/personal";
+      where = "/bulk-storage/NAS-ARCHIVE/remote.worker/88/88-FS-V2/ARCHIVE";
+      options = "bind";
+      after = [ "systemd-tmpfiles-setup.service" "zfs-mount.service"];
+      wantedBy = [ "multi-user.target" ];
+    }
+  ];
 
   networking.hostId = "d5710c9a";
   networking.hostName = "DataStorage"; # Define your hostname.
