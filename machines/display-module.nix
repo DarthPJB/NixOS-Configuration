@@ -1,16 +1,27 @@
 { pkgs, config, lib, ... }:
+let pkgs_arm = pkgs;
+in 
 {
 
-  networking.hostName = "display-module";
+  networking = 
+  { 
+    hostName = "display-module";
+  };
   boot = {
     initrd.kernelModules = [ "vc4" "bcm2835_dma" "i2c_bcm2835" ];
     kernelPackages = pkgs_arm.lib.mkDefault pkgs_arm.linuxKernel.packages.linux_rpi3;
+    # Cleanup tmp on startup
+    #tmp.cleanOnBoot = true;
     kernelParams = [
       "console=ttyS0,115200n8"
       "console=fb1"
     ];
-    loader.raspberryPi.firmwareConfig = ''
-      hdmi_force_hotplug=1
+  };
+  hardware = { 
+    deviceTree = 
+    {
+ /*          firmwareConfig = ''
+        hdmi_force_hotplug=1
       dtparam=i2c_arm=on
       dtparam=spi=on
       enable_uart=1
@@ -20,16 +31,29 @@
       hdmi_mode=87
       hdmi_cvt 480 320 60 6 0 0 0
       hdmi_drive=2
-    '';
-  };
-  services.openssh.ports = [ 22 ];
-  networking.firewall.allowedTCPPorts = [ 22 ];
-  fileSystems."/home/pokej/obisidan-archive" =
-    {
-      device = "/dev/disk/by-uuid/8c501c5c-9fbe-4e9d-b8fc-fbf2987d80ca";
-      fsType = "ext4";
+      ''; */
     };
-  services.xserver = {
+    bluetooth.enable = false; 
+    enableRedistributableFirmware = true;
+    };
+  swapDevices = [{ device = "/swapfile"; size = 1024; }];
+  networking = {
+    firewall.allowedTCPPorts = [ 22 ];
+    interfaces."wlan0".useDHCP = true;
+    wireless = {
+      interfaces = [ "wlan0" ];
+      enable = true;
+    };
+  };
+  services = 
+   {
+    openssh = 
+    { enable = true;
+    ports = [ 22 ];
+    };
+#    displayManager.sddm.enable = pkgs.lib.mkForce false;
+# displayManager.lightdm.enable = pkgs.lib.mkForce true;
+xserver = {
     resolutions = [
       {
         x = 480;
@@ -46,37 +70,11 @@
         display = true;
       }
     ];
-    displayManager.sddm.enable = nixpkgs.lib.mkForce false;
-    displayManager.lightdm.enable = nixpkgs.lib.mkForce true;
   };
-  #hardware.raspberry."3".
-  hardware.bluetooth.enable = false;
-  nixpkgs.config.allowUnfree = true;
-  _module.args =
-    {
-      self = self;
-      nixinate = {
-        host = "192.168.0.115";
-        sshUser = "John88";
-        substituteOnTarget = true;
-        hermetic = true;
-        buildOn = "local";
-      };
-    };
-  boot = {
-    # Cleanup tmp on startup
-    #tmp.cleanOnBoot = true;
-    kernelParams = [ "console=ttyS1,115200n8" "cma=32M" ];
-  };
-
-  swapDevices = [{ device = "/swapfile"; size = 1024; }];
-  hardware.enableRedistributableFirmware = true;
-  services.openssh.enable = true;
-  networking = {
-    interfaces."wlan0".useDHCP = true;
-    wireless = {
-      interfaces = [ "wlan0" ];
-      enable = true;
-    };
-  };
+   };
+#  fileSystems."/home/pokej/obisidan-archive" =
+#    {
+#      device = "/dev/disk/by-uuid/8c501c5c-9fbe-4e9d-b8fc-fbf2987d80ca";
+#      fsType = "ext4";
+#    };
 }
