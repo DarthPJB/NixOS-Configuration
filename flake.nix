@@ -38,19 +38,16 @@
       # -----------------------------------IMAGES-------------------------------------------------
 
       images = {
-        print-controller = (self.nixosConfigurations.print-controller.extendModules {
-          modules = [
-            { sdImage.compressImage = false; }
-          ];
-        }).config.system.build.sdImage; # { compressImage = false; };
-        display-module = (self.nixosConfigurations.display-module.extendModules {
-          modules = [
-            
-            { sdImage.compressImage = false; }
-          ];
-        }).config.system.build.sdImage;
+        print-controller-image = (self.nixosConfigurations.print-controller.extendModules
+          {
+            modules = [{ sdImage.compressImage = false; }];
+          }).config.system.build.sdImage;
+        display-module-image = (self.nixosConfigurations.display-module.extendModules
+          {
+            modules = [{ sdImage.compressImage = false; }];
+          }).config.system.build.sdImage;
 
-        local-worker = import "${inputs.nixpkgs.cutPath}/nixos/lib/make-disk-image.nix"
+        local-worker-image = import "${inputs.nixpkgs.cutPath}/nixos/lib/make-disk-image.nix"
           #local-image = import "${self}/lib/make-storeless-image.nix"
           rec {
             pkgs = un_pkgs;
@@ -78,9 +75,10 @@
           system = "aarch64-linux";
           modules = [
             "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-            #inputs.secrix.nixosModules.default
-            ./machines/rPI.nix
+            inputs.secrix.nixosModules.default
+            ./machines/print-controller.nix
             ./users/darthpjb.nix
+            ./configuration.nix
             ./locale/home_networks.nix
             ./server_services/klipper.nix
             {
