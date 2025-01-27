@@ -13,5 +13,6 @@
     pkgs.freemind
     pkgs.dnsutils
     pkgs.pciutils
+    pkgs.lshw
   ];
 }
