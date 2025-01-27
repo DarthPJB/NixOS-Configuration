@@ -25,7 +25,7 @@
   boot.zfs.extraPools = [ "archive" "bulk-storage" ];
   services.zfs.autoSnapshot.enable = true;
 
-   systemd.mounts = [
+  systemd.mounts = [
     {
       #depends = [ "/archive" "/bulk-storage" ];
       what = "/archive/general";
@@ -39,7 +39,7 @@
       what = "/archive/astral";
       where = "/bulk-storage/NAS-ARCHIVE/remote.worker/Astralship Master Archive/ARCHIVE";
       options = "bind";
-      after = [ "systemd-tmpfiles-setup.service" "zfs-mount.service"];
+      after = [ "systemd-tmpfiles-setup.service" "zfs-mount.service" ];
       wantedBy = [ "multi-user.target" ];
     }
     {
@@ -47,7 +47,7 @@
       what = "/archive/personal";
       where = "/bulk-storage/NAS-ARCHIVE/remote.worker/88/88-FS-V2/ARCHIVE";
       options = "bind";
-      after = [ "systemd-tmpfiles-setup.service" "zfs-mount.service"];
+      after = [ "systemd-tmpfiles-setup.service" "zfs-mount.service" ];
       wantedBy = [ "multi-user.target" ];
     }
   ];

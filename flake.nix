@@ -2,25 +2,26 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
-#    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/0.1";
-#    nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0.2405.636213";
     nixinate.url = "github:matthewcroughan/nixinate";
     secrix.url = "github:Platonic-Systems/secrix";
     #secrix.url = "path:/home/pokej/repo/platonic.systems/secrix";
 
     nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-    #nixpkgs_unstable.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.0.tar.gz";
-    nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-24.05";
+    nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-24.11";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
-
-  outputs = { self, nixpkgs_stable, ... }@inputs:
+# --------------------------------------------------------------------------------------------------
+  outputs = { self, ... }@inputs:
     let
       inherit (inputs.secrix) secrix;
       nixpkgs = inputs.nixpkgs_stable;
       pkgs = import inputs.nixpkgs_stable {
         system = "x86_64-linux";
+      };
+
+      pkgs_arm = import inputs.nixpkgs_stable {
+        system = "aarch64-linux";
       };
 
       un_pkgs = import inputs.nixpkgs_unstable {
@@ -30,7 +31,10 @@
     {
       formatter.x86_64-linux = pkgs.nixpkgs-fmt;
       apps.x86_64-linux = (inputs.nixinate.nixinate.x86_64-linux inputs.self).nixinate // ({ secrix = secrix self; });
-      un_pkgs = un_pkgs;
+      inherit un_pkgs;
+
+# -----------------------------------IMAGES-------------------------------------------------
+
       images = {
         pi-print-controller = (self.nixosConfigurations.pi-print-controller.extendModules {
           modules = [
@@ -38,6 +42,13 @@
             "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
           ];
         }).config.system.build.sdImage;
+        display-module = (self.nixosConfigurations.display-module.extendModules {
+          modules = [
+            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            { config.system.build.sdImage.compressImage = false; }
+          ];
+        }).config.system.build.sdImage;
+
         local-worker = import "${inputs.nixpkgs.cutPath}/nixos/lib/make-disk-image.nix"
           #local-image = import "${self}/lib/make-storeless-image.nix"
           rec {
@@ -58,7 +69,10 @@
             OVMF = pkgs.OVMF.fd;
           };
       };
+# --------------------------------------------------------------------------------------------------
       nixosConfigurations = {
+
+# -----------------------------------ARM DEVICES-------------------------------------------------
         pi-print-controller = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
@@ -67,45 +81,27 @@
             ./users/darthpjb.nix
             ./locale/home_networks.nix
             ./server_services/klipper.nix
+            {
+              networking.hostName = "printcontroller";
+            }
           ];
         };
-        pi-display-module = nixpkgs.lib.nixosSystem {
+        display-module = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
             inputs.secrix.nixosModules.default
+            #inputs.nixos-hardware.nixosModules.raspberry-pi-3
             "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-            ./machines/rPI.nix
+            ./machines/display-module.nix
             ./users/darthpjb.nix
             ./configuration.nix
             ./locale/home_networks.nix
             ./environments/browsers.nix
-            ./environments/i3wm_darthpjb.nix
-            {
-              services.openssh.ports = [ 22 ];
-              networking.firewall.allowedTCPPorts = [ 22 ];
-              fileSystems."/home/pokej/obisidan-archive" =
-                {
-                  device = "/dev/disk/by-uuid/8c501c5c-9fbe-4e9d-b8fc-fbf2987d80ca";
-                  fsType = "ext4";
-                };
-              services.xserver.displayManager.sddm.enable = nixpkgs.lib.mkForce false;
-              services.xserver.displayManager.lightdm.enable = nixpkgs.lib.mkForce true;
-              hardware.bluetooth.enable = false;
-              nixpkgs.config.allowUnfree = true;
-              _module.args =
-                {
-                  self = self;
-                  nixinate = {
-                    host = "192.168.0.115";
-                    sshUser = "John88";
-                    substituteOnTarget = true;
-                    hermetic = true;
-                    buildOn = "local";
-                  };
-                };
-            }
+            ./environments/i3wm.nix
+            { }
           ];
         };
+# -----------------------------------TERMINALS-------------------------------------------------
         Terminal-zero = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
@@ -162,6 +158,7 @@
             }
           ];
         };
+# -----------------------------------VIRTUALISED-------------------------------------------------
         local-worker = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
@@ -186,8 +183,8 @@
                   nixinate = {
                     host = "192.168.122.69";
                     sshUser = "John88";
-#                    substituteOnTarget = true;
-#                    hermetic = true;
+                    #                    substituteOnTarget = true;
+                    #                    hermetic = true;
                     buildOn = "local";
                   };
                 };
@@ -196,6 +193,7 @@
             }
           ];
         };
+# -----------------------------------HOME LAB-------------------------------------------------
         local-nas = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
@@ -215,7 +213,7 @@
                   nixinate = {
                     host = "192.168.0.206";
                     sshUser = "John88";
-#                    substituteOnTarget = true;
+                    #                    substituteOnTarget = true;
                     hermetic = true;
                     buildOn = "local";
                   };
@@ -225,6 +223,51 @@
             }
           ];
         };
+LINDA = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [
+            inputs.secrix.nixosModules.default
+            #            determinate.nixosModules.default
+            ./configuration.nix
+            ./machines/LINDACORE.nix
+            ./environments/i3wm_darthpjb.nix
+            ./environments/steam.nix
+            ./environments/code.nix
+            ./environments/communications.nix
+            ./environments/neovim.nix
+            ./environments/emacs.nix
+            ./environments/browsers.nix
+            ./environments/mudd.nix
+            ./environments/cad_and_graphics.nix
+            ./environments/3dPrinting.nix
+            ./environments/audio_visual_editing.nix
+            ./environments/general_fonts.nix
+            ./environments/video_call_streaming.nix
+            ./environments/cloud_and_backup.nix
+            ./locale/tailscale.nix
+            ./modifier_imports/bluetooth.nix
+            ./modifier_imports/memtest.nix
+            ./modifier_imports/hosts.nix
+            ./modifier_imports/zfs.nix
+            ./modifier_imports/virtualisation-libvirtd.nix
+            ./modifier_imports/arm-emulation.nix
+            ./environments/sshd.nix
+            ./modifier_imports/cuda.nix
+            ./modifier_imports/remote-builder.nix
+            {
+              environment.systemPackages =
+                [
+                  pkgs.monero-gui
+                ];
+              _module.args =
+                {
+                  self = self;
+                };
+            }
+          ];
+        };
+# -----------------------------------REMOTE SYSTEMS-------------------------------------------------
         RemoteWorker-2 = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
@@ -278,8 +321,8 @@
                   nixinate = {
                     host = "181.215.32.40";
                     sshUser = "John88";
-#                   substituteOnTarget = true;
-#                   hermetic = true;
+                    #                   substituteOnTarget = true;
+                    #                   hermetic = true;
                     buildOn = "local";
                   };
                 };
@@ -295,9 +338,9 @@
             ./locale/tailscale.nix
             ./server_services/nextcloud.nix
             ./server_services/hedgedoc.nix
-#            determinate.nixosModules.default
+            #            determinate.nixosModules.default
             {
-   
+
               nixpkgs.config.permittedInsecurePackages = [
                 "nextcloud-27.1.11"
               ];
@@ -312,115 +355,15 @@
                   nixinate = {
                     host = "193.16.42.101";
                     sshUser = "John88";
-#                    substituteOnTarget = true;
-#                    hermetic = true;
+                    #                    substituteOnTarget = true;
+                    #                    hermetic = true;
                     buildOn = "local";
                   };
                 };
             }
           ];
         };
-
-
-        LINDA = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          specialArgs = { inherit inputs; };
-          modules = [
-            inputs.secrix.nixosModules.default
-#            determinate.nixosModules.default
-            ./configuration.nix
-            ./machines/LINDACORE.nix
-            ./environments/i3wm_darthpjb.nix
-            ./environments/steam.nix
-            ./environments/code.nix
-            ./environments/communications.nix
-            ./environments/neovim.nix
-            ./environments/emacs.nix
-            ./environments/browsers.nix
-            ./environments/mudd.nix
-            ./environments/cad_and_graphics.nix
-            ./environments/3dPrinting.nix
-            ./environments/audio_visual_editing.nix
-            ./environments/general_fonts.nix
-            ./environments/video_call_streaming.nix
-            ./environments/cloud_and_backup.nix
-            ./locale/tailscale.nix
-            ./modifier_imports/bluetooth.nix
-            ./modifier_imports/memtest.nix
-            ./modifier_imports/hosts.nix
-            ./modifier_imports/zfs.nix
-            ./modifier_imports/virtualisation-libvirtd.nix
-            ./modifier_imports/arm-emulation.nix
-            ./environments/sshd.nix
-            ./modifier_imports/cuda.nix
-            ./modifier_imports/remote-builder.nix
-            {
-              environment.systemPackages = 
-              [
-                 pkgs.monero-gui
-              ];
-              _module.args =
-                {
-                  self = self;
-                };
-            }
-          ];
-        };
-        LINDACLONE = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          specialArgs = { inherit inputs; };
-          modules = [
-            inputs.secrix.nixosModules.default
-            ./configuration.nix
-            ./users/l33.nix
-            ./machines/LINDA-CLONE.nix
-            ./environments/i3wm_darthpjb.nix
-            ./environments/steam.nix
-            ./environments/code.nix
-            ./environments/communications.nix
-            ./environments/neovim.nix
-            ./environments/emacs.nix
-            ./environments/browsers.nix
-            ./environments/mudd.nix
-            ./environments/cloud_and_backup.nix
-            ./environments/cad_and_graphics.nix
-            ./environments/3dPrinting.nix
-            ./environments/audio_visual_editing.nix
-            ./environments/general_fonts.nix
-            ./environments/video_call_streaming.nix
-            ./locale/tailscale.nix
-            ./modifier_imports/bluetooth.nix
-            ./modifier_imports/memtest.nix
-            ./modifier_imports/hosts.nix
-            ./modifier_imports/zfs.nix
-            ./modifier_imports/virtualisation-libvirtd.nix
-            ./modifier_imports/arm-emulation.nix
-            ./environments/sshd.nix
-            ./modifier_imports/remote-builder.nix
-            ./modifier_imports/cuda.nix
-            {
-              _module.args =
-                {
-                  self = self;
-                  nixinate = {
-                    host = "192.168.0.93";
-                    sshUser = "John88";
-                    substituteOnTarget = true;
-                    hermetic = true;
-                    buildOn = "remote";
-                  };
-                };
-              nixpkgs.config.allowUnfree = true;
-              services.openssh.ports = [ 22 ];
-              networking.firewall.allowedTCPPorts = [ 22 ];
-              environment.systemPackages =
-                [
-                  un_pkgs.vivaldi
-                  #  parsecgaming.packages.x86_64-linux.parsecgaming
-                ];
-            }
-          ];
-        };
+# -------------------------------------------------------------------------------------------------------
       };
     };
 }

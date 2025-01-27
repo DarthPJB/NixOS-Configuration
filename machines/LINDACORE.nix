@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{self, config, pkgs, inputs, ... }:
+{ self, config, pkgs, inputs, ... }:
 
 {
   imports =
@@ -23,20 +23,20 @@
     self.un_pkgs.rust-analyzer
     self.un_pkgs.rustup
   ];
-services.monado = { enable = true; defaultRuntime = true; };
-#  systemd.user.services.element =
-#    {
-#      description = "mumble-autostart";
-#      wantedBy = [ "graphical-session.target" ];
-#      serviceConfig =
-#        {
-#          Restart = "always";
-#          ExecStart = ''
-#            ${pkgs.element-desktop}/bin/element-desktop
-#          '';
-# #         PassEnvironment = "DISPLAY XAUTHORITY";
-#        };
-#    };
+  services.monado = { enable = true; defaultRuntime = true; };
+  #  systemd.user.services.element =
+  #    {
+  #      description = "mumble-autostart";
+  #      wantedBy = [ "graphical-session.target" ];
+  #      serviceConfig =
+  #        {
+  #          Restart = "always";
+  #          ExecStart = ''
+  #            ${pkgs.element-desktop}/bin/element-desktop
+  #          '';
+  # #         PassEnvironment = "DISPLAY XAUTHORITY";
+  #        };
+  #    };
   systemd.user.services.discord =
     {
       description = "mumble-autostart";
@@ -178,9 +178,9 @@ services.monado = { enable = true; defaultRuntime = true; };
   networking =
     {
       firewall.allowedUDPPorts = [ 4010 51413 ];
-      firewall.allowedTCPPorts = [ 51413 ] ;
-      firewall.allowedUDPPortRanges = [ { from = 6881; to = 6999; } ];
-      firewall.allowedTCPPortRanges = [ { from = 6881; to = 6999; } ];
+      firewall.allowedTCPPorts = [ 51413 ];
+      firewall.allowedUDPPortRanges = [{ from = 6881; to = 6999; }];
+      firewall.allowedTCPPortRanges = [{ from = 6881; to = 6999; }];
       hostName = "LINDACORE";
       hostId = "b4120de4";
       bridges = {
@@ -195,7 +195,7 @@ services.monado = { enable = true; defaultRuntime = true; };
           enp69s0f0.useDHCP = false;
           enp69s0f1 = {
             useDHCP = false;
-            ipv4.addresses = [ {
+            ipv4.addresses = [{
               address = "149.5.115.140";
               prefixLength = 28;
             }];

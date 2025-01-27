@@ -63,16 +63,4 @@
       };
     };
   programs.dconf.enable = true;
-  environment.systemPackages =
-    [
-      pkgs.betterlockscreen
-      pkgs.brightnessctl
-      pkgs.pavucontrol
-      pkgs.volumeicon
-      pkgs.enlightenment.terminology
-      pkgs.conky
-      pkgs.lxappearance
-      pkgs.arandr
-      #pkgs.nextcloud-client
-    ];
 }
