@@ -38,16 +38,15 @@
       # -----------------------------------IMAGES-------------------------------------------------
 
       images = {
-        pi-print-controller = (self.nixosConfigurations.pi-print-controller.extendModules {
+        print-controller = (self.nixosConfigurations.print-controller.extendModules {
           modules = [
-            inputs.secrix.nixosModules.default
-            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            { sdImage.compressImage = false; }
           ];
-        }).config.system.build.sdImage;
+        }).config.system.build.sdImage; # { compressImage = false; };
         display-module = (self.nixosConfigurations.display-module.extendModules {
           modules = [
-            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-            { config.system.build.sdImage.compressImage = false; }
+            
+            { sdImage.compressImage = false; }
           ];
         }).config.system.build.sdImage;
 
@@ -75,16 +74,29 @@
       nixosConfigurations = {
 
         # -----------------------------------ARM DEVICES-------------------------------------------------
-        pi-print-controller = nixpkgs.lib.nixosSystem {
+        print-controller = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
+            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             #inputs.secrix.nixosModules.default
             ./machines/rPI.nix
             ./users/darthpjb.nix
             ./locale/home_networks.nix
             ./server_services/klipper.nix
             {
+              system.stateVersion = "24.11";
               networking.hostName = "printcontroller";
+              _module.args =
+                {
+                  self = self;
+                  nixinate = {
+                    host = "192.168.0.172";
+                    sshUser = "John88";
+                    substituteOnTarget = true;
+                    hermetic = true;
+                    buildOn = "local";
+                  };
+                };
             }
           ];
         };
@@ -101,6 +113,7 @@
             ./environments/browsers.nix
             ./environments/i3wm.nix
             {
+              system.stateVersion = "24.11";
               _module.args =
                 {
                   self = self;
