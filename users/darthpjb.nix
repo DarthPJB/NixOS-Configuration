@@ -11,7 +11,7 @@
       enable = true;
       enableSSHSupport = true;
     };
-    nix.settings.trusted-users = [ "root" "John88" ];
+  nix.settings.trusted-users = [ "root" "John88" ];
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.John88 = {
     isNormalUser = true;

@@ -6,6 +6,7 @@
       enable = true;
       configFile = ./klipper/skr-e3.cfg;
       mutableConfig = true;
+      #mutableConfigFolder = true;
     };
     fluidd = {
       enable = true;
@@ -22,7 +23,7 @@
         authorization = {
           force_logins = true;
           cors_domains =
-            [ "*.local" "*.lan" "*://app.fluidd.xyz" "*://my.mainsail.xyz" ];
+            [ "*.local" "*.lan" ];
           trusted_clients = [ "127.0.0.0/8" "192.168.1.0/24" "192.168.0.0/24" ];
         };
       };
