@@ -38,13 +38,16 @@
   # Enable touchpad support (enabled default in most desktopManager).
   services =
     {
-      xserver.libinput.enable = true;
+      libinput.enable = true;
       printing.enable = true;
     };
 
   # Enable sound.
-  sound.enable = true;
-  hardware.pulseaudio.enable = true;
+  
+  #hardware.pulseaudio.enable = true;
+  hardware.opengl = { enable = true;
+  extraPackages = with pkgs; [ intel-media-driver vaapiVdpau libvdau-va-gl ];
+  };
 
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
   boot =

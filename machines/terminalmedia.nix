@@ -31,11 +31,11 @@
 
   # Enable CUPS to print documents.
   # Enable touchpad support (enabled default in most desktopManager).
-  hardware.opengl.enable = true;
+  hardware.graphics.enable = true;
   hardware.nvidia.modesetting.enable = true;
   services = {
+    libinput.enable = true;
     xserver = {
-      libinput.enable = true;
       videoDrivers = [ "nvidia" ];
     };
     printing.enable = true;
@@ -56,7 +56,7 @@
   };
 
   # Enable sound.
-  sound.enable = true;
+  #hardware.sound.enable = true;
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -93,4 +93,5 @@
 
   hardware.cpu.intel.updateMicrocode =
     lib.mkDefault config.hardware.enableRedistributableFirmware;
+    system.stateVersion = "23.05";
 }

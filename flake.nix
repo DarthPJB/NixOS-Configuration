@@ -2,6 +2,7 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
+    nixinate.url = "path:/home/pokej/repo/DarthPJB/nixinate";
     nixinate.url = "github:matthewcroughan/nixinate";
     secrix.url = "github:Platonic-Systems/secrix";
     #secrix.url = "path:/home/pokej/repo/platonic.systems/secrix";
@@ -18,6 +19,7 @@
       nixpkgs = inputs.nixpkgs_stable;
       pkgs = import inputs.nixpkgs_stable {
         system = "x86_64-linux";
+        config.allowUnfree = true;
       };
 
       pkgs_arm = import inputs.nixpkgs_stable {
@@ -98,7 +100,19 @@
             ./locale/home_networks.nix
             ./environments/browsers.nix
             ./environments/i3wm.nix
-            { }
+            { 
+                  _module.args =
+    {
+      self = self;
+      nixinate = {
+        host = "192.168.0.115";
+        sshUser = "John88";
+        substituteOnTarget = true;
+        hermetic = true;
+        buildOn = "local";
+      };
+    };
+            }
           ];
         };
 # -----------------------------------TERMINALS-------------------------------------------------
@@ -116,6 +130,17 @@
             (import ./locale/tailscale.nix)
             inputs.nixos-hardware.nixosModules.lenovo-thinkpad-x220
             {
+              _module.args =
+                {
+                  self = self;
+                  nixinate = {
+                    host = "192.168.0.28w";
+                    sshUser = "John88";
+                    substituteOnTarget = true;
+                    hermetic = true;
+                    buildOn = "local";
+                  };
+                };
               environment.systemPackages =
                 [
                   #parsecgaming.packages.x86_64-linux.parsecgaming 
