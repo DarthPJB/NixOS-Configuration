@@ -43,18 +43,20 @@
     };
 
   # Enable sound.
-  
-    services.pipewire = {
+
+  services.pipewire = {
     enable = true;
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
   };
-  hardware.graphics = { enable = true;
-  extraPackages = with pkgs; [ 
-    intel-media-driver 
-    vaapiVdpau 
-    libvdpau-va-gl ];
+  hardware.graphics = {
+    enable = true;
+    extraPackages = with pkgs; [
+      intel-media-driver
+      vaapiVdpau
+      libvdpau-va-gl
+    ];
   };
 
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];

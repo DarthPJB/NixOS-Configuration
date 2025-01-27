@@ -13,7 +13,7 @@
   environment.systemPackages = [
     inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.looking-glass-client
     inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.scream
-    pkgs.transmission
+    #pkgs.transmission
     pkgs.virtiofsd
     pkgs.gwe
     self.un_pkgs.figma-linux
@@ -157,7 +157,6 @@
   time.timeZone = "Europe/London";
   services.xserver.enable = true;
   services.xserver.videoDrivers = [ "nvidia" ];
-  sound.enable = true;
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -167,10 +166,12 @@
 
   hardware = {
     sane.enable = true;
-    opengl.enable = true;
+    graphics.enable = true;
     cpu.amd.updateMicrocode = config.hardware.enableRedistributableFirmware;
     opengl.driSupport32Bit = true;
     nvidia = {
+      nvidiaSettings = true;
+      open = false;
       modesetting.enable = false;
       powerManagement.enable = true;
     };

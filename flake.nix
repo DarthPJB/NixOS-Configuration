@@ -12,7 +12,7 @@
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
-# --------------------------------------------------------------------------------------------------
+  # --------------------------------------------------------------------------------------------------
   outputs = { self, ... }@inputs:
     let
       inherit (inputs.secrix) secrix;
@@ -35,7 +35,7 @@
       apps.x86_64-linux = (inputs.nixinate.nixinate.x86_64-linux inputs.self).nixinate // ({ secrix = secrix self; });
       inherit un_pkgs;
 
-# -----------------------------------IMAGES-------------------------------------------------
+      # -----------------------------------IMAGES-------------------------------------------------
 
       images = {
         pi-print-controller = (self.nixosConfigurations.pi-print-controller.extendModules {
@@ -71,10 +71,10 @@
             OVMF = pkgs.OVMF.fd;
           };
       };
-# --------------------------------------------------------------------------------------------------
+      # --------------------------------------------------------------------------------------------------
       nixosConfigurations = {
 
-# -----------------------------------ARM DEVICES-------------------------------------------------
+        # -----------------------------------ARM DEVICES-------------------------------------------------
         pi-print-controller = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
@@ -100,22 +100,22 @@
             ./locale/home_networks.nix
             ./environments/browsers.nix
             ./environments/i3wm.nix
-            { 
-                  _module.args =
-    {
-      self = self;
-      nixinate = {
-        host = "192.168.0.115";
-        sshUser = "John88";
-        substituteOnTarget = true;
-        hermetic = true;
-        buildOn = "local";
-      };
-    };
+            {
+              _module.args =
+                {
+                  self = self;
+                  nixinate = {
+                    host = "192.168.0.115";
+                    sshUser = "John88";
+                    substituteOnTarget = true;
+                    hermetic = true;
+                    buildOn = "local";
+                  };
+                };
             }
           ];
         };
-# -----------------------------------TERMINALS-------------------------------------------------
+        # -----------------------------------TERMINALS-------------------------------------------------
         Terminal-zero = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
@@ -156,7 +156,6 @@
             (import ./environments/browsers.nix)
             (import ./configuration.nix)
             (import ./environments/i3wm_darthpjb.nix)
-            (import ./environments/rtl-sdr.nix)
             (import ./machines/terminalmedia.nix)
             (import ./environments/code.nix)
             {
@@ -183,7 +182,7 @@
             }
           ];
         };
-# -----------------------------------VIRTUALISED-------------------------------------------------
+        # -----------------------------------VIRTUALISED-------------------------------------------------
         local-worker = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
@@ -218,7 +217,7 @@
             }
           ];
         };
-# -----------------------------------HOME LAB-------------------------------------------------
+        # -----------------------------------HOME LAB-------------------------------------------------
         local-nas = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
@@ -248,7 +247,7 @@
             }
           ];
         };
-LINDA = nixpkgs.lib.nixosSystem {
+        LINDA = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
@@ -271,6 +270,7 @@ LINDA = nixpkgs.lib.nixosSystem {
             ./environments/video_call_streaming.nix
             ./environments/cloud_and_backup.nix
             ./locale/tailscale.nix
+            ./environments/rtl-sdr.nix
             ./modifier_imports/bluetooth.nix
             ./modifier_imports/memtest.nix
             ./modifier_imports/hosts.nix
@@ -292,7 +292,7 @@ LINDA = nixpkgs.lib.nixosSystem {
             }
           ];
         };
-# -----------------------------------REMOTE SYSTEMS-------------------------------------------------
+        # -----------------------------------REMOTE SYSTEMS-------------------------------------------------
         RemoteWorker-2 = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
@@ -388,7 +388,7 @@ LINDA = nixpkgs.lib.nixosSystem {
             }
           ];
         };
-# -------------------------------------------------------------------------------------------------------
+        # -------------------------------------------------------------------------------------------------------
       };
     };
 }
