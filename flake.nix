@@ -2,7 +2,7 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
-    nixinate.url = "path:/home/pokej/repo/DarthPJB/nixinate";
+    #nixinate.url = "path:/home/pokej/repo/DarthPJB/nixinate";
     nixinate.url = "github:matthewcroughan/nixinate";
     secrix.url = "github:Platonic-Systems/secrix";
     #secrix.url = "path:/home/pokej/repo/platonic.systems/secrix";
@@ -134,7 +134,7 @@
                 {
                   self = self;
                   nixinate = {
-                    host = "192.168.0.28w";
+                    host = "192.168.0.28";
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;
