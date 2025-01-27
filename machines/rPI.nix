@@ -10,7 +10,6 @@
   hardware.enableRedistributableFirmware = true;
   services.openssh.enable = true;
   networking = {
-    hostName = "printcontroller";
     interfaces."wlan0".useDHCP = true;
     wireless = {
       interfaces = [ "wlan0" ];
