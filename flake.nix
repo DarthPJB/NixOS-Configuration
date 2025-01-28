@@ -26,10 +26,12 @@
 
       pkgs_arm = import inputs.nixpkgs_stable {
         system = "aarch64-linux";
+        config.allowUnfree = true;
       };
 
       un_pkgs = import inputs.nixpkgs_unstable {
         system = "x86_64-linux";
+        config.allowUnfree = true;
       };
     in
     {
@@ -247,6 +249,7 @@
             ./environments/sshd.nix
             ./environments/audio_visual_editing.nix
             {
+                nixpkgs.config.allowUnfree = true;
               _module.args =
                 {
                   self = self;
