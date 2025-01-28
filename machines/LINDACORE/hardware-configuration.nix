@@ -22,7 +22,7 @@
 
   fileSystems."/boot" =
     {
-      device = "/dev/disk/by-uuid/6EA5-1279";
+      device = "/dev/disk/by-id/nvme-Samsung_SSD_980_500GB_S64DNF0RA83182Z_1-part3";
       fsType = "vfat";
       options = [ "fmask=0077" "dmask=0077" ];
     };
