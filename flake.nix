@@ -5,6 +5,8 @@
     #nixinate.url = "path:/home/pokej/repo/DarthPJB/nixinate";
     nixinate.url = "github:matthewcroughan/nixinate";
     secrix.url = "github:Platonic-Systems/secrix";
+
+    #raspberry-pi-nix.url = "github:nix-community/raspberry-pi-nix";
     #secrix.url = "path:/home/pokej/repo/platonic.systems/secrix";
 
     nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -103,6 +105,7 @@
           modules = [
             inputs.secrix.nixosModules.default
             #inputs.nixos-hardware.nixosModules.raspberry-pi-3
+            #inputs.raspberry-pi-nix.nixosModules.raspberry-pi
             "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             ./machines/display-module.nix
             ./users/darthpjb.nix
@@ -110,6 +113,7 @@
             ./locale/home_networks.nix
             ./environments/browsers.nix
             ./environments/i3wm.nix
+            ./modifier_imports/pi-firmware.nix
             {
               system.stateVersion = "24.11";
               _module.args =
