@@ -39,7 +39,6 @@
 
       # -----------------------------------IMAGES-------------------------------------------------
 
-      images = {
         print-controller-image = (self.nixosConfigurations.print-controller.extendModules
           {
             modules = [{ sdImage.compressImage = false; }];
@@ -68,7 +67,6 @@
             copyChannel = true;
             OVMF = pkgs.OVMF.fd;
           };
-      };
       # --------------------------------------------------------------------------------------------------
       nixosConfigurations = {
 
@@ -104,7 +102,7 @@
           system = "aarch64-linux";
           modules = [
             inputs.secrix.nixosModules.default
-            #inputs.nixos-hardware.nixosModules.raspberry-pi-3
+            inputs.nixos-hardware.nixosModules.raspberry-pi-3
             #inputs.raspberry-pi-nix.nixosModules.raspberry-pi
             "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             ./machines/display-module.nix
@@ -233,6 +231,33 @@
           ];
         };
         # -----------------------------------HOME LAB-------------------------------------------------
+        storage-array = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [
+            inputs.secrix.nixosModules.default
+            ./modifier_imports/zfs.nix
+            ./machines/storage-array
+            ./configuration.nix
+            ./users/darthpjb.nix
+            ./environments/neovim.nix
+            ./environments/emacs.nix
+            ./environments/sshd.nix
+            {
+              _module.args =
+                {
+                  self = self;
+                  nixinate = {
+                    host = "192.168.0.16";
+                    sshUser = "John88";
+                    substituteOnTarget = true;
+                    hermetic = true;
+                    buildOn = "local";
+                  };
+                };
+            }
+          ];
+        };
         local-nas = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
@@ -252,13 +277,11 @@
                   nixinate = {
                     host = "192.168.0.206";
                     sshUser = "John88";
-                    #                    substituteOnTarget = true;
+                    substituteOnTarget = true;
                     hermetic = true;
                     buildOn = "local";
                   };
                 };
-              services.openssh.ports = [ 22 ];
-              networking.firewall.allowedTCPPorts = [ 22 ];
             }
           ];
         };
@@ -267,7 +290,6 @@
           specialArgs = { inherit inputs; };
           modules = [
             inputs.secrix.nixosModules.default
-            #            determinate.nixosModules.default
             ./configuration.nix
             ./machines/LINDACORE.nix
             ./environments/i3wm_darthpjb.nix

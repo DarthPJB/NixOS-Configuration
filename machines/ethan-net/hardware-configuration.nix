@@ -79,3 +79,7 @@
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }
 
+zfs create -V 64G -b $(getconf PAGESIZE) -o compression=zle \
+      -o logbias=throughput -o sync=always \
+      -o primarycache=metadata -o secondarycache=none \
+      -o com.sun:auto-snapshot=false bulk-storage/swap

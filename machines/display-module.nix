@@ -8,14 +8,19 @@ in
       hostName = "display-module";
     };
   boot = {
+    supportedFilesystems.zfs = lib.mkForce false;
     initrd.kernelModules = [ "vc4" "bcm2835_dma" "i2c_bcm2835" ];
-    kernelPackages = pkgs_arm.lib.mkDefault pkgs_arm.linuxKernel.packages.linux_rpi3;
+    #kernelPackages = pkgs_arm.lib.mkDefault pkgs_arm.linuxKernel.packages.linux_rpi3;
     # Cleanup tmp on startup
     #tmp.cleanOnBoot = true;
     kernelParams = [
       "console=ttyS0,115200n8"
       "console=fb1"
     ];
+        loader = {
+      grub.enable = false;
+      generic-extlinux-compatible.enable = true;
+    };
   raspi.dtoverlays =
       [
       "hdmi_force_hotplug=1"
