@@ -242,7 +242,10 @@
             ./users/darthpjb.nix
             ./environments/neovim.nix
             ./environments/emacs.nix
+            ./environments/code.nix
+            ./environments/neovim.nix
             ./environments/sshd.nix
+            ./environments/audio_visual_editing.nix
             {
               _module.args =
                 {
@@ -295,8 +298,8 @@
             ./environments/i3wm_darthpjb.nix
             ./environments/steam.nix
             ./environments/code.nix
-            ./environments/communications.nix
             ./environments/neovim.nix
+            ./environments/communications.nix
             ./environments/emacs.nix
             ./environments/browsers.nix
             ./environments/mudd.nix
