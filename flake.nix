@@ -131,7 +131,7 @@
           ];
         };
         # -----------------------------------TERMINALS-------------------------------------------------
-        Terminal-zero = nixpkgs.lib.nixosSystem {
+        terminal-zero = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
             inputs.secrix.nixosModules.default
@@ -140,7 +140,7 @@
             (import ./environments/i3wm_darthpjb.nix)
             (import ./environments/rtl-sdr.nix)
             (import ./environments/pio.nix)
-            (import ./machines/terminalzero.nix)
+            (import ./machines/terminal-zero)
             (import ./environments/code.nix)
             (import ./locale/tailscale.nix)
             inputs.nixos-hardware.nixosModules.lenovo-thinkpad-x220
@@ -163,7 +163,7 @@
             }
           ];
         };
-        Terminal-media = nixpkgs.lib.nixosSystem {
+        terminal-media = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
             inputs.secrix.nixosModules.default
@@ -171,7 +171,7 @@
             (import ./environments/browsers.nix)
             (import ./configuration.nix)
             (import ./environments/i3wm_darthpjb.nix)
-            (import ./machines/terminalmedia.nix)
+            (import ./machines/terminal-media)
             (import ./environments/code.nix)
             {
               nixpkgs.config.allowUnfree = true;

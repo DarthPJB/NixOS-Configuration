@@ -8,6 +8,7 @@
     #    pkgs.pulsar
     pkgs.vscode
     pkgs.neovim
+    pkgs.progress
     pkgs.dnsutils
     pkgs.openssl
     pkgs.upterm
