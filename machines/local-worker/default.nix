@@ -7,7 +7,7 @@
   imports =
     [
       # Include the results of the hardware scan.
-      ./libvirt-qemu/hardware-configuration.nix
+      ./hardware-configuration.nix
     ];
 
   hardware = {

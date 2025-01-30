@@ -8,7 +8,7 @@
   imports =
     [
       # Include the results of the hardware scan.
-      ./local-nas/hardware-configuration.nix
+      ./hardware-configuration.nix
     ];
 
   networking.useDHCP = false;

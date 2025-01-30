@@ -8,7 +8,7 @@
   imports =
     [
       # Include the results of the hardware scan.
-      ./LINDACORE/hardware-configuration.nix
+      ./hardware-configuration.nix
     ];
   environment.systemPackages = [
     inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.looking-glass-client

@@ -204,7 +204,7 @@
           modules = [
             inputs.secrix.nixosModules.default
             "${nixpkgs}/nixos/modules/virtualisation/libvirtd.nix"
-            ./machines/local-worker.nix
+            ./machines/local-worker
             ./environments/blender.nix
             ./modifier_imports/cuda.nix
             ./configuration.nix
@@ -270,7 +270,7 @@
           modules = [
             inputs.secrix.nixosModules.default
             ./modifier_imports/zfs.nix
-            ./machines/local-nas.nix
+            ./machines/local-nas
             ./configuration.nix
             ./users/darthpjb.nix
             ./environments/neovim.nix
@@ -297,7 +297,7 @@
           modules = [
             inputs.secrix.nixosModules.default
             ./configuration.nix
-            ./machines/LINDACORE.nix
+            ./machines/LINDA
             ./environments/i3wm_darthpjb.nix
             ./environments/steam.nix
             ./environments/code.nix
@@ -341,7 +341,7 @@
           modules = [
             inputs.secrix.nixosModules.default
             ./configuration.nix
-            ./machines/ethan-net.nix
+            ./machines/ethan-net
             {
               networking.firewall.allowedTCPPorts = [ 22000 ];
               networking.firewall.allowedUDPPorts = [ 22000 21027 ];
