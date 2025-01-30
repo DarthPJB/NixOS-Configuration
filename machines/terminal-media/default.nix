@@ -12,6 +12,7 @@
 
     systemd.user.services.browser =
     {
+      enable = true;
       description = "browser-autostart";
       wantedBy = [ "graphical-session.target" ];
       serviceConfig =
