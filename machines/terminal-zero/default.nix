@@ -4,7 +4,10 @@
 { config, lib, pkgs, modulesPath, ... }:
 
 {
-
+  imports =
+    [ # Include the results of the hardware scan.
+      ./hardware-configuration.nix
+    ];
   # Use the GRUB 2 boot loader.
   # Use the systemd-boot EFI boot loader.
   boot.loader =
@@ -59,30 +62,4 @@
     ];
   };
 
-  imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
-  boot =
-    {
-      initrd.availableKernelModules = [ "xhci_pci" "ehci_pci" "ahci" "usb_storage" "uas" "sd_mod" "rtsx_pci_sdmmc" ];
-      kernelModules = [ "kvm-intel" ];
-    };
-
-  fileSystems = {
-    "/" =
-      {
-        device = "/dev/disk/by-label/TerminalZero";
-        fsType = "ext4";
-      };
-
-    "/boot" =
-      {
-        device = "/dev/disk/by-label/TZBOOT";
-        fsType = "vfat";
-      };
-  };
-
-  swapDevices = [{ device = "/dev/disk/by-label/swap"; }];
-
-  # This value determines the NixOS release from which the default
-  # settings for stateful data
-  system.stateVersion = "21.05"; # Did you read the comment?
 }
