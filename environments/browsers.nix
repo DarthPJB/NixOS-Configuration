@@ -1,9 +1,9 @@
-{ config, pkgs, ... }:
+{ config, pkgs, self, ... }:
 
 {
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = [
-    pkgs.firefox
+    self.un_pkgs.firefox
     pkgs.obsidian
     pkgs.vivaldi
     #pkgs.google-chrome
