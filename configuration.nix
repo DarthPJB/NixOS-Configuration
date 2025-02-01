@@ -19,6 +19,10 @@ in
       # inputs.secrix.nixosModules.secrix
 
     ];
+  environment.systemPackages = with pkgs; 
+  [    
+    pkgs.tmux 
+  ];
   security.acme =
     {
       acceptTerms = true;

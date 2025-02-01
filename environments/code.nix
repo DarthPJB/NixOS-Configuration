@@ -1,23 +1,25 @@
 { config, pkgs, ... }:
 
 {
+    programs.bash.shellAliases = {
+  code = "lite-xl";
+};
   environment.systemPackages = with pkgs; [
     pkgs.gpp
-    pkgs.emscripten
+    #pkgs.emscripten
+    #pkgs.pulsar
+    #pkgs.upterm
+    #pkgs.platformio
+    #pkgs.cool-retro-term
     pkgs.nix-top
-    #    pkgs.pulsar
-    pkgs.vscode
+    pkgs.lite-xl
     pkgs.neovim
     pkgs.progress
     pkgs.dnsutils
     pkgs.openssl
-    pkgs.upterm
-    pkgs.tmux
-    pkgs.cool-retro-term
     pkgs.tmate
     pkgs.terminator
     pkgs.enlightenment.terminology
-    pkgs.platformio
     pkgs.conky
     pkgs.cmatrix
     pkgs.nms

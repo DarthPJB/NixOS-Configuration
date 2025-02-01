@@ -14,7 +14,7 @@ in
     #tmp.cleanOnBoot = true;
     kernelParams = [
       "console=ttyS0,115200n8"
-      "console=fb1"
+      "console=fb2"
     ];
     loader = {
       grub.enable = false;
@@ -43,28 +43,36 @@ in
         };
       #    displayManager.sddm.enable = pkgs.lib.mkForce false;
       # displayManager.lightdm.enable = pkgs.lib.mkForce true;
-      xserver = {
+
+    
+        libinput.enable = true;
+        displayManager = {
+            defaultSession = "none+i3";
+            autoLogin = {
+              enable = true;
+              user = "John88";
+            };
+          };
+      xserver =
+        {
+          
+          xkb.layout = "gb";
+          videoDrivers = [ "fbdevhw" "fbdev" ];
+          windowManager.i3.enable = true;
         resolutions = [
           {
             x = 480;
             y = 320;
           }
         ];
-        drivers = [
-          {
-            name = "FramebufferOne";
-            driverName = "fbdev";
-            deviceSection = ''
-              Option "fbdev" "/dev/fb1"
+        deviceSection = ''
+              Option "fbdev" "/dev/fb2"
             '';
-            display = true;
-          }
-        ];
+        };
       };
-    };
+    }
   #  fileSystems."/home/pokej/obisidan-archive" =
   #    {
   #      device = "/dev/disk/by-uuid/8c501c5c-9fbe-4e9d-b8fc-fbf2987d80ca";
   #      fsType = "ext4";
   #    };
-}
