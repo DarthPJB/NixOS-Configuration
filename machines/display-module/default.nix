@@ -2,6 +2,7 @@
 let pkgs_arm = pkgs;
 in
 {
+  imports = [ ./piscreen.nix ];
   networking =
     {
       hostName = "display-module";
