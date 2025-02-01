@@ -2,7 +2,7 @@
 
 {
   environment.systemPackages = [
-    pkgs.nextcloud-client
+    #pkgs.nextcloud-client
     pkgs.rsync
   ];
   # ---- ADD SYSTEMD SERVICE HERE

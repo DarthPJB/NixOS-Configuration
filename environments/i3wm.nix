@@ -15,7 +15,6 @@
     pkgs.conky
     pkgs.lxappearance
     pkgs.arandr
-    #pkgs.nextcloud-client
   ];
   services.displayManager.sddm =
     {
