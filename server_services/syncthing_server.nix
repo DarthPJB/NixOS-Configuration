@@ -32,6 +32,43 @@ in
   #    };
   #  };
 
+  /* services = {
+                syncthing = {
+
+                  guiAddress = "127.0.0.1:8384";
+                  openDefaultPorts = true;
+                  enable = true;
+                  user = "syncthing";
+                  dataDir = "/bulk-storage/syncthing";
+                  configDir = "/bulk-storage/syncthing/.config/syncthing";
+                  overrideDevices = true; # overrides any devices added or deleted through the WebUI
+                  overrideFolders = true; # overrides any folders added or deleted through the WebUI
+                  settings = {
+                    extraOptions.gui = {
+                      user = "DarthPJB";
+                      password = "THIS_PASS_WORD_IS_HARD?";
+                    };
+                    devices = {
+                      "local-nas" = { id = "YSM4GLR-RVNNKB5-56ICTQG-7WJSIVC-VAYUBIO-ANZCL5W-3JIVSUY-IECJGQQ"; };
+                      "remote-worker-1" = { id = "IBQ4OX7-QB5ON3R-WITXQ2A-IWHSM4Z-E4OES2K-RHCBUQU-YXXCNTX-TUDD5QE"; };
+                    };
+                    folders = {
+                      "obisidan-archive" = {
+                        # Name of folder in Syncthing, also the folder ID
+                        id = "hb36j-r9ffv";
+                        path = "/bulk-storage/syncthing/obsidian-archive"; # Which folder to add to Syncthing
+                        devices = [ "remote-worker-1" "local-nas" ]; # Which devices to share the folder with
+                      };
+                      "NAS-ARCHIVE" = {
+                        # Name of folder in Syncthing, also the folder ID
+                        id = "gtpsy-rfgv5";
+                        path = "/bulk-storage/syncthing/remote.worker"; # Which folder to add to Syncthing
+                        devices = [ "remote-worker-1" "local-nas" ]; # Which devices to share the folder with
+                      };
+                    };
+
+                  };
+                };}; */
 
   services = {
     syncthing = {
