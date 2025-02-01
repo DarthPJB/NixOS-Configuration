@@ -110,7 +110,7 @@
           availableKernelModules = [ "vfio_pci" "vfio_iommu_type1" "vfio" "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "uas" "sd_mod" ];
           kernelModules = [ "vfio_pci" ];
         };
-      
+
       #kernelPackages= pkgs.linuxPackages_5_18;
       kernelModules = [ "kvm-amd" "vfio_virqfd" "vfio_pci" "vfio_iommu_type1" "vfio" ];
       kernelParams = [
@@ -119,7 +119,7 @@
       extraModulePackages = [ ];
 
 
-      
+
       extraModprobeConfig = ''
         options vfio-pci ids=10de:2487,10de:228b,1d6b:0002,28de:2102,28de:2300,0424:2744,28de:2613,28de:2400
       '';

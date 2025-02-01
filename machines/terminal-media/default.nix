@@ -10,7 +10,7 @@
 
   ];
 
-    systemd.user.services.browser =
+  systemd.user.services.browser =
     {
       enable = true;
       description = "browser-autostart";
