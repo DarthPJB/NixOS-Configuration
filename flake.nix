@@ -90,7 +90,7 @@
                 {
                   self = self;
                   nixinate = {
-                    host = "192.168.0.172";
+                    host = "192.168.0.40";
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;
