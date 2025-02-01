@@ -18,7 +18,8 @@
         {
           networks =
             {
-              "MI5-Monitoring-System".pskRaw = "0e4974085e4edb6fe8318604d0c8ca6e371c697c59577721b7473bbba302f85f";
+              "MI5-CCTV-NODE".pskRaw = "aaa174f84b1ae6a1ec92df26aa509dfc4949d9285520465c5eefe388060238bd";
+              #"MI5-Monitoring-System".pskRaw = "0e4974085e4edb6fe8318604d0c8ca6e371c697c59577721b7473bbba302f85f";
             };
         };
     };
