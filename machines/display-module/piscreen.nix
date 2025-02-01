@@ -31,7 +31,7 @@ hardware.deviceTree.filter = "bcm2837-rpi-3*";
           #include <dt-bindings/gpio/gpio.h>
 
           / {
-              compatible = "brcm,bcm2835";
+              compatible = "brcm,bcm2837";
 
               fragment@0 {
                   target = <&spi0>;
@@ -130,6 +130,156 @@ hardware.deviceTree.filter = "bcm2837-rpi-3*";
                   swapxy =	<&piscreen_ts>,"touchscreen-swapped-x-y!";
               };
             };'';
+      }
+      {
+        name = "rpi3-vc4-kms-v3d-overlay";
+        dtsText = ''
+/*
+ * vc4-kms-v3d-overlay.dts
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/clock/bcm2835.h>
+
+/ {
+	compatible = "brcm,bcm2835";
+
+    fragment@0 {
+		target = <&cma>;
+		frag0: __overlay__ {
+			/*
+			 * The default size when using this overlay is 256 MB
+			 * and should be kept as is for backwards
+			 * compatibility.
+			 */
+			size = <0x10000000>;
+		};
+	};
+
+	fragment@1 {
+		target = <&i2c2>;
+		__overlay__  {
+			status = "okay";
+		};
+	};
+
+	fragment@2 {
+		target = <&fb>;
+		__overlay__  {
+			status = "disabled";
+		};
+	};
+
+	fragment@3 {
+		target = <&pixelvalve0>;
+		__overlay__  {
+			status = "okay";
+		};
+	};
+
+	fragment@4 {
+		target = <&pixelvalve1>;
+		__overlay__  {
+			status = "okay";
+		};
+	};
+
+	fragment@5 {
+		target = <&pixelvalve2>;
+		__overlay__  {
+			status = "okay";
+		};
+	};
+
+	fragment@6 {
+		target = <&hvs>;
+		__overlay__  {
+			status = "okay";
+		};
+	};
+
+	fragment@7 {
+		target = <&hdmi>;
+		__overlay__  {
+			status = "okay";
+		};
+	};
+
+	fragment@8 {
+		target = <&v3d>;
+		__overlay__  {
+			status = "okay";
+		};
+	};
+
+	fragment@9 {
+		target = <&vc4>;
+		__overlay__  {
+			status = "okay";
+		};
+	};
+
+	fragment@10 {
+		target = <&clocks>;
+		__overlay__  {
+			claim-clocks = <
+				BCM2835_PLLD_DSI0
+				BCM2835_PLLD_DSI1
+				BCM2835_PLLH_AUX
+				BCM2835_PLLH_PIX
+			>;
+		};
+	};
+
+	fragment@11 {
+		target = <&vec>;
+		__dormant__  {
+			status = "okay";
+		};
+	};
+
+	fragment@12 {
+		target = <&txp>;
+		__overlay__  {
+			status = "okay";
+		};
+	};
+
+	fragment@13 {
+		target = <&hdmi>;
+		__dormant__  {
+			dmas;
+		};
+	};
+
+	fragment@14 {
+		target = <&audio>;
+		__overlay__  {
+		    brcm,disable-hdmi;
+		};
+	};
+
+	__overrides__ {
+        cma-512 = <&frag0>,"size:0=",<0x20000000>;
+		cma-448 = <&frag0>,"size:0=",<0x1c000000>;
+		cma-384 = <&frag0>,"size:0=",<0x18000000>;
+		cma-320 = <&frag0>,"size:0=",<0x14000000>;
+		cma-256 = <&frag0>,"size:0=",<0x10000000>;
+		cma-192 = <&frag0>,"size:0=",<0xC000000>;
+		cma-128 = <&frag0>,"size:0=",<0x8000000>;
+		cma-96  = <&frag0>,"size:0=",<0x6000000>;
+		cma-64  = <&frag0>,"size:0=",<0x4000000>;
+		cma-size = <&frag0>,"size:0"; /* in bytes, 4MB aligned */
+		cma-default = <0>,"-0";
+		audio   = <0>,"!13";
+		noaudio = <0>,"=13";
+		composite = <0>, "=11";
+		nohdmi = <0>, "-1-7";
+	};
+};
+        '';
       }
     ];
   };

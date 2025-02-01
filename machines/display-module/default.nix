@@ -3,7 +3,10 @@ let pkgs_arm = pkgs;
 in
 {
   imports = [ ./piscreen.nix ];
-  networking =
+ 
+environment.systemPackages = [pkgs.mgba ];
+
+ networking =
     {
       hostName = "display-module";
     };
@@ -11,8 +14,6 @@ in
     supportedFilesystems.zfs = lib.mkForce false;
     initrd.kernelModules = [ "vc4" "bcm2835_dma" "i2c_bcm2835" ];
     #kernelPackages = pkgs_arm.lib.mkDefault pkgs_arm.linuxKernel.packages.linux_rpi3;
-    # Cleanup tmp on startup
-    #tmp.cleanOnBoot = true;
     kernelParams = [
       "console=ttyS0,115200n8"
       "console=fb2"
@@ -42,10 +43,6 @@ in
           enable = true;
           ports = [ 22 ];
         };
-      #    displayManager.sddm.enable = pkgs.lib.mkForce false;
-      # displayManager.lightdm.enable = pkgs.lib.mkForce true;
-
-    
         libinput.enable = true;
         displayManager = {
             defaultSession = "none+i3";
@@ -54,11 +51,10 @@ in
               user = "John88";
             };
           };
-      xserver =
+        xserver =
         {
-          
           xkb.layout = "gb";
-          videoDrivers = [ "fbdevhw" "fbdev" ];
+          videoDrivers = [ "fbdevhw" "fbdev" ];#"modesetting"]; #
           windowManager.i3.enable = true;
         resolutions = [
           {
@@ -66,8 +62,10 @@ in
             y = 320;
           }
         ];
+
+        #fb1 if fkms present
         deviceSection = ''
-              Option "fbdev" "/dev/fb2"
+              Option "fbdev" "/dev/fb2" 
             '';
         };
       };
