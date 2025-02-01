@@ -112,6 +112,7 @@
             ./configuration.nix
             ./locale/home_networks.nix
             ./environments/browsers.nix
+            ./environments/code.nix
             ./environments/i3wm.nix
             ./modifier_imports/pi-firmware.nix
             {
@@ -120,7 +121,8 @@
                 {
                   self = self;
                   nixinate = {
-                    host = "192.168.0.115";
+#                    host = "192.168.0.115";
+                    host = "192.168.0.73";
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;
