@@ -17,22 +17,22 @@ in
       "console=ttyS0,115200n8"
       "console=fb1"
     ];
-        loader = {
+    loader = {
       grub.enable = false;
       generic-extlinux-compatible.enable = true;
     };
-  raspi.dtoverlays =
+    raspi.dtoverlays =
       [
-      "hdmi_force_hotplug=1"
-      "dtparam=i2c_arm=on"
-      "dtparam=spi=on"
-      "enable_uart=1"
-      "dtoverlay=piscreen,speed=18000000,drm,rotate=180"
-      "hdmi_group=2"
-      "hdmi_mode=1"
-      "hdmi_mode=87"
-      "hdmi_cvt 480 320 60 6 0 0 0"
-      "hdmi_drive=2"
+        "hdmi_force_hotplug=1"
+        "dtparam=i2c_arm=on"
+        "dtparam=spi=on"
+        "enable_uart=1"
+        "dtoverlay=piscreen,speed=18000000,drm,rotate=180"
+        "hdmi_group=2"
+        "hdmi_mode=1"
+        "hdmi_mode=87"
+        "hdmi_cvt 480 320 60 6 0 0 0"
+        "hdmi_drive=2"
       ];
   };
   hardware = {

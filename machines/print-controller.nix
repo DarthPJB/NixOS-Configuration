@@ -5,7 +5,7 @@
     #tmp.cleanOnBoot = true;
     kernelParams = [ "console=ttyS1,115200n8" "cma=32M" ];
   };
-systemd.services.klipper_permissions =
+  systemd.services.klipper_permissions =
     {
       enable = true;
       description = "Mount media dir";

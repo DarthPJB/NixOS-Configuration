@@ -41,34 +41,34 @@
 
       # -----------------------------------IMAGES-------------------------------------------------
 
-        print-controller-image = (self.nixosConfigurations.print-controller.extendModules
-          {
-            modules = [{ sdImage.compressImage = false; }];
-          }).config.system.build.sdImage;
-        display-module-image = (self.nixosConfigurations.display-module.extendModules
-          {
-            modules = [{ sdImage.compressImage = false; }];
-          }).config.system.build.sdImage;
+      print-controller-image = (self.nixosConfigurations.print-controller.extendModules
+        {
+          modules = [{ sdImage.compressImage = false; }];
+        }).config.system.build.sdImage;
+      display-module-image = (self.nixosConfigurations.display-module.extendModules
+        {
+          modules = [{ sdImage.compressImage = false; }];
+        }).config.system.build.sdImage;
 
-        local-worker-image = import "${inputs.nixpkgs.cutPath}/nixos/lib/make-disk-image.nix"
-          #local-image = import "${self}/lib/make-storeless-image.nix"
-          rec {
-            pkgs = un_pkgs;
-            inherit (pkgs) lib;
-            inherit (self.nixosConfigurations.local-worker) config;
-            additionalPaths = [ ];
-            name = "local.worker-image";
-            format = "qcow2";
-            onlyNixStore = false;
-            label = "root_FS_nixos";
-            partitionTableType = "efi";
-            installBootLoader = true;
-            touchEFIVars = true;
-            diskSize = "auto";
-            additionalSpace = "2048M";
-            copyChannel = true;
-            OVMF = pkgs.OVMF.fd;
-          };
+      local-worker-image = import "${inputs.nixpkgs.cutPath}/nixos/lib/make-disk-image.nix"
+        #local-image = import "${self}/lib/make-storeless-image.nix"
+        rec {
+          pkgs = un_pkgs;
+          inherit (pkgs) lib;
+          inherit (self.nixosConfigurations.local-worker) config;
+          additionalPaths = [ ];
+          name = "local.worker-image";
+          format = "qcow2";
+          onlyNixStore = false;
+          label = "root_FS_nixos";
+          partitionTableType = "efi";
+          installBootLoader = true;
+          touchEFIVars = true;
+          diskSize = "auto";
+          additionalSpace = "2048M";
+          copyChannel = true;
+          OVMF = pkgs.OVMF.fd;
+        };
       # --------------------------------------------------------------------------------------------------
       nixosConfigurations = {
 
@@ -249,7 +249,7 @@
             ./environments/sshd.nix
             ./environments/audio_visual_editing.nix
             {
-                nixpkgs.config.allowUnfree = true;
+              nixpkgs.config.allowUnfree = true;
               _module.args =
                 {
                   self = self;

@@ -6,7 +6,8 @@
 
 {
   imports =
-    [ # Include the results of the hardware scan.
+    [
+      # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
 
@@ -15,7 +16,7 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   networking.hostName = "storage-array"; # Define your hostname.
-  networking.hostId =  "b4120de6";
+  networking.hostId = "b4120de6";
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
@@ -32,20 +33,21 @@
   };
   services.dnsmasq.resolveLocalQueries = false;
 
-networking = {
-  interfaces = {
-    enp1s0f1.useDHCP = true; # main network connection
-    enp2s0f0 = {
-        ipv4.addresses = [ { 
-            address = "192.168.2.1"; 
-            prefixLength = 24;}];
-        ipv6.addresses = [{
-            address = "2a01:4f8:1c1b:16d0::1";
-            prefixLength = 64;
+  networking = {
+    interfaces = {
+      enp1s0f1.useDHCP = true; # main network connection
+      enp2s0f0 = {
+        ipv4.addresses = [{
+          address = "192.168.2.1";
+          prefixLength = 24;
         }];
+        ipv6.addresses = [{
+          address = "2a01:4f8:1c1b:16d0::1";
+          prefixLength = 64;
+        }];
+      };
     };
   };
-};
   #networking.interfaces.enp2s0f0.useDHCP =  false; #secondary link for local.nas
   # networking.interfaces.enp2s0f1.useDHCP = lib.mkDefault true;
 
