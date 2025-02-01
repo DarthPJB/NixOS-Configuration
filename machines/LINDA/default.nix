@@ -13,30 +13,11 @@
   environment.systemPackages = [
     inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.looking-glass-client
     inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.scream
-    #pkgs.transmission
     pkgs.virtiofsd
     pkgs.gwe
-    self.un_pkgs.figma-linux
     pkgs.virt-manager
-    pkgs.tigervnc
     self.un_pkgs.nixd
-    #self.un_pkgs.rust-analyzer
-    #self.un_pkgs.rustup
   ];
-  #services.monado = { enable = true; defaultRuntime = true; };
-  #  systemd.user.services.element =
-  #    {
-  #      description = "mumble-autostart";
-  #      wantedBy = [ "graphical-session.target" ];
-  #      serviceConfig =
-  #        {
-  #          Restart = "always";
-  #          ExecStart = ''
-  #            ${pkgs.element-desktop}/bin/element-desktop
-  #          '';
-  # #         PassEnvironment = "DISPLAY XAUTHORITY";
-  #        };
-  #    };
   systemd.user.services.discord =
     {
       description = "mumble-autostart";
@@ -196,8 +177,8 @@
           enp69s0f1 = {
             useDHCP = false;
             ipv4.addresses = [{
-              address = "149.5.115.140";
-              prefixLength = 28;
+              address = "192.168.2.10";
+              prefixLength = 24;
             }];
           };
         };

@@ -40,14 +40,10 @@ networking = {
             address = "192.168.2.1"; 
             prefixLength = 24;}];
         ipv6.addresses = [{
-      address = "2a01:4f8:1c1b:16d0::1";
-      prefixLength = 64;
-     }];
+            address = "2a01:4f8:1c1b:16d0::1";
+            prefixLength = 64;
+        }];
     };
-  };
-  defaultGateway6 = {
-    address = "fe80::1";
-    interface = "enp2s0f0";
   };
 };
   #networking.interfaces.enp2s0f0.useDHCP =  false; #secondary link for local.nas
