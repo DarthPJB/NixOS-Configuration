@@ -20,7 +20,11 @@
       fsType = "tmpfs";
       options = [ "defaults" "size=2G" "mode=755" ];
     };
-
+  fileSystems."/ARCHIVE" =
+    {
+      device = "bulk-storage/ARCHIVE";
+      fsType = "zfs";
+    };
   fileSystems."/nix" =
     {
       device = "bulk-storage/nix";
