@@ -23,8 +23,14 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.extraPools = [ "archive" "bulk-storage" ];
-  services.zfs.autoSnapshot.enable = true;
-
+ services.zfs = {
+    autoScrub.enable = true;
+    trim.enable = true;
+    autoSnapshot = {
+      flags = "-k -p --utc";
+      enable = true;
+    };
+  };
   systemd.mounts = [
     {
       #depends = [ "/archive" "/bulk-storage" ];

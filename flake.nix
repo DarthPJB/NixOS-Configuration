@@ -115,6 +115,9 @@
             ./environments/code.nix
             ./environments/i3wm.nix
             ./modifier_imports/pi-firmware.nix
+
+            # Just for testing
+            (import ./environments/rtl-sdr.nix)
             {
               system.stateVersion = "24.11";
               _module.args =
@@ -151,7 +154,7 @@
                 {
                   self = self;
                   nixinate = {
-                    host = "192.168.0.28";
+                    host = "192.168.0.187";
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;

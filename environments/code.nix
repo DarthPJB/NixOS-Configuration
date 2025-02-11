@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 
 {
-    programs.bash.shellAliases = {
+    environment.shellAliases = {
   code = "lite-xl";
 };
   environment.systemPackages = with pkgs; [

@@ -10,7 +10,14 @@
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
-
+  services.zfs = {
+    autoScrub.enable = true;
+    trim.enable = true;
+    autoSnapshot = {
+      flags = "-k -p --utc";
+      enable = true;
+    };
+  };
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
