@@ -18,4 +18,7 @@
       pkgs.shotcut
       pkgs.shutter
     ];
+  programs = {
+    thunar.enable = true;
+  };
 }

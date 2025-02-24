@@ -19,6 +19,56 @@
           PassEnvironment = "DISPLAY XAUTHORITY";
         };
     };
+  systemd.user.services.fastcompmgr =
+    {
+      description = "fastcompmgr";
+      wantedBy = [ "graphical-session.target" ];
+      serviceConfig =
+        {
+          Restart = "always";
+          ExecStart = ''
+            ${pkgs.fastcompmgr}/bin/fastcompmgr -i 0.95 -F
+          '';
+          PassEnvironment = "DISPLAY XAUTHORITY";
+        };
+    };
+
+/*usage: fastcompmgr [options]
+Options
+   -d display
+    Which display should be managed.
+   -r radius
+    The blur radius for shadows. (default 12)
+   -o opacity
+    The translucency for shadows. (default .75)
+   -l left-offset
+    The left offset for shadows. (default -15)
+   -t top-offset
+    The top offset for shadows. (default -15)
+   -I fade-in-step
+    Opacity change between steps while fading in. (default 0.028)
+   -O fade-out-step
+    Opacity change between steps while fading out. (default 0.03)
+   -D fade-delta-time
+    The time between steps in a fade in milliseconds. (default 10)
+   -m opacity
+    The opacity for menus. (default 1.0)
+   -c
+    Enabled client-side shadows on windows.
+   -C
+    Avoid drawing shadows on dock/panel windows.
+   -f
+    Fade windows in/out when opening/closing.
+   -F
+    Fade windows during opacity changes.
+   -i opacity
+    Opacity of inactive windows. (0.1 - 1.0)
+   -e opacity
+    Opacity of window titlebars and borders. (0.1 - 1.0)
+   -S
+    Enable synchronous operation (for debugging).
+*/
+    
   services.picom =
     {
       enable = false;
