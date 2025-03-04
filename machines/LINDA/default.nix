@@ -126,7 +126,7 @@
       initrd.preDeviceCommands = ''
         DEVS="0000:21:00:.0 0000:21:00.1 0000:46:00.0"
         for DEV in $DEVS; do
-            echo "vfio-pci > /sys/bus/pci/devices/$DEV/driver_override"
+            echo "vfio-pci" > /sys/bus/pci/devices/$DEV/driver_override
         done
         modprobe -i vfio-pci
       '';
