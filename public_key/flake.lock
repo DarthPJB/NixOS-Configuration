@@ -1,0 +1,45 @@
+{
+  "nodes": {
+    "keyFlake": {
+      "inputs": {
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1741138126,
+        "narHash": "sha256-syCOwjYvkuhBMYfWJvwhl6u2tHq+uIido3FhGQXlBIE=",
+        "owner": "pinktrink",
+        "repo": "keyFlake.nix",
+        "rev": "c8c692ecf3f83b30addd6a9d18eb98e3ed53cceb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pinktrink",
+        "repo": "keyFlake.nix",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1741010256,
+        "narHash": "sha256-WZNlK/KX7Sni0RyqLSqLPbK8k08Kq7H7RijPJbq9KHM=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "ba487dbc9d04e0634c64e3b1f0d25839a0a68246",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "keyFlake": "keyFlake"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
