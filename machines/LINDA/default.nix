@@ -18,6 +18,12 @@
     pkgs.virt-manager
     self.un_pkgs.nixd
   ];
+  services.avahi = {
+  enable = true;
+  nssmdns4 = true;
+  openFirewall = true;
+};
+services.printing.enable = true;
   systemd.user.services.discord =
     {
       description = "mumble-autostart";
