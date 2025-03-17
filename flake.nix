@@ -173,6 +173,7 @@
           modules = [
             inputs.secrix.nixosModules.default
             (import ./locale/hotel_wifi.nix)
+            (import ./locale/home_networks.nix)
             (import ./environments/browsers.nix)
             (import ./configuration.nix)
             (import ./environments/i3wm_darthpjb.nix)

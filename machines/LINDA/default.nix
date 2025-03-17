@@ -79,6 +79,12 @@ services.printing.enable = true;
       device = "speed-storage/tmp";
       fsType = "zfs";
     };
+  fileSystems."/var/lib/tailscale" =
+    {
+      device = "bulk-storage/var-lib-tailscale";
+      fsType = "zfs";
+      options = [ "nofail" ];
+    };
   fileSystems."/var/lib/libvirt" =
     {
       device = "speed-storage/var-lib-libvirt";
