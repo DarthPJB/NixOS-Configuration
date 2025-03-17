@@ -41,8 +41,23 @@
   services.dnsmasq.resolveLocalQueries = false;
 
   networking = {
+    defaultGateway = "181.215.32.33";
+    nameservers = [ "1.1.1.1" "8.8.8.8" ];
     interfaces = {
+    
       enp1s0f1.useDHCP = true; # main network connection
+      enp1s0f0 = {
+        ipv4.addresses = [{
+          address = "181.215.32.40";
+          prefixLength = 27;
+        }];
+        };
+      enp2s0f1 = {
+      ipv4.addresses = [{
+        address = "181.215.32.40";
+        prefixLength = 27;
+        }];
+        };
       enp2s0f0 = {
         ipv4.addresses = [{
           address = "192.168.2.1";
