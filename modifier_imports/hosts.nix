@@ -10,5 +10,6 @@
               193.16.42.101 nextcloud.johnbargman.com
               192.168.1.104 nasa.astral
               167.235.2.58 tankles.server
+              216.24.131.22 keyboardvideomouse.platonic.systems
     '';
 }

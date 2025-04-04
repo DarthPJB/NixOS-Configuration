@@ -8,6 +8,7 @@
     [
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ../../environments/steam.nix
     ];
   # Use the GRUB 2 boot loader.
   # Use the systemd-boot EFI boot loader.
