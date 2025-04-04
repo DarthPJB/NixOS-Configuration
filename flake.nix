@@ -297,7 +297,52 @@
             }
           ];
         };
-        LINDA = nixpkgs.lib.nixosSystem {
+ 
+        alpha-two = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
+          modules = [
+            inputs.secrix.nixosModules.default
+            ./configuration.nix
+            ./machines/alpha-two
+            ./environments/i3wm_darthpjb.nix
+            ./environments/steam.nix
+            ./environments/code.nix
+            ./environments/neovim.nix
+          #  ./environments/communications.nix
+          #  ./environments/emacs.nix
+            ./environments/browsers.nix
+            ./environments/mudd.nix
+          #  ./environments/cad_and_graphics.nix
+          #  ./environments/3dPrinting.nix
+          #  ./environments/audio_visual_editing.nix
+            ./environments/general_fonts.nix
+          #  ./environments/video_call_streaming.nix
+            ./environments/cloud_and_backup.nix
+            ./locale/tailscale.nix
+            ./environments/rtl-sdr.nix
+            ./modifier_imports/bluetooth.nix
+          #  ./modifier_imports/memtest.nix
+            ./modifier_imports/hosts.nix
+          #  ./modifier_imports/zfs.nix
+          #  ./modifier_imports/virtualisation-libvirtd.nix
+          #  ./modifier_imports/arm-emulation.nix
+            ./environments/sshd.nix
+          #  ./modifier_imports/cuda.nix
+            ./modifier_imports/remote-builder.nix
+            {
+              environment.systemPackages =
+                [
+                  pkgs.monero-gui
+                ];
+              _module.args =
+                {
+                  self = self;
+                };
+            }
+          ];
+        };
+ LINDA = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
