@@ -140,6 +140,7 @@
           system = "x86_64-linux";
           modules = [
             inputs.secrix.nixosModules.default
+            ./modifier_imports/bluetooth.nix
             (import ./environments/browsers.nix)
             (import ./configuration.nix)
             (import ./environments/i3wm_darthpjb.nix)
@@ -154,7 +155,8 @@
                 {
                   self = self;
                   nixinate = {
-                    host = "192.168.0.187";
+                    #host = "192.168.0.187";
+                    host = "192.168.2.150";
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;

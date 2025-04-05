@@ -6,7 +6,7 @@
       ./i3wm.nix
     ];
 
-  systemd.user.services.xwinwrap =
+  systemd.user.services.xwinwrap = lib.mkDefault
     {
       description = "xwinwrap-glmatrix";
       wantedBy = [ "graphical-session.target" ];

@@ -2,9 +2,37 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ config, lib, pkgs, ... }:
 
+ # -------------------------- ALPHA TWO --------------------------
+{ config, lib, pkgs, ... }:
 {
+
+systemd.user.services.xwinwrap =
+    {
+      description = "xwinwrap-glmatrix";
+      wantedBy = [ "graphical-session.target" ];
+      serviceConfig =
+        {
+          Restart = "always";
+          ExecStart = ''
+            ${pkgs.xwinwrap}/bin/xwinwrap -ov -fs -- ${pkgs.xscreensaver}/libexec/xscreensaver/./galaxy --count 4 --no-tracks --cycles 1000 --delay 20000 --fps --no-spin -root -window-id WID
+          '';
+          PassEnvironment = "DISPLAY XAUTHORITY";
+        };
+    };
+boot.kernelParams = [
+  "video=DP-1:1920x1080@180"
+  "video=DP-3:1920x1080@180"
+];
+
+  hardware.opengl.extraPackages = with pkgs; [
+    rocmPackages.clr.icd
+    amdvlk
+  ];
+  # For 32 bit applications 
+  hardware.opengl.extraPackages32 = with pkgs; [
+    driversi686Linux.amdvlk
+  ];
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
@@ -35,7 +63,7 @@
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
-  
+  services.xserver.videoDrivers = [ "amdgpu" ];
 
   services.kmscon.enable = true;
 
@@ -56,7 +84,7 @@
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.libinput.enable = true;
-
+  hardware.graphics.enable32Bit = true; # For 32 bit applications
   # Define a user account. Don't forget to set a password with ‘passwd’.
    users.users.John88 = {
      isNormalUser = true;
@@ -66,6 +94,7 @@
        tmux
        btop
        git
+       clinfo
      ];
    };
 
