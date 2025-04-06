@@ -15,22 +15,22 @@ systemd.user.services.xwinwrap =
         {
           Restart = "always";
           ExecStart = ''
-            ${pkgs.xwinwrap}/bin/xwinwrap -ov -fs -- ${pkgs.xscreensaver}/libexec/xscreensaver/./galaxy --count 4 --no-tracks --cycles 1000 --delay 20000 --fps --no-spin -root -window-id WID
+            ${pkgs.xwinwrap}/bin/xwinwrap -ov -fs -- ${pkgs.xscreensaver}/libexec/xscreensaver/galaxy --count 5 --no-tracks --cycles 1000 --delay 20000 --no-spin -root -window-id WID
           '';
           PassEnvironment = "DISPLAY XAUTHORITY";
         };
     };
 boot.kernelParams = [
-  "video=DP-1:1920x1080@180"
-  "video=DP-3:1920x1080@180"
+  "video=DP-1:1920x1080@60"
+  "video=DP-3:1920x1080@60"
 ];
 
-  hardware.opengl.extraPackages = with pkgs; [
+  hardware.graphics.extraPackages = with pkgs; [
     rocmPackages.clr.icd
     amdvlk
   ];
   # For 32 bit applications 
-  hardware.opengl.extraPackages32 = with pkgs; [
+  hardware.graphics.extraPackages32 = with pkgs; [
     driversi686Linux.amdvlk
   ];
   imports =
