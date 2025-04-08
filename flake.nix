@@ -19,6 +19,7 @@
     let
       inherit (inputs.secrix) secrix;
       nixpkgs = inputs.nixpkgs_stable;
+      un_nixpkgs = inputs.nixpkgs_unstable;
       pkgs = import inputs.nixpkgs_stable {
         system = "x86_64-linux";
         config.allowUnfree = true;
@@ -299,8 +300,12 @@
             }
           ];
         };
- 
-        alpha-two = nixpkgs.lib.nixosSystem {
+        
+        # In a mirror darkly
+        alpha-two = un_nixpkgs.lib.nixosSystem 
+        {
+        # In a mirror darkly
+        pkgs = un_pkgs;
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
@@ -316,7 +321,7 @@
             ./environments/browsers.nix
             ./environments/mudd.nix
             ./environments/cad_and_graphics.nix
-            ./environments/3dPrinting.nix
+            #./environments/3dPrinting.nix
             ./environments/audio_visual_editing.nix
            ./environments/general_fonts.nix
             ./environments/video_call_streaming.nix

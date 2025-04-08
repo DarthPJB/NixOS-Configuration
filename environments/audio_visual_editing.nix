@@ -14,7 +14,7 @@
       pkgs.vlc
       pkgs.pcmanfm
       pkgs.ffmpegthumbnailer
-      pkgs.kdenlive
+      pkgs.kdePackages.kdenlive
       pkgs.shotcut
       pkgs.shutter
     ];

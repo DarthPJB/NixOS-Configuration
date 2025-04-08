@@ -6,7 +6,7 @@
  # -------------------------- ALPHA TWO --------------------------
 { config, lib, pkgs, ... }:
 {
-
+boot.kernelPackages = pkgs.linuxPackages_latest;
 systemd.user.services.xwinwrap =
     {
       description = "xwinwrap-glmatrix";
@@ -20,11 +20,15 @@ systemd.user.services.xwinwrap =
           PassEnvironment = "DISPLAY XAUTHORITY";
         };
     };
+    boot.extraModulePackages = with config.boot.kernelPackages; [ 88x2bu ];
+  boot.kernelModules = [ "88x2bu" ];
+#boot.kernelModules = [ "rtl88x2bu" ];
 boot.kernelParams = [
   "video=DP-1:1920x1080@60"
   "video=DP-3:1920x1080@60"
 ];
-
+ hardware.bluetooth.enable = true; # enables support for Bluetooth
+  hardware.bluetooth.powerOnBoot = true; #
   hardware.graphics.extraPackages = with pkgs; [
     rocmPackages.clr.icd
     amdvlk
