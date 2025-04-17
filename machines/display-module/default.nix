@@ -3,10 +3,10 @@ let pkgs_arm = pkgs;
 in
 {
   imports = [ ./piscreen.nix ];
- 
-environment.systemPackages = [pkgs.mgba ];
 
- networking =
+  environment.systemPackages = [ pkgs.mgba ];
+
+  networking =
     {
       hostName = "display-module";
     };
@@ -43,35 +43,35 @@ environment.systemPackages = [pkgs.mgba ];
           enable = true;
           ports = [ 22 ];
         };
-        libinput.enable = true;
-        displayManager = {
-            defaultSession = "none+i3";
-            autoLogin = {
-              enable = true;
-              user = "John88";
-            };
-          };
-        xserver =
-        {
-          xkb.layout = "gb";
-          videoDrivers = [ "fbdevhw" "fbdev" ];#"modesetting"]; #
-          windowManager.i3.enable = true;
-        resolutions = [
-          {
-            x = 480;
-            y = 320;
-          }
-        ];
-
-        #fb1 if fkms present
-        deviceSection = ''
-              Option "fbdev" "/dev/fb2" 
-            '';
+      libinput.enable = true;
+      displayManager = {
+        defaultSession = "none+i3";
+        autoLogin = {
+          enable = true;
+          user = "John88";
         };
       };
-    }
-  #  fileSystems."/home/pokej/obisidan-archive" =
-  #    {
-  #      device = "/dev/disk/by-uuid/8c501c5c-9fbe-4e9d-b8fc-fbf2987d80ca";
-  #      fsType = "ext4";
-  #    };
+      xserver =
+        {
+          xkb.layout = "gb";
+          videoDrivers = [ "fbdevhw" "fbdev" ]; #"modesetting"]; #
+          windowManager.i3.enable = true;
+          resolutions = [
+            {
+              x = 480;
+              y = 320;
+            }
+          ];
+
+          #fb1 if fkms present
+          deviceSection = ''
+            Option "fbdev" "/dev/fb2" 
+          '';
+        };
+    };
+}
+#  fileSystems."/home/pokej/obisidan-archive" =
+#    {
+#      device = "/dev/disk/by-uuid/8c501c5c-9fbe-4e9d-b8fc-fbf2987d80ca";
+#      fsType = "ext4";
+#    };
