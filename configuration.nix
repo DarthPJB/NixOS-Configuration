@@ -17,7 +17,6 @@ in
       ./environments/sshd.nix
       ./environments/tools.nix
       # inputs.secrix.nixosModules.secrix
-
     ];
   environment.systemPackages = with pkgs; 
   [    
@@ -35,5 +34,5 @@ in
     John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ];
   };
   services.kmscon.enable = true;
-
+  #nixpkgs.config.allowUnfree = true;
 }
