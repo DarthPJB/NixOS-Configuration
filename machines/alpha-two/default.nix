@@ -31,9 +31,9 @@
 #  }))
 #];
 #boot.extraModulePackages = with config.boot.kernelPackages; [ rtl8812au ];
-boot.kernelModules = [ "rtw88" ];
-  boot.blacklistedKernelModules = [ "rtl8xxxu" ];
-#boot.kernelModules = [ "rtl88x2bu" ];
+#boot.kernelModules = [ "rtw88" ];
+ # boot.blacklistedKernelModules = [ "rtl8xxxu" ];
+boot.kernelModules = [ "rtl88x2bu" ];
 boot.kernelParams = [
   "video=DP-1:1920x1080@60"
   "video=DP-3:1920x1080@60"
@@ -65,7 +65,7 @@ boot.kernelParams = [
     {
       enable = true; # Enables wireless support via wpa_supplicant.
       userControlled.enable = true;
-      interfaces = [ "wlp4s0f0u2" ];
+      interfaces = [ "wlp9s0u1u4" ];
     };
   # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
 
