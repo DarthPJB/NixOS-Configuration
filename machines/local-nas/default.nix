@@ -23,7 +23,7 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.extraPools = [ "archive" "bulk-storage" ];
- services.zfs = {
+  services.zfs = {
     autoScrub.enable = true;
     trim.enable = true;
     autoSnapshot = {

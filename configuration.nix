@@ -18,12 +18,12 @@ in
       ./environments/tools.nix
       # inputs.secrix.nixosModules.secrix
     ];
-  environment.systemPackages = with pkgs; 
-  [    
-    pkgs.tmux 
-    pkgs.progress
-    pkgs.parted
-  ];
+  environment.systemPackages = with pkgs;
+    [
+      pkgs.tmux
+      pkgs.progress
+      pkgs.parted
+    ];
   security.acme =
     {
       acceptTerms = true;
