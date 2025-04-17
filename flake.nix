@@ -142,6 +142,7 @@
           modules = [
             inputs.secrix.nixosModules.default
             ./modifier_imports/bluetooth.nix
+            (import ./locale/home_networks.nix)
             (import ./environments/browsers.nix)
             (import ./configuration.nix)
             (import ./environments/i3wm_darthpjb.nix)
@@ -314,6 +315,7 @@
             inputs.secrix.nixosModules.default
             ./configuration.nix
             ./machines/alpha-two
+            (import ./locale/home_networks.nix)
             ./environments/i3wm_darthpjb.nix
             ./environments/steam.nix
             ./environments/code.nix

@@ -24,15 +24,15 @@
 
 
 #    boot.extraModulePackages = [    
-#  (config.boot.kernelPackages."rtw88".overrideAttrs (old: {
+# (config.boot.kernelPackages."rtw88".overrideAttrs (old: {
 #    prePatch = old.prePatch + ''
 #      substituteInPlace Makefile --replace "CONFIG_CONCURRENT_MODE = n" "CONFIG_CONCURRENT_MODE = y"
 #    '';
 #  }))
 #];
 #boot.extraModulePackages = with config.boot.kernelPackages; [ rtl8812au ];
-#boot.kernelModules = [ "rtw88" ];
-#  boot.blacklistedKernelModules = [ "rtl8xxxu" ];
+boot.kernelModules = [ "rtw88" ];
+  boot.blacklistedKernelModules = [ "rtl8xxxu" ];
 #boot.kernelModules = [ "rtl88x2bu" ];
 boot.kernelParams = [
   "video=DP-1:1920x1080@60"
@@ -61,7 +61,12 @@ boot.kernelParams = [
 
   networking.hostName = "alpha-two"; # Define your hostname.
   # Pick only one of the below networking options.
-  networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  networking.wireless =
+    {
+      enable = true; # Enables wireless support via wpa_supplicant.
+      userControlled.enable = true;
+      interfaces = [ "wlp4s0f0u2" ];
+    };
   # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
 
   # Set your time zone.
