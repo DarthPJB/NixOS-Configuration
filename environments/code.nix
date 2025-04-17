@@ -1,9 +1,9 @@
 { config, pkgs, ... }:
 
 {
-    environment.shellAliases = {
-  code = "lite-xl";
-};
+  environment.shellAliases = {
+    code = "lite-xl";
+  };
   environment.systemPackages = with pkgs; [
     pkgs.gpp
     #pkgs.emscripten
