@@ -3,11 +3,11 @@
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
 
- # -------------------------- ALPHA TWO --------------------------
+# -------------------------- ALPHA TWO --------------------------
 { config, lib, pkgs, ... }:
 {
 
-systemd.user.services.xwinwrap =
+  systemd.user.services.xwinwrap =
     {
       description = "xwinwrap-glmatrix";
       wantedBy = [ "graphical-session.target" ];
@@ -20,10 +20,10 @@ systemd.user.services.xwinwrap =
           PassEnvironment = "DISPLAY XAUTHORITY";
         };
     };
-boot.kernelParams = [
-  "video=DP-1:1920x1080@60"
-  "video=DP-3:1920x1080@60"
-];
+  boot.kernelParams = [
+    "video=DP-1:1920x1080@60"
+    "video=DP-3:1920x1080@60"
+  ];
 
   hardware.graphics.extraPackages = with pkgs; [
     rocmPackages.clr.icd
@@ -34,7 +34,8 @@ boot.kernelParams = [
     driversi686Linux.amdvlk
   ];
   imports =
-    [ # Include the results of the hardware scan.
+    [
+      # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
 
@@ -54,12 +55,12 @@ boot.kernelParams = [
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Select internationalisation properties.
-   i18n.defaultLocale = lib.mkForce "en_US.UTF-8";
-   console = {
-     font = "Lat2-Terminus16";
-     keyMap = lib.mkForce "us";
-     useXkbConfig = true; # use xkb.options in tty.
-   };
+  i18n.defaultLocale = lib.mkForce "en_US.UTF-8";
+  console = {
+    font = "Lat2-Terminus16";
+    keyMap = lib.mkForce "us";
+    useXkbConfig = true; # use xkb.options in tty.
+  };
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
@@ -77,35 +78,35 @@ boot.kernelParams = [
   # Enable sound.
   # hardware.pulseaudio.enable = true;
   # OR
-   services.pipewire = {
-     enable = true;
-     pulse.enable = true;
-   };
+  services.pipewire = {
+    enable = true;
+    pulse.enable = true;
+  };
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.libinput.enable = true;
   hardware.graphics.enable32Bit = true; # For 32 bit applications
   # Define a user account. Don't forget to set a password with ‘passwd’.
-   users.users.John88 = {
-     isNormalUser = true;
-     extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
-     packages = with pkgs; [
-       tree
-       tmux
-       btop
-       git
-       clinfo
-     ];
-   };
+  users.users.John88 = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
+    packages = with pkgs; [
+      tree
+      tmux
+      btop
+      git
+      clinfo
+    ];
+  };
 
   # programs.firefox.enable = true;
-  
+
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-   environment.systemPackages = with pkgs; [
-     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-     wget
-   ];
+  environment.systemPackages = with pkgs; [
+    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    wget
+  ];
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -118,7 +119,7 @@ boot.kernelParams = [
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
-   services.openssh.enable = true;
+  services.openssh.enable = true;
 
   system.stateVersion = "24.11"; # Did you read the comment?
 

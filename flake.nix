@@ -124,7 +124,7 @@
                 {
                   self = self;
                   nixinate = {
-#                    host = "192.168.0.115";
+                    #                    host = "192.168.0.115";
                     host = "192.168.0.73";
                     sshUser = "John88";
                     substituteOnTarget = true;
@@ -163,6 +163,8 @@
                     buildOn = "local";
                   };
                 };
+              networking.firewall.allowedTCPPorts = [ 53 ];
+
               environment.systemPackages =
                 [
                   #parsecgaming.packages.x86_64-linux.parsecgaming 
@@ -299,7 +301,7 @@
             }
           ];
         };
- 
+
         alpha-two = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
@@ -318,7 +320,7 @@
             ./environments/cad_and_graphics.nix
             ./environments/3dPrinting.nix
             ./environments/audio_visual_editing.nix
-           ./environments/general_fonts.nix
+            ./environments/general_fonts.nix
             ./environments/video_call_streaming.nix
             ./environments/cloud_and_backup.nix
             ./locale/tailscale.nix
@@ -326,11 +328,11 @@
             ./modifier_imports/bluetooth.nix
             ./modifier_imports/memtest.nix
             ./modifier_imports/hosts.nix
-           # ./modifier_imports/zfs.nix
+            # ./modifier_imports/zfs.nix
             ./modifier_imports/virtualisation-libvirtd.nix
             ./modifier_imports/arm-emulation.nix
             ./environments/sshd.nix
-          #  ./modifier_imports/cuda.nix
+            #  ./modifier_imports/cuda.nix
             ./modifier_imports/remote-builder.nix
             {
               environment.systemPackages =
@@ -344,7 +346,7 @@
             }
           ];
         };
- LINDA = nixpkgs.lib.nixosSystem {
+        LINDA = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
           modules = [
