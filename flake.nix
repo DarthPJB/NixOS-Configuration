@@ -235,8 +235,8 @@
                   nixinate = {
                     host = "192.168.122.69";
                     sshUser = "John88";
-                    #                    substituteOnTarget = true;
-                    #                    hermetic = true;
+                    substituteOnTarget = true;
+                    hermetic = true;
                     buildOn = "local";
                   };
                 };
@@ -262,13 +262,13 @@
             ./environments/sshd.nix
             ./environments/audio_visual_editing.nix
             {
-              nixpkgs.config.allowUnfree = true;
               _module.args =
                 {
                   self = self;
                   nixinate = {
-                    host = "192.168.0.16";
+                    host = "storage.johnbargman.com";
                     sshUser = "John88";
+                    port = 1108;
                     substituteOnTarget = true;
                     hermetic = true;
                     buildOn = "local";
@@ -396,6 +396,7 @@
             #    [
              #     pkgs.monero-gui
              #   ];
+                 nixpkgs.config.allowUnfree = true;
                 _module.args =
                 {
                   self = self;
@@ -429,8 +430,8 @@
                   nixinate = {
                     host = "181.215.32.40";
                     sshUser = "John88";
-                    #                   substituteOnTarget = true;
-                    #                   hermetic = true;
+                    substituteOnTarget = true;
+                    hermetic = true;
                     buildOn = "local";
                   };
                 };
@@ -463,8 +464,8 @@
                   nixinate = {
                     host = "193.16.42.101";
                     sshUser = "John88";
-                    #                    substituteOnTarget = true;
-                    #                    hermetic = true;
+                    substituteOnTarget = true;
+                    hermetic = true;
                     buildOn = "local";
                   };
                 };

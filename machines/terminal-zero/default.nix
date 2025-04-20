@@ -102,7 +102,7 @@
         {
           enable = true; # Enables wireless support via wpa_supplicant.
           userControlled.enable = true;
-          interfaces = [ "wlp4s0f0u2" ];
+          interfaces = [ "wlp3s0" "wwp0s29u1u4i6" ];
         };
     };
 

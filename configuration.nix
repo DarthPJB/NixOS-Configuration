@@ -33,6 +33,9 @@ in
   secrix.defaultEncryptKeys = {
     John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ];
   };
-  services.kmscon.enable = true;
-  #nixpkgs.config.allowUnfree = true;
+  services.kmscon = 
+  { 
+   enable = true;
+    kmscon.hwRender = true;
+    }
 }
