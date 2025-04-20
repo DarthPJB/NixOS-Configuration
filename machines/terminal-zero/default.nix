@@ -35,6 +35,8 @@
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
 
+
+  networking.firewall.allowedTCPPorts = [ 53 ];
   # Set a static IP on the "downstream" interface
   networking.firewall.extraCommands = ''
     # Set up SNAT on packets going from downstream to the wider internet

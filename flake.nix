@@ -3,7 +3,7 @@
 
   inputs = {
     #nixinate.url = "path:/home/pokej/repo/DarthPJB/nixinate";
-    nixinate.url = "github:matthewcroughan/nixinate";
+    nixinate.url = "github:pinktrink/nixinate";
     secrix.url = "github:Platonic-Systems/secrix";
 
     #raspberry-pi-nix.url = "github:nix-community/raspberry-pi-nix";
@@ -106,28 +106,28 @@
           modules = [
             inputs.secrix.nixosModules.default
             inputs.nixos-hardware.nixosModules.raspberry-pi-3
-            #inputs.raspberry-pi-nix.nixosModules.raspberry-pi
             "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             ./machines/display-module
             ./users/darthpjb.nix
             ./configuration.nix
             ./locale/home_networks.nix
-            ./environments/browsers.nix
             ./environments/code.nix
-            ./environments/i3wm.nix
             ./modifier_imports/pi-firmware.nix
 
             # Just for testing
             (import ./environments/rtl-sdr.nix)
             {
+              services.kmscon.autologinUser = "John88";
+              documentation.man.enable = false;
               system.stateVersion = "24.11";
               _module.args =
                 {
                   self = self;
                   nixinate = {
                     #                    host = "192.168.0.115";
-                    host = "192.168.0.73";
+                    host = "192.168.2.125";
                     sshUser = "John88";
+                    port = 1108;
                     substituteOnTarget = true;
                     hermetic = true;
                     buildOn = "local";
@@ -158,15 +158,16 @@
                   self = self;
                   nixinate = {
                     #host = "192.168.0.187";
-                    host = "192.168.2.150";
+                    host = "192.168.2.200";
+                    port = 1108;
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;
                     buildOn = "local";
                   };
-                };
-              networking.firewall.allowedTCPPorts = [ 53 ];
-
+                };          
+              system.stateVersion = "24.11";
+              nixpkgs.config.allowUnfree = true;
               environment.systemPackages =
                 [
                   #parsecgaming.packages.x86_64-linux.parsecgaming 
@@ -193,7 +194,7 @@
                 {
                   self = self;
                   nixinate = {
-                    host = "192.168.0.50";
+                    host = "192.168.2.200";
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;
@@ -342,15 +343,20 @@
             #  ./modifier_imports/cuda.nix
             ./modifier_imports/remote-builder.nix
             {
-              environment.systemPackages =
-                [
-                  pkgs.monero-gui
-                ];
               _module.args =
                 {
                   self = self;
+                  nixinate = {
+                    #host = "192.168.0.187";
+                    host = "192.168.2.200";
+                    port = 1108;
+                    sshUser = "John88";
+                    substituteOnTarget = true;
+                    hermetic = true;
+                    buildOn = "local";
+                  };
                 };
-            }
+              }
           ];
         };
         LINDA = nixpkgs.lib.nixosSystem {
@@ -386,13 +392,22 @@
             ./modifier_imports/cuda.nix
             ./modifier_imports/remote-builder.nix
             {
-              environment.systemPackages =
-                [
-                  pkgs.monero-gui
-                ];
-              _module.args =
+          #    environment.systemPackages =
+            #    [
+             #     pkgs.monero-gui
+             #   ];
+                _module.args =
                 {
                   self = self;
+                  nixinate = {
+                    #host = "192.168.0.187";
+                    host = "linda.johnbargman.com";
+                    port = 1108;
+                    sshUser = "John88";
+                    substituteOnTarget = true;
+                    hermetic = true;
+                    buildOn = "remote";
+                  };
                 };
             }
           ];

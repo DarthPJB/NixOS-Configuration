@@ -5,15 +5,15 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1708891350,
-        "narHash": "sha256-VOQrKK7Df/IVuNki+NshVuGkTa/Tw0GigPjWcZff6kk=",
-        "owner": "matthewcroughan",
+        "lastModified": 1744168104,
+        "narHash": "sha256-7YRZbFunygUZUzhjIQ0zePHHFLYJu38kdDnZPl76vbM=",
+        "owner": "pinktrink",
         "repo": "nixinate",
-        "rev": "452f33c60df5b72ad0858f5f2cf224bdf1f17746",
+        "rev": "24e0f7b08801ecd9bcf4ca789fe1e19ee4171af6",
         "type": "github"
       },
       "original": {
-        "owner": "matthewcroughan",
+        "owner": "pinktrink",
         "repo": "nixinate",
         "type": "github"
       }

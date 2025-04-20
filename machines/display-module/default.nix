@@ -1,6 +1,4 @@
 { pkgs, config, lib, ... }:
-let pkgs_arm = pkgs;
-in
 {
   imports = [ ./piscreen.nix ];
 
@@ -13,7 +11,6 @@ in
   boot = {
     supportedFilesystems.zfs = lib.mkForce false;
     initrd.kernelModules = [ "vc4" "bcm2835_dma" "i2c_bcm2835" ];
-    #kernelPackages = pkgs_arm.lib.mkDefault pkgs_arm.linuxKernel.packages.linux_rpi3;
     kernelParams = [
       "console=ttyS0,115200n8"
       "console=fb2"
@@ -29,7 +26,6 @@ in
   };
   swapDevices = [{ device = "/swapfile"; size = 1024; }];
   networking = {
-    firewall.allowedTCPPorts = [ 22 ];
     interfaces."wlan0".useDHCP = true;
     wireless = {
       interfaces = [ "wlan0" ];
@@ -38,12 +34,6 @@ in
   };
   services =
     {
-      openssh =
-        {
-          enable = true;
-          ports = [ 22 ];
-        };
-      libinput.enable = true;
       displayManager = {
         defaultSession = "none+i3";
         autoLogin = {
@@ -53,9 +43,7 @@ in
       };
       xserver =
         {
-          xkb.layout = "gb";
           videoDrivers = [ "fbdevhw" "fbdev" ]; #"modesetting"]; #
-          windowManager.i3.enable = true;
           resolutions = [
             {
               x = 480;
