@@ -1,3 +1,4 @@
+{ config, pkgs, ... }:
 {
   imports = [
     <nixpkgs/nixos/modules/profiles/headless.nix>
