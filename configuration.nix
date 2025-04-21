@@ -1,9 +1,6 @@
 # This is the general configuration for all of my systems; anything in here will be found on every possible system I have.
 
 { config, pkgs, self, ... }:
-let
-  # inherit (self) inputs;
-in
 {
   imports =
     [
@@ -13,10 +10,9 @@ in
       ./users/darthpjb.nix
       ./locale/en_gb.nix
       ./locale/home_networks.nix
-      ./cachix.nix
       ./environments/sshd.nix
       ./environments/tools.nix
-      # inputs.secrix.nixosModules.secrix
+      #self.inputs.secrix.nixosModules.secrix
     ];
   environment.systemPackages = with pkgs;
     [
@@ -33,9 +29,9 @@ in
   secrix.defaultEncryptKeys = {
     John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ];
   };
-  services.kmscon = 
-  { 
-   enable = true;
-    kmscon.hwRender = true;
-    }
+  services.kmscon =
+    {
+      enable = true;
+      hwRender = true;
+    };
 }
