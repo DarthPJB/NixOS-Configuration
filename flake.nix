@@ -111,17 +111,32 @@
             ./users/darthpjb.nix
             ./configuration.nix
             ./locale/home_networks.nix
-            ./environments/code.nix
+            ./modifier_imports/minimal.nix
             ./modifier_imports/pi-firmware.nix
 
             # Just for testing
             (import ./environments/rtl-sdr.nix)
             {
-              services.kmscon.autologinUser = "John88";
+              imports = [
+                "${inputs.nixpkgs_stable}/nixos/modules/profiles/headless.nix"
+                "${inputs.nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
+              ];
+              disabledModules =
+                [
+                  "${inputs.nixpkgs_stable}/nixos/modules/profiles/all-hardware.nix"
+                  "${inputs.nixpkgs_stable}/nixos/modules/profiles/base.nix"
+                ];
+              services.kmscon = {
+                autologinUser = "John88";
+                extraConfig = ''
+                  font-dpi=75
+                '';
+              };
               documentation.man.enable = false;
               system.stateVersion = "24.11";
               _module.args =
                 {
+                  inputs = inputs;
                   self = self;
                   nixinate = {
                     #                    host = "192.168.0.115";
@@ -165,7 +180,7 @@
                     hermetic = true;
                     buildOn = "local";
                   };
-                };          
+                };
               system.stateVersion = "24.11";
               nixpkgs.config.allowUnfree = true;
               environment.systemPackages =
@@ -304,61 +319,61 @@
             }
           ];
         };
-        
+
         # In a mirror darkly
-        alpha-two = un_nixpkgs.lib.nixosSystem 
-        {
-        # In a mirror darkly
-        pkgs = un_pkgs;
-          system = "x86_64-linux";
-          specialArgs = { inherit inputs; };
-          modules = [
-            inputs.secrix.nixosModules.default
-            ./configuration.nix
-            ./machines/alpha-two
-            (import ./locale/home_networks.nix)
-            ./environments/i3wm_darthpjb.nix
-            ./environments/steam.nix
-            ./environments/code.nix
-            ./environments/neovim.nix
-            ./environments/communications.nix
-            ./environments/emacs.nix
-            ./environments/browsers.nix
-            ./environments/mudd.nix
-            ./environments/cad_and_graphics.nix
-            #./environments/3dPrinting.nix
-            ./environments/audio_visual_editing.nix
-            ./environments/general_fonts.nix
-            ./environments/video_call_streaming.nix
-            ./environments/cloud_and_backup.nix
-            ./locale/tailscale.nix
-            ./environments/rtl-sdr.nix
-            ./modifier_imports/bluetooth.nix
-            ./modifier_imports/memtest.nix
-            ./modifier_imports/hosts.nix
-            # ./modifier_imports/zfs.nix
-            ./modifier_imports/virtualisation-libvirtd.nix
-            ./modifier_imports/arm-emulation.nix
-            ./environments/sshd.nix
-            #  ./modifier_imports/cuda.nix
-            ./modifier_imports/remote-builder.nix
-            {
-              _module.args =
-                {
-                  self = self;
-                  nixinate = {
-                    #host = "192.168.0.187";
-                    host = "192.168.2.200";
-                    port = 1108;
-                    sshUser = "John88";
-                    substituteOnTarget = true;
-                    hermetic = true;
-                    buildOn = "local";
+        alpha-two = un_nixpkgs.lib.nixosSystem
+          {
+            # In a mirror darkly
+            pkgs = un_pkgs;
+            system = "x86_64-linux";
+            specialArgs = { inherit inputs; };
+            modules = [
+              inputs.secrix.nixosModules.default
+              ./configuration.nix
+              ./machines/alpha-two
+              (import ./locale/home_networks.nix)
+              ./environments/i3wm_darthpjb.nix
+              ./environments/steam.nix
+              ./environments/code.nix
+              ./environments/neovim.nix
+              ./environments/communications.nix
+              ./environments/emacs.nix
+              ./environments/browsers.nix
+              ./environments/mudd.nix
+              ./environments/cad_and_graphics.nix
+              #./environments/3dPrinting.nix
+              ./environments/audio_visual_editing.nix
+              ./environments/general_fonts.nix
+              ./environments/video_call_streaming.nix
+              ./environments/cloud_and_backup.nix
+              ./locale/tailscale.nix
+              ./environments/rtl-sdr.nix
+              ./modifier_imports/bluetooth.nix
+              ./modifier_imports/memtest.nix
+              ./modifier_imports/hosts.nix
+              # ./modifier_imports/zfs.nix
+              ./modifier_imports/virtualisation-libvirtd.nix
+              ./modifier_imports/arm-emulation.nix
+              ./environments/sshd.nix
+              #  ./modifier_imports/cuda.nix
+              ./modifier_imports/remote-builder.nix
+              {
+                _module.args =
+                  {
+                    self = self;
+                    nixinate = {
+                      #host = "192.168.0.187";
+                      host = "192.168.2.200";
+                      port = 1108;
+                      sshUser = "John88";
+                      substituteOnTarget = true;
+                      hermetic = true;
+                      buildOn = "local";
+                    };
                   };
-                };
               }
-          ];
-        };
+            ];
+          };
         LINDA = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs; };
@@ -392,12 +407,12 @@
             ./modifier_imports/cuda.nix
             ./modifier_imports/remote-builder.nix
             {
-          #    environment.systemPackages =
-            #    [
-             #     pkgs.monero-gui
-             #   ];
-                 nixpkgs.config.allowUnfree = true;
-                _module.args =
+              #    environment.systemPackages =
+              #    [
+              #     pkgs.monero-gui
+              #   ];
+              nixpkgs.config.allowUnfree = true;
+              _module.args =
                 {
                   self = self;
                   nixinate = {

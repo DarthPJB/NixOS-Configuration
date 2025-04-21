@@ -10,9 +10,9 @@
     pkgs.killall
     pkgs.magic-wormhole
     pkgs.wpa_supplicant_gui
-    pkgs.freemind
     pkgs.dnsutils
     pkgs.pciutils
     pkgs.lshw
+    pkgs.usbutils
   ];
 }

@@ -1,8 +1,15 @@
 { pkgs, config, lib, ... }:
 {
   imports = [ ./piscreen.nix ];
+  swapDevices =
+    [{ device = "/dev/disk/by-uuid/ea2a84bb-a66c-4291-ac03-597999559a5d"; }];
 
-  environment.systemPackages = [ pkgs.mgba ];
+  fileSystems."/home/" =
+    {
+      device = "/dev/disk/by-uuid/b3c6f24a-010d-4f16-a3b6-37859054234d";
+      fsType = "ext4";
+    };
+  environment.systemPackages = [ pkgs.rtl-sdr ];
 
   networking =
     {
@@ -58,8 +65,4 @@
         };
     };
 }
-#  fileSystems."/home/pokej/obisidan-archive" =
-#    {
-#      device = "/dev/disk/by-uuid/8c501c5c-9fbe-4e9d-b8fc-fbf2987d80ca";
-#      fsType = "ext4";
-#    };
+

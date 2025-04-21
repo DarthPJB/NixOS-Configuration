@@ -6,7 +6,7 @@
 # -------------------------- ALPHA TWO --------------------------
 { config, lib, pkgs, ... }:
 {
-#boot.kernelPackages = pkgs.linuxPackages_latest;
+  #boot.kernelPackages = pkgs.linuxPackages_latest;
 
   systemd.user.services.xwinwrap =
     {
@@ -23,24 +23,24 @@
     };
 
 
-#    boot.extraModulePackages = [    
-# (config.boot.kernelPackages."rtw88".overrideAttrs (old: {
-#    prePatch = old.prePatch + ''
-#      substituteInPlace Makefile --replace "CONFIG_CONCURRENT_MODE = n" "CONFIG_CONCURRENT_MODE = y"
-#    '';
-#  }))
-#];
-#boot.extraModulePackages = with config.boot.kernelPackages; [ rtl8812au ];
-#boot.kernelModules = [ "rtw88" ];
- # boot.blacklistedKernelModules = [ "rtl8xxxu" ];
-boot.kernelModules = [ "rtl88x2bu" ];
-boot.kernelParams = [
-  "video=DP-1:1920x1080@60"
-  "video=DP-3:1920x1080@60"
-];
- hardware.bluetooth.enable = true; # enables support for Bluetooth
+  #    boot.extraModulePackages = [    
+  # (config.boot.kernelPackages."rtw88".overrideAttrs (old: {
+  #    prePatch = old.prePatch + ''
+  #      substituteInPlace Makefile --replace "CONFIG_CONCURRENT_MODE = n" "CONFIG_CONCURRENT_MODE = y"
+  #    '';
+  #  }))
+  #];
+  #boot.extraModulePackages = with config.boot.kernelPackages; [ rtl8812au ];
+  #boot.kernelModules = [ "rtw88" ];
+  # boot.blacklistedKernelModules = [ "rtl8xxxu" ];
+  boot.kernelModules = [ "rtl88x2bu" ];
+  boot.kernelParams = [
+    "video=DP-1:1920x1080@60"
+    "video=DP-3:1920x1080@60"
+  ];
+  hardware.bluetooth.enable = true; # enables support for Bluetooth
   hardware.bluetooth.powerOnBoot = true; #
-  
+
   hardware.graphics.extraPackages = with pkgs; [
     rocmPackages.clr.icd
     amdvlk
@@ -141,7 +141,7 @@ boot.kernelParams = [
 
   # Enable the OpenSSH daemon.
 
-   services.openssh.enable = true;
+  services.openssh.enable = true;
   networking.firewall.allowedTCPPorts = [ 1108 ];
   networking.firewall.allowedUDPPorts = [ 1108 ];
 
