@@ -3,8 +3,8 @@
   imports = [ ./piscreen.nix ];
   swapDevices =
     [{ device = "/dev/disk/by-uuid/ea2a84bb-a66c-4291-ac03-597999559a5d"; }];
-
-  fileSystems."/home/" =
+#swapDevices = [{ device = "/swapfile"; size = 1024; }];
+  fileSystems."/home" =
     {
       device = "/dev/disk/by-uuid/b3c6f24a-010d-4f16-a3b6-37859054234d";
       fsType = "ext4";
@@ -31,7 +31,7 @@
     bluetooth.enable = false;
     enableRedistributableFirmware = true;
   };
-  swapDevices = [{ device = "/swapfile"; size = 1024; }];
+  
   networking = {
     interfaces."wlan0".useDHCP = true;
     wireless = {
