@@ -113,7 +113,7 @@
             ./locale/home_networks.nix
             ./modifier_imports/minimal.nix
             ./modifier_imports/pi-firmware.nix
-
+            ./services/dynamic_domain_gandi.nix
             # Just for testing
             (import ./environments/rtl-sdr.nix)
             {
