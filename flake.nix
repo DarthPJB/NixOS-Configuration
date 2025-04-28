@@ -24,12 +24,10 @@
         system = "x86_64-linux";
         config.allowUnfree = true;
       };
-
       pkgs_arm = import inputs.nixpkgs_stable {
         system = "aarch64-linux";
         config.allowUnfree = true;
       };
-
       un_pkgs = import inputs.nixpkgs_unstable {
         system = "x86_64-linux";
         config.allowUnfree = true;
@@ -72,7 +70,6 @@
         };
       # --------------------------------------------------------------------------------------------------
       nixosConfigurations = {
-
         # -----------------------------------ARM DEVICES-------------------------------------------------
         print-controller = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
@@ -85,6 +82,8 @@
             ./locale/home_networks.nix
             ./server_services/klipper.nix
             {
+              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
+              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBqeo8ceyMoi+SIRP5hhilbhJvFflphD0efolDCxccj9";
               system.stateVersion = "24.11";
               networking.hostName = "printcontroller";
               _module.args =
@@ -133,11 +132,14 @@
                 '';
               };
               documentation.man.enable = false;
+              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
+              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINkAJhTTF+WVWixTwIvEtRq5KdpjxPy4ptlcmFSEetrU";
               system.stateVersion = "24.11";
               _module.args =
                 {
                   inputs = inputs;
                   self = self;
+                  #inherit secrix;
                   nixinate = {
                     #                    host = "192.168.0.115";
                     host = "192.168.2.125";
@@ -181,6 +183,8 @@
                     buildOn = "local";
                   };
                 };
+              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
+              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGlV1inLX9o+Qyf/B3dp6xjb4f9bGisvkT6eFL/f8JIl";
               system.stateVersion = "24.11";
               nixpkgs.config.allowUnfree = true;
               environment.systemPackages =
@@ -204,18 +208,21 @@
             {
               nixpkgs.config.allowUnfree = true;
               nixpkgs.config.nvidia.acceptLicense = true;
-
+              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
+              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOK07xnXN3O2v4EZ7YUzWSL5O+Uf2vM6+jzxROWzaTD5";
+              system.stateVersion = "24.11";
               _module.args =
                 {
                   self = self;
                   nixinate = {
-                    host = "192.168.2.200";
+                    host = "192.168.0.162";
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;
                     buildOn = "local";
                   };
                 };
+
               services.openssh.ports = [ 22 ];
               networking.firewall.allowedTCPPorts = [ 22 ];
               environment.systemPackages =
@@ -241,9 +248,11 @@
             ./environments/emacs.nix
             ./environments/sshd.nix
             {
+              nixpkgs.config.allowUnfree = true;
               nix.nixPath = [
                 "nixpkgs=${inputs.nixpkgs_unstable}"
               ];
+              system.stateVersion = "24.11";
               _module.args =
                 {
                   self = self;
@@ -276,7 +285,11 @@
             ./environments/neovim.nix
             ./environments/sshd.nix
             ./environments/audio_visual_editing.nix
+            ./services/dynamic_domain_gandi.nix
             {
+              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
+              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMfb/Bbr0PaFDyO92q+GXHHXTAlTYR4uSLm0jivou4IB";
+              system.stateVersion = "24.11";
               _module.args =
                 {
                   self = self;
@@ -406,11 +419,15 @@
             ./environments/sshd.nix
             ./modifier_imports/cuda.nix
             ./modifier_imports/remote-builder.nix
+            ./services/dynamic_domain_gandi.nix
             {
               #    environment.systemPackages =
               #    [
               #     pkgs.monero-gui
               #   ];
+              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
+              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHw+Reg4Et3iy+pq94EKb97PruFwzycwM350hm34R9Aa";
+              system.stateVersion = "24.11";
               nixpkgs.config.allowUnfree = true;
               _module.args =
                 {
@@ -429,30 +446,6 @@
           ];
         };
         # -----------------------------------REMOTE SYSTEMS-------------------------------------------------
-        RemoteWorker-2 = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          modules = [
-            inputs.secrix.nixosModules.default
-            ./configuration.nix
-            ./machines/ethan-net
-            {
-              networking.firewall.allowedTCPPorts = [ 22000 ];
-              networking.firewall.allowedUDPPorts = [ 22000 21027 ];
-
-              _module.args =
-                {
-                  self = self;
-                  nixinate = {
-                    host = "181.215.32.40";
-                    sshUser = "John88";
-                    substituteOnTarget = true;
-                    hermetic = true;
-                    buildOn = "local";
-                  };
-                };
-            }
-          ];
-        };
         RemoteWorker-1 = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
@@ -464,7 +457,9 @@
             ./server_services/hedgedoc.nix
             #            determinate.nixosModules.default
             {
-
+              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
+              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M";
+              system.stateVersion = "24.11";
               nixpkgs.config.permittedInsecurePackages = [
                 "nextcloud-27.1.11"
               ];
@@ -472,7 +467,6 @@
               imports = [
                 "${nixpkgs}/nixos/modules/virtualisation/openstack-config.nix"
               ];
-              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M";
               _module.args =
                 {
                   self = self;

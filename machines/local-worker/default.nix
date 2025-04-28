@@ -12,20 +12,21 @@
 
   hardware = {
     sane.enable = true;
-    opengl.enable = true;
+    graphics.enable = true;
     pulseaudio.enable = true;
-    opengl.driSupport32Bit = true;
+    graphics.enable32Bit = true;
     pulseaudio.support32Bit = true;
     nvidia = {
+      open = false;
       modesetting.enable = false;
       powerManagement.enable = true;
     };
   };
   services =
     {
+      libinput.enable = true;
       xserver =
         {
-          libinput.enable = true;
           videoDrivers = [ "nvidia" ];
           deviceSection = ''
             Option "Coolbits" "24"
