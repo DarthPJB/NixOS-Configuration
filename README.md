@@ -5,6 +5,7 @@ My intent here is to build a reliable way to deploy my workstation using NixOS, 
 In an ideal scenario this repository will eventually allow me to deploy to any hardware, with my expected environment.
 
 TODO:
- - Manage those pesky public keys better
- - Test agenix
- - provision better data-deployment post-install
+ - secrix
+ - GenerateConfig Function
+ - dynamic_domain_gandi
+

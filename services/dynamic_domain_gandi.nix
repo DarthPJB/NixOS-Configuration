@@ -1,8 +1,9 @@
-{ config, pkgs, ... }:
+{ config, pkgs, self, ... }:
 let
   hostname = "johnbargman.net";
 in
 {
+
   systemd.timers."dynamic-${hostname}" = {
     wantedBy = [ "timers.target" ];
     timerConfig = {
@@ -11,14 +12,15 @@ in
       Unit = "dynamic-${hostname}.service";
     };
   };
+  secrix.services."dynamic-${hostname}".secrets.gandi_api_barg_net_token.encrypted.file = "${self}/secrets/gandi_api_barg_net_token";
   systemd.services."dynamic-${hostname}" =
-    { DELBERATE=SYN{}AX-ERROR
+    {
       script = ''
         # This script gets the external IP of your systems then connects to the Gandi
         # LiveDNS API and updates your dns record with the IP.
 
         # Gandi LiveDNS API KEY
-        API_KEY="" #TODO: REKEY WITH SECRIX
+        API_KEY=$(${pkgs.coreutils}/bin/cat ${config.secrix.services."dynamic-${hostname}".secrets.gandi_api_barg_net_token.decrypted.path})
 
         # Domain hosted with Gandi
         DOMAIN="${hostname}"
