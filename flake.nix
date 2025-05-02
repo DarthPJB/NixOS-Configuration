@@ -114,7 +114,7 @@
             ./modifier_imports/pi-firmware.nix
             ./services/dynamic_domain_gandi.nix
             # Just for testing
-            (import ./environments/rtl-sdr.nix)
+            #(import ./environments/rtl-sdr.nix)
             {
               imports = [
                 "${inputs.nixpkgs_stable}/nixos/modules/profiles/headless.nix"
@@ -141,8 +141,7 @@
                   self = self;
                   #inherit secrix;
                   nixinate = {
-                    #                    host = "192.168.0.115";
-                    host = "192.168.2.125";
+                    host = "display-module.johnbargman.net";
                     sshUser = "John88";
                     port = 1108;
                     substituteOnTarget = true;
@@ -354,7 +353,6 @@
               ./environments/browsers.nix
               ./environments/mudd.nix
               ./environments/cad_and_graphics.nix
-              #./environments/3dPrinting.nix
               ./environments/audio_visual_editing.nix
               ./environments/general_fonts.nix
               ./environments/video_call_streaming.nix
@@ -364,19 +362,16 @@
               ./modifier_imports/bluetooth.nix
               ./modifier_imports/memtest.nix
               ./modifier_imports/hosts.nix
-              # ./modifier_imports/zfs.nix
               ./modifier_imports/virtualisation-libvirtd.nix
               ./modifier_imports/arm-emulation.nix
               ./environments/sshd.nix
-              #  ./modifier_imports/cuda.nix
               ./modifier_imports/remote-builder.nix
               {
                 _module.args =
                   {
                     self = self;
                     nixinate = {
-                      #host = "192.168.0.187";
-                      host = "192.168.2.200";
+#                      host = "192.168.2.200";
                       port = 1108;
                       sshUser = "John88";
                       substituteOnTarget = true;
@@ -421,10 +416,6 @@
             ./modifier_imports/remote-builder.nix
             ./services/dynamic_domain_gandi.nix
             {
-              #    environment.systemPackages =
-              #    [
-              #     pkgs.monero-gui
-              #   ];
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHw+Reg4Et3iy+pq94EKb97PruFwzycwM350hm34R9Aa";
               system.stateVersion = "24.11";
@@ -433,7 +424,6 @@
                 {
                   self = self;
                   nixinate = {
-                    #host = "192.168.0.187";
                     host = "linda.johnbargman.com";
                     port = 1108;
                     sshUser = "John88";
@@ -455,7 +445,6 @@
             ./locale/tailscale.nix
             ./server_services/nextcloud.nix
             ./server_services/hedgedoc.nix
-            #            determinate.nixosModules.default
             {
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M";
