@@ -147,7 +147,7 @@
 
 
   # Set your time zone.
-  time.timeZone = "Europe/London";
+  time.timeZone = "Etc/UTC";
   services.xserver.enable = true;
   services.xserver.videoDrivers = [ "nvidia" ];
   services.pipewire = {

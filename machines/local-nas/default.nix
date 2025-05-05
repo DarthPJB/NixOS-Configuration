@@ -60,7 +60,7 @@
 
   networking.hostId = "d5710c9a";
   networking.hostName = "DataStorage"; # Define your hostname.
-  time.timeZone = "Europe/London";
+  time.timeZone = "Etc/UTC";
   system.stateVersion = "22.11"; # Did you read the comment?
 
   environment.systemPackages = [ pkgs.rclone ];
