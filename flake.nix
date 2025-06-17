@@ -173,8 +173,8 @@
                 {
                   self = self;
                   nixinate = {
-                    #host = "192.168.0.187";
-                    host = "192.168.2.200";
+                    host = "192.168.0.187";
+                    #host = "192.168.2.200";
                     port = 1108;
                     sshUser = "John88";
                     substituteOnTarget = true;
@@ -445,6 +445,7 @@
             ./locale/tailscale.nix
             ./server_services/nextcloud.nix
             ./server_services/hedgedoc.nix
+            ./services/dynamic_domain_gandi.nix
             {
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M";
@@ -465,6 +466,45 @@
                     substituteOnTarget = true;
                     hermetic = true;
                     buildOn = "local";
+                  };
+                };
+            }
+          ];
+        };
+        RemoteBuilder = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [
+            inputs.secrix.nixosModules.default
+            ./users/darthpjb.nix
+            ./modifier_imports/flakes.nix
+            ./environments/sshd.nix
+            ./environments/tools.nix
+            ./machines/openstack.nix
+            ./services/dynamic_domain_gandi.nix
+            {
+              services.github-runners = {
+                  disgust = {
+                  enable = true;
+                  name = "disgust";
+                  tokenFile = "/secrets/token1";
+                  url = "https://github.com/DarthPJB/parsec-gaming-nix";
+                }; 
+              };
+              #secrix.services.github.secrets.gandi_api_barg_net_token.encrypted.file = "${self}/secrets/github_runner_token";
+              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
+              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC7Owkd/9PC7j/L5PbPXrSMx0Aw/1owIoCsfp7+5OKek";
+              system.stateVersion = "24.11";
+
+              imports = [
+                "${nixpkgs}/nixos/modules/virtualisation/openstack-config.nix"
+              ];
+              _module.args =
+                {
+                  self = self;
+                  nixinate = {
+                    host = "193.16.42.13";
+                    sshUser = "John88";
+                    buildOn = "remote";
                   };
                 };
             }

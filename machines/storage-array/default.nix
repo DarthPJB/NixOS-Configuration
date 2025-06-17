@@ -30,7 +30,7 @@
 
   # networking.interfaces.enp1s0f0.useDHCP = lib.mkDefault true;
 
-  services.dnsmasq.enable = true;
+/*  services.dnsmasq.enable = true;
   services.dnsmasq.settings = {
     domain-needed = true;
     bogus-priv = true;
@@ -39,7 +39,7 @@
     #dhcp-range="::f,::ff,constructor:enp2s0f0";
   };
   services.dnsmasq.resolveLocalQueries = false;
-
+*/
   networking = {
     defaultGateway = "181.215.32.33";
     nameservers = [ "1.1.1.1" "8.8.8.8" ];
@@ -53,20 +53,20 @@
         }];
       };
       enp2s0f1 = {
-        ipv4.addresses = [{
-          address = "181.215.32.40";
-          prefixLength = 27;
-        }];
+      /*  ipv4.addresses = [{
+         address = "181.215.32.40";
+         prefixLength = 27;
+       }]; */
       };
       enp2s0f0 = {
-        ipv4.addresses = [{
+/*        ipv4.addresses = [{
           address = "192.168.2.1";
           prefixLength = 24;
         }];
         ipv6.addresses = [{
           address = "2a01:4f8:1c1b:16d0::1";
           prefixLength = 64;
-        }];
+        }]; */
       };
     };
   };
