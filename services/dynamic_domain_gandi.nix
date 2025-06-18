@@ -16,8 +16,8 @@ in
   systemd.services."dynamic-${hostname}" =
     {
       environment = {
-        DOMAIN = hostname;  # Domain hosted with Gandi
-        SUBDOMAIN = config.networking.hostName;  # Subdomain to update DNS
+        DOMAIN = hostname; # Domain hosted with Gandi
+        SUBDOMAIN = config.networking.hostName; # Subdomain to update DNS
       };
       script = ''
         # This script gets the external IP of your systems then connects to the Gandi

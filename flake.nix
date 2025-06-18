@@ -371,7 +371,7 @@
                   {
                     self = self;
                     nixinate = {
-#                      host = "192.168.2.200";
+                      #                      host = "192.168.2.200";
                       port = 1108;
                       sshUser = "John88";
                       substituteOnTarget = true;
@@ -481,16 +481,8 @@
             ./environments/tools.nix
             ./machines/openstack.nix
             ./services/dynamic_domain_gandi.nix
+            ./services/github_runners.nix
             {
-              services.github-runners = {
-                  disgust = {
-                  enable = true;
-                  name = "disgust";
-                  tokenFile = "/secrets/token1";
-                  url = "https://github.com/DarthPJB/parsec-gaming-nix";
-                }; 
-              };
-              #secrix.services.github.secrets.gandi_api_barg_net_token.encrypted.file = "${self}/secrets/github_runner_token";
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC7Owkd/9PC7j/L5PbPXrSMx0Aw/1owIoCsfp7+5OKek";
               system.stateVersion = "24.11";
