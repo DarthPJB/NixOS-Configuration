@@ -486,7 +486,7 @@
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC7Owkd/9PC7j/L5PbPXrSMx0Aw/1owIoCsfp7+5OKek";
               system.stateVersion = "24.11";
-
+              networking.hostName = "remotebuilder";
               imports = [
                 "${nixpkgs}/nixos/modules/virtualisation/openstack-config.nix"
               ];
