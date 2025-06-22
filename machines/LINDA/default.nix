@@ -1,9 +1,5 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
 # -------------------------- LINDACORE --------------------------
-{ self, config, pkgs, inputs, ... }:
+{ config, pkgs, self, ... }:
 
 {
   imports =
@@ -12,8 +8,8 @@
       ./hardware-configuration.nix
     ];
   environment.systemPackages = [
-    inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.looking-glass-client
-    inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.scream
+    self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.looking-glass-client
+    self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.scream
     pkgs.virtiofsd
     pkgs.gwe
     pkgs.virt-manager

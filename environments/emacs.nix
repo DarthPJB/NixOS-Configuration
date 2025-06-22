@@ -1,7 +1,4 @@
-{ pkgs, inputs, ... }:
-let
-  pkgs = inputs.nixpkgs_stable.legacyPackages.x86_64-linux;
-in
+{ pkgs, ... }:
 {
   environment.systemPackages = with pkgs;
     [

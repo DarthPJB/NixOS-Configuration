@@ -25,7 +25,18 @@
       acceptTerms = true;
       defaults.email = "darthpjb@gmail.com";
     };
-  nix.settings.trusted-users = [ "root" "John88" ];
+  nix.settings = {
+    
+    trusted-substituters = [
+      "https://cache.platonic.systems"
+      "https://cache.nixos.org"
+    ];
+    trusted-public-keys = [
+      "cache.platonic.systems:ePE43vrTvMW4177G3LfAYWCSdZkSBA5gY3WZCO1Y3ew="
+      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+    ];
+    trusted-users = [ "root" "John88" ];
+  };
   secrix.defaultEncryptKeys = {
     John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ];
   };
