@@ -1,4 +1,4 @@
-{ config, pkgs,  ... }:
+{ config, pkgs, ... }:
 {
 
   # only add strictly necessary modules

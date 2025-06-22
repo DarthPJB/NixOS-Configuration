@@ -17,7 +17,7 @@
   # --------------------------------------------------------------------------------------------------
   outputs = { self, parsecgaming, nixos-hardware, secrix, nixinate, nixpkgs_unstable, nixpkgs_stable }:
     let
-#      inherit (secrix) secrix;
+      #      inherit (secrix) secrix;
       nixpkgs = nixpkgs_stable;
       un_nixpkgs = nixpkgs_unstable;
       pkgs = import nixpkgs_stable {
@@ -185,7 +185,7 @@
               nixpkgs.config.allowUnfree = true;
               environment.systemPackages =
                 [
-                  parsecgaming.packages.x86_64-linux.parsecgaming 
+                  parsecgaming.packages.x86_64-linux.parsecgaming
                 ];
             }
           ];
@@ -281,40 +281,6 @@
                   self = self;
                   nixinate = {
                     host = "192.168.0.193";
-                    sshUser = "deploy";
-                    port = 22;
-                    substituteOnTarget = true;
-                    hermetic = true;
-                    buildOn = "local";
-                  };
-                };
-            }
-          ];
-        };
-        storage-array = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          modules = [
-            secrix.nixosModules.default
-            ./modifier_imports/zfs.nix
-            ./machines/storage-array
-            ./configuration.nix
-            ./users/darthpjb.nix
-            ./environments/neovim.nix
-            ./environments/emacs.nix
-            ./environments/code.nix
-            ./environments/neovim.nix
-            ./environments/sshd.nix
-            ./environments/audio_visual_editing.nix
-            ./services/dynamic_domain_gandi.nix
-            {
-              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
-              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMfb/Bbr0PaFDyO92q+GXHHXTAlTYR4uSLm0jivou4IB";
-              system.stateVersion = "24.11";
-              _module.args =
-                {
-                  self = self;
-                  nixinate = {
-                    host = "storage.johnbargman.com";
                     sshUser = "John88";
                     port = 1108;
                     substituteOnTarget = true;
@@ -325,9 +291,10 @@
             }
           ];
         };
+
         local-nas = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
-        #  specialArgs = { inherit inputs; };
+          #  specialArgs = { inherit inputs; };
           modules = [
             secrix.nixosModules.default
             ./modifier_imports/zfs.nix
@@ -436,9 +403,9 @@
             ./modifier_imports/remote-builder.nix
             ./services/dynamic_domain_gandi.nix
             {
-             environment.systemPackages = [
+              environment.systemPackages = [
                 parsecgaming.packages.x86_64-linux.parsecgaming
-            ];
+              ];
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHw+Reg4Et3iy+pq94EKb97PruFwzycwM350hm34R9Aa";
               system.stateVersion = "24.11";
@@ -486,6 +453,40 @@
                   nixinate = {
                     host = "193.16.42.101";
                     sshUser = "John88";
+                    substituteOnTarget = true;
+                    hermetic = true;
+                    buildOn = "local";
+                  };
+                };
+            }
+          ];
+        };
+        storage-array = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [
+            secrix.nixosModules.default
+            ./modifier_imports/zfs.nix
+            ./machines/storage-array
+            ./configuration.nix
+            ./users/darthpjb.nix
+            ./environments/neovim.nix
+            ./environments/emacs.nix
+            ./environments/code.nix
+            ./environments/neovim.nix
+            ./environments/sshd.nix
+            ./environments/audio_visual_editing.nix
+            ./services/dynamic_domain_gandi.nix
+            {
+              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
+              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMfb/Bbr0PaFDyO92q+GXHHXTAlTYR4uSLm0jivou4IB";
+              system.stateVersion = "24.11";
+              _module.args =
+                {
+                  self = self;
+                  nixinate = {
+                    host = "storage.johnbargman.com";
+                    sshUser = "John88";
+                    port = 1108;
                     substituteOnTarget = true;
                     hermetic = true;
                     buildOn = "local";

@@ -11,7 +11,7 @@
     # Frequency scanners
     gqrx # older but cool
     sdrpp # sweeter 
-#    sdrangel # minimal  lightweight
+    #    sdrangel # minimal  lightweight
     gnuradio # powerhouse
   ];
 }
