@@ -26,7 +26,7 @@
       defaults.email = "darthpjb@gmail.com";
     };
   nix.settings = {
-    
+
     trusted-substituters = [
       "https://cache.platonic.systems"
       "https://cache.nixos.org"
