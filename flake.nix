@@ -113,8 +113,6 @@
             ./modifier_imports/minimal.nix
             ./modifier_imports/pi-firmware.nix
             ./services/dynamic_domain_gandi.nix
-            # Just for testing
-            #(import ./environments/rtl-sdr.nix)
             {
               imports = [
                 "${nixpkgs_stable}/nixos/modules/profiles/headless.nix"
@@ -267,6 +265,32 @@
           ];
         };
         # -----------------------------------HOME LAB-------------------------------------------------
+        cortex-alpha = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [
+            secrix.nixosModules.default
+            ./machines/cortex-alpha
+            ./configuration.nix
+            ./environments/neovim.nix
+            {
+              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
+              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILWAilZq7Ocl8zm96sSAy+fRo8wt5mMVuRQmEQsk4MsB root@cortex-alpha";
+              system.stateVersion = "24.11";
+              _module.args =
+                {
+                  self = self;
+                  nixinate = {
+                    host = "192.168.0.193";
+                    sshUser = "deploy";
+                    port = 22;
+                    substituteOnTarget = true;
+                    hermetic = true;
+                    buildOn = "local";
+                  };
+                };
+            }
+          ];
+        };
         storage-array = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
