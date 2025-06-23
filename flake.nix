@@ -4,6 +4,7 @@
   inputs = {
     #nixinate.url = "path:/home/pokej/repo/DarthPJB/nixinate";
     nixinate.url = "github:pinktrink/nixinate";
+    nixinate.inputs.nixpkgs.follows = "nixpkgs_stable";
     secrix.url = "github:Platonic-Systems/secrix";
 
     #raspberry-pi-nix.url = "github:nix-community/raspberry-pi-nix";
@@ -13,7 +14,8 @@
     nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-24.11";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
-  };
+ 
+ };
   # --------------------------------------------------------------------------------------------------
   outputs = { self, parsecgaming, nixos-hardware, secrix, nixinate, nixpkgs_unstable, nixpkgs_stable }:
     let
@@ -190,7 +192,7 @@
             }
           ];
         };
-        terminal-media = nixpkgs.lib.nixosSystem {
+        terminal-nx-01 = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
             secrix.nixosModules.default
@@ -224,6 +226,7 @@
               environment.systemPackages =
                 [
                   pkgs.ffmpeg
+                  parsecgaming.packages.x86_64-linux.parsecgaming
                 ];
             }
           ];
@@ -354,6 +357,10 @@
               ./environments/sshd.nix
               ./modifier_imports/remote-builder.nix
               {
+              environment.systemPackages =
+                [
+                  parsecgaming.packages.x86_64-linux.parsecgaming
+                ];
                 _module.args =
                   {
                     self = self;
