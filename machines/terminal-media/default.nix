@@ -37,7 +37,7 @@
   # replicates the default behaviour.
   networking = {
     useDHCP = false;
-    hostName = "Terminal-media"; # Define your hostname.
+    hostName = "terminal-nx-01"; # Define your hostname.
     interfaces = {
       enp4s0.useDHCP = true;
       wlp3s0.useDHCP = true;
