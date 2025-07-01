@@ -34,6 +34,8 @@
           PassEnvironment = "DISPLAY XAUTHORITY";
         };
     };
+  programs.adb.enable = true;
+  users.users.John88.extraGroups = [ "adbusers" ];
   systemd.user.services.dino =
     {
       description = "mumble-autostart";
