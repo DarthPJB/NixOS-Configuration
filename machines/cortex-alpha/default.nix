@@ -11,6 +11,12 @@
       ./hardware-configuration.nix
     ];
   boot = {
+    kernel = {
+      sysctl = {
+        "net.ipv4.conf.all.forwarding" = true;
+        "net.ipv6.conf.all.forwarding" = false; #TODO: v6 please god
+      };
+    };
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
   };
@@ -18,18 +24,45 @@
   # Set your time zone.
   time.timeZone = "Etc/UTC";
 
-  # Select internationalisation properties.
-  # i18n.defaultLocale = "en_US.UTF-8";
-  # console = {
-  #   font = "Lat2-Terminus16";
-  #   keyMap = "us";
-  #   useXkbConfig = true; # use xkb.options in tty.
-  # };
+  networking.interfaces.enp3s0 = {
+   useDHCP = lib.mkDefault false;
+    # Network output
+     ipv4.addresses = [{ 
+      address = "10.88.128.1"; prefixLength = 24;
+     }];
+   };
+  networking.interfaces.enp2s0 = {
+    # Modem input
+    useDHCP = lib.mkDefault true;
+  };
 
-  # Enable the X11 windowing system.
-  # services.xserver.enable = true;
+services.dnsmasq = {
+    enable = true;
+    settings = {
+      # upstream DNS servers
+      server = [ "9.9.9.9" "8.8.8.8" "1.1.1.1" ];
+      # sensible behaviours
+      domain-needed = true;
+      bogus-priv = true;
+      no-resolv = true;
 
+      # Cache dns queries.
+      cache-size = 1000;
 
+      dhcp-range = [ "enp3s0,10.88.128.50,10.88.128.254,24h" ];
+      interface = "enp3s0";
+      dhcp-host = "10.88.128.1";
+
+      # local domains
+      local = "/local/";
+      domain = "local";
+      expand-hosts = true;
+
+      # don't use /etc/hosts as this would advertise surfer as localhost
+      no-hosts = true;
+      address = "/${config.networking.hostName}.local/10.88.128.1";
+    };
+  };
 
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
@@ -41,25 +74,6 @@
       neovim
     ];
   };
-
-  # programs.firefox.enable = true;
-
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
-  # environment.systemPackages = with pkgs; [
-  #   vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-  #   wget
-  # ];
-
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
-
-  # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
