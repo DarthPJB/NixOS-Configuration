@@ -47,13 +47,13 @@
   # still possible to use this option, but it's recommended to use it in conjunction
   # with explicit per-interface declarations with `networking.interfaces.<interface>.useDHCP`.
   #networking.useDHCP = lib.mkDefault true;
-  networking.interfaces.enp2s0 = {
+  networking.interfaces.enp3s0 = {
    useDHCP = lib.mkDefault false;
      ipv4.addresses = [{ 
    	address = "10.88.128.2"; prefixLength = 24;
      }];
    };
-  networking.interfaces.enp3s0 = {
+  networking.interfaces.enp2s0 = {
     useDHCP = lib.mkDefault false;
   };
 
