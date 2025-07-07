@@ -283,7 +283,7 @@
                 {
                   self = self;
                   nixinate = {
-                    host = "10.88.128.2";
+                    host = "10.88.128.1";
                     sshUser = "John88";
                     port = 1108;
                     substituteOnTarget = true;

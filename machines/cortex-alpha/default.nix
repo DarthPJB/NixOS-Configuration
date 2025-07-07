@@ -25,18 +25,21 @@
   time.timeZone = "Etc/UTC";
 
   networking.interfaces.enp3s0 = {
-   useDHCP = lib.mkDefault false;
+    useDHCP = lib.mkDefault false;
     # Network output
-     ipv4.addresses = [{ 
-      address = "10.88.128.1"; prefixLength = 24;
-     }];
-   };
+    ipv4.addresses = [{
+      address = "10.88.128.1";
+      prefixLength = 24;
+    }];
+  };
   networking.interfaces.enp2s0 = {
     # Modem input
     useDHCP = lib.mkDefault true;
   };
-
-services.dnsmasq = {
+  networking.firewall.allowedUDPPorts = [
+    67 # DHCP
+  ];
+  services.dnsmasq = {
     enable = true;
     settings = {
       # upstream DNS servers
