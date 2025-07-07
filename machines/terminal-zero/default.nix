@@ -46,7 +46,7 @@
     iptables -A INPUT -i enp0s25 -j ACCEPT
   '';
   # Run a DHCP server on the downstream interface
-/*  services.kea.dhcp4 = {
+  /*  services.kea.dhcp4 = {
     enable = true;
     settings = {
       interfaces-config = {
@@ -90,10 +90,10 @@
         {
           "enp0s25" = {
             useDHCP = true;
-       #     ipv4.addresses = [{
-       #       address = "10.0.0.1";
-       #       prefixLength = 24;
-       #     }];
+            #     ipv4.addresses = [{
+            #       address = "10.0.0.1";
+            #       prefixLength = 24;
+            #     }];
           };
           wlp3s0.useDHCP = true;
           wwp0s29u1u4i6.useDHCP = true;
