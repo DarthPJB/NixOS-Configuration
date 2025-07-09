@@ -160,7 +160,7 @@
             (import ./locale/home_networks.nix)
             (import ./environments/browsers.nix)
             (import ./configuration.nix)
-            (import ./environments/i3wm_darthpjb.nix)
+            #(import ./environments/i3wm_darthpjb.nix)
             (import ./environments/rtl-sdr.nix)
             (import ./environments/pio.nix)
             (import ./machines/terminal-zero)
@@ -283,7 +283,7 @@
                 {
                   self = self;
                   nixinate = {
-                    host = "10.88.128.1";
+                    host = "192.168.0.193"; #"10.88.128.1";
                     sshUser = "John88";
                     port = 1108;
                     substituteOnTarget = true;

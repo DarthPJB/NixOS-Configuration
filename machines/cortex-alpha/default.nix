@@ -11,6 +11,7 @@
       ./hardware-configuration.nix
     ];
   boot = {
+    supportedFilesystems = [ "zfs" ];
     kernel = {
       sysctl = {
         "net.ipv4.conf.all.forwarding" = true;
@@ -20,35 +21,55 @@
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
   };
-  networking.hostName = "cortex-alpha"; # Define your hostname.
   # Set your time zone.
   time.timeZone = "Etc/UTC";
 
-  networking.interfaces.enp3s0 = {
-    useDHCP = lib.mkDefault false;
-    # Network output
-    ipv4.addresses = [{
-      address = "10.88.128.1";
-      prefixLength = 24;
-    }];
+  networking = {
+    hostName = "cortex-alpha"; # Define your hostname.
+    hostId = "c043a1fa";
+    interfaces.enp3s0 = {
+      useDHCP = lib.mkDefault false;
+      # Network output
+      ipv4.addresses = [{
+        address = "10.88.128.1";
+        prefixLength = 24;
+      }];
+    };
+    interfaces.enp2s0 = {
+      # Modem input
+      useDHCP = lib.mkDefault true;
+
+    };
+    firewall.interfaces = {
+      "enp2s0".allowedUDPPorts = [ 1108 ];
+      "enp3s0".allowedUDPPorts = [ 67/* DHCP */ 53 /*dns*/];
+    };
+    nat = {
+      enable = true;
+      internalIPs = [ "10.88.128.0/24" ];
+      externalInterface = "enp2s0";
+      internalInterfaces = [ "eno3" ];
+    };
+    nameservers = [ "127.0.0.1" ];
   };
-  networking.interfaces.enp2s0 = {
-    # Modem input
-    useDHCP = lib.mkDefault true;
-  };
-  networking.firewall.allowedUDPPorts = [
-    67 # DHCP
-  ];
   services.dnsmasq = {
     enable = true;
+     servers = [
+          "1.1.1.1"
+          "1.0.0.1"
+          "2606:4700:4700::1111"
+          "2606:4700:4700::1001"
+          "8.8.8.8"
+          "8.8.4.4"
+          "2001:4860:4860::8888"
+          "2001:4860:4860::8844"
+    ];
     settings = {
       # upstream DNS servers
-      server = [ "9.9.9.9" "8.8.8.8" "1.1.1.1" ];
       # sensible behaviours
       domain-needed = true;
       bogus-priv = true;
       no-resolv = true;
-
       # Cache dns queries.
       cache-size = 1000;
 
@@ -66,6 +87,7 @@
       address = "/${config.networking.hostName}.local/10.88.128.1";
     };
   };
+
 
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
