@@ -8,7 +8,7 @@
     ];
 
   networking.hostId = "e3fabb5b";
-  networking.hostname = "remote-worker";
+  networking.hostName = "remote-worker";
 
 }
 

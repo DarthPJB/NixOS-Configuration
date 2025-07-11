@@ -310,7 +310,7 @@
             {
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINlCggPwFP5VX3YDA1iji0wxX8+mIzmrCJ1aHj9f1ofx";
-            
+
               _module.args =
                 {
                   self = self;
@@ -441,7 +441,7 @@
           modules = [
             secrix.nixosModules.default
             ./configuration.nix
-            ./machines/remote-worker.nix
+            ./machines/remote-worker
             ./locale/tailscale.nix
             ./server_services/nextcloud.nix
             ./server_services/hedgedoc.nix
@@ -509,7 +509,6 @@
             ./modifier_imports/flakes.nix
             ./environments/sshd.nix
             ./environments/tools.nix
-            ./machines/openstack.nix
             ./services/dynamic_domain_gandi.nix
             ./services/github_runners.nix
             {
