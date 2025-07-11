@@ -308,6 +308,9 @@
             ./environments/emacs.nix
             ./environments/sshd.nix
             {
+              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
+              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINlCggPwFP5VX3YDA1iji0wxX8+mIzmrCJ1aHj9f1ofx";
+            
               _module.args =
                 {
                   self = self;
@@ -433,12 +436,12 @@
           ];
         };
         # -----------------------------------REMOTE SYSTEMS-------------------------------------------------
-        RemoteWorker-1 = nixpkgs.lib.nixosSystem {
+        remote-worker = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
             secrix.nixosModules.default
             ./configuration.nix
-            ./machines/openstack.nix
+            ./machines/remote-worker.nix
             ./locale/tailscale.nix
             ./server_services/nextcloud.nix
             ./server_services/hedgedoc.nix
@@ -447,10 +450,6 @@
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M";
               system.stateVersion = "24.11";
-              nixpkgs.config.permittedInsecurePackages = [
-                "nextcloud-27.1.11"
-              ];
-
               imports = [
                 "${nixpkgs}/nixos/modules/virtualisation/openstack-config.nix"
               ];
@@ -502,7 +501,7 @@
             }
           ];
         };
-        RemoteBuilder = nixpkgs.lib.nixosSystem {
+        remote-builder = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
             secrix.nixosModules.default
