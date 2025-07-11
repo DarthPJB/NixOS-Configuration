@@ -184,13 +184,11 @@
       interfaces =
         {
           br0.useDHCP = true;
-          enp69s0f0.useDHCP = false;
+          enp69s0f0 = {
+           useDHCP = true;
+           };
           enp69s0f1 = {
-            useDHCP = false;
-            ipv4.addresses = [{
-              address = "192.168.2.10";
-              prefixLength = 24;
-            }];
+            useDHCP = true;
           };
         };
       wireless =
