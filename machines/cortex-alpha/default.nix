@@ -23,7 +23,7 @@
   time.timeZone = "Etc/UTC";
 
   networking = {
-  wireguard.enable = true;
+    wireguard.enable = true;
     hostName = "cortex-alpha"; # Define your hostname.
     hostId = "c043a1fa";
     interfaces.enp3s0 = {
@@ -41,7 +41,7 @@
     };
     firewall.interfaces = {
       "enp2s0".allowedUDPPorts = [ 1108 ];
-      "enp3s0".allowedUDPPorts = [ 67/* DHCP */ 53 /*dns*/];
+      "enp3s0".allowedUDPPorts = [ 67 /* DHCP */ 53 /*dns*/ ];
     };
     nat = {
       enable = true;
@@ -53,11 +53,11 @@
   };
   services.dnsmasq = {
     enable = true;
-     servers = [
-          "208.67.220.220"
-          "208.67.222.222"
-          "1.0.0.1"
-          "8.8.8.8"
+    servers = [
+      "208.67.220.220"
+      "208.67.222.222"
+      "1.0.0.1"
+      "8.8.8.8"
     ];
     settings = {
       # upstream DNS servers

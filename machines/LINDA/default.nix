@@ -185,8 +185,8 @@
         {
           br0.useDHCP = true;
           enp69s0f0 = {
-           useDHCP = true;
-           };
+            useDHCP = true;
+          };
           enp69s0f1 = {
             useDHCP = true;
           };
