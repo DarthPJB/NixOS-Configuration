@@ -8,8 +8,10 @@
       	      100.91.247.95 acropolis.platonic
               100.75.142.109 tumulus.platonic
               100.105.114.89 springboard.platonic
-              193.16.42.101 nextcloud.johnbargman.com
-              192.168.1.104 nasa.astral
               167.235.2.58 tankles.server
+
+
+              10.88.127.1 ap.local
+              10.88.127.1 router.local
     '';
 }

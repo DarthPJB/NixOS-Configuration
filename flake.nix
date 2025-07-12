@@ -172,7 +172,7 @@
                 {
                   self = self;
                   nixinate = {
-                    host = "192.168.0.187";
+                    host = "192.168.0.28";
                     #host = "192.168.2.200";
                     port = 1108;
                     sshUser = "John88";
