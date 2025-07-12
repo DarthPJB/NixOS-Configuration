@@ -135,7 +135,7 @@
         options vfio-pci ids=10de:2487,10de:228b,1d6b:0002,28de:2102,28de:2300,0424:2744,28de:2613,28de:2400
       '';
       initrd.preDeviceCommands = ''
-        DEVS="0000:21:00:.0 0000:21:00.1 0000:46:00.0"
+        DEVS="0000:21:00.0 0000:21:00.1 0000:46:00.0"
         for DEV in $DEVS; do
             echo "vfio-pci" > /sys/bus/pci/devices/$DEV/driver_override
         done
@@ -167,41 +167,31 @@
       powerManagement.enable = true;
     };
   };
-  secrix.services.wireguard-wireg0.secrets.cortex-alpha.encrypted.file = ../../secrets/wg_LINDA;
+  secrix.services.wireguard-wireg0.secrets.LINDA.encrypted.file = ../../secrets/wg_LINDA;
   networking = {
-    wireguard = { 
+    wireguard = {
       enable = true;
       interfaces = {
-        wireg0 = 
-        {
-          # Determines the IP address and subnet of the server's end of the tunnel interface.
-          ips = [ "10.88.127.88/32" ];
+        wireg0 =
+          {
+            # Determines the IP address and subnet of the server's end of the tunnel interface.
+            ips = [ "10.88.127.88/32" ];
 
-          # The port that WireGuard listens to. Must be accessible by the client.
-          listenPort = 2108;
+            # The port that WireGuard listens to. Must be accessible by the client.
+            listenPort = 2108;
 
-          # This allows the wireguard server to route your traffic to the internet and hence be like a VPN
-          # For this to work you have to set the dnsserver IP of your router (or dnsserver of choice) in your clients
-         /* postSetup = ''
-            ${pkgs.iptables}/bin/iptables -t nat -A POSTROUTING -s 10.88.127.0/24 -o enp2s0 -j MASQUERADE
-          '';
+            # Path to the private key file.
+            privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.LINDA.decrypted.path;
 
-          # This undoes the above command
-          postShutdown = ''
-            ${pkgs.iptables}/bin/iptables -t nat -D POSTROUTING -s 10.88.127.0/24 -o enp2s0 -j MASQUERADE
-          '';*/
-
-          # Path to the private key file.
-          privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
-
-          peers = [{ 
+            peers = [{
               # Public key of the peer (not a file path).
-              publicKey = "./secrets/wg_cortex-alpha_pub";
+              publicKey = builtins.readFile ../../secrets/wg_cortex-alpha_pub;
               # List of IPs assigned to this peer within the tunnel subnet. Used to configure routing.
               allowedIPs = [ "10.88.127.0/24" ];
-              endpoint = "192.168.0.193";
-          }];
-        };
+              endpoint = "192.168.0.193:2108";
+
+            }];
+          };
       };
     };
     interfaces = {
@@ -226,11 +216,11 @@
     };
     useDHCP = false;
     wireless =
-    {
-      enable = false; # Enables wireless support via wpa_supplicant.
-      userControlled.enable = true;
-      interfaces = [ "wlp72s0" ];
-    };
+      {
+        enable = false; # Enables wireless support via wpa_supplicant.
+        userControlled.enable = true;
+        interfaces = [ "wlp72s0" ];
+      };
   };
 }
 

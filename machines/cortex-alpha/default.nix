@@ -19,45 +19,64 @@
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
   };
+  services.nginx = {
+    enable = true;
+    virtualHosts."ap.local" = {
+      enableACME = false;
+      forceSSL = false;
+      listenAddresses = [ "10.88.127.1" "10.88.128.1" ];
+      locations."~/" = {
+        proxyPass = "http://10.88.128.2:80";
+        extraConfig = ''
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+        '';
+        /*                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection $connection_upgrade;*/
+        proxyWebsockets = true; # needed if you need to use WebSocket
+      };
+    };
+  };
+
+
   # Set your time zone.
   time.timeZone = "Etc/UTC";
   secrix.services.wireguard-wireg0.secrets.cortex-alpha.encrypted.file = ../../secrets/wg_cortex-alpha;
   networking = {
-    wireguard = { 
+    wireguard = {
       enable = true;
       interfaces = {
-        wireg0 = 
-        {
-          # Determines the IP address and subnet of the server's end of the tunnel interface.
-          ips = [ "10.88.127.1/24" ];
+        wireg0 =
+          {
+            # Determines the IP address and subnet of the server's end of the tunnel interface.
+            ips = [ "10.88.127.1/24" ];
 
-          # The port that WireGuard listens to. Must be accessible by the client.
-          listenPort = 2108;
+            # The port that WireGuard listens to. Must be accessible by the client.
+            listenPort = 2108;
 
-          # This allows the wireguard server to route your traffic to the internet and hence be like a VPN
-          # For this to work you have to set the dnsserver IP of your router (or dnsserver of choice) in your clients
-         /* postSetup = ''
+            # This allows the wireguard server to route your traffic to the internet and hence be like a VPN
+            # For this to work you have to set the dnsserver IP of your router (or dnsserver of choice) in your clients
+            /* postSetup = ''
             ${pkgs.iptables}/bin/iptables -t nat -A POSTROUTING -s 10.88.127.0/24 -o enp2s0 -j MASQUERADE
           '';
 
           # This undoes the above command
           postShutdown = ''
             ${pkgs.iptables}/bin/iptables -t nat -D POSTROUTING -s 10.88.127.0/24 -o enp2s0 -j MASQUERADE
-          '';*/
+            '';*/
 
-          # Path to the private key file.
-          privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
+            # Path to the private key file.
+            privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
 
-          peers = [
-            # List of allowed peers.
-            { # Feel free to give a meaningful name
+            peers = [{
               # Public key of the peer (not a file path).
-              publicKey = "./secrets/wg_LINDA_pub";
+              publicKey = builtins.readFile ../../secrets/wg_LINDA_pub;
               # List of IPs assigned to this peer within the tunnel subnet. Used to configure routing.
               allowedIPs = [ "10.88.127.88/32" ];
-            }
-          ];
-        };
+            }];
+          };
       };
     };
     hostName = "cortex-alpha"; # Define your hostname.
@@ -71,13 +90,15 @@
       }];
     };
     interfaces.enp2s0 = {
-      # Modem input
       useDHCP = lib.mkDefault true;
-
     };
     firewall.interfaces = {
+      "wireg0".allowedTCPPorts = [ 80 ];
+      "enp3s0".allowedTCPPorts = [ 80 ];
+
+      "wireg0".allowedUDPPorts = [ 1108 ];
       "enp2s0".allowedUDPPorts = [ 1108 2108 ];
-      "enp3s0".allowedUDPPorts = [ 67 /* DHCP */ 53 /*dns*/ ];
+      "enp3s0".allowedUDPPorts = [ 2108 /*WG*/ 67 /* DHCP */ 53 /*DNS*/ ];
     };
     nat = {
       enable = true;
@@ -86,6 +107,9 @@
       internalInterfaces = [ "eno3" ];
     };
     nameservers = [ "127.0.0.1" ];
+  };
+  networking.hosts = {
+    "ap.local" = [ "10.88.128.1" ];
   };
   services.dnsmasq = {
     enable = true;
@@ -116,18 +140,6 @@
       no-hosts = true;
       address = "/${config.networking.hostName}.local/10.88.128.1";
     };
-  };
-
-
-
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.deploy = {
-    isNormalUser = true;
-    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
-    packages = with pkgs; [
-      tree
-      neovim
-    ];
   };
 
   # Enable the OpenSSH daemon.
