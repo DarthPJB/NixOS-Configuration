@@ -167,36 +167,70 @@
       powerManagement.enable = true;
     };
   };
-  networking =
-    {
-      firewall.allowedUDPPorts = [ 4010 51413 ];
-      firewall.allowedTCPPorts = [ 51413 ];
-      firewall.allowedUDPPortRanges = [{ from = 6881; to = 6999; }];
-      firewall.allowedTCPPortRanges = [{ from = 6881; to = 6999; }];
-      hostName = "LINDACORE";
-      hostId = "b4120de4";
-      bridges = {
-        "br0" = {
-          interfaces = [ "enp69s0f0" ];
+  secrix.services.wireguard-wireg0.secrets.cortex-alpha.encrypted.file = ../../secrets/wg_LINDA;
+  networking = {
+    wireguard = { 
+      enable = true;
+      interfaces = {
+        wireg0 = 
+        {
+          # Determines the IP address and subnet of the server's end of the tunnel interface.
+          ips = [ "10.88.127.88/32" ];
+
+          # The port that WireGuard listens to. Must be accessible by the client.
+          listenPort = 2108;
+
+          # This allows the wireguard server to route your traffic to the internet and hence be like a VPN
+          # For this to work you have to set the dnsserver IP of your router (or dnsserver of choice) in your clients
+         /* postSetup = ''
+            ${pkgs.iptables}/bin/iptables -t nat -A POSTROUTING -s 10.88.127.0/24 -o enp2s0 -j MASQUERADE
+          '';
+
+          # This undoes the above command
+          postShutdown = ''
+            ${pkgs.iptables}/bin/iptables -t nat -D POSTROUTING -s 10.88.127.0/24 -o enp2s0 -j MASQUERADE
+          '';*/
+
+          # Path to the private key file.
+          privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
+
+          peers = [{ 
+              # Public key of the peer (not a file path).
+              publicKey = "./secrets/wg_cortex-alpha_pub";
+              # List of IPs assigned to this peer within the tunnel subnet. Used to configure routing.
+              allowedIPs = [ "10.88.127.0/24" ];
+              endpoint = "192.168.0.193";
+          }];
         };
       };
-      useDHCP = false;
-      interfaces =
-        {
-          br0.useDHCP = true;
-          enp69s0f0 = {
-            useDHCP = true;
-          };
-          enp69s0f1 = {
-            useDHCP = true;
-          };
-        };
-      wireless =
-        {
-          enable = false; # Enables wireless support via wpa_supplicant.
-          userControlled.enable = true;
-          interfaces = [ "wlp72s0" ];
-        };
     };
+    interfaces = {
+      br0.useDHCP = true;
+      enp69s0f0 = {
+        useDHCP = true;
+      };
+      enp69s0f1 = {
+        useDHCP = true;
+      };
+    };
+    firewall.allowedUDPPorts = [ 4010 51413 2108 ];
+    firewall.allowedTCPPorts = [ 51413 ];
+    firewall.allowedUDPPortRanges = [{ from = 6881; to = 6999; }];
+    firewall.allowedTCPPortRanges = [{ from = 6881; to = 6999; }];
+    hostName = "LINDACORE";
+    hostId = "b4120de4";
+    bridges = {
+      "br0" = {
+        interfaces = [ "enp69s0f0" ];
+      };
+    };
+    useDHCP = false;
+    wireless =
+    {
+      enable = false; # Enables wireless support via wpa_supplicant.
+      userControlled.enable = true;
+      interfaces = [ "wlp72s0" ];
+    };
+  };
 }
 

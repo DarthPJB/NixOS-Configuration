@@ -417,7 +417,7 @@
                 parsecgaming.packages.x86_64-linux.parsecgaming
               ];
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
-              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHw+Reg4Et3iy+pq94EKb97PruFwzycwM350hm34R9Aa";
+              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA2gtEraRb4ypfuWmHzRv9S0e5+fm/VSAOzc9XXm3cag";
               system.stateVersion = "24.11";
               nixpkgs.config.allowUnfree = true;
               _module.args =
