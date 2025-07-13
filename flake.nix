@@ -214,6 +214,7 @@
                   self = self;
                   nixinate = {
                     host = "192.168.0.162";
+                    port = "1108";
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;
@@ -221,8 +222,6 @@
                   };
                 };
 
-              services.openssh.ports = [ 22 ];
-              networking.firewall.allowedTCPPorts = [ 22 ];
               environment.systemPackages =
                 [
                   pkgs.ffmpeg

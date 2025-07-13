@@ -14,6 +14,12 @@
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
 
+  fileSystems."/external" =
+    {
+      device = "external";
+      fsType = "zfs";
+    };
+    
   fileSystems."/" =
     {
       device = "/dev/disk/by-uuid/4dc79711-2a40-4d3d-9ea6-e390fb0f505c";

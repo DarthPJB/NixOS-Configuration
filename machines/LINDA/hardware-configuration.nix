@@ -27,7 +27,52 @@
       options = [ "fmask=0077" "dmask=0077" ];
     };
 
-
+  systemd.mounts = [
+    {
+      where = "/rendercache";
+      what = "/speed-storage/rendercache";
+      options = "bind";
+      after = [ "systemd-tmpfiles-setup.service" ];
+      wantedBy = [ "multi-user.target" ];
+    }
+    {
+      where = "/bulk-storage/nas-archive/remote.worker/88/88-FS-V2/rendercache";
+      what = "/speed-storage/rendercache";
+      options = "bind";
+      after = [ "systemd-tmpfiles-setup.service" ];
+      wantedBy = [ "multi-user.target" ];
+    }
+    {
+      where = "/var/tmp";
+      what = "/speed-storage/tmp";
+      options = "bind";
+      after = [ "systemd-tmpfiles-setup.service" ];
+      wantedBy = [ "multi-user.target" ];
+    }
+  ];
+  fileSystems."/tmp" =
+    {
+      device = "speed-storage/tmp";
+      fsType = "zfs";
+    };
+  fileSystems."/etc/ssh" =
+    {
+      device = "bulk-storage/etc-ssh";
+      fsType = "zfs";
+      options = [ "nofail" ];
+    };
+  fileSystems."/var/lib/tailscale" =
+    {
+      device = "bulk-storage/var-lib-tailscale";
+      fsType = "zfs";
+      options = [ "nofail" ];
+    };
+  fileSystems."/var/lib/libvirt" =
+    {
+      device = "speed-storage/var-lib-libvirt";
+      fsType = "zfs";
+      options = [ "nofail" ];
+    };
 
 
 

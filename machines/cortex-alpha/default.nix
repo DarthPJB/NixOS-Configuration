@@ -9,11 +9,12 @@
       ./hardware-configuration.nix
     ];
   boot = {
+  #  zfs.extraPools = [ "external" ];
     supportedFilesystems = [ "zfs" ];
     kernel = {
       sysctl = {
         "net.ipv4.conf.all.forwarding" = true;
-        "net.ipv6.conf.all.forwarding" = false; #TODO: v6 please god
+        "net.ipv6.conf.all.forwarding" = true; #TODO: v6 please god
       };
     };
     loader.systemd-boot.enable = true;
@@ -108,10 +109,6 @@
     };
     nameservers = [ "127.0.0.1" ];
   };
-  networking.hosts = {
-    "ap.local" = [ "10.88.128.1" ];
-    "cortex-alpha.johnbargman.net" = [ "10.88.128.1" ];
-  };
   services.dnsmasq = {
     enable = true;
     settings = {
@@ -136,8 +133,7 @@
       local = "/local/";
       domain = "local";
       expand-hosts = true;
-
-      # don't use /etc/hosts as this would advertise surfer as localhost
+      
       no-hosts = true;
       address = [ 
       "/${config.networking.hostName}.local/10.88.128.1"
