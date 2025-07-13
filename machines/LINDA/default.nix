@@ -78,6 +78,12 @@
       device = "speed-storage/tmp";
       fsType = "zfs";
     };
+  fileSystems."/etc/ssh" =
+    {
+      device = "bulk-storage/etc-ssh";
+      fsType = "zfs";
+      options = [ "nofail" ];
+    };
   fileSystems."/var/lib/tailscale" =
     {
       device = "bulk-storage/var-lib-tailscale";
@@ -188,7 +194,7 @@
               publicKey = builtins.readFile ../../secrets/wg_cortex-alpha_pub;
               # List of IPs assigned to this peer within the tunnel subnet. Used to configure routing.
               allowedIPs = [ "10.88.127.0/24" ];
-              endpoint = "192.168.0.193:2108";
+              endpoint = "10.88.128.1:2108";
 
             }];
           };

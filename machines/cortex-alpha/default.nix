@@ -110,6 +110,7 @@
   };
   networking.hosts = {
     "ap.local" = [ "10.88.128.1" ];
+    "cortex-alpha.johnbargman.net" = [ "10.88.128.1" ];
   };
   services.dnsmasq = {
     enable = true;
@@ -138,7 +139,11 @@
 
       # don't use /etc/hosts as this would advertise surfer as localhost
       no-hosts = true;
-      address = "/${config.networking.hostName}.local/10.88.128.1";
+      address = [ 
+      "/${config.networking.hostName}.local/10.88.128.1"
+      "/cortex-alpha.johnbargman.net/10.88.128.1"
+      "/ap.local/10.88.128.1"
+      ];
     };
   };
 
