@@ -19,6 +19,7 @@
       pkgs.tmux
       pkgs.progress
       pkgs.parted
+      pkgs.bottom
     ];
   security.acme =
     {
@@ -44,5 +45,6 @@
     {
       enable = true;
       hwRender = true;
+      fonts = [ { name = "Source Code Pro"; package = pkgs.source-code-pro; } ];
     };
 }
