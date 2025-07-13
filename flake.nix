@@ -43,13 +43,13 @@
       # -----------------------------------IMAGES-------------------------------------------------
 
       print-controller-image = (self.nixosConfigurations.print-controller.extendModules
-        {
-          modules = [{ sdImage.compressImage = false; }];
-        }).config.system.build.sdImage;
+      {
+        modules = [{ sdImage.compressImage = false; }];
+      }).config.system.build.sdImage;
       display-module-image = (self.nixosConfigurations.display-module.extendModules
-        {
-          modules = [{ sdImage.compressImage = false; }];
-        }).config.system.build.sdImage;
+      {
+        modules = [{ sdImage.compressImage = false; }];
+      }).config.system.build.sdImage;
 
       local-worker-image = import "${nixpkgs_stable.cutPath}/nixos/lib/make-disk-image.nix"
         #local-image = import "${self}/lib/make-storeless-image.nix"
@@ -275,6 +275,7 @@
             ./machines/cortex-alpha
             ./configuration.nix
             ./environments/neovim.nix
+            ./services/dynamic_domain_gandi.nix
             {
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILWAilZq7Ocl8zm96sSAy+fRo8wt5mMVuRQmEQsk4MsB root@cortex-alpha";
@@ -283,7 +284,7 @@
                 {
                   self = self;
                   nixinate = {
-                    host = "192.168.0.193"; #"10.88.128.1";
+                    host = "cortex-alpha.johnbargman.net"; #"10.88.128.1";
                     sshUser = "John88";
                     port = 1108;
                     substituteOnTarget = true;
@@ -411,13 +412,12 @@
             ./environments/sshd.nix
             ./modifier_imports/cuda.nix
             ./modifier_imports/remote-builder.nix
-            ./services/dynamic_domain_gandi.nix
             {
               environment.systemPackages = [
                 parsecgaming.packages.x86_64-linux.parsecgaming
               ];
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
-              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA2gtEraRb4ypfuWmHzRv9S0e5+fm/VSAOzc9XXm3cag";
+              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDMfuVEzn9keN1iVk4rjJmB07+/ynTMaZCKPvbaZ1cF6";
               system.stateVersion = "24.11";
               nixpkgs.config.allowUnfree = true;
               _module.args =
@@ -490,7 +490,7 @@
                 {
                   self = self;
                   nixinate = {
-                    host = "storage.johnbargman.com";
+                    host = "storage.johnbargman.net";
                     sshUser = "John88";
                     port = 1108;
                     substituteOnTarget = true;
