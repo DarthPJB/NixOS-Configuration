@@ -135,22 +135,13 @@
       interfaces = {
         wireg0 =
           {
-            # Determines the IP address and subnet of the server's end of the tunnel interface.
             ips = [ "10.88.127.88/32" ];
-
-            # The port that WireGuard listens to. Must be accessible by the client.
             listenPort = 2108;
-
-            # Path to the private key file.
             privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.LINDA.decrypted.path;
-
             peers = [{
-              # Public key of the peer (not a file path).
               publicKey = builtins.readFile ../../secrets/wg_cortex-alpha_pub;
-              # List of IPs assigned to this peer within the tunnel subnet. Used to configure routing.
-              allowedIPs = [ "10.88.127.0/24" ];
-              endpoint = "10.88.128.1:2108";
-
+              allowedIPs = [ "10.88.127.1/24" ];
+              endpoint = "cortex-alpha.johnbargman.net:2108";
             }];
           };
       };

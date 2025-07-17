@@ -32,10 +32,28 @@
     efi.canTouchEfiVariables = true;
   };
 
+  secrix.services.wireguard-wireg0.secrets.nx-01.encrypted.file = ../../secrets/wg_terminal-nx-01;
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
   networking = {
+    wireguard = {
+      enable = true;
+      interfaces = {
+        wireg0 =
+          {
+            ips = [ "10.88.127.21/32" ];
+            listenPort = 2108;
+            privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.nx-01.decrypted.path;
+            peers = [{
+              publicKey = builtins.readFile ../../secrets/wg_cortex-alpha_pub;
+              allowedIPs = [ "10.88.127.1/32" ];
+              endpoint = "cortex-alpha.johnbargman.net:2108";
+            }];
+          };
+      };
+    };
+    firewall.allowedUDPPorts = [ 2108 ];
     useDHCP = false;
     hostName = "terminal-nx-01"; # Define your hostname.
     interfaces = {
