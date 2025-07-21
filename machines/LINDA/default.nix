@@ -60,7 +60,7 @@
     enable = true;
     description = "Scream br0";
     serviceConfig = {
-      ExecStart = "${pkgs.scream}/bin/scream -i br0";
+      ExecStart = "${pkgs.scream}/bin/scream  -u -i  br0 -p 666";
       Restart = "always";
       RuntimeMaxSec = "240";
     };
