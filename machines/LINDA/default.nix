@@ -53,16 +53,14 @@
 
   systemd.tmpfiles.rules = [
     "f /dev/shm/looking-glass 0660 John88 qemu-libvirtd -"
-    "f /dev/shm/scream 0660 John88 qemu-libvirtd -"
     "d /rendercache 0755 John88 users"
   ];
   systemd.user.services.scream-ivshmem = {
     enable = true;
     description = "Scream br0";
     serviceConfig = {
-      ExecStart = "${pkgs.scream}/bin/scream  -u -i  br0 -p 666";
+      ExecStart = "${pkgs.scream}/bin/scream  -u -i  br0 -p 4010";
       Restart = "always";
-      RuntimeMaxSec = "240";
     };
     wantedBy = [ "multi-user.target" ];
     requires = [ "pipewire.service" ];
@@ -140,7 +138,7 @@
             privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.LINDA.decrypted.path;
             peers = [{
               publicKey = builtins.readFile ../../secrets/wg_cortex-alpha_pub;
-              allowedIPs = [ "10.88.127.1/24" ];
+              allowedIPs = [ "10.88.127.1/32" ];
               endpoint = "cortex-alpha.johnbargman.net:2108";
             }];
           };
@@ -155,10 +153,14 @@
         useDHCP = true;
       };
     };
-    firewall.allowedUDPPorts = [ 4010 51413 2108 ];
-    firewall.allowedTCPPorts = [ 51413 ];
-    firewall.allowedUDPPortRanges = [{ from = 6881; to = 6999; }];
-    firewall.allowedTCPPortRanges = [{ from = 6881; to = 6999; }];
+    firewall.interfaces = {
+      "br0".allowedTCPPorts = [ 2108 4010 1108];
+      "wireg0".allowedTCPPorts = [ 80 ];
+
+      "br0".allowedUDPPorts = [ 2108 1108 4010];
+      "wireg0".allowedUDPPorts = [ 1108 ];
+    };
+    
     hostName = "LINDACORE";
     hostId = "b4120de4";
     bridges = {
