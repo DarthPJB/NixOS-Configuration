@@ -123,18 +123,19 @@
         "8.8.8.8"
       ];
       # Addressable range
-      dhcp-range = [ "enp3s0,10.88.128.50,10.88.128.254,24h" ];
+      dhcp-range = [ "enp3s0,10.88.128.128,10.88.128.254,24h" ];
       # Static hosts
       dhcp-host = [ 
+      "f8:32:e4:b9:77:0b,DataStorage,10.88.128.3,infinite"
+      "b8:27:eb:7f:f0:38,printcontroller,10.88.128.10,infinite"
+      "10:0b:a9:7e:cc:8c,terminal-zero,10.88.128.20,infinite"
+      "f0:de:f1:c7:fe:30,terminal-zero,10.88.128.21,infinite"
+      "dc:85:de:86:a8:77,terminal-nx-01,10.88.128.22,infinite"
+      "70:54:d2:17:d1:c4,terminal-nx-01,10.88.128.23,infinite"
+      "52:54:00:e9:4a:af,LINDA-WM,10.88.128.24,infinite"
       "18:c0:4d:8d:53:6c,LINDACORE,10.88.128.87,infinite" 
       "18:c0:4d:8d:53:6d,LINDACORE,10.88.128.88,infinite" 
       "18:26:49:c5:48:24,LINDACORE,10.88.128.89,infinite" 
-      "b8:27:eb:7f:f0:38,printcontroller,10.88.128.10,infinite"
-      "f8:32:e4:b9:77:0b,DataStorage,10.88.128.3,infinite"
-      "dc:85:de:86:a8:77,terminal-nx-01,10.88.128.22,infinite"
-      "70:54:d2:17:d1:c4,terminal-nx-01,10.88.128.23,infinite"
-      "10:0b:a9:7e:cc:8c,terminal-zero,10.88.128.20,infinite"
-      "f0:de:f1:c7:fe:30,terminal-zero,10.88.128.21,infinite"
       ];
       interface = "enp3s0";
 
