@@ -283,7 +283,8 @@
                 {
                   self = self;
                   nixinate = {
-                    host = "cortex-alpha.johnbargman.net"; #"10.88.128.1";
+                    #host = "cortex-alpha.johnbargman.net"; #"10.88.128.1";
+                    host = "10.88.128.1";
                     sshUser = "John88";
                     port = 1108;
                     substituteOnTarget = true;
