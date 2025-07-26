@@ -21,50 +21,66 @@
     openFirewall = true;
   };
   services.printing.enable = true;
-  systemd.user.services.discord =
-    {
-      description = "mumble-autostart";
-      wantedBy = [ "graphical-session.target" ];
-      serviceConfig =
-        {
-          Restart = "always";
-          ExecStart = ''
-            ${pkgs.discord}/bin/discord
-          '';
-          PassEnvironment = "DISPLAY XAUTHORITY";
-        };
-    };
   programs.adb.enable = true;
   users.users.John88.extraGroups = [ "adbusers" ];
-  systemd.user.services.dino =
+  systemd.user.services =
     {
-      description = "mumble-autostart";
-      wantedBy = [ "graphical-session.target" ];
-      serviceConfig =
+      obsidian =
         {
-          Restart = "always";
-          ExecStart = ''
-            ${pkgs.dino}/bin/dino
-          '';
-          PassEnvironment = "DISPLAY XAUTHORITY";
+          description = "obsidian-autostart";
+          wantedBy = [ "graphical-session.target" ];
+          serviceConfig =
+            {
+              Restart = "always";
+              ExecStart = ''
+                ${pkgs.obsidian}/bin/obsidian
+              '';
+              PassEnvironment = "DISPLAY XAUTHORITY";
+            };
         };
-    };
+      dino =
+        {
+          description = "dino-autostart";
+          wantedBy = [ "graphical-session.target" ];
+          serviceConfig =
+            {
+              Restart = "always";
+              ExecStart = ''
+                ${pkgs.dino}/bin/dino
+              '';
+              PassEnvironment = "DISPLAY XAUTHORITY";
+            };
+        };
+      discord =
+        {
+          description = "discord-autostart";
+          wantedBy = [ "graphical-session.target" ];
+          serviceConfig =
+            {
+              Restart = "always";
+              ExecStart = ''
+                ${pkgs.discord}/bin/discord
+              '';
+              PassEnvironment = "DISPLAY XAUTHORITY";
+            };
+        };
 
+      scream-ivshmem = {
+        enable = true;
+        description = "Scream br0";
+        serviceConfig = {
+          ExecStart = "${pkgs.scream}/bin/scream  -u -i  br0 -p 4010";
+        };
+        wantedBy = [ "multi-user.target" ];
+        requires = [ "pipewire.service" ];
+      };
+    };
 
   systemd.tmpfiles.rules = [
     "f /dev/shm/looking-glass 0660 John88 qemu-libvirtd -"
     "d /rendercache 0755 John88 users"
   ];
-  systemd.user.services.scream-ivshmem = {
-    enable = true;
-    description = "Scream br0";
-    serviceConfig = {
-      ExecStart = "${pkgs.scream}/bin/scream  -u -i  br0 -p 4010";
-      Restart = "always";
-    };
-    wantedBy = [ "multi-user.target" ];
-    requires = [ "pipewire.service" ];
-  };
+
   boot =
     {
       tmp.useTmpfs = false;
@@ -154,13 +170,16 @@
       };
     };
     firewall.interfaces = {
-      "br0".allowedTCPPorts = [ 2108 4010 1108];
+      "br0".allowedTCPPorts = [ 2108 4010 1108 27000 27003 ];
+      "br0".allowedTCPPortRanges = [{ from = 27020; to = 27021; }];
       "wireg0".allowedTCPPorts = [ 80 ];
 
-      "br0".allowedUDPPorts = [ 2108 1108 4010];
+      "br0".allowedUDPPorts = [ 2108 1108 4010 27000 27003 ];
+      "br0".allowedUDPPortRanges = [{ from = 27020; to = 27021; }];
       "wireg0".allowedUDPPorts = [ 1108 ];
+
     };
-    
+
     hostName = "LINDACORE";
     hostId = "b4120de4";
     bridges = {

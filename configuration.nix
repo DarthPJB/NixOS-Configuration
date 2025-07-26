@@ -45,6 +45,6 @@
     {
       enable = true;
       hwRender = true;
-      fonts = [ { name = "Source Code Pro"; package = pkgs.source-code-pro; } ];
+      fonts = [{ name = "Source Code Pro"; package = pkgs.source-code-pro; }];
     };
 }

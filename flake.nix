@@ -43,13 +43,13 @@
       # -----------------------------------IMAGES-------------------------------------------------
 
       print-controller-image = (self.nixosConfigurations.print-controller.extendModules
-      {
-        modules = [{ sdImage.compressImage = false; }];
-      }).config.system.build.sdImage;
+        {
+          modules = [{ sdImage.compressImage = false; }];
+        }).config.system.build.sdImage;
       display-module-image = (self.nixosConfigurations.display-module.extendModules
-      {
-        modules = [{ sdImage.compressImage = false; }];
-      }).config.system.build.sdImage;
+        {
+          modules = [{ sdImage.compressImage = false; }];
+        }).config.system.build.sdImage;
 
       local-worker-image = import "${nixpkgs_stable.cutPath}/nixos/lib/make-disk-image.nix"
         #local-image = import "${self}/lib/make-storeless-image.nix"
@@ -160,7 +160,7 @@
             (import ./locale/home_networks.nix)
             (import ./environments/browsers.nix)
             (import ./configuration.nix)
-            #(import ./environments/i3wm_darthpjb.nix)
+            (import ./environments/i3wm.nix)
             (import ./environments/rtl-sdr.nix)
             (import ./environments/pio.nix)
             (import ./machines/terminal-zero)
@@ -172,7 +172,7 @@
                 {
                   self = self;
                   nixinate = {
-                    host = "192.168.0.28";
+                    host = "10.88.128.20";
                     #host = "192.168.2.200";
                     port = 1108;
                     sshUser = "John88";
@@ -296,7 +296,7 @@
           ];
         };
 
-        local-nas = nixpkgs.lib.nixosSystem {
+        data-storage = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           #  specialArgs = { inherit inputs; };
           modules = [
@@ -316,7 +316,7 @@
                 {
                   self = self;
                   nixinate = {
-                    host = "192.168.0.206";
+                    host = "10.88.128.3";
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;

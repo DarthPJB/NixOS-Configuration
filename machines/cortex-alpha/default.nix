@@ -9,7 +9,7 @@
       ./hardware-configuration.nix
     ];
   boot = {
-  #  zfs.extraPools = [ "external" ];
+    #  zfs.extraPools = [ "external" ];
     supportedFilesystems = [ "zfs" ];
     kernel = {
       sysctl = {
@@ -62,17 +62,17 @@
             '';*/
             privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
             peers = [
-            {
-              # Public key of the peer (not a file path).
-              publicKey = builtins.readFile ../../secrets/wg_LINDA_pub;
-              # list of ips assigned to this peer within the tunnel subnet. used to configure routing.
-              allowedIPs = [ "10.88.127.88/32" ];
-            }
-            {
-              publicKey = builtins.readFile ../../secrets/wg_terminal-nx-01_pub;
-              # list of ips assigned to this peer within the tunnel subnet. used to configure routing.
-              allowedIPs = [ "10.88.127.21/32" ];
-            }
+              {
+                # Public key of the peer (not a file path).
+                publicKey = builtins.readFile ../../secrets/wg_LINDA_pub;
+                # list of ips assigned to this peer within the tunnel subnet. used to configure routing.
+                allowedIPs = [ "10.88.127.88/32" ];
+              }
+              {
+                publicKey = builtins.readFile ../../secrets/wg_terminal-nx-01_pub;
+                # list of ips assigned to this peer within the tunnel subnet. used to configure routing.
+                allowedIPs = [ "10.88.127.21/32" ];
+              }
             ];
           };
       };
@@ -91,18 +91,80 @@
       useDHCP = lib.mkDefault true;
     };
     firewall.interfaces = {
+      "wireg0".allowedUDPPorts = [ 1108 ];
       "wireg0".allowedTCPPorts = [ 80 ];
       "enp3s0".allowedTCPPorts = [ 80 ];
-
-      "wireg0".allowedUDPPorts = [ 1108 ];
-      "enp2s0".allowedUDPPorts = [ 1108 2108 ];
       "enp3s0".allowedUDPPorts = [ 2108 /*WG*/ 67 /* DHCP */ 53 /*DNS*/ ];
+
+
+      "enp2s0".allowedTCPPorts = [ 27000 27003 ];
+      "enp2s0".allowedUDPPorts = [ 1108 2108 27000 27003 ];
+      "enp2s0".allowedTCPPortRanges = [{ from = 27020; to = 27021; }];
+      "enp2s0".allowedUDPPortRanges = [{ from = 27020; to = 27021; }];
+
+
+    };
+    nftables = {
+      enable = true;
+      ruleset = ''
+        table ip nat {
+          chain PREROUTING {
+            type nat hook prerouting priority dstnat; policy accept;
+            iifname "enp2s0" tcp dport 27000 dnat to 10.88.128.24:27000
+            iifname "enp2s0" tcp dport 27003 dnat to 10.88.128.24:27003
+            iifname "enp2s0" tcp dport 27020 dnat to 10.88.128.24:27020
+            iifname "enp2s0" tcp dport 27021 dnat to 10.88.128.24:27021
+          }
+        }
+      '';
     };
     nat = {
       enable = true;
       internalIPs = [ "10.88.128.0/24" ];
       externalInterface = "enp2s0";
       internalInterfaces = [ "eno3" ];
+      forwardPorts = [
+            {
+        sourcePort = 27000;
+        proto = "udp";
+        destination = "10.88.128.24:27000";
+      }
+      {
+        sourcePort = 27003;
+        proto = "udp";
+        destination = "10.88.128.24:27003";
+      }
+            {
+        sourcePort = 27020;
+        proto = "udp";
+        destination = "10.88.128.24:27020";
+      }
+      {
+        sourcePort = 27021;
+        proto = "udp";
+        destination = "10.88.128.24:27021";
+      }
+      {
+        sourcePort = 27000;
+        proto = "tcp";
+        destination = "10.88.128.24:27000";
+      }
+      {
+        sourcePort = 27003;
+        proto = "tcp";
+        destination = "10.88.128.24:27003";
+      }
+            {
+        sourcePort = 27020;
+        proto = "tcp";
+        destination = "10.88.128.24:27020";
+      }
+      {
+        sourcePort = 27021;
+        proto = "tcp";
+        destination = "10.88.128.24:27021";
+      }
+    ];
     };
     nameservers = [ "127.0.0.1" ];
   };
@@ -125,17 +187,17 @@
       # Addressable range
       dhcp-range = [ "enp3s0,10.88.128.128,10.88.128.254,24h" ];
       # Static hosts
-      dhcp-host = [ 
-      "f8:32:e4:b9:77:0b,DataStorage,10.88.128.3,infinite"
-      "b8:27:eb:7f:f0:38,printcontroller,10.88.128.10,infinite"
-      "10:0b:a9:7e:cc:8c,terminal-zero,10.88.128.20,infinite"
-      "f0:de:f1:c7:fe:30,terminal-zero,10.88.128.21,infinite"
-      "dc:85:de:86:a8:77,terminal-nx-01,10.88.128.22,infinite"
-      "70:54:d2:17:d1:c4,terminal-nx-01,10.88.128.23,infinite"
-      "52:54:00:e9:4a:af,LINDA-WM,10.88.128.24,infinite"
-      "18:c0:4d:8d:53:6c,LINDACORE,10.88.128.87,infinite" 
-      "18:c0:4d:8d:53:6d,LINDACORE,10.88.128.88,infinite" 
-      "18:26:49:c5:48:24,LINDACORE,10.88.128.89,infinite" 
+      dhcp-host = [
+        "f8:32:e4:b9:77:0b,DataStorage,10.88.128.3,infinite"
+        "b8:27:eb:7f:f0:38,printcontroller,10.88.128.10,infinite"
+        "10:0b:a9:7e:cc:8c,terminal-zero,10.88.128.20,infinite"
+        "f0:de:f1:c7:fe:30,terminal-zero,10.88.128.21,infinite"
+        "dc:85:de:86:a8:77,terminal-nx-01,10.88.128.22,infinite"
+        "70:54:d2:17:d1:c4,terminal-nx-01,10.88.128.23,infinite"
+        "52:54:00:e9:4a:af,LINDA-WM,10.88.128.24,infinite"
+        "18:c0:4d:8d:53:6c,LINDACORE,10.88.128.87,infinite"
+        "18:c0:4d:8d:53:6d,LINDACORE,10.88.128.88,infinite"
+        "18:26:49:c5:48:24,LINDACORE,10.88.128.89,infinite"
       ];
       interface = "enp3s0";
 
@@ -143,12 +205,12 @@
       local = "/local/";
       domain = "local";
       expand-hosts = true;
-      
+
       no-hosts = true;
-      address = [ 
-      "/${config.networking.hostName}.local/10.88.128.1"
-      "/cortex-alpha.johnbargman.net/10.88.128.1"
-      "/ap.local/10.88.128.1"
+      address = [
+        "/${config.networking.hostName}.local/10.88.128.1"
+        "/cortex-alpha.johnbargman.net/10.88.128.1"
+        "/ap.local/10.88.128.1"
       ];
     };
   };
