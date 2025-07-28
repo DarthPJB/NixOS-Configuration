@@ -9,7 +9,15 @@
     [
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
-    ];
+    ../../lib/enable-wg.nix
+  ];
+  secrix.services.wireguard-wireg0.secrets.local_nas.encrypted.file = ../../secrets/wg_local-nas;
+  environment.vpn =
+    {
+      enable = true;
+      postfix = 3;
+      privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.local_nas.decrypted.path;
+    };
 
   networking.useDHCP = false;
   networking.interfaces.enp0s31f6.useDHCP = true;
@@ -64,21 +72,6 @@
   system.stateVersion = "22.11"; # Did you read the comment?
 
   environment.systemPackages = [ pkgs.rclone ];
-
-  # Syncthing ports
-  networking.firewall.allowedTCPPorts = [ 8080 22000 ];
-  networking.firewall.allowedUDPPorts = [ 22000 21027 ];
-  services = {
-    syncthing = {
-      enable = false;
-      dataDir = "/bulk-storage";
-      configDir = "/syncthing";
-      guiAddress = "0.0.0.0:8080";
-      #TODO: add cert and pem files
-      #overrideDevices = true;     # overrides any devices added or deleted through the WebUI
-      #overrideFolders = true;     # overrides any folders added or deleted through the WebUI
-    };
-  };
 
 }
 

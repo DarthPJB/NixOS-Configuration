@@ -9,7 +9,15 @@
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ../../environments/steam.nix
-    ];
+    ../../lib/enable-wg.nix
+  ];
+  secrix.services.wireguard-wireg0.secrets.terminal-zero.encrypted.file = ../../secrets/wg_terminal-zero;
+  environment.vpn =
+    {
+      enable = true;
+      postfix = 20;
+      privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.terminal-zero.decrypted.path;
+    };
   # Use the GRUB 2 boot loader.
   # Use the systemd-boot EFI boot loader.
   boot.loader =
@@ -45,8 +53,6 @@
     # Accept all connections from downstream. May not be necessary
     iptables -A INPUT -i enp0s25 -j ACCEPT
   ''; */
-
-
 
   networking =
     {
