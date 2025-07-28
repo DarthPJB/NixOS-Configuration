@@ -1,7 +1,6 @@
 # ------------------ CORTEX ALPHA -------------------
 
-{ config, lib, pkgs, ... }:
-
+{ config, lib, pkgs, self, ... }:
 {
   imports =
     [
@@ -14,7 +13,7 @@
     kernel = {
       sysctl = {
         "net.ipv4.conf.all.forwarding" = true;
-        "net.ipv6.conf.all.forwarding" = true; #TODO: v6 please god
+        "net.ipv6.conf.all.forwarding" = false; #TODO: v6 please god
       };
     };
     loader.systemd-boot.enable = true;
@@ -34,7 +33,7 @@
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
           proxy_set_header X-Forwarded-Proto $scheme;
         '';
-        /*                    proxy_set_header Upgrade $http_upgrade;
+        /*                  proxy_set_header Upgrade $http_upgrade;
                     proxy_set_header Connection $connection_upgrade;*/
         proxyWebsockets = true; # needed if you need to use WebSocket
       };
@@ -51,9 +50,9 @@
       interfaces = {
         wireg0 =
           {
-            ips = [ "10.88.127.0/24" ];
+            #persistentKeepalive = 25;
+            ips = [ "10.88.127.1/32" "10.88.127.0/24" ];
             listenPort = 2108;
-
             /* postSetup = ''
             ${pkgs.iptables}/bin/iptables -t nat -A POSTROUTING -s 10.88.127.0/24 -o enp2s0 -j MASQUERADE
           '';
@@ -61,19 +60,7 @@
             ${pkgs.iptables}/bin/iptables -t nat -D POSTROUTING -s 10.88.127.0/24 -o enp2s0 -j MASQUERADE
             '';*/
             privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
-            peers = [
-              {
-                # Public key of the peer (not a file path).
-                publicKey = builtins.readFile ../../secrets/wg_LINDA_pub;
-                # list of ips assigned to this peer within the tunnel subnet. used to configure routing.
-                allowedIPs = [ "10.88.127.88/32" ];
-              }
-              {
-                publicKey = builtins.readFile ../../secrets/wg_terminal-nx-01_pub;
-                # list of ips assigned to this peer within the tunnel subnet. used to configure routing.
-                allowedIPs = [ "10.88.127.21/32" ];
-              }
-            ];
+            peers = (import ../../lib/wg_peers.nix { inherit self; });
           };
       };
     };
@@ -90,19 +77,20 @@
     interfaces.enp2s0 = {
       useDHCP = lib.mkDefault true;
     };
-    firewall.interfaces = {
-      "wireg0".allowedUDPPorts = [ 1108 ];
-      "wireg0".allowedTCPPorts = [ 80 ];
-      "enp3s0".allowedTCPPorts = [ 80 ];
-      "enp3s0".allowedUDPPorts = [ 2108 /*WG*/ 67 /* DHCP */ 53 /*DNS*/ ];
+    firewall= 
+    {
+      interfaces = {
+        "wireg0".allowedUDPPorts = [ 1108 ];
+        "wireg0".allowedTCPPorts = [ 80 ];
+        "enp3s0".allowedTCPPorts = [ 80 ];
+        "enp3s0".allowedUDPPorts = [ 1108 2108 /*WG*/ 67 /* DHCP */ 53 /*DNS*/ ];
 
 
-      "enp2s0".allowedTCPPorts = [ 27000 27003 ];
-      "enp2s0".allowedUDPPorts = [ 1108 2108 27000 27003 ];
-      "enp2s0".allowedTCPPortRanges = [{ from = 27020; to = 27021; }];
-      "enp2s0".allowedUDPPortRanges = [{ from = 27020; to = 27021; }];
-
-
+        "enp2s0".allowedTCPPorts = [ 27000 27003 ];
+        "enp2s0".allowedUDPPorts = [ 1108 2108 27000 27003 ];
+        "enp2s0".allowedTCPPortRanges = [{ from = 27020; to = 27021; }];
+        "enp2s0".allowedUDPPortRanges = [{ from = 27020; to = 27021; }];
+      };
     };
     nftables = {
       enable = true;
@@ -124,47 +112,47 @@
       externalInterface = "enp2s0";
       internalInterfaces = [ "eno3" ];
       forwardPorts = [
-            {
-        sourcePort = 27000;
-        proto = "udp";
-        destination = "10.88.128.24:27000";
-      }
-      {
-        sourcePort = 27003;
-        proto = "udp";
-        destination = "10.88.128.24:27003";
-      }
-            {
-        sourcePort = 27020;
-        proto = "udp";
-        destination = "10.88.128.24:27020";
-      }
-      {
-        sourcePort = 27021;
-        proto = "udp";
-        destination = "10.88.128.24:27021";
-      }
-      {
-        sourcePort = 27000;
-        proto = "tcp";
-        destination = "10.88.128.24:27000";
-      }
-      {
-        sourcePort = 27003;
-        proto = "tcp";
-        destination = "10.88.128.24:27003";
-      }
-            {
-        sourcePort = 27020;
-        proto = "tcp";
-        destination = "10.88.128.24:27020";
-      }
-      {
-        sourcePort = 27021;
-        proto = "tcp";
-        destination = "10.88.128.24:27021";
-      }
-    ];
+        {
+          sourcePort = 27000;
+          proto = "udp";
+          destination = "10.88.128.24:27000";
+        }
+        {
+          sourcePort = 27003;
+          proto = "udp";
+          destination = "10.88.128.24:27003";
+        }
+        {
+          sourcePort = 27020;
+          proto = "udp";
+          destination = "10.88.128.24:27020";
+        }
+        {
+          sourcePort = 27021;
+          proto = "udp";
+          destination = "10.88.128.24:27021";
+        }
+        {
+          sourcePort = 27000;
+          proto = "tcp";
+          destination = "10.88.128.24:27000";
+        }
+        {
+          sourcePort = 27003;
+          proto = "tcp";
+          destination = "10.88.128.24:27003";
+        }
+        {
+          sourcePort = 27020;
+          proto = "tcp";
+          destination = "10.88.128.24:27020";
+        }
+        {
+          sourcePort = 27021;
+          proto = "tcp";
+          destination = "10.88.128.24:27021";
+        }
+      ];
     };
     nameservers = [ "127.0.0.1" ];
   };

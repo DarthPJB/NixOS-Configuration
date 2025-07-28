@@ -1,12 +1,19 @@
 # -------------------------- LINDACORE --------------------------
 { config, pkgs, self, ... }:
-
 {
   imports =
     [
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ../../lib/enable-wg.nix
     ];
+  secrix.services.wireguard-wireg0.secrets.LINDA.encrypted.file = ../../secrets/wg_LINDA;
+  environment.vpn =
+    {
+      enable = true;
+      postfix = 88;
+      privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.LINDA.decrypted.path;
+    };
   environment.systemPackages = [
     self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.looking-glass-client
     self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.scream
@@ -142,24 +149,8 @@
       powerManagement.enable = true;
     };
   };
-  secrix.services.wireguard-wireg0.secrets.LINDA.encrypted.file = ../../secrets/wg_LINDA;
+
   networking = {
-    wireguard = {
-      enable = true;
-      interfaces = {
-        wireg0 =
-          {
-            ips = [ "10.88.127.88/32" ];
-            listenPort = 2108;
-            privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.LINDA.decrypted.path;
-            peers = [{
-              publicKey = builtins.readFile ../../secrets/wg_cortex-alpha_pub;
-              allowedIPs = [ "10.88.127.1/32" ];
-              endpoint = "cortex-alpha.johnbargman.net:2108";
-            }];
-          };
-      };
-    };
     interfaces = {
       br0.useDHCP = true;
       enp69s0f0 = {
