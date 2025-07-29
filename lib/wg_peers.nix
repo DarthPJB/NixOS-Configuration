@@ -14,6 +14,7 @@ builtins.attrValues (builtins.mapAttrs wg-peer {
   "terminal-nx-01" = "21";
   "print-controller" = "30";
   "display-module" = "40";
-  "remote-builder" = "50";
+  "remote-worker" = "50"
+  "remote-builder" = "51";
   "LINDA" = "88";
 })
