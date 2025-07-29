@@ -5,8 +5,8 @@
 {
   imports =
     [
-    ../../lib/enable-wg.nix
-  ];
+      ../../lib/enable-wg.nix
+    ];
   secrix.services.wireguard-wireg0.secrets.remote-worker.encrypted.file = ../../secrets/wg_remote-worker;
   environment.vpn =
     {

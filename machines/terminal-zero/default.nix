@@ -9,8 +9,8 @@
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ../../environments/steam.nix
-    ../../lib/enable-wg.nix
-  ];
+      ../../lib/enable-wg.nix
+    ];
   secrix.services.wireguard-wireg0.secrets.terminal-zero.encrypted.file = ../../secrets/wg_terminal-zero;
   environment.vpn =
     {

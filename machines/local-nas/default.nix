@@ -9,8 +9,8 @@
     [
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
-    ../../lib/enable-wg.nix
-  ];
+      ../../lib/enable-wg.nix
+    ];
   secrix.services.wireguard-wireg0.secrets.local_nas.encrypted.file = ../../secrets/wg_local-nas;
   environment.vpn =
     {
