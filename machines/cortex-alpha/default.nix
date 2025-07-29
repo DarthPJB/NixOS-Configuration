@@ -77,21 +77,21 @@
     interfaces.enp2s0 = {
       useDHCP = lib.mkDefault true;
     };
-    firewall= 
-    {
-      interfaces = {
-        "wireg0".allowedUDPPorts = [ 1108 ];
-        "wireg0".allowedTCPPorts = [ 80 ];
-        "enp3s0".allowedTCPPorts = [ 80 ];
-        "enp3s0".allowedUDPPorts = [ 1108 2108 /*WG*/ 67 /* DHCP */ 53 /*DNS*/ ];
+    firewall =
+      {
+        interfaces = {
+          "wireg0".allowedUDPPorts = [ 1108 ];
+          "wireg0".allowedTCPPorts = [ 80 ];
+          "enp3s0".allowedTCPPorts = [ 80 ];
+          "enp3s0".allowedUDPPorts = [ 1108 2108 /*WG*/ 67 /* DHCP */ 53 /*DNS*/ ];
 
 
-        "enp2s0".allowedTCPPorts = [ 27000 27003 ];
-        "enp2s0".allowedUDPPorts = [ 1108 2108 27000 27003 ];
-        "enp2s0".allowedTCPPortRanges = [{ from = 27020; to = 27021; }];
-        "enp2s0".allowedUDPPortRanges = [{ from = 27020; to = 27021; }];
+          "enp2s0".allowedTCPPorts = [ 27000 27003 ];
+          "enp2s0".allowedUDPPorts = [ 1108 2108 27000 27003 ];
+          "enp2s0".allowedTCPPortRanges = [{ from = 27020; to = 27021; }];
+          "enp2s0".allowedUDPPortRanges = [{ from = 27020; to = 27021; }];
+        };
       };
-    };
     nftables = {
       enable = true;
       ruleset = ''

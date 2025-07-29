@@ -1,15 +1,15 @@
 { pkgs, config, lib, ... }:
 {
-  imports = [ 
-      ../../lib/enable-wg.nix
+  imports = [
+    ../../lib/enable-wg.nix
   ];
   secrix.services.wireguard-wireg0.secrets.print-controller.encrypted.file = ../../secrets/wg_print-controller;
   environment.vpn =
-  {
-    enable = true;
-    postfix = 30;
-    privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.print-controller.decrypted.path;
-  };
+    {
+      enable = true;
+      postfix = 30;
+      privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.print-controller.decrypted.path;
+    };
   boot = {
     # Cleanup tmp on startup
     #tmp.cleanOnBoot = true;

@@ -317,7 +317,7 @@
                 {
                   self = self;
                   nixinate = {
-                  port = 1108;
+                    port = 1108;
                     host = "10.88.128.3";
                     sshUser = "John88";
                     substituteOnTarget = true;
@@ -459,8 +459,8 @@
                 {
                   self = self;
                   nixinate = {
-                  port = 1108;
-                    host = "193.16.42.101";
+                    port = 1108;
+                    host = "remote-worker.johnbargman.net";
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;
@@ -514,11 +514,12 @@
             ./environments/tools.nix
             ./services/dynamic_domain_gandi.nix
             ./services/github_runners.nix
+            ./machines/remote-builder
             {
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC7Owkd/9PC7j/L5PbPXrSMx0Aw/1owIoCsfp7+5OKek";
               system.stateVersion = "24.11";
-              networking.hostName = "remotebuilder";
+              networking.hostName = "remote-builder";
               imports = [
                 "${nixpkgs}/nixos/modules/virtualisation/openstack-config.nix"
               ];
@@ -526,7 +527,8 @@
                 {
                   self = self;
                   nixinate = {
-                    host = "193.16.42.13";
+                    port = 1108;
+                    host = "remote-builder.johnbargman.net";
                     sshUser = "John88";
                     buildOn = "remote";
                   };

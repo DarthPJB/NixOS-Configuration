@@ -25,7 +25,7 @@ in
     {
       configureRedis = true;
       enable = true;
-      package = pkgs.nextcloud29;
+      package = pkgs.nextcloud30;
       hostName = "nextcloud.johnbargman.com";
       https = true;
       enableImagemagick = true;
