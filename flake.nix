@@ -446,7 +446,7 @@
             ./machines/remote-worker
             ./locale/tailscale.nix
             ./server_services/nextcloud.nix
-            ./server_services/hedgedoc.nix
+            # ./server_services/hedgedoc.nix
             ./services/dynamic_domain_gandi.nix
             {
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };

@@ -37,7 +37,7 @@ in
                 -H "Authorization: Bearer $API_KEY" \
                 -d "{\"rrset_name\": \"$SUBDOMAIN\",
                     \"rrset_type\": \"A\",
-                    \"rrset_ttl\": 1200,
+                    \"rrset_ttl\": 500,
                     \"rrset_values\": [\"$EXT_IP\"]}" \
                 $CURRENT_ZONE_HREF/$SUBDOMAIN/A
       '';

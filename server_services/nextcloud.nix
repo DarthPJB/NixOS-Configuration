@@ -30,7 +30,7 @@ in
       https = true;
       enableImagemagick = true;
       maxUploadSize = "50G";
-      extraOptions.enabledPreviewProviders = [
+      settings.enabledPreviewProviders = [
         "OC\\Preview\\BMP"
         "OC\\Preview\\GIF"
         "OC\\Preview\\JPEG"
@@ -48,7 +48,7 @@ in
           adminpassFile = config.secrix.system.secrets.nextcloud_password_file.decrypted.path;
           objectstore.s3 =
             {
-              autocreate = true;
+              verify_bucket_exists = true;
               bucket = "nextcloud-darthpjb";
               enable = true;
               hostname = "s3.eu-central-003.backblazeb2.com";
