@@ -304,6 +304,7 @@
             secrix.nixosModules.default
             ./modifier_imports/zfs.nix
             ./machines/local-nas
+            ./server_services/minio-insecure.nix
             ./configuration.nix
             ./users/darthpjb.nix
             ./environments/neovim.nix

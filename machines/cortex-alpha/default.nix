@@ -21,21 +21,36 @@
   };
   services.nginx = {
     enable = true;
-    virtualHosts."ap.local" = {
-      enableACME = false;
-      forceSSL = false;
-      listenAddresses = [ "10.88.127.1" "10.88.128.1" ];
-      locations."~/" = {
-        proxyPass = "http://10.88.128.2:80";
-        extraConfig = ''
-          proxy_set_header Host $host;
-          proxy_set_header X-Real-IP $remote_addr;
-          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          proxy_set_header X-Forwarded-Proto $scheme;
-        '';
-        /*                  proxy_set_header Upgrade $http_upgrade;
-                    proxy_set_header Connection $connection_upgrade;*/
-        proxyWebsockets = true; # needed if you need to use WebSocket
+    virtualHosts = {
+      "minio.local" = {
+        enableACME = false;
+        forceSSL = false;
+        listenAddresses = [ "10.88.127.1" "10.88.128.1" ];
+        locations."~/" = {
+          proxyPass = "http://10.88.127.3:80";
+          extraConfig = ''
+            proxy_set_header host $host;
+            proxy_set_header x-real-ip $remote_addr;
+            proxy_set_header x-forwarded-for $proxy_add_x_forwarded_for;
+            proxy_set_header x-forwarded-proto $scheme;
+          '';
+          proxyWebsockets = true; # needed if you need to use websocket
+        };
+      };
+      "ap.local" = {
+        enableACME = false;
+        forceSSL = false;
+        listenAddresses = [ "10.88.127.1" "10.88.128.1" ];
+        locations."~/" = {
+          proxyPass = "http://10.88.128.2:80";
+          extraConfig = ''
+            proxy_set_header host $host;
+            proxy_set_header x-real-ip $remote_addr;
+            proxy_set_header x-forwarded-for $proxy_add_x_forwarded_for;
+            proxy_set_header x-forwarded-proto $scheme;
+          '';
+          proxyWebsockets = true; # needed if you need to use websocket
+        };
       };
     };
   };
@@ -86,33 +101,33 @@
           "enp3s0".allowedUDPPorts = [ 1108 2108 /*WG*/ 67 /* DHCP */ 53 /*DNS*/ ];
 
 
-          "enp2s0".allowedTCPPorts = [ 27000 27003 ];
-          "enp2s0".allowedUDPPorts = [ 1108 2108 27000 27003 ];
-          "enp2s0".allowedTCPPortRanges = [{ from = 27020; to = 27021; }];
-          "enp2s0".allowedUDPPortRanges = [{ from = 27020; to = 27021; }];
+          #         "enp2s0".allowedTCPPorts = [ 27000 27003 ];
+          "enp2s0".allowedUDPPorts = [ 1108 2108 ]; # 27000 27003 ];
+          #          "enp2s0".allowedTCPPortRanges = [{ from = 27020; to = 27021; }];
+          #          "enp2s0".allowedUDPPortRanges = [{ from = 27020; to = 27021; }];
         };
       };
-    nftables = {
-      enable = true;
-      ruleset = ''
-        table ip nat {
-          chain PREROUTING {
-            type nat hook prerouting priority dstnat; policy accept;
-            iifname "enp2s0" tcp dport 27000 dnat to 10.88.128.24:27000
-            iifname "enp2s0" tcp dport 27003 dnat to 10.88.128.24:27003
-            iifname "enp2s0" tcp dport 27020 dnat to 10.88.128.24:27020
-            iifname "enp2s0" tcp dport 27021 dnat to 10.88.128.24:27021
-          }
-        }
-      '';
-    };
+    #    nftables = {
+    #      enable = true;
+    #      ruleset = ''
+    #        table ip nat {
+    #          chain PREROUTING {
+    #            type nat hook prerouting priority dstnat; policy accept;
+    #            iifname "enp2s0" tcp dport 27000 dnat to 10.88.128.24:27000
+    #            iifname "enp2s0" tcp dport 27003 dnat to 10.88.128.24:27003
+    #            iifname "enp2s0" tcp dport 27020 dnat to 10.88.128.24:27020
+    #            iifname "enp2s0" tcp dport 27021 dnat to 10.88.128.24:27021
+    #          }
+    #        }
+    #      '';
+    #    };
     nat = {
       enable = true;
       internalIPs = [ "10.88.128.0/24" ];
       externalInterface = "enp2s0";
       internalInterfaces = [ "eno3" ];
       forwardPorts = [
-        {
+        /*        {
           sourcePort = 27000;
           proto = "udp";
           destination = "10.88.128.24:27000";
@@ -151,7 +166,7 @@
           sourcePort = 27021;
           proto = "tcp";
           destination = "10.88.128.24:27021";
-        }
+        }*/
       ];
     };
     nameservers = [ "127.0.0.1" ];
@@ -199,6 +214,7 @@
         "/${config.networking.hostName}.local/10.88.128.1"
         "/cortex-alpha.johnbargman.net/10.88.128.1"
         "/ap.local/10.88.128.1"
+        "/minio.local/10.88.128.1"
       ];
     };
   };
