@@ -27,7 +27,7 @@
         forceSSL = false;
         listenAddresses = [ "10.88.127.1" "10.88.128.1" ];
         locations."~/" = {
-          proxyPass = "http://10.88.127.3:80";
+          proxyPass = "http://10.88.127.3:2223";
           extraConfig = ''
             proxy_set_header host $host;
             proxy_set_header x-real-ip $remote_addr;
