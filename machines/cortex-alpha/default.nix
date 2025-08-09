@@ -22,21 +22,6 @@
   services.nginx = {
     enable = true;
     virtualHosts = {
-      "minio.local" = {
-        enableACME = false;
-        forceSSL = false;
-        listenAddresses = [ "10.88.127.1" "10.88.128.1" ];
-        locations."~/" = {
-          proxyPass = "http://10.88.127.3:2223";
-          extraConfig = ''
-            proxy_set_header host $host;
-            proxy_set_header x-real-ip $remote_addr;
-            proxy_set_header x-forwarded-for $proxy_add_x_forwarded_for;
-            proxy_set_header x-forwarded-proto $scheme;
-          '';
-          proxyWebsockets = true; # needed if you need to use websocket
-        };
-      };
       "ap.local" = {
         enableACME = false;
         forceSSL = false;

@@ -9,9 +9,8 @@ in
   secrix.services.minio.secrets.minio-rootCredentialsFile.encrypted.file = ../secrets/minio-rootCredentialsFile;
 
   services = {
-
     minio = {
-
+      browser = false;
       enable = true;
       region = "homelab";
       listenAddress = toAddress host-port;

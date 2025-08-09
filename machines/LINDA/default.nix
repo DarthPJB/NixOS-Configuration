@@ -6,14 +6,28 @@
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ../../lib/enable-wg.nix
+      ../../lib/rclone-target.nix
     ];
   secrix.services.wireguard-wireg0.secrets.LINDA.encrypted.file = ../../secrets/wg_LINDA;
-  environment.vpn =
-    {
+  environment = {
+    vpn =
+      {
+        enable = true;
+        postfix = 88;
+        privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.LINDA.decrypted.path;
+      };
+    rclone-target = {
       enable = true;
-      postfix = 88;
-      privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.LINDA.decrypted.path;
+      configFile = "${self}/secrets/rclone-config-file";
+      targets = {
+        obsidian-v3 = {
+          filePath = " /bulk-storage/88-DB-v3/";
+          remoteName = "minio:obsidian-v3";
+          syncInterval = 600; # ten minutes
+        };
+      };
     };
+  };
   environment.systemPackages = [
     self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.looking-glass-client
     self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.scream

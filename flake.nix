@@ -90,7 +90,7 @@
               networking.hostName = "printcontroller";
               _module.args =
                 {
-                  self = self;
+                  inherit self;
                   nixinate = {
                     port = "1108";
                     host = "10.88.128.10";
@@ -138,7 +138,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
-                  self = self;
+                  inherit self;
                   #inherit secrix;
                   nixinate = {
                     host = "display-module.johnbargman.net";
@@ -171,7 +171,7 @@
             {
               _module.args =
                 {
-                  self = self;
+                  inherit self;
                   nixinate = {
                     host = "10.88.128.20";
                     #host = "192.168.2.200";
@@ -212,7 +212,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
-                  self = self;
+                  inherit self;
                   nixinate = {
                     host = "10.88.128.22";
                     port = "1108";
@@ -253,7 +253,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
-                  self = self;
+                  inherit self;
                   nixinate = {
                     host = "192.168.122.69";
                     sshUser = "John88";
@@ -282,7 +282,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
-                  self = self;
+                  inherit self;
                   nixinate = {
                     #host = "cortex-alpha.johnbargman.net"; #"10.88.128.1";
                     host = "10.88.128.1";
@@ -316,7 +316,7 @@
 
               _module.args =
                 {
-                  self = self;
+                  inherit self;
                   nixinate = {
                     port = 1108;
                     host = "10.88.128.3";
@@ -370,7 +370,7 @@
                   ];
                 _module.args =
                   {
-                    self = self;
+                    inherit self;
                     nixinate = {
                       #                      host = "192.168.2.200";
                       port = 1108;
@@ -425,7 +425,7 @@
               nixpkgs.config.allowUnfree = true;
               _module.args =
                 {
-                  self = self;
+                  inherit self;
                   nixinate = {
                     host = "LINDACORE.johnbargman.net";
                     port = 1108;
@@ -458,7 +458,7 @@
               ];
               _module.args =
                 {
-                  self = self;
+                  inherit self;
                   nixinate = {
                     port = 1108;
                     host = "remote-worker.johnbargman.net";
@@ -492,7 +492,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
-                  self = self;
+                  inherit self;
                   nixinate = {
                     host = "storage.johnbargman.net";
                     sshUser = "John88";
@@ -526,7 +526,7 @@
               ];
               _module.args =
                 {
-                  self = self;
+                  inherit self;
                   nixinate = {
                     port = 1108;
                     host = "remote-builder.johnbargman.net";
