@@ -10,14 +10,28 @@
       ./hardware-configuration.nix
       ../../environments/steam.nix
       ../../lib/enable-wg.nix
+      ../../lib/rclone-target.nix
     ];
   secrix.services.wireguard-wireg0.secrets.terminal-zero.encrypted.file = ../../secrets/wg_terminal-zero;
-  environment.vpn =
+  environment = {
+    vpn =
     {
       enable = true;
       postfix = 20;
       privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.terminal-zero.decrypted.path;
     };
+    rclone-target = {
+      enable = true;
+      configFile = "${self}/secrets/rclone-config-file";
+      targets = {
+        obsidian-v3 = {
+          filePath = "/home/pokej/88-DB-v3/";
+          remoteName = "minio:obsidian-v3";
+          syncInterval = 60; # every minute
+        };
+      };
+    };
+  };
   # Use the GRUB 2 boot loader.
   # Use the systemd-boot EFI boot loader.
   boot.loader =
