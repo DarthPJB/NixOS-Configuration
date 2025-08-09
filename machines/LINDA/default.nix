@@ -23,7 +23,7 @@
         obsidian-v3 = {
           filePath = " /bulk-storage/88-DB-v3/";
           remoteName = "minio:obsidian-v3";
-          syncInterval = 600; # ten minutes
+          syncInterval = 60; # every minute
         };
       };
     };
