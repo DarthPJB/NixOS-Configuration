@@ -34,6 +34,17 @@
         system = "x86_64-linux";
         config.allowUnfree = true;
       };
+      # Define the function for a single configuration
+      mkUncompressedSdImage = config:
+        (config.extendModules {
+          modules = [{ sdImage.compressImage = false; }];
+        }).config.system.build.sdImage;
+
+      # Define the function for a list of configurations
+      mkUncompressedSdImages = configs:
+        nixpkgs.lib.genAttrs
+          (map (cfg: cfg.config.system.name) configs)
+          (name: mkUncompressedSdImage (builtins.getAttr name self.nixosConfigurations));
     in
     {
       formatter.x86_64-linux = pkgs.nixpkgs-fmt;
@@ -42,14 +53,12 @@
 
       # -----------------------------------IMAGES-------------------------------------------------
 
-      print-controller-image = (self.nixosConfigurations.print-controller.extendModules
-        {
-          modules = [{ sdImage.compressImage = false; }];
-        }).config.system.build.sdImage;
-      display-module-image = (self.nixosConfigurations.display-module.extendModules
-        {
-          modules = [{ sdImage.compressImage = false; }];
-        }).config.system.build.sdImage;
+      packages."aarch64-linux" = mkUncompressedSdImages [
+        self.nixosConfigurations.print-controller
+        self.nixosConfigurations.display-1
+        self.nixosConfigurations.display-2
+      ];
+
 
       local-worker-image = import "${nixpkgs_stable.cutPath}/nixos/lib/make-disk-image.nix"
         #local-image = import "${self}/lib/make-storeless-image.nix"
@@ -73,6 +82,36 @@
       # --------------------------------------------------------------------------------------------------
       nixosConfigurations = {
         # -----------------------------------ARM DEVICES-------------------------------------------------
+        display-module-1 = nixpkgs.lib.nixosSystem {
+          system = "aarch64-linux";
+          modules = [
+            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            secrix.nixosModules.default
+            ./machines/display/1.nix
+            ./users/darthpjb.nix
+            ./configuration.nix
+            ./locale/home_networks.nix
+            {
+              hardware.firmware = with nixpkgs.legacyPackages.aarch64-linux; [ raspberrypiWirelessFirmware ];
+              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
+              #secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBqeo8ceyMoi+SIRP5hhilbhJvFflphD0efolDCxccj9";
+              system.stateVersion = "24.11";
+              networking.hostName = "display-1";
+              _module.args =
+                {
+                  inherit self;
+                  nixinate = {
+                    port = "1108";
+                    #host = "10.88.128.10";
+                    sshUser = "John88";
+                    substituteOnTarget = true;
+                    hermetic = true;
+                    buildOn = "local";
+                  };
+                };
+            }
+          ];
+        };
         print-controller = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
@@ -103,7 +142,7 @@
             }
           ];
         };
-        display-module = nixpkgs.lib.nixosSystem {
+        alpha-one = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
             secrix.nixosModules.default
@@ -141,7 +180,7 @@
                   inherit self;
                   #inherit secrix;
                   nixinate = {
-                    host = "display-module.johnbargman.net";
+                    host = "alpha-two.johnbargman.net";
                     sshUser = "John88";
                     port = 1108;
                     substituteOnTarget = true;
