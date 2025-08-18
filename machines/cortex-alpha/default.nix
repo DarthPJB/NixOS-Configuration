@@ -25,7 +25,7 @@
       "ap.local" = {
         enableACME = false;
         forceSSL = false;
-        listenAddresses = [ "10.88.127.1" "10.88.128.1" ];
+        listenAddresses = [ "10.88.128.1" "10.88.127.1" ];
         locations."~/" = {
           proxyPass = "http://10.88.128.2:80";
           extraConfig = ''
