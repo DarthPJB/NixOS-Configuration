@@ -15,11 +15,11 @@
   secrix.services.wireguard-wireg0.secrets.terminal-zero.encrypted.file = ../../secrets/wg_terminal-zero;
   environment = {
     vpn =
-    {
-      enable = true;
-      postfix = 20;
-      privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.terminal-zero.decrypted.path;
-    };
+      {
+        enable = true;
+        postfix = 20;
+        privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.terminal-zero.decrypted.path;
+      };
     rclone-target = {
       enable = true;
       configFile = "${self}/secrets/rclone-config-file";

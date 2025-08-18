@@ -29,7 +29,7 @@
                 endpoint = "cortex-alpha.johnbargman.net:2108";
                 dynamicEndpointRefreshSeconds = 300;
                 #persistentKeepalive = 60;
-              }]; 
+              }];
             };
         };
       };
