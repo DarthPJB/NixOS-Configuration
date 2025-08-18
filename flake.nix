@@ -10,7 +10,7 @@
     #raspberry-pi-nix.url = "github:nix-community/raspberry-pi-nix";
     #secrix.url = "path:/home/pokej/repo/platonic.systems/secrix";
 
-    nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-25.05";
     nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-24.11";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
@@ -55,6 +55,7 @@
 
       packages."aarch64-linux" = mkUncompressedSdImages [
         self.nixosConfigurations.print-controller
+        self.nixosConfigurations.alpha-one
         self.nixosConfigurations.display-1
         self.nixosConfigurations.display-2
       ];
@@ -82,12 +83,43 @@
       # --------------------------------------------------------------------------------------------------
       nixosConfigurations = {
         # -----------------------------------ARM DEVICES-------------------------------------------------
-        display-module-1 = nixpkgs.lib.nixosSystem {
+        display-1 = un_nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
             "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             secrix.nixosModules.default
+            nixos-hardware.nixosModules.raspberry-pi-4
             ./machines/display/1.nix
+            ./users/darthpjb.nix
+            ./configuration.nix
+            ./locale/home_networks.nix
+            {
+
+              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
+              #secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBqeo8ceyMoi+SIRP5hhilbhJvFflphD0efolDCxccj9";
+              system.stateVersion = "24.11";
+              _module.args =
+                {
+                  inherit self;
+                  nixinate = {
+                    port = "1108";
+                    host = "10.88.128.230";
+                    sshUser = "John88";
+                    substituteOnTarget = true;
+                    hermetic = true;
+                    buildOn = "local";
+                  };
+                };
+            }
+          ];
+        };
+        display-2 = nixpkgs.lib.nixosSystem {
+          system = "aarch64-linux";
+          modules = [
+            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            secrix.nixosModules.default
+            nixos-hardware.nixosModules.raspberry-pi-4
+            ./machines/display/2.nix
             ./users/darthpjb.nix
             ./configuration.nix
             ./locale/home_networks.nix
@@ -96,7 +128,6 @@
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               #secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBqeo8ceyMoi+SIRP5hhilbhJvFflphD0efolDCxccj9";
               system.stateVersion = "24.11";
-              networking.hostName = "display-1";
               _module.args =
                 {
                   inherit self;

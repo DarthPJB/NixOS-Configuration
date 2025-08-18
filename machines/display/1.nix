@@ -1,4 +1,4 @@
-{ pkgs, config, lib, ... }:
+{ pkgs, config, lib, self, ... }:
 let
   hostname = "display-1";
 in
@@ -6,6 +6,7 @@ in
 
   imports = [
     ../../lib/enable-wg.nix
+    ../../environments/jwm.nix
   ];
   system.name = "${hostname}";
   fileSystems."/" = {
@@ -21,19 +22,37 @@ in
   #    privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
   #  };
   boot = {
-    kernelPackages = nixpkgs.legacyPackages.aarch64-linux.linuxPackages_rpi4;
-    kernelParams = [ "console=ttyS1,115200n8" "cma=128M" ];
+    kernelModules = [ "bcm2835-v4l2" ];
+    initrd.availableKernelModules = lib.mkForce [ "bcm2835" ];
+    supportedFilesystems.zfs = lib.mkForce false;
+    kernelPackages = pkgs.linuxPackages_rpi4;
+    kernelParams = [ "video=HDMI-A-1:1920x1080@60" "console=ttyS1,115200n8" "cma=128M" ];
+    extraModprobeConfig = ''
+      options snd_bcm2835 enable_headphones=1
+    '';
     loader = {
       grub.enable = false;
       generic-extlinux-compatible.enable = true;
     };
   };
+
+  services.pulseaudio.enable = true;
+  services.pipewire.enable = false;
+
+  #services.pipewire = {
+  #  enable = true;
+  #  alsa.enable = true;
+  #  alsa.support32Bit = true;
+  #  pulse.enable = true;
+  #};
+  hardware.firmware = [ pkgs.raspberrypiWirelessFirmware ];
+
   swapDevices = [{ device = "/swapfile"; size = 1024; }];
   hardware.enableRedistributableFirmware = true;
   services.openssh.enable = true;
   networking = {
-    hostname = "${hostname}"
-      interfaces."wlan0".useDHCP = true;
+    hostName = "${hostname}";
+    interfaces."wlan0".useDHCP = true;
     wireless = {
       interfaces = [ "wlan0" ];
       enable = true;

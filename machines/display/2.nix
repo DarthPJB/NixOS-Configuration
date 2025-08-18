@@ -1,44 +1,57 @@
-{ pkgs, config, lib, ... }:
+{ pkgs, config, lib, self, ... }:
+let
+  hostname = "display-1";
+in
 {
+
   imports = [
     ../../lib/enable-wg.nix
+    ../../environments/jwm.nix
   ];
-  secrix.services.wireguard-wireg0.secrets.print-controller.encrypted.file = ../../secrets/wg_print-controller;
-  environment.vpn =
-    {
-      enable = true;
-      postfix = 30;
-      privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.print-controller.decrypted.path;
-    };
-  boot = {
-    # Cleanup tmp on startup
-    #tmp.cleanOnBoot = true;
-    kernelParams = [ "console=ttyS1,115200n8" "cma=32M" ];
+  system.name = "${hostname}";
+  fileSystems."/" = {
+    device = "/dev/disk/by-label/NIXOS_SD";
+    fsType = "ext4";
   };
-  systemd.services.klipper_permissions =
-    {
-      enable = true;
-      description = "Mount media dir";
-      wantedBy = [ "multi-user.target" ];
-      before = [ "syncthing-init.service" ];
-      serviceConfig = {
-        ExecStart =
-          let
-            # Execute s3fs mount
-            # Rip out this rclone shit.
-            script = pkgs.writeScript "log-folder" ''#!${pkgs.runtimeShell}
-            ${pkgs.coreutils}/bin/mkdir -p /var/lib/moonraker/logs/
-            ${pkgs.coreutils}/bin/chmod 777 /var/lib/moonraker/logs/
-          '';
-          in
-          "${script}";
-        Type = "oneshot";
-      };
+  sdImage.compressImage = false;
+  #secrix.services.wireguard-wireg0.secrets."${hostname}".encrypted.file = "../../secrets/wg_${hostname}";
+  #environment.vpn =
+  #  {
+  #    enable = true;
+  #    postfix = 30;
+  #    privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
+  #  };
+  boot = {
+    kernelModules = [ "bcm2835-v4l2" ];
+    initrd.availableKernelModules = lib.mkForce [ "bcm2835" ];
+    supportedFilesystems.zfs = lib.mkForce false;
+    kernelPackages = pkgs.linuxPackages_rpi4;
+    kernelParams = [ "video=HDMI-A-1:1920x1080@60" "console=ttyS1,115200n8" "cma=128M" ];
+    extraModprobeConfig = ''
+      options snd_bcm2835 enable_headphones=1
+    '';
+    loader = {
+      grub.enable = false;
+      generic-extlinux-compatible.enable = true;
     };
+  };
+
+  services.pulseaudio.enable = true;
+  services.pipewire.enable = false;
+
+  #services.pipewire = {
+  #  enable = true;
+  #  alsa.enable = true;
+  #  alsa.support32Bit = true;
+  #  pulse.enable = true;
+  #};
+  hardware.firmware = [ pkgs.raspberrypiWirelessFirmware ];
+
   swapDevices = [{ device = "/swapfile"; size = 1024; }];
   hardware.enableRedistributableFirmware = true;
   services.openssh.enable = true;
   networking = {
+    hostName = "${hostname}";
     interfaces."wlan0".useDHCP = true;
     wireless = {
       interfaces = [ "wlan0" ];
