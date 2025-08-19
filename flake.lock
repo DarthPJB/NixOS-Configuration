@@ -69,11 +69,11 @@
     },
     "nixpkgs_stable": {
       "locked": {
-        "lastModified": 1750330365,
-        "narHash": "sha256-hJ7XMNVsTnnbV2NPmStCC07gvv5l2x7+Skb7hyUzazg=",
+        "lastModified": 1751274312,
+        "narHash": "sha256-/bVBlRpECLVzjV19t5KMdMFWSwKLtb5RyXdjz3LJT+g=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "d883b6213afa179b58ba8bace834f1419707d0ad",
+        "rev": "50ab793786d9de88ee30ec4e4c24fb4236fc2674",
         "type": "github"
       },
       "original": {
@@ -114,7 +114,7 @@
     "parsecMeta": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-lP2Mc0/gVWM6X/79/xB0ncMj5vXUjtk+QTVC/z9/MaQ=",
+        "narHash": "sha256-WJpGY0sPzJDodhjtvDsZcsVF78w1mzKIFdOeNaUwCKw=",
         "type": "file",
         "url": "https://builds.parsecgaming.com/channel/release/appdata/linux/latest"
       },
@@ -130,11 +130,11 @@
         "parsecMeta": "parsecMeta"
       },
       "locked": {
-        "lastModified": 1750191832,
-        "narHash": "sha256-rQ6BHygvbY87USdXwz7sNmdWvCAcuUvpWg1BlRhETWk=",
+        "lastModified": 1754784172,
+        "narHash": "sha256-ZjFIpFOdAqGh5oV0c03hcvqTxZO5Z7VMru45phqRJmA=",
         "owner": "DarthPJB",
         "repo": "parsec-gaming-nix",
-        "rev": "8641dd83d53a0eef585a9a69546d4dc2f3284018",
+        "rev": "37d3a5e2ef005d05bc47b59ed39f168238c9c58a",
         "type": "github"
       },
       "original": {
@@ -158,11 +158,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1727012350,
-        "narHash": "sha256-sP4LXXvp9b6hYf/tQMxI+gURf1uXhqb6oytXCFRkw3A=",
+        "lastModified": 1753137768,
+        "narHash": "sha256-bCQ8IHak1hF38amAgz2YKIEwteU5eAkgoC0fwfoRxO0=",
         "owner": "Platonic-Systems",
         "repo": "secrix",
-        "rev": "0726d0382d679f983f97ede9da8aaf426e2b5003",
+        "rev": "f783b038ee639a589affcf3c612187dafcfa0476",
         "type": "github"
       },
       "original": {
