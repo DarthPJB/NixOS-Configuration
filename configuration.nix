@@ -43,7 +43,7 @@
   };
   services.kmscon =
     {
-      autologinUser = "John88";
+      #autologinUser = "John88";
       enable = true;
       hwRender = true; # Enable hardware rendering
       extraConfig = ''

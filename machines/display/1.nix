@@ -21,15 +21,33 @@ in
   #    postfix = 30;
   #    privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
   #  };
+
+  hardware = {
+    raspberry-pi."4"= 
+     { 
+    apply-overlays-dtmerge.enable = true;
+    fkms-3d.enable = true;
+    };
+    deviceTree = {
+      enable = true;
+      #filter = "*rpi-4-*.dtb";
+    };
+  };
+  console.enable = false;
+  environment.systemPackages = with pkgs; [
+    libraspberrypi
+    raspberrypi-eeprom
+  ];
+  
   boot = {
-    kernelModules = [ "bcm2835-v4l2" ];
-    initrd.availableKernelModules = lib.mkForce [ "bcm2835" ];
-    supportedFilesystems.zfs = lib.mkForce false;
-    kernelPackages = pkgs.linuxPackages_rpi4;
-    kernelParams = [ "video=HDMI-A-1:1920x1080@60" "console=ttyS1,115200n8" "cma=128M" ];
-    extraModprobeConfig = ''
-      options snd_bcm2835 enable_headphones=1
-    '';
+  #  kernelModules = [ "bcm2835-v4l2" ];
+  #  initrd.availableKernelModules = lib.mkForce [ "bcm2835" ];
+  #  supportedFilesystems.zfs = lib.mkForce false;
+  #  kernelPackages = pkgs.linuxPackages_rpi4;
+  #  kernelParams = [ "video=HDMI-A-1:1920x1080@60" "console=ttyS1,115200n8" "cma=128M" ];
+  #  extraModprobeConfig = ''
+  #    options snd_bcm2835 enable_headphones=1
+  #  '';
     loader = {
       grub.enable = false;
       generic-extlinux-compatible.enable = true;
@@ -45,7 +63,7 @@ in
   #  alsa.support32Bit = true;
   #  pulse.enable = true;
   #};
-  hardware.firmware = [ pkgs.raspberrypiWirelessFirmware ];
+  #hardware.firmware = [ pkgs.raspberrypiWirelessFirmware ];
 
   swapDevices = [{ device = "/swapfile"; size = 1024; }];
   hardware.enableRedistributableFirmware = true;
