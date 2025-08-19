@@ -2,7 +2,7 @@
 
 {
   services.picom = {
-    enable = false;
+    enable = true;
     backend = "glx";
     #experimentalBackends = true;
     vSync = true;
@@ -12,11 +12,11 @@
       fading = false;
       blur = false;
       unredir-if-possible = true;
-      glx-no-stencil = true;
-      glx-no-rebind-pixmap = true;
-      detect-transient = true;
-      detect-client-leader = true;
-      use-damage = true;
+#      glx-no-stencil = true;
+#      glx-no-rebind-pixmap = true;
+#      detect-transient = true;
+#      detect-client-leader = true;
+#      use-damage = true;
       vsync-use-glfinish = true; # Optimize VSync for ARM
     };
   };
@@ -76,7 +76,7 @@
   #  };
   #};
 
-  # Define the "nobody" user
+  # Define the "guest" user
   users.users.guest = {
     isSystemUser = true;
     group = "users";

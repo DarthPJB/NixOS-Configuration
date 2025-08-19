@@ -26,10 +26,10 @@
         system = "x86_64-linux";
         config.allowUnfree = true;
       };
-      #pkgs_arm = import nixpkgs_stable {
-      #  system = "aarch64-linux";
-      #  config.allowUnfree = true;
-      #};
+      un_pkgs_arm = import nixpkgs_unstable {
+        system = "aarch64-linux";
+        config.allowUnfree = true;
+      };
       un_pkgs = import nixpkgs_unstable {
         system = "x86_64-linux";
         config.allowUnfree = true;
@@ -85,6 +85,7 @@
         # -----------------------------------ARM DEVICES-------------------------------------------------
         display-1 = un_nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
+          pkgs=un_pkgs_arm;
           modules = [
             "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             secrix.nixosModules.default
@@ -94,7 +95,20 @@
             ./configuration.nix
             ./locale/home_networks.nix
             {
-
+              imports = [
+                "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
+              ];
+              disabledModules =
+                [
+                  "${nixpkgs_stable}/nixos/modules/profiles/all-hardware.nix"
+                  "${nixpkgs_stable}/nixos/modules/profiles/base.nix"
+                ];
+              services.kmscon = {
+                autologinUser = "John88";
+                extraConfig = ''
+                  font-dpi=75
+                '';
+                };
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               #secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBqeo8ceyMoi+SIRP5hhilbhJvFflphD0efolDCxccj9";
               system.stateVersion = "24.11";
@@ -112,13 +126,14 @@
                 };
             }
           ];
+          
         };
         display-2 = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
             "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             secrix.nixosModules.default
-            nixos-hardware.nixosModules.raspberry-pi-4
+            #nixos-hardware.nixosModules.raspberry-pi-4
             ./machines/display/2.nix
             ./users/darthpjb.nix
             ./configuration.nix
