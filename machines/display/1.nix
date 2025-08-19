@@ -23,50 +23,42 @@ in
   #  };
 
   hardware = {
-    raspberry-pi."4"= 
-     { 
-    apply-overlays-dtmerge.enable = true;
-    fkms-3d.enable = true;
-    };
+    enableRedistributableFirmware = true;
+    raspberry-pi."4" =
+      {
+        apply-overlays-dtmerge.enable = true;
+        fkms-3d.enable = true;
+      };
     deviceTree = {
       enable = true;
-      #filter = "*rpi-4-*.dtb";
     };
   };
-  console.enable = false;
-  environment.systemPackages = with pkgs; [
-    libraspberrypi
-    raspberrypi-eeprom
-  ];
-  
+
   boot = {
-  #  kernelModules = [ "bcm2835-v4l2" ];
-  #  initrd.availableKernelModules = lib.mkForce [ "bcm2835" ];
-  #  supportedFilesystems.zfs = lib.mkForce false;
-  #  kernelPackages = pkgs.linuxPackages_rpi4;
-  #  kernelParams = [ "video=HDMI-A-1:1920x1080@60" "console=ttyS1,115200n8" "cma=128M" ];
-  #  extraModprobeConfig = ''
-  #    options snd_bcm2835 enable_headphones=1
-  #  '';
+    #  kernelModules = [ "bcm2835-v4l2" ];
+    # Ensure vc4 and audio modules
+    initrd.kernelModules = [ "vc4" "snd_bcm2835" ];
+    #  supportedFilesystems.zfs = lib.mkForce false;
+    #  kernelPackages = pkgs.linuxPackages_rpi4;
+    kernelParams = [ "video=HDMI-A-1:1920x1080@60" "console=ttyS1,115200n8" "cma=128M" ];
+    extraModprobeConfig = ''
+      options snd_bcm2835 enable_headphones=1 enable_hdmi=1
+    '';
     loader = {
       grub.enable = false;
       generic-extlinux-compatible.enable = true;
     };
   };
 
-  hardware.pulseaudio.enable = true;
-  services.pipewire.enable = false;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+  };
 
-  #services.pipewire = {
-  #  enable = true;
-  #  alsa.enable = true;
-  #  alsa.support32Bit = true;
-  #  pulse.enable = true;
-  #};
-  #hardware.firmware = [ pkgs.raspberrypiWirelessFirmware ];
 
   swapDevices = [{ device = "/swapfile"; size = 1024; }];
-  hardware.enableRedistributableFirmware = true;
   services.openssh.enable = true;
   networking = {
     hostName = "${hostname}";

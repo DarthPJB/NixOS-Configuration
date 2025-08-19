@@ -85,7 +85,7 @@
         # -----------------------------------ARM DEVICES-------------------------------------------------
         display-1 = un_nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
-          pkgs=un_pkgs_arm;
+          pkgs = un_pkgs_arm;
           modules = [
             "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             secrix.nixosModules.default
@@ -103,12 +103,6 @@
                   "${nixpkgs_stable}/nixos/modules/profiles/all-hardware.nix"
                   "${nixpkgs_stable}/nixos/modules/profiles/base.nix"
                 ];
-              services.kmscon = {
-                autologinUser = "John88";
-                extraConfig = ''
-                  font-dpi=75
-                '';
-                };
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               #secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBqeo8ceyMoi+SIRP5hhilbhJvFflphD0efolDCxccj9";
               system.stateVersion = "24.11";
@@ -126,7 +120,7 @@
                 };
             }
           ];
-          
+
         };
         display-2 = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
@@ -406,7 +400,7 @@
                     port = 1108;
                     host = "10.88.128.3";
                     sshUser = "John88";
-                    substituteOnTarget = true;
+                    substituteOnTarget = false;
                     hermetic = true;
                     buildOn = "local";
                   };
@@ -579,7 +573,7 @@
                 {
                   inherit self;
                   nixinate = {
-                    host = "storage.johnbargman.net";
+                    host = "192.168.88.254";
                     sshUser = "John88";
                     port = 1108;
                     substituteOnTarget = true;
