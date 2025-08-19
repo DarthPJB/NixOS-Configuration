@@ -26,9 +26,10 @@ in
     initrd.availableKernelModules = lib.mkForce [ "bcm2835" ];
     supportedFilesystems.zfs = lib.mkForce false;
     kernelPackages = pkgs.linuxPackages_rpi4;
-    kernelParams = [ "video=HDMI-A-1:1920x1080@60" "console=ttyS1,115200n8" "cma=128M" ];
+    kernelParams = [ "console=ttyS1,115200n8" "cma=128M" "snd_bcm2835.enable_hdmi=1" "snd_bcm2835.enable_headphones=1" ];
     extraModprobeConfig = ''
       options snd_bcm2835 enable_headphones=1
+      options snd_bcm2835 enable_hdmi=1
     '';
     loader = {
       grub.enable = false;
@@ -36,7 +37,7 @@ in
     };
   };
 
-  services.pulseaudio.enable = true;
+  hardware.pulseaudio.enable = true;
   services.pipewire.enable = false;
 
   #services.pipewire = {

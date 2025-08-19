@@ -36,7 +36,7 @@ in
     };
   };
 
-  services.pulseaudio.enable = true;
+  hardware.pulseaudio.enable = true;
   services.pipewire.enable = false;
 
   #services.pipewire = {
