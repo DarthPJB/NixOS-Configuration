@@ -3,7 +3,7 @@
 
   inputs = {
     #nixinate.url = "path:/home/pokej/repo/DarthPJB/nixinate";
-    nixinate.url = "github:pinktrink/nixinate";
+    nixinate.url = "github:DarthPJB/nixinate";
     nixinate.inputs.nixpkgs.follows = "nixpkgs_stable";
     secrix.url = "github:Platonic-Systems/secrix";
 
