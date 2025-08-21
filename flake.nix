@@ -166,7 +166,7 @@
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBqeo8ceyMoi+SIRP5hhilbhJvFflphD0efolDCxccj9";
               system.stateVersion = "24.11";
-              networking.hostName = "printcontroller";
+              networking.hostName = "print-controller";
               _module.args =
                 {
                   inherit self;
