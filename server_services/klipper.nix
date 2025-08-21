@@ -1,5 +1,5 @@
 { config, pkgs, ... }: {
-  networking.firewall.allowedTCPPorts = [ 80 8080 443 ];
+  networking.firewall.allowedTCPPorts = [ 80 8080 443 7125 ];
   security.polkit.enable = true;
   services = {
     klipper = {
@@ -24,7 +24,7 @@
           force_logins = true;
           cors_domains =
             [ "*.local" "*.lan" ];
-          trusted_clients = [ "127.0.0.0/8" "192.168.1.0/24" "192.168.0.0/24" ];
+          trusted_clients = [ "127.0.0.0/8" "10.88.128.0/24" "10.88.127.0/24" ];
         };
       };
     };
