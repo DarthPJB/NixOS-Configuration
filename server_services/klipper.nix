@@ -16,14 +16,14 @@
     moonraker = {
       user = "root";
       enable = true;
-      address = "0.0.0.0";
+      address = "10.88.127.30";
       settings = {
         octoprint_compat = { };
         history = { };
         authorization = {
-          force_logins = true;
+          force_logins = false;
           cors_domains =
-            [ "*.local" "*.lan" ];
+            [ "*.local" ];
           trusted_clients = [ "127.0.0.0/8" "10.88.128.0/24" "10.88.127.0/24" ];
         };
       };
