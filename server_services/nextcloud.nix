@@ -1,8 +1,11 @@
 { config, pkgs, self, ... }:
 let
   inherit (builtins) readFile;
+  fqdn = "nextcloud.johnbargman.net";
+  fqdn2 = "nextcloud.johnbargman.com";
 in
 {
+
   secrix.system.secrets = {
     nextcloud_password_file.encrypted.file = ../secrets/nextcloud_password_file;
     nextcloud_password_file.decrypted =
@@ -26,7 +29,7 @@ in
       configureRedis = true;
       enable = true;
       package = pkgs.nextcloud30;
-      hostName = "nextcloud.johnbargman.com";
+      hostName = "${fqdn}";
       https = true;
       enableImagemagick = true;
       maxUploadSize = "50G";
@@ -58,10 +61,15 @@ in
         };
 
     };
-
-  services.nginx.virtualHosts.${config.services.nextcloud.hostName} = {
+  services.nginx.virtualHosts.${fqdn2} = {
     forceSSL = true;
-    enableACME = true;
+    useACMEHost = "johnbargman.com";
+    globalRedirect = "nextcloud.johnbargman.net";
+    extraConfig = "fastcgi_read_timeout 86400;\n";
+  };
+  services.nginx.virtualHosts.${fqdn} = {
+    forceSSL = true;
+    useACMEHost = "johnbargman.net";
     extraConfig = "fastcgi_read_timeout 86400;\n";
   };
   # services.phpfpm.pools.nextcloud = {
