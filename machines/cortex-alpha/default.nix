@@ -5,6 +5,8 @@
   imports =
     [
       # Include the results of the hardware scan.
+      (import ../../services/acme_server.nix { fqdn="johnbargman.net";})
+      ../../server_services/ldap.nix
       ./hardware-configuration.nix
     ];
   boot = {
@@ -19,12 +21,45 @@
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
   };
+security.acme.defaults.email = "commander@johnbargman.net";
+  security.acme.certs."johnbargman.net" = {
+    extraDomainNames = [ "*.johnbargman.net" ];#johnbargman.com"];
+  };
   services.nginx = {
     enable = true;
     virtualHosts = {
-      "ap.local" = {
-        enableACME = false;
-        forceSSL = false;
+        "_" = {
+          default = true;
+          listenAddresses = [ "10.88.128.1" "10.88.127.1" "82.5.173.252" ];
+          locations."/" = {
+            return = "444";  # Close connection without response
+          };
+        };
+     "johnbargman.net" = {
+        enableACME = true;
+        acmeRoot = null;
+        forceSSL = true;
+        listenAddresses = [ "10.88.128.1" "10.88.127.1" "82.5.173.252" ];
+        locations."/" = {
+          root = ../../webroot;
+          proxyWebsockets = false; # needed if you need to use websocket
+        };
+      };
+      "cortex-alpha.johnbargman.net" = {
+        #serverName = "cortex-alpha.johnbargman.net";
+        useACMEHost = "johnbargman.net";
+        #enableACME = true;
+        forceSSL = true;
+        listenAddresses = [ "10.88.128.1" "10.88.127.1" "82.5.173.252" ]; #TODO: handle this assignment in a fixed fashion 82.5.173.252
+        locations."/" = {
+          root = ../../webroot;
+          #proxyWebsockets = false; # needed if you need to use websocket
+        };
+      };
+      "ap.johnbargman.net" = {
+      #serverName = "ap.local";
+        useACMEHost = "johnbargman.net";
+        addSSL = true;
         listenAddresses = [ "10.88.128.1" "10.88.127.1" ];
         locations."~/" = {
           proxyPass = "http://10.88.128.2:80";
@@ -81,13 +116,13 @@
       {
         interfaces = {
           "wireg0".allowedUDPPorts = [ 1108 ];
-          "wireg0".allowedTCPPorts = [ 80 ];
-          "enp3s0".allowedTCPPorts = [ 80 ];
+          "wireg0".allowedTCPPorts = [ 443 ];
+          "enp3s0".allowedTCPPorts = [ 443 ];
           "enp3s0".allowedUDPPorts = [ 1108 2108 /*WG*/ 67 /* DHCP */ 53 /*DNS*/ ];
 
 
           #         "enp2s0".allowedTCPPorts = [ 27000 27003 ];
-          "enp2s0".allowedUDPPorts = [ 1108 2108 ]; # 27000 27003 ];
+          "enp2s0".allowedUDPPorts = [ 1108 443 2108 ]; # 27000 27003 ];
           #          "enp2s0".allowedTCPPortRanges = [{ from = 27020; to = 27021; }];
           #          "enp2s0".allowedUDPPortRanges = [{ from = 27020; to = 27021; }];
         };
@@ -196,9 +231,8 @@
 
       no-hosts = true;
       address = [
-        "/${config.networking.hostName}.local/10.88.128.1"
-        "/cortex-alpha.johnbargman.net/10.88.128.1"
-        "/ap.local/10.88.128.1"
+        "/${config.networking.hostName}.johnbargman.net/10.88.128.1"
+        "/ap.johnbargman.net/10.88.128.1"
         "/minio.local/10.88.128.1"
       ];
     };

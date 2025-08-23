@@ -21,11 +21,6 @@
       pkgs.parted
       pkgs.bottom
     ];
-  security.acme =
-    {
-      acceptTerms = true;
-      defaults.email = "darthpjb@gmail.com";
-    };
   nix.settings = {
 
     trusted-substituters = [
@@ -41,6 +36,8 @@
   secrix.defaultEncryptKeys = {
     John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ];
   };
+
+
   services.kmscon =
     {
       #autologinUser = "John88";
