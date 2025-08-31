@@ -14,10 +14,9 @@
     nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-24.11";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
-
   };
   # --------------------------------------------------------------------------------------------------
-  outputs = { self, parsecgaming, nixos-hardware, secrix, nixinate, nixpkgs_unstable, nixpkgs_stable }:
+  outputs = { self, parsecgaming, nixos-hardware, secrix, nixinate, nixpkgs_unstable, nixpkgs_stable  }:
     let
       #      inherit (secrix) secrix;
       nixpkgs = nixpkgs_stable;
@@ -573,7 +572,7 @@
                 {
                   inherit self;
                   nixinate = {
-                    host = "192.168.88.254";
+                    host = "10.88.127.4";
                     sshUser = "John88";
                     port = 1108;
                     substituteOnTarget = true;
