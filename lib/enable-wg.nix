@@ -28,7 +28,7 @@
                 allowedIPs = [ "10.88.127.1/32" "10.88.127.0/24" ];
                 endpoint = "cortex-alpha.johnbargman.net:2108";
                 dynamicEndpointRefreshSeconds = 300;
-                #persistentKeepalive = 60;
+                persistentKeepalive = 60;
               }];
             };
         };
