@@ -4,9 +4,9 @@ let
   certDir = config.security.acme.certs."${fqdn}".directory;
 in
 {
-    networking.firewall.allowedTCPPorts = [ /*389*/ 636 ];
-    secrix.services.openldap.secrets.ldap_master_password.encrypted.file = "${self}/secrets/ldap_master_password";
-    services.openldap = {
+  networking.firewall.allowedTCPPorts = [ /*389*/ 636 ];
+  secrix.services.openldap.secrets.ldap_master_password.encrypted.file = "${self}/secrets/ldap_master_password";
+  services.openldap = {
     enable = true;
 
     /* enable plain and secure connections */
@@ -68,4 +68,4 @@ in
   };
   users.users.openldap.extraGroups = [ "acme" "nginx" ];
   users.groups.acme.members = [ "openldap" ];
-  }
+}

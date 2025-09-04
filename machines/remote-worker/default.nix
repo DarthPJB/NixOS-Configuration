@@ -3,22 +3,22 @@
 { config, pkgs, ... }:
 
 {
-imports = [
-      # Include the results of the hardware scan.
-      ../../lib/enable-wg.nix
-      (import ../../services/acme_server.nix { fqdn="johnbargman.net"; })
-      (import ../../services/acme_server.nix { fqdn="johnbargman.com" ;})
-      ];
+  imports = [
+    # Include the results of the hardware scan.
+    ../../lib/enable-wg.nix
+    (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
+    (import ../../services/acme_server.nix { fqdn = "johnbargman.com"; })
+  ];
 
-      security.acme.defaults.email = "commander@johnbargman.net";
+  security.acme.defaults.email = "commander@johnbargman.net";
   /* trigger the actual certificate generation for your hostname */
   security.acme.certs."johnbargman.net" = {
-    extraDomainNames = [ "*.johnbargman.net" ];#johnbargman.com"];
+    extraDomainNames = [ "*.johnbargman.net" ]; #johnbargman.com"];
   };
-    security.acme.certs."johnbargman.com" = {
-    extraDomainNames = [ "*.johnbargman.com" ];#johnbargman.com"];
+  security.acme.certs."johnbargman.com" = {
+    extraDomainNames = [ "*.johnbargman.com" ]; #johnbargman.com"];
   };
-  
+
   services.nginx = {
     enable = true;
     virtualHosts = {
@@ -26,10 +26,10 @@ imports = [
         default = true;
         listenAddresses = [ "0.0.0.0" ];
         locations."/" = {
-          return = "444";  # Close connection without response
+          return = "444"; # Close connection without response
         };
       };
-     "johnbargman.net" = {
+      "johnbargman.net" = {
         enableACME = true;
         acmeRoot = null;
         forceSSL = true;
@@ -39,7 +39,7 @@ imports = [
           #proxyWebsockets = false; # needed if you need to use websocket
         };
       };
-     "johnbargman.com" = {
+      "johnbargman.com" = {
         enableACME = true;
         acmeRoot = null;
         forceSSL = true;

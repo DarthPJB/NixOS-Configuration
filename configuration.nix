@@ -37,7 +37,7 @@
     John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ];
   };
 
-powerManagement.enable = true; # Initating power savings, runway affirmative.
+  powerManagement.enable = true; # Initating power savings, runway affirmative.
 
   services.kmscon =
     {
