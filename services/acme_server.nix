@@ -3,11 +3,11 @@ let
   inherit fqdn;
 in
 {
-  users.groups.acme = {};
+  users.groups.acme = { };
 
   /* trigger the actual certificate generation for additional hostname */
   security.acme.certs."${fqdn}" = {
-    extraDomainNames = [];#"johnbargman.com"];
+    extraDomainNames = [ ]; #"johnbargman.com"];
   };
 
   secrix.system.secrets.dns01.encrypted.file = ../secrets/gandi_dns01_token;
@@ -20,4 +20,4 @@ in
     # We don't need to wait for propagation since this is a local DNS server
     dnsPropagationCheck = false;
   };
-  }
+}

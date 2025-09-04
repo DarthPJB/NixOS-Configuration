@@ -5,7 +5,8 @@
     enable = true;
     user = "klipper";
     group = "klipper";
-    mutableConfig = false; # Use declarative config
+    mutableConfig = true; # Use declarative config
+    configFile = "/var/lib/klipper/config/printer.cfg";
     settings = {
       # Minimal example; expand with your printer hardware specifics
       mcu = {
@@ -27,7 +28,7 @@
       };
       "probe" = {
         pin = "^!PC14";
-        #z_offset= "2.4"
+        z_offset = "1.225";
         x_offset = "-44";
         y_offset = "-4";
         speed = "10";
@@ -101,10 +102,10 @@
         heater_pin = "PC8";
         sensor_type = "EPCOS 100K B57560G104F";
         sensor_pin = "PA0";
-        #control= "pid";
-        #pid_Kp= "21.527";
-        #pid_Ki= "1.063";
-        #pid_Kd= "108.982";
+        control = "pid";
+        pid_Kp = "21.527";
+        pid_Ki = "1.063";
+        pid_Kd = "108.982";
         min_temp = "0";
         max_temp = "290";
       };
@@ -119,10 +120,10 @@
         heater_pin = "PC9";
         sensor_type = "ATC Semitec 104GT-2";
         sensor_pin = "PC4";
-        #control= "pid";
-        #pid_Kp= "54.027";
-        #pid_Ki= "0.770";
-        #pid_Kd= "948.182";
+        control = "pid";
+        pid_Kp = "54.027";
+        pid_Ki = "0.770";
+        pid_Kd = "948.182";
         min_temp = "0";
         max_temp = "130";
       };
@@ -161,68 +162,73 @@
         pin = "EXP1_1";
       };
       "virtual_sdcard" = {
-        path = "/var/lib/moonraker/gcodes";
+        path = "/var/lib/klipper/gcodes";
       };
       "display_status" = { };
       "pause_resume" = { };
       "gcode_macro CANCEL_PRINT" = {
         description = "Cancel the actual running print";
         rename_existing = "CANCEL_PRINT_BASE";
-        gcode = 
+        gcode =
           ''TURN_OFF_HEATERS
           CANCEL_PRINT_BASE
           G0 X200 Y200 Z100'';
       };
     };
-    };
-    security.polkit.enable = true;
-    services.moonraker = {
-      enable = true;
-      user = "moonraker";
-      group = "moonraker";
-      address = "10.88.128.10"; # Allow access from network
-      port = 7125;
-      allowSystemControl = true; # Optional= "Enable system operations"
-      settings = {
-        server = {
-          host = "10.88.128.10";
-        };
-        authorization = {
-        cors_domains = [ "*.local" "http://10.88.128.10" ];
-          force_logins = false;
-          trusted_clients = [
-            "127.0.0.0/24"
-            "10.88.127.0/24" 
-            "10.88.128.0/24" 
-            "10.88.128.10/32"
-          ];
-        };
-        octoprint_compat = { }; # Optional compatibility
+  };
+  security.polkit.enable = true;
+  services.moonraker = {
+    enable = true;
+    user = "moonraker";
+    group = "moonraker";
+    address = "10.88.127.30"; # Allow access from network
+    port = 7125;
+    allowSystemControl = true; # Optional= "Enable system operations"
+    settings = {
+      server = {
+        host = "print-controller.johnbargman.net";
       };
-    };
-
-    services.fluidd = {
-      enable = true;
-      hostName = "10.88.128.10"; # Access via http://localhost:80; change for domain
-      nginx = {
+      authorization = {
+        cors_domains = [ "*.johnbargman.net" "http://10.88.127.30" ];
+        force_logins = false;
+        trusted_clients = [
+          "127.0.0.0/24"
+          "10.88.127.0/24"
+        ];
       };
+      file_manager = {
+        config_path = "/var/lib/klipper/config"; # Explicitly set config path
+        gcode_path = "/var/lib/klipper/gcodes"; # Matches virtual_sdcard
+      };
+      octoprint_compat = { }; # Optional compatibility
     };
+  };
 
-    users.users.klipper = {
-      isSystemUser = true;
-      group = "klipper";
-    };
-    users.groups.klipper = { };
+  services.fluidd = {
+    enable = true;
+    hostName = "print-controller.johnbargman.net"; # Access via http://localhost:80; change for domain
+    nginx = { };
+  };
 
-    users.users.moonraker = {
-      isSystemUser = true;
-      group = "moonraker";
-      extraGroups = [ "klipper" ]; # Allow Moonraker access to Klipper
-    };
-    users.groups.moonraker = { };
+  users.users.klipper = {
+    isSystemUser = true;
+    group = "klipper";
+    home = "/var/lib/klipper";
+    createHome = true;
+  };
+  users.groups.klipper = { };
 
-    # Open firewall ports if needed
-    networking.firewall.allowedTCPPorts = [ 80 7125 ];
+  users.users.moonraker = {
+    isSystemUser = true;
+    group = "moonraker";
+    extraGroups = [ "klipper" ]; # Moonraker needs access to Klipper files
+    home = "/var/lib/moonraker";
+    createHome = true;
+  };
+  users.groups.moonraker = { };
 
-    # Ensure nginx is enabled via Fluidd
-  }
+  # Open firewall ports if needed
+  networking.firewall.allowedTCPPorts = [ 80 7125 ];
+
+  # Ensure nginx is enabled via Fluidd
+}

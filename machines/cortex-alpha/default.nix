@@ -5,7 +5,7 @@
   imports =
     [
       # Include the results of the hardware scan.
-      (import ../../services/acme_server.nix { fqdn="johnbargman.net";})
+      (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
       ../../server_services/ldap.nix
       ./hardware-configuration.nix
     ];
@@ -21,21 +21,21 @@
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
   };
-security.acme.defaults.email = "commander@johnbargman.net";
+  security.acme.defaults.email = "commander@johnbargman.net";
   security.acme.certs."johnbargman.net" = {
-    extraDomainNames = [ "*.johnbargman.net" ];#johnbargman.com"];
+    extraDomainNames = [ "*.johnbargman.net" ]; #johnbargman.com"];
   };
   services.nginx = {
     enable = true;
     virtualHosts = {
-        "_" = {
-          default = true;
-          listenAddresses = [ "10.88.128.1" "10.88.127.1" "82.5.173.252" ];
-          locations."/" = {
-            return = "444";  # Close connection without response
-          };
+      "_" = {
+        default = true;
+        listenAddresses = [ "10.88.128.1" "10.88.127.1" "82.5.173.252" ];
+        locations."/" = {
+          return = "444"; # Close connection without response
         };
-     "johnbargman.net" = {
+      };
+      "johnbargman.net" = {
         enableACME = true;
         acmeRoot = null;
         forceSSL = true;
@@ -56,8 +56,24 @@ security.acme.defaults.email = "commander@johnbargman.net";
           #proxyWebsockets = false; # needed if you need to use websocket
         };
       };
+      "print-controller.johnbargman.net" = {
+        #serverName = "ap.local";
+        useACMEHost = "johnbargman.net";
+        addSSL = true;
+        listenAddresses = [ "10.88.128.1" "10.88.127.1" ];
+        locations."~/" = {
+          proxyPass = "http://10.88.127.30:80";
+          extraConfig = ''
+            proxy_set_header host $host;
+            proxy_set_header x-real-ip $remote_addr;
+            proxy_set_header x-forwarded-for $proxy_add_x_forwarded_for;
+            proxy_set_header x-forwarded-proto $scheme;
+          '';
+          proxyWebsockets = true; # needed if you need to use websocket
+        };
+      };
       "ap.johnbargman.net" = {
-      #serverName = "ap.local";
+        #serverName = "ap.local";
         useACMEHost = "johnbargman.net";
         addSSL = true;
         listenAddresses = [ "10.88.128.1" "10.88.127.1" ];
@@ -211,8 +227,8 @@ security.acme.defaults.email = "commander@johnbargman.net";
       dhcp-range = [ "enp3s0,10.88.128.128,10.88.128.254,24h" ];
       # Static hosts
       dhcp-host = [
-        "f8:32:e4:b9:77:0b,DataStorage,10.88.128.3,infinite"
-        "b8:27:eb:7f:f0:38,printcontroller,10.88.128.10,infinite"
+        "f8:32:e4:b9:77:0b,data-storage,10.88.128.3,infinite"
+        "b8:27:eb:7f:f0:38,print-controller,10.88.128.10,infinite"
         "10:0b:a9:7e:cc:8c,terminal-zero,10.88.128.20,infinite"
         "f0:de:f1:c7:fe:30,terminal-zero,10.88.128.21,infinite"
         "dc:85:de:86:a8:77,terminal-nx-01,10.88.128.22,infinite"
@@ -233,6 +249,7 @@ security.acme.defaults.email = "commander@johnbargman.net";
       address = [
         "/${config.networking.hostName}.johnbargman.net/10.88.128.1"
         "/ap.johnbargman.net/10.88.128.1"
+        "/print-controller.johnbargman.net/10.88.128.1"
         "/minio.local/10.88.128.1"
       ];
     };

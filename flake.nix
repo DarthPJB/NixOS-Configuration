@@ -16,7 +16,7 @@
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
   # --------------------------------------------------------------------------------------------------
-  outputs = { self, parsecgaming, nixos-hardware, secrix, nixinate, nixpkgs_unstable, nixpkgs_stable  }:
+  outputs = { self, parsecgaming, nixos-hardware, secrix, nixinate, nixpkgs_unstable, nixpkgs_stable }:
     let
       #      inherit (secrix) secrix;
       nixpkgs = nixpkgs_stable;
@@ -171,7 +171,7 @@
                   inherit self;
                   nixinate = {
                     port = "1108";
-                    host = "10.88.128.10";
+                    host = "10.88.127.30";
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;
@@ -219,7 +219,7 @@
                   inherit self;
                   #inherit secrix;
                   nixinate = {
-                    host = "alpha-two.johnbargman.net";
+                    #host = "alpha-one.johnbargman.net";
                     sshUser = "John88";
                     port = 1108;
                     substituteOnTarget = true;
@@ -251,8 +251,7 @@
                 {
                   inherit self;
                   nixinate = {
-                    host = "10.88.128.20";
-                    #host = "192.168.2.200";
+                    host = "10.88.127.20";
                     port = 1108;
                     sshUser = "John88";
                     substituteOnTarget = true;
@@ -292,7 +291,7 @@
                 {
                   inherit self;
                   nixinate = {
-                    host = "10.88.128.22";
+                    host = "10.88.127.21";
                     port = "1108";
                     sshUser = "John88";
                     substituteOnTarget = true;
@@ -333,7 +332,7 @@
                 {
                   inherit self;
                   nixinate = {
-                    host = "192.168.122.69";
+                    #host = "192.168.122.69";
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;
@@ -363,7 +362,7 @@
                   inherit self;
                   nixinate = {
                     #host = "cortex-alpha.johnbargman.net"; #"10.88.128.1";
-                    host = "10.88.128.1";
+                    host = "10.88.127.1";
                     sshUser = "John88";
                     port = 1108;
                     substituteOnTarget = true;
@@ -397,7 +396,7 @@
                   inherit self;
                   nixinate = {
                     port = 1108;
-                    host = "10.88.128.3";
+                    host = "10.88.127.3";
                     sshUser = "John88";
                     substituteOnTarget = false;
                     hermetic = true;
@@ -408,7 +407,6 @@
           ];
         };
 
-        # In a mirror darkly
         alpha-two = un_nixpkgs.lib.nixosSystem
           {
             # In a mirror darkly
