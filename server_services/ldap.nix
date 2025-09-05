@@ -9,8 +9,8 @@ in
   services.openldap = {
     enable = true;
 
-    /* enable plain and secure connections */
-    urlList = [ "ldap:///" "ldaps:///" ];
+    /* enable secure connections */
+    urlList = [ "ldaps:///" ];
 
     settings = {
       attrs = {
@@ -31,6 +31,7 @@ in
           "${pkgs.openldap}/etc/schema/core.ldif"
           "${pkgs.openldap}/etc/schema/cosine.ldif"
           "${pkgs.openldap}/etc/schema/inetorgperson.ldif"
+          "${pkgs.openldap}/etc/schema/nis.ldif" 
         ];
 
         "olcDatabase={1}mdb".attrs = {
@@ -43,7 +44,7 @@ in
 
           /* your admin account, do not use writeText on a production system */
           olcRootDN = "cn=commander,dc=johnbargman,dc=net";
-          olcRootPW.path = pkgs.writeText "olcRootPW" "pass";
+          olcRootPW.path = config.secrix.services.openldap.secrets.ldap_master_password.decrypted.path;
 
           olcAccess = [
             /* custom access rules for userPassword attributes */
