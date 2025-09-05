@@ -1,12 +1,10 @@
-{ config, pkgs, ... }: {
-
-
+{ config, pkgs, self, ... }: {
   services.klipper = {
     enable = true;
     user = "klipper";
     group = "klipper";
     mutableConfig = true; # Use declarative config
-    configFile = "/var/lib/klipper/config/printer.cfg";
+    # configDir = "/var/lib/moonrager/config"; #TODO: investigate post 25.05
     settings = {
       # Minimal example; expand with your printer hardware specifics
       mcu = {
@@ -28,15 +26,13 @@
       };
       "probe" = {
         pin = "^!PC14";
-        z_offset = "1.225";
+        z_offset = "1.925";
         x_offset = "-44";
         y_offset = "-4";
         speed = "10";
         lift_speed = "20";
         samples = "3";
         samples_tolerance_retries = "3";
-
-
       };
       "stepper_x" = {
         step_pin = "PB13";
@@ -162,7 +158,7 @@
         pin = "EXP1_1";
       };
       "virtual_sdcard" = {
-        path = "/var/lib/klipper/gcodes";
+        path = "/var/lib/moonraker/gcodes";
       };
       "display_status" = { };
       "pause_resume" = { };
@@ -196,10 +192,6 @@
           "10.88.127.0/24"
         ];
       };
-      file_manager = {
-        config_path = "/var/lib/klipper/config"; # Explicitly set config path
-        gcode_path = "/var/lib/klipper/gcodes"; # Matches virtual_sdcard
-      };
       octoprint_compat = { }; # Optional compatibility
     };
   };
@@ -207,12 +199,14 @@
   services.fluidd = {
     enable = true;
     hostName = "print-controller.johnbargman.net"; # Access via http://localhost:80; change for domain
-    nginx = { };
+    nginx = { 
+        };
   };
 
   users.users.klipper = {
     isSystemUser = true;
     group = "klipper";
+    extraGroups = [ "moonraker" ]; # Moonraker needs access to Klipper files
     home = "/var/lib/klipper";
     createHome = true;
   };
@@ -231,4 +225,10 @@
   networking.firewall.allowedTCPPorts = [ 80 7125 ];
 
   # Ensure nginx is enabled via Fluidd
+ secrix.services.nginx.secrets.ldap_master_password.encrypted.file = "${self}/secrets/ldap_master_password";
+  
+  #TODO: Nginx with LDAP via PAM
+  services.nginx = {
+    enable = true;
+  };
 }
