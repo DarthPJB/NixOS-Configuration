@@ -4,9 +4,15 @@
     user = "klipper";
     group = "klipper";
     mutableConfig = true; # Use declarative config
-    # configDir = "/var/lib/moonrager/config"; #TODO: investigate post 25.05
+    mustableConfigFolder = "/var/lib/moonraker/config"; #TODO: investigate post 25.05
+
+    firmwares = 
+    {   
+        enable = true;
+        enableKlipperFlash = true;
+        serial = "/dev/serial/by-id/usb-Klipper_stm32g0b1xx_18004D000350415339373620-if00";
+    }
     settings = {
-      # Minimal example; expand with your printer hardware specifics
       mcu = {
         serial = "/dev/serial/by-id/usb-Klipper_stm32g0b1xx_18004D000350415339373620-if00";
       };
