@@ -60,7 +60,7 @@
       ];
 
 
-      local-worker-image = import "${nixpkgs_stable.cutPath}/nixos/lib/make-disk-image.nix"
+      local-worker-image = import "${nixpkgs_stable}/nixos/lib/make-disk-image.nix"
         #local-image = import "${self}/lib/make-storeless-image.nix"
         rec {
           pkgs = un_pkgs;
@@ -121,18 +121,26 @@
           ];
 
         };
-        display-2 = nixpkgs.lib.nixosSystem {
+        display-2 = un_nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
+          pkgs = un_pkgs_arm;
           modules = [
             "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             secrix.nixosModules.default
-            #nixos-hardware.nixosModules.raspberry-pi-4
+            nixos-hardware.nixosModules.raspberry-pi-4
             ./machines/display/2.nix
             ./users/darthpjb.nix
             ./configuration.nix
             ./locale/home_networks.nix
             {
-              hardware.firmware = with nixpkgs.legacyPackages.aarch64-linux; [ raspberrypiWirelessFirmware ];
+              imports = [
+                "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
+              ];
+              disabledModules =
+                [
+                  "${nixpkgs_stable}/nixos/modules/profiles/all-hardware.nix"
+                  "${nixpkgs_stable}/nixos/modules/profiles/base.nix"
+                ];
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               #secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBqeo8ceyMoi+SIRP5hhilbhJvFflphD0efolDCxccj9";
               system.stateVersion = "24.11";
@@ -141,7 +149,7 @@
                   inherit self;
                   nixinate = {
                     port = "1108";
-                    #host = "10.88.128.10";
+                    host = "10.88.128.230";
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;
@@ -150,6 +158,7 @@
                 };
             }
           ];
+
         };
         print-controller = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
