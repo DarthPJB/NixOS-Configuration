@@ -6,15 +6,15 @@
     mutableConfig = true; # Use declarative config
     mutableConfigFolder = "/var/lib/moonraker/config"; #TODO: investigate post 25.05
 
-    firmwares = 
-    {   
-        "mcu" = { 
-        enable = true;
-        configFile = ./klipper/skr-e3.cfg;
-        enableKlipperFlash = true;
-        serial = "/dev/serial/by-id/usb-Klipper_stm32g0b1xx_18004D000350415339373620-if00";
+    firmwares =
+      {
+        "mcu" = {
+          enable = true;
+          configFile = ./klipper/skr-e3.cfg;
+          enableKlipperFlash = true;
+          serial = "/dev/serial/by-id/usb-Klipper_stm32g0b1xx_18004D000350415339373620-if00";
         };
-    };
+      };
     settings = {
       "mcu" = {
         serial = "/dev/serial/by-id/usb-Klipper_stm32g0b1xx_18004D000350415339373620-if00";
@@ -208,8 +208,7 @@
   services.fluidd = {
     enable = true;
     hostName = "print-controller.johnbargman.net"; # Access via http://localhost:80; change for domain
-    nginx = { 
-        };
+    nginx = { };
   };
 
   users.users.klipper = {
@@ -234,8 +233,8 @@
   networking.firewall.allowedTCPPorts = [ 80 7125 ];
 
   # Ensure nginx is enabled via Fluidd
- secrix.services.nginx.secrets.ldap_master_password.encrypted.file = "${self}/secrets/ldap_master_password";
-  
+  secrix.services.nginx.secrets.ldap_master_password.encrypted.file = "${self}/secrets/ldap_master_password";
+
   #TODO: Nginx with LDAP via PAM
   services.nginx = {
     enable = true;

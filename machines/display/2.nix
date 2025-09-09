@@ -7,7 +7,7 @@ in
   imports = [
     ../../lib/enable-wg.nix
     ../../environments/i3wm.nix
-        ../../environments/browsers.nix
+    ../../environments/browsers.nix
   ];
   system.name = "${hostname}";
   fileSystems."/" = {
@@ -15,13 +15,13 @@ in
     fsType = "ext4";
   };
   sdImage.compressImage = false;
-  #secrix.services.wireguard-wireg0.secrets."${hostname}".encrypted.file = "../../secrets/wg_${hostname}";
-  #environment.vpn =
-  #  {
-  #    enable = true;
-  #    postfix = 30;
-  #    privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
-  #  };
+  secrix.services.wireguard-wireg0.secrets."${hostname}".encrypted.file = "${self}/secrets/wg_${hostname}";
+  environment.vpn =
+    {
+      enable = true;
+      postfix = 42;
+      privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
+    };
 
   hardware = {
     enableRedistributableFirmware = true;

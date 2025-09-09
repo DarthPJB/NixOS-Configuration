@@ -17,4 +17,6 @@ builtins.attrValues (builtins.mapAttrs wg-peer {
   "remote-worker" = "50";
   "remote-builder" = "51";
   "LINDA" = "88";
+  "display-1" = "41";
+  "display-2" = "42";
 })
