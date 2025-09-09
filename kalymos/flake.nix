@@ -64,8 +64,8 @@
     in
     {
       lib.mkDottedPaperSvg = mkDottedPaperSvg;
-      packages.${system}= {
-        default = mkDottedPaperSvg {}; 
+      packages.${system} = {
+        default = mkDottedPaperSvg { };
         customA5 = mkDottedPaperSvg {
           pageWidth = 148;
           pageHeight = 210;
@@ -73,6 +73,6 @@
           dotRadius = 0.5;
           outputFile = "dotted-paper-a5.svg";
         };
-    };
+      };
     };
 }
