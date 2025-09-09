@@ -7,6 +7,7 @@ in
   imports = [
     ../../lib/enable-wg.nix
     ../../environments/i3wm.nix
+        ../../environments/browsers.nix
   ];
   system.name = "${hostname}";
   fileSystems."/" = {
@@ -49,7 +50,7 @@ in
       generic-extlinux-compatible.enable = true;
     };
   };
-
+  services.libinput.enable = true;
   services.pipewire = {
     enable = true;
     alsa.enable = true;

@@ -103,7 +103,7 @@
                   "${nixpkgs_stable}/nixos/modules/profiles/base.nix"
                 ];
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
-              #secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBqeo8ceyMoi+SIRP5hhilbhJvFflphD0efolDCxccj9";
+              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOOxb+iAm5nTcC3oRsMIcxcciKRj8VnGpp1JIAdGVTZU root@display-1";
               system.stateVersion = "24.11";
               _module.args =
                 {
@@ -142,14 +142,14 @@
                   "${nixpkgs_stable}/nixos/modules/profiles/base.nix"
                 ];
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
-              #secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBqeo8ceyMoi+SIRP5hhilbhJvFflphD0efolDCxccj9";
+              secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
               system.stateVersion = "24.11";
               _module.args =
                 {
                   inherit self;
                   nixinate = {
                     port = "1108";
-                    host = "10.88.128.230";
+                    host = "10.88.128.211";
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;

@@ -6,7 +6,8 @@ in
 
   imports = [
     ../../lib/enable-wg.nix
-    ../../environments/jwm.nix
+    ../../environments/i3wm.nix
+    ../../environments/browsers.nix
   ];
   system.name = "${hostname}";
   fileSystems."/" = {

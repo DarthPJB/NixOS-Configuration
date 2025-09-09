@@ -6,8 +6,8 @@
     pkgs.firefox
     pkgs.obsidian
     pkgs.vivaldi
-    #pkgs.google-chrome
-    #pkgs.brave
+    pkgs.chromium
+    pkgs.brave
   ];
 
   services = {
