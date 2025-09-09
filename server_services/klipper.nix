@@ -4,16 +4,19 @@
     user = "klipper";
     group = "klipper";
     mutableConfig = true; # Use declarative config
-    mustableConfigFolder = "/var/lib/moonraker/config"; #TODO: investigate post 25.05
+    mutableConfigFolder = "/var/lib/moonraker/config"; #TODO: investigate post 25.05
 
     firmwares = 
     {   
+        "mcu" = { 
         enable = true;
+        configFile = ./klipper/skr-e3.cfg;
         enableKlipperFlash = true;
         serial = "/dev/serial/by-id/usb-Klipper_stm32g0b1xx_18004D000350415339373620-if00";
-    }
+        };
+    };
     settings = {
-      mcu = {
+      "mcu" = {
         serial = "/dev/serial/by-id/usb-Klipper_stm32g0b1xx_18004D000350415339373620-if00";
       };
       "bed_mesh" = {
