@@ -110,7 +110,7 @@
                   inherit self;
                   nixinate = {
                     port = "1108";
-                    host = "10.88.128.230";
+                    host = "10.88.127.41";
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;
@@ -149,7 +149,7 @@
                   inherit self;
                   nixinate = {
                     port = "1108";
-                    host = "10.88.128.211";
+                    host = "10.88.127.42";
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;
