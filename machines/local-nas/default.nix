@@ -12,7 +12,7 @@
 
   networking.networkmanager = {
     enable = true;
-    packages = [ pkgs.networkmanager-l2tp ];
+    plugins = [ pkgs.networkmanager-l2tp ];
   };
 
   secrix.services.wireguard-wireg0.secrets.local_nas.encrypted.file = ../../secrets/wg_local-nas;

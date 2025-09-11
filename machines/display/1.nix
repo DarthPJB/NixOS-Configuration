@@ -22,7 +22,34 @@ in
       postfix = 41;
       privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
     };
-
+  systemd.user.services.browser =
+    {
+      enable = true;
+      description = "browser-autostart";
+      wantedBy = [ "graphical-session.target" ];
+      serviceConfig =
+        {
+          Restart = "always";
+          ExecStart = ''
+            ${lib.getExe pkgs.chromium}
+          '';
+          PassEnvironment = "DISPLAY XAUTHORITY";
+        };
+    };
+  systemd.user.services.terminal =
+    {
+      enable = true;
+      description = "terminal-autostart";
+      wantedBy = [ "graphical-session.target" ];
+      serviceConfig =
+        {
+          Restart = "always";
+          ExecStart = ''
+            ${lib.getExe pkgs.alacritty} --option window.background='#000000' -e sh -c "${lib.getExe pkgs.tmux} new-session ${lib.getExe pkgs.bottom}"}
+          '';
+          PassEnvironment = "DISPLAY XAUTHORITY";
+        };
+    };
   hardware = {
     enableRedistributableFirmware = true;
     raspberry-pi."4" =
@@ -36,8 +63,6 @@ in
   };
 
   boot = {
-    #  kernelModules = [ "bcm2835-v4l2" ];
-    # Ensure vc4 and audio modules
     initrd.kernelModules = [ "vc4" "snd_bcm2835" ];
     #  supportedFilesystems.zfs = lib.mkForce false;
     #  kernelPackages = pkgs.linuxPackages_rpi4;

@@ -34,7 +34,7 @@
     pkgs.virtiofsd
     pkgs.gwe
     pkgs.virt-manager
-    self.un_pkgs.nixd
+    #self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.nixd
   ];
   services.avahi = {
     enable = true;

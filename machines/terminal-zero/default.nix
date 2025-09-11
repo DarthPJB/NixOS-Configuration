@@ -48,7 +48,7 @@
         {
           Restart = "always";
           ExecStart = ''
-            ${lib.getExe self.un_pkgs.firefox}
+            ${lib.getExe pkgs.vivaldi}
           '';
           PassEnvironment = "DISPLAY XAUTHORITY";
         };

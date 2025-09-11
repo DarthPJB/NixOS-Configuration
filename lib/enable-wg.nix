@@ -4,7 +4,7 @@
     {
       enable = lib.mkEnableOption "enable WireGaurd";
       postfix = lib.mkOption { type = lib.types.int; };
-      privateKeyFile = lib.mkOption { type = lib.types.string; };
+      privateKeyFile = lib.mkOption { type = lib.types.str; };
     };
   config = lib.mkIf config.environment.vpn.enable
     {

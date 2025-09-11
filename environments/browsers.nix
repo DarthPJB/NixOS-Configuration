@@ -1,7 +1,7 @@
 { config, pkgs, self, ... }:
 
 {
-  #nixpkgs.config.allowUnfree = true;
+  nixpkgs.config.allowUnfree = true;
   environment.systemPackages = [
     pkgs.firefox
     pkgs.obsidian
