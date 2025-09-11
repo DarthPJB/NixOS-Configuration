@@ -2,14 +2,9 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
-    #nixinate.url = "path:/home/pokej/repo/DarthPJB/nixinate";
     nixinate.url = "github:DarthPJB/nixinate";
     nixinate.inputs.nixpkgs.follows = "nixpkgs_stable";
     secrix.url = "github:Platonic-Systems/secrix";
-
-    #raspberry-pi-nix.url = "github:nix-community/raspberry-pi-nix";
-    #secrix.url = "path:/home/pokej/repo/platonic.systems/secrix";
-
     nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-25.05";
     nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-24.11";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
@@ -18,21 +13,6 @@
   # --------------------------------------------------------------------------------------------------
   outputs = { self, parsecgaming, nixos-hardware, secrix, nixinate, nixpkgs_unstable, nixpkgs_stable }:
     let
-      #      inherit (secrix) secrix;
-      nixpkgs = nixpkgs_stable;
-      un_nixpkgs = nixpkgs_unstable;
-      pkgs = import nixpkgs_stable {
-        system = "x86_64-linux";
-        config.allowUnfree = true;
-      };
-      un_pkgs_arm = import nixpkgs_unstable {
-        system = "aarch64-linux";
-        config.allowUnfree = true;
-      };
-      un_pkgs = import nixpkgs_unstable {
-        system = "x86_64-linux";
-        config.allowUnfree = true;
-      };
       # Define the function for a single configuration
       mkUncompressedSdImage = config:
         (config.extendModules {
@@ -41,67 +21,68 @@
 
       # Define the function for a list of configurations
       mkUncompressedSdImages = configs:
-        nixpkgs.lib.genAttrs
+        nixpkgs_stable.lib.genAttrs
           (map (cfg: cfg.config.system.name) configs)
           (name: mkUncompressedSdImage (builtins.getAttr name self.nixosConfigurations));
     in
     {
-      formatter.x86_64-linux = pkgs.nixpkgs-fmt;
+      formatter.x86_64-linux = nixpkgs_stable.legacyPackages.x86_64-linux.nixpkgs-fmt;
       apps.x86_64-linux = (nixinate.nixinate.x86_64-linux self).nixinate // ({ secrix = secrix.secrix self; });
-      inherit un_pkgs;
 
       # -----------------------------------IMAGES-------------------------------------------------
 
-      packages."aarch64-linux" = mkUncompressedSdImages [
-        self.nixosConfigurations.print-controller
-        self.nixosConfigurations.alpha-one
-        self.nixosConfigurations.display-1
-        self.nixosConfigurations.display-2
-      ];
+      packages = {
+        "aarch64-linux" = mkUncompressedSdImages [
+          self.nixosConfigurations.print-controller
+          self.nixosConfigurations.display-0
+          self.nixosConfigurations.display-1
+          self.nixosConfigurations.display-2
+        ];
+        "armv7l-linux" = mkUncompressedSdImages [
+          self.nixosConfigurations.beta-one
+        ];
 
 
-      local-worker-image = import "${nixpkgs_stable}/nixos/lib/make-disk-image.nix"
-        #local-image = import "${self}/lib/make-storeless-image.nix"
-        rec {
-          pkgs = un_pkgs;
-          inherit (pkgs) lib;
-          inherit (self.nixosConfigurations.local-worker) config;
-          additionalPaths = [ ];
-          name = "local.worker-image";
-          format = "qcow2";
-          onlyNixStore = false;
-          label = "root_FS_nixos";
-          partitionTableType = "efi";
-          installBootLoader = true;
-          touchEFIVars = true;
-          diskSize = "auto";
-          additionalSpace = "2048M";
-          copyChannel = true;
-          OVMF = pkgs.OVMF.fd;
-        };
+        #"x86_64-linux".local-worker-image = self.nixosConfigurations.local-worker.build.vm;
+        /*import "${nixpkgs_stable}/nixos/lib/make-disk-image.nix"
+          #local-image = import "${self}/lib/make-storeless-image.nix"
+          rec {
+            pkgs = nixpkgs_unstable;
+            inherit (pkgs) lib;
+            inherit (self.nixosConfigurations.local-worker) config;
+            additionalPaths = [ ];
+            name = "local.worker-image";
+            format = "qcow2";
+            onlyNixStore = false;
+            label = "root_FS_nixos";
+            partitionTableType = "efi";
+            installBootLoader = true;
+            touchEFIVars = true;
+            diskSize = "auto";
+            additionalSpace = "2048M";
+            copyChannel = true;
+            OVMF = pkgs.OVMF.fd;
+          };*/
+      };
       # --------------------------------------------------------------------------------------------------
       nixosConfigurations = {
         # -----------------------------------ARM DEVICES-------------------------------------------------
-        display-1 = un_nixpkgs.lib.nixosSystem {
+        display-1 = nixpkgs_stable.lib.nixosSystem {
           system = "aarch64-linux";
-          pkgs = un_pkgs_arm;
           modules = [
-            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
             secrix.nixosModules.default
             nixos-hardware.nixosModules.raspberry-pi-4
             ./machines/display/1.nix
-            ./users/darthpjb.nix
             ./configuration.nix
             ./locale/home_networks.nix
             {
-              imports = [
-                "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
-              ];
               disabledModules =
-                [
-                  "${nixpkgs_stable}/nixos/modules/profiles/all-hardware.nix"
-                  "${nixpkgs_stable}/nixos/modules/profiles/base.nix"
-                ];
+              [
+                "${nixpkgs_stable}/nixos/modules/profiles/all-hardware.nix"
+                "${nixpkgs_stable}/nixos/modules/profiles/base.nix"
+              ];
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOOxb+iAm5nTcC3oRsMIcxcciKRj8VnGpp1JIAdGVTZU root@display-1";
               system.stateVersion = "24.11";
@@ -121,26 +102,22 @@
           ];
 
         };
-        display-2 = un_nixpkgs.lib.nixosSystem {
+        display-2 = nixpkgs_stable.lib.nixosSystem {
           system = "aarch64-linux";
-          pkgs = un_pkgs_arm;
           modules = [
-            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
             secrix.nixosModules.default
             nixos-hardware.nixosModules.raspberry-pi-4
             ./machines/display/2.nix
-            ./users/darthpjb.nix
             ./configuration.nix
             ./locale/home_networks.nix
             {
-              imports = [
-                "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
-              ];
               disabledModules =
-                [
-                  "${nixpkgs_stable}/nixos/modules/profiles/all-hardware.nix"
-                  "${nixpkgs_stable}/nixos/modules/profiles/base.nix"
-                ];
+              [
+                "${nixpkgs_stable}/nixos/modules/profiles/all-hardware.nix"
+                "${nixpkgs_stable}/nixos/modules/profiles/base.nix"
+              ];
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
               system.stateVersion = "24.11";
@@ -160,13 +137,72 @@
           ];
 
         };
-        print-controller = nixpkgs.lib.nixosSystem {
+        beta-one = nixpkgs_stable.lib.nixosSystem {
+          system = "armv7l-linux";
+          modules = [
+            "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-raspberrypi.nix"
+            secrix.nixosModules.default
+            nixos-hardware.nixosModules.raspberry-pi-2
+            ./machines/beta/1.nix
+            ./configuration.nix
+            ./locale/home_networks.nix
+            {
+              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
+              # secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
+              system.stateVersion = "24.11";
+              _module.args =
+                {
+                  inherit self;
+                  nixinate = {
+                    port = "1108";
+                    ##host = "10.88.127.42";
+                    sshUser = "John88";
+                    substituteOnTarget = true;
+                    hermetic = true;
+                    buildOn = "local";
+                  };
+                };
+            }
+          ];
+        };
+        beta-two = nixpkgs_unstable.lib.nixosSystem {
+          system = "riscv64-linux";
+          modules = [
+            "${nixos-hardware}/starfive/visionfive/v1/sd-image-installer.nix"
+            "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
+            secrix.nixosModules.default
+            ./machines/beta/2.nix
+            ./configuration.nix
+            ./locale/home_networks.nix
+            {
+              nixpkgs.crossSystem = {
+                    config = "riscv64-unknown-linux-gnu";
+                    system = "riscv64-linux";
+               };
+              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
+              # secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
+              system.stateVersion = "24.11";
+              _module.args =
+                {
+                  inherit self;
+                  nixinate = {
+                    port = "1108";
+                    ##host = "10.88.127.42";
+                    sshUser = "John88";
+                    substituteOnTarget = true;
+                    hermetic = true;
+                    buildOn = "local";
+                  };
+                };
+            }
+          ];
+        };
+        print-controller = nixpkgs_stable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
-            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             secrix.nixosModules.default
             ./machines/print-controller
-            ./users/darthpjb.nix
             ./configuration.nix
             ./locale/home_networks.nix
             ./server_services/klipper.nix
@@ -190,14 +226,13 @@
             }
           ];
         };
-        alpha-one = nixpkgs.lib.nixosSystem {
+        display-0 = nixpkgs_stable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
             secrix.nixosModules.default
             nixos-hardware.nixosModules.raspberry-pi-3
-            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-            ./machines/display-module
-            ./users/darthpjb.nix
+            "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            ./machines/display/0.nix
             ./configuration.nix
             ./locale/home_networks.nix
             ./modifier_imports/minimal.nix
@@ -240,7 +275,7 @@
           ];
         };
         # -----------------------------------TERMINALS-------------------------------------------------
-        terminal-zero = nixpkgs.lib.nixosSystem {
+        terminal-zero = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
             secrix.nixosModules.default
@@ -279,7 +314,7 @@
             }
           ];
         };
-        terminal-nx-01 = nixpkgs.lib.nixosSystem {
+        terminal-nx-01 = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
             secrix.nixosModules.default
@@ -311,23 +346,21 @@
 
               environment.systemPackages =
                 [
-                  pkgs.ffmpeg
                   parsecgaming.packages.x86_64-linux.parsecgaming
                 ];
             }
           ];
         };
         # -----------------------------------VIRTUALISED-------------------------------------------------
-        local-worker = nixpkgs.lib.nixosSystem {
+        local-worker = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
             secrix.nixosModules.default
-            "${nixpkgs}/nixos/modules/virtualisation/libvirtd.nix"
+            "${nixpkgs_stable}/nixos/modules/virtualisation/libvirtd.nix"
             ./machines/local-worker
             ./environments/blender.nix
             ./modifier_imports/cuda.nix
             ./configuration.nix
-            ./users/darthpjb.nix
             ./environments/neovim.nix
             ./environments/emacs.nix
             ./environments/sshd.nix
@@ -354,7 +387,7 @@
           ];
         };
         # -----------------------------------HOME LAB-------------------------------------------------
-        cortex-alpha = nixpkgs.lib.nixosSystem {
+        cortex-alpha = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
             secrix.nixosModules.default
@@ -383,16 +416,14 @@
           ];
         };
 
-        data-storage = nixpkgs.lib.nixosSystem {
+        data-storage = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
-          #  specialArgs = { inherit inputs; };
           modules = [
             secrix.nixosModules.default
             ./modifier_imports/zfs.nix
             ./machines/local-nas
             ./server_services/minio-insecure.nix
             ./configuration.nix
-            ./users/darthpjb.nix
             ./environments/neovim.nix
             ./environments/emacs.nix
             ./environments/sshd.nix
@@ -416,16 +447,15 @@
           ];
         };
 
-        alpha-two = un_nixpkgs.lib.nixosSystem
+        alpha-two = nixpkgs_unstable.lib.nixosSystem
           {
             # In a mirror darkly
-            pkgs = un_pkgs;
             system = "x86_64-linux";
             modules = [
               secrix.nixosModules.default
               ./configuration.nix
               ./machines/alpha-two
-              (import ./locale/home_networks.nix)
+              ./locale/home_networks.nix
               ./environments/i3wm_darthpjb.nix
               ./environments/steam.nix
               ./environments/code.nix
@@ -445,7 +475,7 @@
               ./modifier_imports/memtest.nix
               ./modifier_imports/hosts.nix
               ./modifier_imports/virtualisation-libvirtd.nix
-              ./modifier_imports/arm-emulation.nix
+              ./modifier_imports/binfmt-emulation.nix
               ./environments/sshd.nix
               ./modifier_imports/remote-builder.nix
               {
@@ -468,9 +498,8 @@
               }
             ];
           };
-        LINDA = nixpkgs.lib.nixosSystem {
+        LINDA = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
-          #specialArgs = { inherit inputs; };
           modules = [
             secrix.nixosModules.default
             ./configuration.nix
@@ -496,7 +525,7 @@
             ./modifier_imports/hosts.nix
             ./modifier_imports/zfs.nix
             ./modifier_imports/virtualisation-libvirtd.nix
-            ./modifier_imports/arm-emulation.nix
+            ./modifier_imports/binfmt-emulation.nix
             ./environments/sshd.nix
             ./modifier_imports/cuda.nix
             ./modifier_imports/remote-builder.nix
@@ -524,7 +553,7 @@
           ];
         };
         # -----------------------------------REMOTE SYSTEMS-------------------------------------------------
-        remote-worker = nixpkgs.lib.nixosSystem {
+        remote-worker = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
             secrix.nixosModules.default
@@ -539,7 +568,7 @@
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M";
               system.stateVersion = "24.11";
               imports = [
-                "${nixpkgs}/nixos/modules/virtualisation/openstack-config.nix"
+                "${nixpkgs_stable}/nixos/modules/virtualisation/openstack-config.nix"
               ];
               _module.args =
                 {
@@ -556,14 +585,13 @@
             }
           ];
         };
-        storage-array = nixpkgs.lib.nixosSystem {
+        storage-array = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
             secrix.nixosModules.default
             ./modifier_imports/zfs.nix
             ./machines/storage-array
             ./configuration.nix
-            ./users/darthpjb.nix
             ./environments/neovim.nix
             ./environments/emacs.nix
             ./environments/code.nix
@@ -590,7 +618,7 @@
             }
           ];
         };
-        remote-builder = nixpkgs.lib.nixosSystem {
+        remote-builder = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
             secrix.nixosModules.default
@@ -607,7 +635,7 @@
               system.stateVersion = "24.11";
               networking.hostName = "remote-builder";
               imports = [
-                "${nixpkgs}/nixos/modules/virtualisation/openstack-config.nix"
+                "${nixpkgs_stable}/nixos/modules/virtualisation/openstack-config.nix"
               ];
               _module.args =
                 {

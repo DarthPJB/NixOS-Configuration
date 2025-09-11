@@ -36,8 +36,6 @@ in
   };
 
   boot = {
-    #  kernelModules = [ "bcm2835-v4l2" ];
-    # Ensure vc4 and audio modules
     initrd.kernelModules = [ "vc4" "snd_bcm2835" ];
     #  supportedFilesystems.zfs = lib.mkForce false;
     #  kernelPackages = pkgs.linuxPackages_rpi4;

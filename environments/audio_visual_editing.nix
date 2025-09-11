@@ -2,14 +2,8 @@
 
 {
   environment.systemPackages =
-    let
-      system = "x86_64-linux";
-      pkgs_unstable = self.outputs.un_pkgs;
-      services.gvfs.enable = true; # Mount, trash, and other functionalities
-      services.tumbler.enable = true; # Thumbnail support for images
-    in
     [
-      pkgs_unstable.ffmpeg-full
+      pkgs.ffmpeg-full
       pkgs.mplayer
       pkgs.vlc
       pkgs.pcmanfm
@@ -18,6 +12,8 @@
       pkgs.shotcut
       pkgs.shutter
     ];
+  services.gvfs.enable = true; # Mount, trash, and other functionalities
+  services.tumbler.enable = true; # Thumbnail support for images
   programs = {
     thunar.enable = true;
   };

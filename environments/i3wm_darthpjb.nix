@@ -73,7 +73,7 @@
 
   services.picom =
     {
-      enable = false;
+      enable = true;
       activeOpacity = 1;
       inactiveOpacity = 0.96;
       backend = "glx";
@@ -115,8 +115,6 @@
         "80:class_g = 'i3lock-color' && !focused"
         "100:fullscreen"
       ];
-      shadow = true;
-      shadowOpacity = 0.75;
     };
   programs.dconf.enable = true;
 }
