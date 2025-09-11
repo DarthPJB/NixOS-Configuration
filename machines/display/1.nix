@@ -37,6 +37,35 @@ in
         };
     };
   systemd.user.services.terminal =
+  let
+  config_file = pkgs.writeText "theme.toml" ''
+    [colors.primary]
+    background = '#000000'
+    foreground = '#b6b6b6'
+
+    # Normal colors
+    [colors.normal]
+    black   = '#000000'
+    red     = '#990000'
+    green   = '#00a600'
+    yellow  = '#999900'
+    blue    = '#0000b2'
+    magenta = '#b200b2'
+    cyan    = '#00a6b2'
+    white   = '#bfbfbf'
+
+    # Bright colors
+    [colors.bright]
+    black   = '#666666'
+    red     = '#e50000'
+    green   = '#00d900'
+    yellow  = '#e5e500'
+    blue    = '#0000ff'
+    magenta = '#e500e5'
+    cyan    = '#00e5e5'
+    white   = '#e5e5e5'
+    '';
+  in
     {
       enable = true;
       description = "terminal-autostart";
@@ -45,7 +74,7 @@ in
         {
           Restart = "always";
           ExecStart = ''
-            ${lib.getExe pkgs.alacritty} --option window.background='#000000' -e sh -c "${lib.getExe pkgs.tmux} new-session ${lib.getExe pkgs.bottom}"}
+            ${lib.getExe pkgs.alacritty} --config-file ${config_file} -e "${lib.getExe pkgs.bottom}"
           '';
           PassEnvironment = "DISPLAY XAUTHORITY";
         };
