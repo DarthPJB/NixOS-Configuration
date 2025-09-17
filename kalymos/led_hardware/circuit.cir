@@ -1,7 +1,7 @@
 * Simple Voltage Divider Circuit
-V1 in 0 5
-R1 in out 1k
+V1 1 0 DC 5V
+R1 1 out 1k
 R2 out 0 1k
-.dc
-.print dc V(out)
+.PRINT DC V(out)
+.DC
 .end
