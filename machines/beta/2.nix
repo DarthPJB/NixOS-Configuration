@@ -1,6 +1,6 @@
 { pkgs, config, lib, self, ... }:
 let
-  hostname = "beta-1";
+  hostname = "beta-two";
 in
 {
 
@@ -9,7 +9,7 @@ in
     #../../environments/i3wm.nix
     #../../environments/browsers.nix
   ];
-
+  documentation.man.enable = false;
   system.name = "${hostname}";
 
   services.pipewire = {
@@ -24,10 +24,5 @@ in
   services.openssh.enable = true;
   networking = {
     hostName = "${hostname}";
-    interfaces."wlan0".useDHCP = true;
-    wireless = {
-      interfaces = [ "wlan0" ];
-      enable = true;
-    };
   };
 }

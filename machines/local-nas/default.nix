@@ -10,10 +10,10 @@
       ../../lib/enable-wg.nix
     ];
 
-  networking.networkmanager = {
-    enable = true;
-    plugins = [ pkgs.networkmanager-l2tp ];
-  };
+#  networking.networkmanager = {
+#    enable = true;
+#    plugins = [ pkgs.networkmanager-l2tp ];
+#  };
 
   secrix.services.wireguard-wireg0.secrets.local_nas.encrypted.file = ../../secrets/wg_local-nas;
   environment.vpn =
