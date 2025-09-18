@@ -41,7 +41,8 @@
     nssmdns4 = true;
     openFirewall = true;
   };
-  services.printing.enable = true;
+  services.printing.enable = true;#
+  services.guix.enable = true;
   programs.adb.enable = true;
   users.users.John88.extraGroups = [ "adbusers" ];
   systemd.user.services =

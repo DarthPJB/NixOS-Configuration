@@ -5,8 +5,8 @@
     nixinate.url = "github:DarthPJB/nixinate";
     nixinate.inputs.nixpkgs.follows = "nixpkgs_stable";
     secrix.url = "github:Platonic-Systems/secrix";
-    nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-25.05";
-    nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-25.05";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
@@ -40,6 +40,9 @@
         ];
         "armv7l-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.beta-one
+        ];
+        "riscv64-linux" = mkUncompressedSdImages [
+          self.nixosConfigurations.beta-two
         ];
 
 
