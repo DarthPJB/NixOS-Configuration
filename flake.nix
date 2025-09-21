@@ -81,10 +81,9 @@
             ./configuration.nix
             ./locale/home_networks.nix
             {
-              disabledModules =
-              [
-                "${nixpkgs_stable}/nixos/modules/profiles/all-hardware.nix"
-                "${nixpkgs_stable}/nixos/modules/profiles/base.nix"
+              disabledModules = [
+                "profiles/all-hardware.nix"
+                "profiles/base.nix"
               ];
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOOxb+iAm5nTcC3oRsMIcxcciKRj8VnGpp1JIAdGVTZU root@display-1";
@@ -116,10 +115,9 @@
             ./configuration.nix
             ./locale/home_networks.nix
             {
-              disabledModules =
-              [
-                "${nixpkgs_stable}/nixos/modules/profiles/all-hardware.nix"
-                "${nixpkgs_stable}/nixos/modules/profiles/base.nix"
+              disabledModules = [
+                "profiles/all-hardware.nix"
+                "profiles/base.nix"
               ];
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
@@ -150,6 +148,10 @@
             ./configuration.nix
             ./locale/home_networks.nix
             {
+              disabledModules = [
+                "profiles/all-hardware.nix"
+                "profiles/base.nix"
+              ];
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               # secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
               system.stateVersion = "24.11";
@@ -158,7 +160,7 @@
                   inherit self;
                   nixinate = {
                     port = "1108";
-                    ##host = "10.88.127.42";
+                    host = "10.88.128.126";
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;
@@ -178,6 +180,10 @@
             ./configuration.nix
             ./locale/home_networks.nix
             {
+              disabledModules = [
+                "profiles/all-hardware.nix"
+                "profiles/base.nix"
+              ];
               nixpkgs.crossSystem = {
                     config = "riscv64-unknown-linux-gnu";
                     system = "riscv64-linux";
@@ -190,7 +196,7 @@
                   inherit self;
                   nixinate = {
                     port = "1108";
-                    ##host = "10.88.127.42";
+                    host = "10.88.127.127";
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;
@@ -210,6 +216,10 @@
             ./locale/home_networks.nix
             ./server_services/klipper.nix
             {
+              disabledModules = [
+                "profiles/all-hardware.nix"
+                "profiles/base.nix"
+              ];
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBqeo8ceyMoi+SIRP5hhilbhJvFflphD0efolDCxccj9";
               system.stateVersion = "24.11";
@@ -246,11 +256,10 @@
                 "${nixpkgs_stable}/nixos/modules/profiles/headless.nix"
                 "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
               ];
-              disabledModules =
-                [
-                  "${nixpkgs_stable}/nixos/modules/profiles/all-hardware.nix"
-                  "${nixpkgs_stable}/nixos/modules/profiles/base.nix"
-                ];
+              disabledModules = [
+                "profiles/all-hardware.nix"
+                "profiles/base.nix"
+              ];
               services.kmscon = {
                 autologinUser = "John88";
                 extraConfig = ''
@@ -266,7 +275,7 @@
                   inherit self;
                   #inherit secrix;
                   nixinate = {
-                    #host = "alpha-one.johnbargman.net";
+                    host = "alpha-one.johnbargman.net";
                     sshUser = "John88";
                     port = 1108;
                     substituteOnTarget = true;
@@ -377,7 +386,7 @@
                 {
                   inherit self;
                   nixinate = {
-                    #host = "192.168.122.69";
+                    host = "10.88.127.89";
                     sshUser = "John88";
                     substituteOnTarget = true;
                     hermetic = true;
@@ -490,7 +499,7 @@
                   {
                     inherit self;
                     nixinate = {
-                      #                      host = "192.168.2.200";
+                      host = "10.88.127.90";
                       port = 1108;
                       sshUser = "John88";
                       substituteOnTarget = true;

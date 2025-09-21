@@ -90,7 +90,11 @@ in
       enable = true;
     };
   };
-
+  nixpkgs.overlays = [
+    (final: super: {
+      makeModulesClosure = x: super.makeModulesClosure (x // { allowMissing = true; });
+    })
+  ];
   boot = {
     initrd.kernelModules = [ "vc4" "snd_bcm2835" ];
     #  supportedFilesystems.zfs = lib.mkForce false;

@@ -1,5 +1,10 @@
 { pkgs, config, lib, ... }:
 {
+  nixpkgs.overlays = [
+    (final: super: {
+      makeModulesClosure = x: super.makeModulesClosure (x // { allowMissing = true; });
+    })
+  ];
   imports = [ ./piscreen.nix ];
   swapDevices =
     [{ device = "/dev/disk/by-uuid/ea2a84bb-a66c-4291-ac03-597999559a5d"; }];
@@ -13,7 +18,7 @@
 
   networking =
     {
-      hostName = "display-module";
+      hostName = "display-zero";
     };
   boot = {
     supportedFilesystems.zfs = lib.mkForce false;

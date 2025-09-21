@@ -3,7 +3,11 @@ let
   hostname = "display-2";
 in
 {
-
+  nixpkgs.overlays = [
+    (final: super: {
+      makeModulesClosure = x: super.makeModulesClosure (x // { allowMissing = true; });
+    })
+  ];
   imports = [
     ../../lib/enable-wg.nix
     ../../environments/i3wm.nix

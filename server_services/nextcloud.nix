@@ -48,6 +48,7 @@ in
       ];
       config =
         {
+          dbtype = "sqlite";
           adminpassFile = config.secrix.system.secrets.nextcloud_password_file.decrypted.path;
           objectstore.s3 =
             {
