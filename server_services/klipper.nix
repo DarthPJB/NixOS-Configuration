@@ -9,9 +9,9 @@
     firmwares =
       {
         "mcu" = {
-          enable = true;
+          enable = false;
           configFile = ./klipper/skr-e3.cfg;
-          enableKlipperFlash = true;
+          enableKlipperFlash = false;
           serial = "/dev/serial/by-id/usb-Klipper_stm32g0b1xx_18004D000350415339373620-if00";
         };
       };
