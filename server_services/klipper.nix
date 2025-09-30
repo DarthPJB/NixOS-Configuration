@@ -181,6 +181,10 @@
       };
     };
   };
+  systemd.tmpfiles.rules = [
+    "d /var/lib/moonraker 0775 moonraker moonraker - -"
+    "d /var/lib/moonraker/config 0775 klipper moonraker - -"
+    ];
   security.polkit.enable = true;
   services.moonraker = {
     enable = true;

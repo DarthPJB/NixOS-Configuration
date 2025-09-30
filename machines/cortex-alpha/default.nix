@@ -143,66 +143,70 @@
           #          "enp2s0".allowedUDPPortRanges = [{ from = 27020; to = 27021; }];
         };
       };
-    #    nftables = {
-    #      enable = true;
-    #      ruleset = ''
-    #        table ip nat {
-    #          chain PREROUTING {
-    #            type nat hook prerouting priority dstnat; policy accept;
-    #            iifname "enp2s0" tcp dport 27000 dnat to 10.88.128.24:27000
-    #            iifname "enp2s0" tcp dport 27003 dnat to 10.88.128.24:27003
-    #            iifname "enp2s0" tcp dport 27020 dnat to 10.88.128.24:27020
-    #            iifname "enp2s0" tcp dport 27021 dnat to 10.88.128.24:27021
-    #          }
-    #        }
-    #      '';
-    #    };
+#        nftables = {
+#          enable = true;
+#          ruleset = ''
+#            table ip nat {
+#              chain PREROUTING {
+#                type nat hook prerouting priority dstnat; policy accept;
+#                iifname "enp2s0" tcp dport 27015 dnat to 10.88.128.88:17780
+#                iifname "enp2s0" udp dport 17780 dnat to 10.88.128.88:17780
+#                iifname "enp2s0" udp dport 17780 dnat to 10.88.128.88:17780
+#                iifname "enp2s0" udp dport 17781 dnat to 10.88.128.88:17781
+#                iifname "enp2s0" udp dport 17782 dnat to 10.88.128.88:17782
+#                iifname "enp2s0" udp dport 17783 dnat to 10.88.128.88:17783
+#                iifname "enp2s0" udp dport 17784 dnat to 10.88.128.88:17784
+#                iifname "enp2s0" udp dport 17785 dnat to 10.88.128.88:17785
+#              }
+#           }
+#          '';
+#        };
     nat = {
       enable = true;
       internalIPs = [ "10.88.128.0/24" ];
       externalInterface = "enp2s0";
       internalInterfaces = [ "eno3" ];
       forwardPorts = [
-        /*        {
-          sourcePort = 27000;
+        {
+          sourcePort = 17780;
           proto = "udp";
-          destination = "10.88.128.24:27000";
+          destination = "10.88.128.88:17780";
         }
         {
-          sourcePort = 27003;
+          sourcePort = 17781;
           proto = "udp";
-          destination = "10.88.128.24:27003";
+          destination = "10.88.128.88:17781";
         }
         {
-          sourcePort = 27020;
+          sourcePort = 17782;
           proto = "udp";
-          destination = "10.88.128.24:27020";
+          destination = "10.88.128.88:17782";
         }
         {
-          sourcePort = 27021;
+          sourcePort = 17783;
           proto = "udp";
-          destination = "10.88.128.24:27021";
+          destination = "10.88.128.88:17783";
         }
         {
-          sourcePort = 27000;
-          proto = "tcp";
-          destination = "10.88.128.24:27000";
+          sourcePort = 17784;
+          proto = "udp";
+          destination = "10.88.128.88:17784";
         }
         {
-          sourcePort = 27003;
-          proto = "tcp";
-          destination = "10.88.128.24:27003";
+          sourcePort = 17785;
+          proto = "udp";
+          destination = "10.88.128.88:17785";
         }
         {
-          sourcePort = 27020;
-          proto = "tcp";
-          destination = "10.88.128.24:27020";
+          sourcePort = 27015;
+          proto = "udp";
+          destination = "10.88.128.88:27015";
         }
         {
-          sourcePort = 27021;
+          sourcePort = 27015;
           proto = "tcp";
-          destination = "10.88.128.24:27021";
-        }*/
+          destination = "10.88.128.88:27015";
+        }
       ];
     };
     nameservers = [ "127.0.0.1" ];

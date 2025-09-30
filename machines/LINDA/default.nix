@@ -176,12 +176,12 @@
       };
     };
     firewall.interfaces = {
-      "br0".allowedTCPPorts = [ 2108 4010 1108 27000 27003 ];
-      "br0".allowedTCPPortRanges = [{ from = 27020; to = 27021; }];
+      "br0".allowedTCPPorts = [ 2108 4010 1108 27015 ];
+      "br0".allowedTCPPortRanges = [{ from = 17780; to = 17785; }];
       "wireg0".allowedTCPPorts = [ 80 ];
 
-      "br0".allowedUDPPorts = [ 2108 1108 4010 27000 27003 ];
-      "br0".allowedUDPPortRanges = [{ from = 27020; to = 27021; }];
+      "br0".allowedUDPPorts = [ 2108 1108 4010 27015 ];
+      "br0".allowedUDPPortRanges = [{ from = 17780; to = 17785; }];
       "wireg0".allowedUDPPorts = [ 1108 ];
 
     };
