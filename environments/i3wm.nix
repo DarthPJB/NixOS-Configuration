@@ -3,7 +3,7 @@
 {
   # Use librsvg's gdk-pixbuf loader cache file as it enables gdk-pixbuf to load SVG files (important for icons)
   environment.sessionVariables = {
-    GDK_PIXBUF_MODULE_FILE = "$(echo ${pkgs.librsvg.out}/lib/gdk-pixbuf-2.0/*/loaders.cache)";
+    GDK_PIXBUF_MODULE_FILE = "${pkgs.librsvg.out}/lib/gdk-pixbuf-2.0/*/loaders.cache)";
   };
   environment.systemPackages = [
     pkgs.arc-theme
@@ -16,11 +16,6 @@
     pkgs.lxappearance
     pkgs.arandr
   ];
-  services.displayManager.sddm =
-    {
-      enable = true;
-      autoNumlock = true;
-    };
   systemd = {
     user.services.polkit-gnome-authentication-agent-1 = {
       description = "polkit-gnome-authentication-agent-1";
@@ -195,6 +190,11 @@
         	'';
     in
     {
+    displayManager.lightdm =
+    {
+      enable = true;
+      #autoNumlock = true;
+    };
       enable = true;
       desktopManager.gnome.extraGSettingsOverrides = ''
         [org.gnome.desktop.interface]
