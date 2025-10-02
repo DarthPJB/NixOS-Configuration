@@ -11,6 +11,7 @@ in
   imports = [
     ../../lib/enable-wg.nix
     ../../environments/i3wm.nix
+    ../../environments/rtl-sdr.nix
     ../../environments/browsers.nix
   ];
   system.name = "${hostname}";
