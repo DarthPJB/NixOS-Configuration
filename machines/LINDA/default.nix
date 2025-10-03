@@ -129,10 +129,12 @@
 
 
       extraModprobeConfig = ''
-        options vfio-pci ids=10de:2487,10de:228b,1d6b:0002,28de:2102,28de:2300,0424:2744,28de:2613,28de:2400
+        options vfio-pci ids=10de:1c81,10de:0fb9,1b21:2142
       '';
+      #
+      # 0000:21:00.0 0000:21:00.1
       initrd.preDeviceCommands = ''
-        DEVS="0000:21:00.0 0000:21:00.1 0000:46:00.0"
+        DEVS="0000:46:00.0 0000:4d:00.0 0000:4d:00.1"
         for DEV in $DEVS; do
             echo "vfio-pci" > /sys/bus/pci/devices/$DEV/driver_override
         done
