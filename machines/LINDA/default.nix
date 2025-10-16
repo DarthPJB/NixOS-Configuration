@@ -1,5 +1,5 @@
 # -------------------------- LINDACORE --------------------------
-{ config, pkgs, self, ... }:
+{ config, pkgs, self,lib, ... }:
 {
   imports =
     [
@@ -28,6 +28,7 @@
       };
     };
   };
+
   environment.systemPackages = [
     self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.looking-glass-client
     self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.scream
@@ -120,19 +121,22 @@
         };
 
       #kernelPackages= pkgs.linuxPackages_5_18;
-      kernelModules = [ "kvm-amd" "vfio_virqfd" "vfio_pci" "vfio_iommu_type1" "vfio" ];
+      kernelModules = [ "kvm-amd" "vfio_pci" "vfio_iommu_type1" "vfio" ];
       kernelParams = [
+        "acpi_enforce_resources=lax"
         "amd_iommu=on"
+        "amd_pstate=active"
       ];
       extraModulePackages = [ ];
 
 
 
       extraModprobeConfig = ''
-        options vfio-pci ids=10de:1c81,10de:0fb9,1b21:2142
+        options vfio-pci ids=1b21:2142,10de:1c81,10de:0fb9
       '';
-      #
+      # ,
       # 0000:21:00.0 0000:21:00.1
+      # echo ""
       initrd.preDeviceCommands = ''
         DEVS="0000:46:00.0 0000:4d:00.0 0000:4d:00.1"
         for DEV in $DEVS; do
@@ -161,8 +165,8 @@
     graphics.enable32Bit = true;
     nvidia = {
       nvidiaSettings = true;
-      open = false;
-      modesetting.enable = false;
+      open = true;
+     modesetting.enable = false;
       powerManagement.enable = true;
     };
   };
@@ -178,11 +182,11 @@
       };
     };
     firewall.interfaces = {
-      "br0".allowedTCPPorts = [ 2108 4010 1108 27015 ];
+      "br0".allowedTCPPorts = [ 2108 4010 1108 27015 4549 ];
       "br0".allowedTCPPortRanges = [{ from = 17780; to = 17785; }];
       "wireg0".allowedTCPPorts = [ 80 ];
 
-      "br0".allowedUDPPorts = [ 2108 1108 4010 27015 ];
+      "br0".allowedUDPPorts = [ 2108 1108 4010 27015 4175 4179 4171];
       "br0".allowedUDPPortRanges = [{ from = 17780; to = 17785; }];
       "wireg0".allowedUDPPorts = [ 1108 ];
 
