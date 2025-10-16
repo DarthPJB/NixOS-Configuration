@@ -138,7 +138,7 @@
 
 
           #         "enp2s0".allowedTCPPorts = [ 27000 27003 ];
-          "enp2s0".allowedUDPPorts = [ 1108 443 2108 ]; # 27000 27003 ];
+          "enp2s0".allowedUDPPorts = [ 1108 443 2108 4549 4175 4179 4171]; # 27000 27003 ];
           #          "enp2s0".allowedTCPPortRanges = [{ from = 27020; to = 27021; }];
           #          "enp2s0".allowedUDPPortRanges = [{ from = 27020; to = 27021; }];
         };
@@ -206,6 +206,26 @@
           sourcePort = 27015;
           proto = "tcp";
           destination = "10.88.128.88:27015";
+        }
+        {
+          sourcePort = 4175;
+          proto = "udp";
+          destination = "10.88.128.88:4175";
+        }
+        {
+          sourcePort = 4179;
+          proto = "udp";
+          destination = "10.88.128.88:4179";
+        }
+        {
+          sourcePort = 4171;
+          proto = "udp";
+          destination = "10.88.128.88:4171";
+        }
+        {
+          sourcePort = 4549;
+          proto = "tcp";
+          destination = "10.88.128.88:4549";
         }
       ];
     };

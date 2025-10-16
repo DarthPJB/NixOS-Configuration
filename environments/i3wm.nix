@@ -32,6 +32,12 @@
       };
     };
   };
+
+  # Ensure journald is configured to persist logs
+  services.journald.extraConfig = ''
+    Storage=persistent
+    MaxRetentionSec=1month
+  '';
   programs.dconf.enable = true;
   services.xserver =
     let
@@ -190,6 +196,11 @@
         	'';
     in
     {
+    config = ''
+    Section "ServerFlags"
+        Option "Log" "Verbose 3"
+    EndSection
+    '';
     displayManager.lightdm =
     {
       enable = true;
