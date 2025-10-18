@@ -148,6 +148,7 @@
             ./configuration.nix
             ./locale/home_networks.nix
             {
+
               disabledModules = [
                 "profiles/all-hardware.nix"
                 "profiles/base.nix"
@@ -180,10 +181,12 @@
             ./configuration.nix
             ./locale/home_networks.nix
             {
+                          # the platform that performs the build-step
               disabledModules = [
                 "profiles/all-hardware.nix"
                 "profiles/base.nix"
               ];
+              nixpkgs.localSystem.system = "x86_64-linux"; 
               nixpkgs.crossSystem = {
                     config = "riscv64-unknown-linux-gnu";
                     system = "riscv64-linux";
