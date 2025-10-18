@@ -8,6 +8,6 @@
       	      100.91.247.95 acropolis.platonic
               100.75.142.109 tumulus.platonic
               100.105.114.89 springboard.platonic
-              167.235.2.58 tankles.server
+              193.16.42.95 entrypoint.pinkerton
     '';
 }
