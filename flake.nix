@@ -24,6 +24,7 @@
         nixpkgs_stable.lib.genAttrs
           (map (cfg: cfg.config.system.name) configs)
           (name: mkUncompressedSdImage (builtins.getAttr name self.nixosConfigurations));
+
     in
     {
       formatter.x86_64-linux = nixpkgs_stable.legacyPackages.x86_64-linux.nixpkgs-fmt;
@@ -554,6 +555,7 @@
               nixpkgs.config.allowUnfree = true;
               _module.args =
                 {
+                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     host = "LINDACORE.johnbargman.net";
