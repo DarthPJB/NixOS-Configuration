@@ -1,11 +1,10 @@
-{ config, pkgs, self, ... }:
-
+{ config, pkgs, unstable, ... }:
 {
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = [
     pkgs.firefox
     pkgs.obsidian
-    pkgs.vivaldi
+    unstable.vivaldi
     pkgs.chromium
     pkgs.brave
   ];
