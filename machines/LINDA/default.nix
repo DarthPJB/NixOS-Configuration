@@ -16,17 +16,17 @@
         postfix = 88;
         privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.LINDA.decrypted.path;
       };
-    rclone-target = {
-      enable = true;
-      configFile = "${self}/secrets/rclone-config-file";
-      targets = {
-        obsidian-v3 = {
-          filePath = " /bulk-storage/88-DB-v3/";
-          remoteName = "minio:obsidian-v3";
-          syncInterval = 60; # every minute
-        };
-      };
-    };
+  #  rclone-target = {
+  #    enable = true;
+  #    configFile = "${self}/secrets/rclone-config-file";
+  #    targets = {
+  #      obsidian-v3 = {
+  #        filePath = " /bulk-storage/88-DB-v3/";
+  #        remoteName = "minio:obsidian-v3";
+  #        syncInterval = 60; # every minute
+  #      };
+  #   };
+  #  };
   };
 
   environment.systemPackages = [

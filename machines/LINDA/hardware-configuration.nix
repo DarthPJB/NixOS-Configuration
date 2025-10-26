@@ -57,13 +57,19 @@
     };
   fileSystems."/etc/ssh" =
     {
-      device = "bulk-storage/etc-ssh";
+      device = "speed-storage/etc-ssh";
+      fsType = "zfs";
+      options = [ "nofail" ];
+    };
+  fileSystems."/var/log" =
+    {
+      device = "speed-storage/var-log";
       fsType = "zfs";
       options = [ "nofail" ];
     };
   fileSystems."/var/lib/tailscale" =
     {
-      device = "bulk-storage/var-lib-tailscale";
+      device = "speed-storage/var-lib-tailscale";
       fsType = "zfs";
       options = [ "nofail" ];
     };
