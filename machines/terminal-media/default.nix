@@ -18,7 +18,7 @@
   environment.systemPackages = [
     pkgs.google-chrome
     pkgs.brave
-
+    pkgs.moonlight-qt
   ];
 
   systemd.user.services.browser =

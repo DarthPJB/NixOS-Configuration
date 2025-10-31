@@ -91,6 +91,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
+                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     port = "1108";
@@ -125,6 +126,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
+                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     port = "1108";
@@ -159,6 +161,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
+                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     port = "1108";
@@ -197,6 +200,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
+                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     port = "1108";
@@ -230,6 +234,7 @@
               networking.hostName = "print-controller";
               _module.args =
                 {
+                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     port = "1108";
@@ -276,6 +281,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
+                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   #inherit secrix;
                   nixinate = {
@@ -309,6 +315,7 @@
             {
               _module.args =
                 {
+                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     host = "10.88.127.20";
@@ -349,6 +356,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
+                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     host = "10.88.127.21";
@@ -388,6 +396,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
+                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     host = "10.88.127.89";
@@ -417,6 +426,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
+                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     #host = "cortex-alpha.johnbargman.net"; #"10.88.128.1";
@@ -449,6 +459,7 @@
 
               _module.args =
                 {
+                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     port = 1108;
@@ -501,6 +512,7 @@
                   ];
                 _module.args =
                   {
+                    unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
                     inherit self;
                     nixinate = {
                       host = "10.88.127.90";
@@ -589,6 +601,7 @@
               ];
               _module.args =
                 {
+                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     port = 1108;
@@ -622,6 +635,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
+                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     host = "10.88.127.4";
@@ -656,6 +670,7 @@
               ];
               _module.args =
                 {
+                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     port = 1108;
