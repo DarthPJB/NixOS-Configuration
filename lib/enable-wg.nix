@@ -8,6 +8,13 @@
     };
   config = lib.mkIf config.environment.vpn.enable
     {
+      services.openssh = lib.mkIf config.services.openssh.enable
+        {
+          listenAddresses = [{
+            addr = "10.88.127.${builtins.toString config.environment.vpn.postfix}";
+            port = 1108;
+          }];
+        };
       networking.wireguard = {
         enable = true;
         interfaces = {

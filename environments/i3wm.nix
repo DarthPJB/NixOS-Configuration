@@ -196,16 +196,16 @@
         	'';
     in
     {
-    config = ''
-    Section "ServerFlags"
-        Option "Log" "Verbose 3"
-    EndSection
-    '';
-    displayManager.lightdm =
-    {
-      enable = true;
-      #autoNumlock = true;
-    };
+      config = ''
+        Section "ServerFlags"
+            Option "Log" "Verbose 3"
+        EndSection
+      '';
+      displayManager.lightdm =
+        {
+          enable = true;
+          #autoNumlock = true;
+        };
       enable = true;
       desktopManager.gnome.extraGSettingsOverrides = ''
         [org.gnome.desktop.interface]

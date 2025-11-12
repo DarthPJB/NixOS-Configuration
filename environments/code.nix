@@ -6,8 +6,8 @@
   };
   environment.systemPackages = with pkgs; [
     pkgs.gpp
-    pkgs.entr    
-#pkgs.emscripten
+    pkgs.entr
+    #pkgs.emscripten
     #pkgs.pulsar
     #pkgs.upterm
     #pkgs.platformio
