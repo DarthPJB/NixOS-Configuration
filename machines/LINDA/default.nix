@@ -1,5 +1,5 @@
 # -------------------------- LINDACORE --------------------------
-{ config, pkgs, self,lib, ... }:
+{ config, pkgs, self, lib, ... }:
 {
   imports =
     [
@@ -18,18 +18,18 @@
       };
     rclone-target = {
       enable = true;
-     configFile = "${self}/secrets/rclone-config-file";
+      configFile = "${self}/secrets/rclone-config-file";
       targets = {
         obsidian-v3 = {
           filePath = " /bulk-storage/88-DB-v3/";
-         remoteName = "minio:obsidian-v3";
-       syncInterval = 60; # every minute
+          remoteName = "minio:obsidian-v3";
+          syncInterval = 60; # every minute
+        };
       };
     };
   };
-  };
 
-    services.sunshine = {
+  services.sunshine = {
     enable = true;
     autoStart = true;
     openFirewall = true;
@@ -48,7 +48,7 @@
     nssmdns4 = true;
     openFirewall = true;
   };
-  services.printing.enable = true;#
+  services.printing.enable = true; #
   services.guix.enable = true;
   programs.adb.enable = true;
   users.users.John88.extraGroups = [ "adbusers" ];
@@ -172,7 +172,7 @@
     nvidia = {
       nvidiaSettings = true;
       open = true;
-     modesetting.enable = false;
+      modesetting.enable = false;
       powerManagement.enable = true;
     };
   };
@@ -192,7 +192,7 @@
       "br0".allowedTCPPortRanges = [{ from = 17780; to = 17785; }];
       "wireg0".allowedTCPPorts = [ 80 ];
 
-      "br0".allowedUDPPorts = [ 2108 1108 4010 27015 4175 4179 4171];
+      "br0".allowedUDPPorts = [ 2108 1108 4010 27015 4175 4179 4171 ];
       "br0".allowedUDPPortRanges = [{ from = 17780; to = 17785; }];
       "wireg0".allowedUDPPorts = [ 1108 ];
 

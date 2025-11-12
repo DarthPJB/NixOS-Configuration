@@ -2,21 +2,24 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
+    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     nixinate.url = "github:DarthPJB/nixinate";
     nixinate.inputs.nixpkgs.follows = "nixpkgs_stable";
     secrix.url = "github:Platonic-Systems/secrix";
-    nixpkgs_unstable.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs_stable.url = "github:nixos/nixpkgs/nixos-25.05";
+    nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
+    nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
   # --------------------------------------------------------------------------------------------------
-  outputs = { self, parsecgaming, nixos-hardware, secrix, nixinate, nixpkgs_unstable, nixpkgs_stable }:
+  outputs = { self, parsecgaming, nixos-hardware, secrix, nixinate, nixpkgs_unstable, nixpkgs_stable, determinate }:
     let
       # Define the function for a single configuration
       mkUncompressedSdImage = config:
         (config.extendModules {
-          modules = [{ sdImage.compressImage = false; }];
+          modules = [
+            { sdImage.compressImage = false; }
+          ];
         }).config.system.build.sdImage;
 
       # Define the function for a list of configurations
@@ -74,6 +77,7 @@
         display-1 = nixpkgs_stable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
+            determinate.nixosModules.default
             "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
             secrix.nixosModules.default
@@ -91,7 +95,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
-                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
+                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     port = "1108";
@@ -109,6 +113,7 @@
         display-2 = nixpkgs_stable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
+            determinate.nixosModules.default
             "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
             secrix.nixosModules.default
@@ -126,7 +131,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
-                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
+                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     port = "1108";
@@ -144,6 +149,7 @@
         beta-one = nixpkgs_stable.lib.nixosSystem {
           system = "armv7l-linux";
           modules = [
+            determinate.nixosModules.default
             "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-raspberrypi.nix"
             secrix.nixosModules.default
             nixos-hardware.nixosModules.raspberry-pi-2
@@ -161,7 +167,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
-                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
+                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     port = "1108";
@@ -178,6 +184,7 @@
         beta-two = nixpkgs_unstable.lib.nixosSystem {
           system = "riscv64-linux";
           modules = [
+            determinate.nixosModules.default
             "${nixos-hardware}/starfive/visionfive/v1/sd-image-installer.nix"
             "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
             secrix.nixosModules.default
@@ -185,22 +192,22 @@
             ./configuration.nix
             ./locale/home_networks.nix
             {
-                          # the platform that performs the build-step
+              # the platform that performs the build-step
               disabledModules = [
                 "profiles/all-hardware.nix"
                 "profiles/base.nix"
               ];
-              nixpkgs.localSystem.system = "x86_64-linux"; 
+              nixpkgs.localSystem.system = "x86_64-linux";
               nixpkgs.crossSystem = {
-                    config = "riscv64-unknown-linux-gnu";
-                    system = "riscv64-linux";
-               };
+                config = "riscv64-unknown-linux-gnu";
+                system = "riscv64-linux";
+              };
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               # secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
               system.stateVersion = "24.11";
               _module.args =
                 {
-                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
+                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     port = "1108";
@@ -217,6 +224,7 @@
         print-controller = nixpkgs_stable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
+            determinate.nixosModules.default
             "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             secrix.nixosModules.default
             ./machines/print-controller
@@ -234,7 +242,7 @@
               networking.hostName = "print-controller";
               _module.args =
                 {
-                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
+                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     port = "1108";
@@ -251,6 +259,7 @@
         display-0 = nixpkgs_stable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
+            determinate.nixosModules.default
             secrix.nixosModules.default
             nixos-hardware.nixosModules.raspberry-pi-3
             "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
@@ -281,7 +290,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
-                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
+                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   #inherit secrix;
                   nixinate = {
@@ -300,6 +309,7 @@
         terminal-zero = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
+            determinate.nixosModules.default
             secrix.nixosModules.default
             ./modifier_imports/bluetooth.nix
             (import ./locale/home_networks.nix)
@@ -315,7 +325,7 @@
             {
               _module.args =
                 {
-                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
+                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     host = "10.88.127.20";
@@ -340,6 +350,7 @@
         terminal-nx-01 = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
+            determinate.nixosModules.default
             secrix.nixosModules.default
             (import ./locale/hotel_wifi.nix)
             (import ./locale/home_networks.nix)
@@ -356,7 +367,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
-                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
+                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     host = "10.88.127.21";
@@ -379,6 +390,7 @@
         local-worker = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
+            determinate.nixosModules.default
             secrix.nixosModules.default
             "${nixpkgs_stable}/nixos/modules/virtualisation/libvirtd.nix"
             ./machines/local-worker
@@ -396,7 +408,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
-                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
+                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     host = "10.88.127.89";
@@ -415,6 +427,7 @@
         cortex-alpha = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
+            determinate.nixosModules.default
             secrix.nixosModules.default
             ./machines/cortex-alpha
             ./configuration.nix
@@ -426,7 +439,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
-                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
+                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     #host = "cortex-alpha.johnbargman.net"; #"10.88.128.1";
@@ -445,6 +458,7 @@
         data-storage = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
+            determinate.nixosModules.default
             secrix.nixosModules.default
             ./modifier_imports/zfs.nix
             ./machines/local-nas
@@ -459,7 +473,7 @@
 
               _module.args =
                 {
-                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
+                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     port = 1108;
@@ -479,6 +493,7 @@
             # In a mirror darkly
             system = "x86_64-linux";
             modules = [
+              determinate.nixosModules.default
               secrix.nixosModules.default
               ./configuration.nix
               ./machines/alpha-two
@@ -512,7 +527,7 @@
                   ];
                 _module.args =
                   {
-                    unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
+                    unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                     inherit self;
                     nixinate = {
                       host = "10.88.127.90";
@@ -529,6 +544,7 @@
         LINDA = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
+            determinate.nixosModules.default
             secrix.nixosModules.default
             ./configuration.nix
             ./machines/LINDA
@@ -567,7 +583,7 @@
               nixpkgs.config.allowUnfree = true;
               _module.args =
                 {
-                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
+                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     host = "LINDACORE.johnbargman.net";
@@ -585,6 +601,7 @@
         remote-worker = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
+            determinate.nixosModules.default
             secrix.nixosModules.default
             ./configuration.nix
             ./machines/remote-worker
@@ -601,7 +618,7 @@
               ];
               _module.args =
                 {
-                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
+                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     port = 1108;
@@ -618,6 +635,7 @@
         storage-array = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
+            determinate.nixosModules.default
             secrix.nixosModules.default
             ./modifier_imports/zfs.nix
             ./machines/storage-array
@@ -635,7 +653,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
-                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
+                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     host = "10.88.127.4";
@@ -652,6 +670,7 @@
         remote-builder = nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
+            determinate.nixosModules.default
             secrix.nixosModules.default
             ./users/darthpjb.nix
             ./modifier_imports/flakes.nix
@@ -670,7 +689,7 @@
               ];
               _module.args =
                 {
-                  unstable = import nixpkgs_unstable { system="x86_64-linux"; config.allowUnfree = true; };
+                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                   inherit self;
                   nixinate = {
                     port = 1108;

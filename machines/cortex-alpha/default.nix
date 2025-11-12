@@ -138,29 +138,29 @@
 
 
           #         "enp2s0".allowedTCPPorts = [ 27000 27003 ];
-          "enp2s0".allowedUDPPorts = [ 1108 443 2108 4549 4175 4179 4171]; # 27000 27003 ];
+          "enp2s0".allowedUDPPorts = [ 1108 443 2108 4549 4175 4179 4171 ]; # 27000 27003 ];
           #          "enp2s0".allowedTCPPortRanges = [{ from = 27020; to = 27021; }];
           #          "enp2s0".allowedUDPPortRanges = [{ from = 27020; to = 27021; }];
         };
       };
-#        nftables = {
-#          enable = true;
-#          ruleset = ''
-#            table ip nat {
-#              chain PREROUTING {
-#                type nat hook prerouting priority dstnat; policy accept;
-#                iifname "enp2s0" tcp dport 27015 dnat to 10.88.128.88:17780
-#                iifname "enp2s0" udp dport 17780 dnat to 10.88.128.88:17780
-#                iifname "enp2s0" udp dport 17780 dnat to 10.88.128.88:17780
-#                iifname "enp2s0" udp dport 17781 dnat to 10.88.128.88:17781
-#                iifname "enp2s0" udp dport 17782 dnat to 10.88.128.88:17782
-#                iifname "enp2s0" udp dport 17783 dnat to 10.88.128.88:17783
-#                iifname "enp2s0" udp dport 17784 dnat to 10.88.128.88:17784
-#                iifname "enp2s0" udp dport 17785 dnat to 10.88.128.88:17785
-#              }
-#           }
-#          '';
-#        };
+    #        nftables = {
+    #          enable = true;
+    #          ruleset = ''
+    #            table ip nat {
+    #              chain PREROUTING {
+    #                type nat hook prerouting priority dstnat; policy accept;
+    #                iifname "enp2s0" tcp dport 27015 dnat to 10.88.128.88:17780
+    #                iifname "enp2s0" udp dport 17780 dnat to 10.88.128.88:17780
+    #                iifname "enp2s0" udp dport 17780 dnat to 10.88.128.88:17780
+    #                iifname "enp2s0" udp dport 17781 dnat to 10.88.128.88:17781
+    #                iifname "enp2s0" udp dport 17782 dnat to 10.88.128.88:17782
+    #                iifname "enp2s0" udp dport 17783 dnat to 10.88.128.88:17783
+    #                iifname "enp2s0" udp dport 17784 dnat to 10.88.128.88:17784
+    #                iifname "enp2s0" udp dport 17785 dnat to 10.88.128.88:17785
+    #              }
+    #           }
+    #          '';
+    #        };
     nat = {
       enable = true;
       internalIPs = [ "10.88.128.0/24" ];
