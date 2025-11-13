@@ -42,13 +42,13 @@
           self.nixosConfigurations.display-1
           self.nixosConfigurations.display-2
         ];
-        "armv7l-linux" = mkUncompressedSdImages [
-          self.nixosConfigurations.beta-one
-        ];
-        "riscv64-linux" = mkUncompressedSdImages [
-          self.nixosConfigurations.beta-two
-        ];
-
+        #        "armv7l-linux" = mkUncompressedSdImages [
+        #          self.nixosConfigurations.beta-one
+        #        ];
+        #        "riscv64-linux" = mkUncompressedSdImages [
+        #          self.nixosConfigurations.beta-two
+        #        ];
+        #
 
         #"x86_64-linux".local-worker-image = self.nixosConfigurations.local-worker.build.vm;
         /*import "${nixpkgs_stable}/nixos/lib/make-disk-image.nix"
@@ -146,81 +146,81 @@
           ];
 
         };
-        beta-one = nixpkgs_stable.lib.nixosSystem {
-          system = "armv7l-linux";
-          modules = [
-            determinate.nixosModules.default
-            "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-raspberrypi.nix"
-            secrix.nixosModules.default
-            nixos-hardware.nixosModules.raspberry-pi-2
-            ./machines/beta/1.nix
-            ./configuration.nix
-            ./locale/home_networks.nix
-            {
-
-              disabledModules = [
-                "profiles/all-hardware.nix"
-                "profiles/base.nix"
-              ];
-              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
-              # secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
-              system.stateVersion = "24.11";
-              _module.args =
-                {
-                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
-                  inherit self;
-                  nixinate = {
-                    port = "1108";
-                    host = "10.88.128.126";
-                    sshUser = "John88";
-                    substituteOnTarget = true;
-                    hermetic = true;
-                    buildOn = "local";
-                  };
-                };
-            }
-          ];
-        };
-        beta-two = nixpkgs_unstable.lib.nixosSystem {
-          system = "riscv64-linux";
-          modules = [
-            determinate.nixosModules.default
-            "${nixos-hardware}/starfive/visionfive/v1/sd-image-installer.nix"
-            "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
-            secrix.nixosModules.default
-            ./machines/beta/2.nix
-            ./configuration.nix
-            ./locale/home_networks.nix
-            {
-              # the platform that performs the build-step
-              disabledModules = [
-                "profiles/all-hardware.nix"
-                "profiles/base.nix"
-              ];
-              nixpkgs.localSystem.system = "x86_64-linux";
-              nixpkgs.crossSystem = {
-                config = "riscv64-unknown-linux-gnu";
-                system = "riscv64-linux";
-              };
-              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
-              # secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
-              system.stateVersion = "24.11";
-              _module.args =
-                {
-                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
-                  inherit self;
-                  nixinate = {
-                    port = "1108";
-                    host = "10.88.127.127";
-                    sshUser = "John88";
-                    substituteOnTarget = true;
-                    hermetic = true;
-                    buildOn = "local";
-                  };
-                };
-            }
-          ];
-        };
+        #        beta-one = nixpkgs_stable.lib.nixosSystem {
+        #          system = "armv7l-linux";
+        #          modules = [
+        #            determinate.nixosModules.default
+        #            "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-raspberrypi.nix"
+        #            secrix.nixosModules.default
+        #            nixos-hardware.nixosModules.raspberry-pi-2
+        #            ./machines/beta/1.nix
+        #            ./configuration.nix
+        #            ./locale/home_networks.nix
+        #            {
+        #
+        #              disabledModules = [
+        #                "profiles/all-hardware.nix"
+        #                "profiles/base.nix"
+        #              ];
+        #              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
+        #              # secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
+        #              system.stateVersion = "24.11";
+        #              _module.args =
+        #                {
+        #                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
+        #                  inherit self;
+        #                  nixinate = {
+        #                    port = "1108";
+        #                    host = "10.88.128.126";
+        #                    sshUser = "John88";
+        #                    substituteOnTarget = true;
+        #                    hermetic = true;
+        #                    buildOn = "local";
+        #                  };
+        #                };
+        #            }
+        #          ];
+        #        };
+        #        beta-two = nixpkgs_unstable.lib.nixosSystem {
+        #          system = "riscv64-linux";
+        #          modules = [
+        #            determinate.nixosModules.default
+        #            "${nixos-hardware}/starfive/visionfive/v1/sd-image-installer.nix"
+        #            "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
+        #            secrix.nixosModules.default
+        #            ./machines/beta/2.nix
+        #            ./configuration.nix
+        #            ./locale/home_networks.nix
+        #            {
+        #              # the platform that performs the build-step
+        #              disabledModules = [
+        #                "profiles/all-hardware.nix"
+        #                "profiles/base.nix"
+        #              ];
+        #              nixpkgs.localSystem.system = "x86_64-linux";
+        #              nixpkgs.crossSystem = {
+        #                config = "riscv64-unknown-linux-gnu";
+        #                system = "riscv64-linux";
+        #              };
+        #              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
+        #              # secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
+        #              system.stateVersion = "24.11";
+        #              _module.args =
+        #                {
+        #                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
+        #                  inherit self;
+        #                  nixinate = {
+        #                    port = "1108";
+        #                    host = "10.88.127.127";
+        #                    sshUser = "John88";
+        #                    substituteOnTarget = true;
+        #                    hermetic = true;
+        #                    buildOn = "local";
+        #                  };
+        #                };
+        #            }
+        #          ];
+        #        };
         print-controller = nixpkgs_stable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
