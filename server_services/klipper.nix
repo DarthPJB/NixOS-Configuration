@@ -4,7 +4,7 @@
     user = "klipper";
     group = "klipper";
     mutableConfig = true; # Use declarative config
-    mutableConfigFolder = "/var/lib/moonraker/config"; #TODO: investigate post 25.05
+    configDir = "/var/lib/moonraker/config"; #TODO: investigate post 25.05
 
     firmwares =
       {

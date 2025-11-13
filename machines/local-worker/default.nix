@@ -9,13 +9,12 @@
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
-
+  services.pulseaudio.support32Bit = true;
   hardware = {
     sane.enable = true;
     graphics.enable = true;
     pulseaudio.enable = true;
     graphics.enable32Bit = true;
-    pulseaudio.support32Bit = true;
     nvidia = {
       open = false;
       modesetting.enable = false;

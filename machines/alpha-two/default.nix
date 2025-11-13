@@ -43,11 +43,11 @@
 
   hardware.graphics.extraPackages = with pkgs; [
     rocmPackages.clr.icd
-    amdvlk
+    #amdvlk
   ];
   # For 32 bit applications 
   hardware.graphics.extraPackages32 = with pkgs; [
-    driversi686Linux.amdvlk
+   # driversi686Linux.amdvlk
   ];
   imports =
     [
