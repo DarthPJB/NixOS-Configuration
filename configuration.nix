@@ -1,6 +1,6 @@
 # This is the general configuration for all of my systems; anything in here will be found on every possible system I have.
 
-{ config, pkgs, self, ... }:
+{ config, pkgs, self, lib, ... }:
 {
   imports =
     [
@@ -12,7 +12,6 @@
       ./locale/home_networks.nix
       ./environments/sshd.nix
       ./environments/tools.nix
-      #self.inputs.secrix.nixosModules.secrix
     ];
   environment.systemPackages = with pkgs;
     [
@@ -24,7 +23,7 @@
   nix.settings = {
     trusted-users = [ "root" "John88" "build" "deploy" ];
     trusted-substituters = [
-      "https://cache.platonic.systems"
+      "https://cache.platonic.systems" #Building things has perks, having them in prod more so. ;)
       "https://cache.nixos.org"
     ];
     trusted-public-keys = [
@@ -33,7 +32,7 @@
     ];
   };
   secrix.defaultEncryptKeys = {
-    John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ];
+    John88 = [ lib.readFile ./public_key/id_ed25519_master.pub ]; # Four years ago matthew croughan said "why bother putting that there?" so... This is why.
   };
 
   powerManagement.enable = true; # Initating power savings, runway affirmative.
