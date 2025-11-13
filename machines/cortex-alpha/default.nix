@@ -94,7 +94,7 @@
 
   # Set your time zone.
   time.timeZone = "Etc/UTC";
-  secrix.services.wireguard-wireg0.secrets.cortex-alpha.encrypted.file = ../../secrets/wg_cortex-alpha;
+  secrix.services.wireguard-wireg0.secrets.cortex-alpha.encrypted.file = ../../secrets/wiregaurd/wg_cortex-alpha;
   networking = {
     wireguard = {
       enable = true;

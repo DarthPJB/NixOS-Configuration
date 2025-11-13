@@ -10,7 +10,7 @@
       ../../lib/enable-wg.nix
     ];
 
-  secrix.services.wireguard-wireg0.secrets.storage-array.encrypted.file = ../../secrets/wg_storage-array;
+  secrix.services.wireguard-wireg0.secrets.storage-array.encrypted.file = ../../secrets/wiregaurd/wg_storage-array;
   environment = {
     vpn =
       {

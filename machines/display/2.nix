@@ -20,7 +20,7 @@ in
     fsType = "ext4";
   };
   sdImage.compressImage = false;
-  secrix.services.wireguard-wireg0.secrets."${hostname}".encrypted.file = "${self}/secrets/wg_${hostname}";
+  secrix.services.wireguard-wireg0.secrets."${hostname}".encrypted.file = "${self}/secrets/wiregaurd/wg_${hostname}";
   environment.vpn =
     {
       enable = true;

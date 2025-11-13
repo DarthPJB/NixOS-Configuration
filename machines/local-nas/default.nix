@@ -15,7 +15,7 @@
   #    plugins = [ pkgs.networkmanager-l2tp ];
   #  };
 
-  secrix.services.wireguard-wireg0.secrets.local_nas.encrypted.file = ../../secrets/wg_local-nas;
+  secrix.services.wireguard-wireg0.secrets.local_nas.encrypted.file = ../../secrets/wiregaurd/wg_local-nas;
   environment.vpn =
     {
       enable = true;

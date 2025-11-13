@@ -51,7 +51,7 @@
       };
     };
   };
-  secrix.services.wireguard-wireg0.secrets.remote-worker.encrypted.file = ../../secrets/wg_remote-worker;
+  secrix.services.wireguard-wireg0.secrets.remote-worker.encrypted.file = ../../secrets/wiregaurd/wg_remote-worker;
   environment.vpn =
     {
       enable = true;

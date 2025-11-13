@@ -12,7 +12,7 @@
       ../../lib/enable-wg.nix
       ../../lib/rclone-target.nix
     ];
-  secrix.services.wireguard-wireg0.secrets.terminal-zero.encrypted.file = ../../secrets/wg_terminal-zero;
+  secrix.services.wireguard-wireg0.secrets.terminal-zero.encrypted.file = ../../secrets/wiregaurd/wg_terminal-zero;
   environment = {
     vpn =
       {

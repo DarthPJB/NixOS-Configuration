@@ -8,7 +8,7 @@
       ../../lib/enable-wg.nix
       ../../lib/rclone-target.nix
     ];
-  secrix.services.wireguard-wireg0.secrets.LINDA.encrypted.file = ../../secrets/wg_LINDA;
+  secrix.services.wireguard-wireg0.secrets.LINDA.encrypted.file = ../../secrets/wiregaurd/wg_LINDA;
   environment = {
     vpn =
       {
