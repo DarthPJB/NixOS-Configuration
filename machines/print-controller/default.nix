@@ -4,7 +4,7 @@
   imports = [
     ../../lib/enable-wg.nix
   ];
-  secrix.services.wireguard-wireg0.secrets.print-controller.encrypted.file = ../../secrets/wg_print-controller;
+  secrix.services.wireguard-wireg0.secrets.print-controller.encrypted.file = ../../secrets/wiregaurd/wg_print-controller;
   environment.vpn =
     {
       enable = true;

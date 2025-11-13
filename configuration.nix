@@ -22,7 +22,7 @@
       pkgs.bottom
     ];
   nix.settings = {
-
+    trusted-users = [ "root" "John88" "build" "deploy" ];
     trusted-substituters = [
       "https://cache.platonic.systems"
       "https://cache.nixos.org"
@@ -31,7 +31,6 @@
       "cache.platonic.systems:ePE43vrTvMW4177G3LfAYWCSdZkSBA5gY3WZCO1Y3ew="
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
     ];
-    trusted-users = [ "root" "John88" ];
   };
   secrix.defaultEncryptKeys = {
     John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ];
@@ -41,7 +40,12 @@
 
   services.kmscon =
     {
-      #autologinUser = "John88";
+      autologinUser = "John88";
+      #  Alright, I know what you are thinking; For real? All I have to do is grab a John-tech and enter tty?
+      #      Alright, so what? you have the damn thing in your hand anyway; I saved you what? Six hours to DD my disk
+      #        and fuck about in a terminal?
+      #      Compared to the 30,000+ hours to brute force some key? Doesn't matter.
+      #    P.S. Thx to crash giving me wiregaurd, I look forward to your pinging my IPV4 range :)
       enable = true;
       hwRender = true; # Enable hardware rendering
       extraConfig = ''

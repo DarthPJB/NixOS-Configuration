@@ -8,7 +8,7 @@
     (modulesPath + "/installer/scan/not-detected.nix")
     ../../lib/enable-wg.nix
   ];
-  secrix.services.wireguard-wireg0.secrets.nx-01.encrypted.file = ../../secrets/wg_terminal-nx-01;
+  secrix.services.wireguard-wireg0.secrets.nx-01.encrypted.file = ../../secrets/wiregaurd/wg_terminal-nx-01;
   environment.vpn =
     {
       enable = true;
