@@ -1,19 +1,21 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 {
   # Define a user account. Don't forget to set a password with ‘passwd’.
+  #nix.settings.trusted-users = [ "build" ];
   users.users.build = {
     isNormalUser = true;
-    uid = 1108;
+    uid = 1111;
     name = "build";
-    description = "non-privlaged builder";
+    description = "builder connection user";
     createHome = true;
     home = "/tmp/builder";
-    hashedPassword = "$6$irFKKFRDPP$H5EaeHornoVvWcKtUBj.29tPvw.SspaSi/vOPGc3GG2bW//M.ld3E7E3XCevJ6vn175A/raHvNIotXayvMqzz0";
-    openssh.authorizedKeys.keys =
-      [
-        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5 darthpjb@gmail.com"
-      ];
-    extraGroups = [
-      # No ]; 
-      };
-      }
+    openssh.authorizedKeys.keys = [ "${lib.readFile ../secrets/builder-key.pub}" ];
+    extraGroups = [ /*No*/ ];
+  };
+  services.openssh.listenAddresses = [{
+    addr = "10.88.127.${builtins.toString config.environment.vpn.postfix}";
+    port = 22;
+  }];
+  networking.firewall.interfaces."wireg0".allowedTCPPorts = [ 22 ];
+}
+

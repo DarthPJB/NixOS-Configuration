@@ -6,8 +6,32 @@
 # -------------------------- ALPHA TWO --------------------------
 { config, lib, pkgs, ... }:
 {
-  #boot.kernelPackages = pkgs.linuxPackages_latest;
-
+  imports = [
+    ./hardware-configuration.nix
+    ../../locale/home_networks.nix
+    ../../environments/i3wm_darthpjb.nix
+    ../../environments/steam.nix
+    ../../environments/code.nix
+    ../../environments/neovim.nix
+    ../../environments/communications.nix
+    ../../environments/emacs.nix
+    ../../environments/browsers.nix
+    ../../environments/mudd.nix
+    ../../environments/cad_and_graphics.nix
+    ../../environments/audio_visual_editing.nix
+    ../../environments/general_fonts.nix
+    ../../environments/video_call_streaming.nix
+    ../../environments/cloud_and_backup.nix
+    ../../locale/tailscale.nix
+    ../../environments/rtl-sdr.nix
+    ../../modifier_imports/bluetooth.nix
+    ../../modifier_imports/memtest.nix
+    ../../modifier_imports/hosts.nix
+    ../../modifier_imports/virtualisation-libvirtd.nix
+    ../../modifier_imports/binfmt-emulation.nix
+    ../../environments/sshd.nix
+    ../../modifier_imports/remote-builder.nix
+  ];
   systemd.user.services.xwinwrap =
     {
       description = "xwinwrap-glmatrix";
@@ -47,13 +71,9 @@
   ];
   # For 32 bit applications 
   hardware.graphics.extraPackages32 = with pkgs; [
-   # driversi686Linux.amdvlk
+    # driversi686Linux.amdvlk
   ];
-  imports =
-    [
-      # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-    ];
+
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
@@ -76,7 +96,8 @@
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Select internationalisation properties.
-  i18n.defaultLocale = lib.mkForce "en_US.UTF-8";
+  i18n.defaultLocale = lib.mkForce
+    "en_US.UTF-8";
   console = {
     font = "Lat2-Terminus16";
     keyMap = lib.mkForce "us";
@@ -90,7 +111,8 @@
   services.kmscon.enable = true;
 
   # Configure keymap in X11
-  services.xserver.xkb.layout = lib.mkForce "us";
+  services.xserver.xkb.layout = lib.mkForce
+    "us";
   # services.xserver.xkb.options = "eurosign:e,caps:escape";
 
   # Enable CUPS to print documents.

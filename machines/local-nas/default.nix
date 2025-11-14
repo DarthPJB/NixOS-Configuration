@@ -8,12 +8,13 @@
     [
       ./hardware-configuration.nix
       ../../lib/enable-wg.nix
+      ../../modifier_imports/zram.nix
+      ../../modifier_imports/zfs.nix
+      ../../server_services/minio-insecure.nix
+      ../../environments/neovim.nix
+      ../../environments/emacs.nix
+      ../../environments/sshd.nix
     ];
-
-  #  networking.networkmanager = {
-  #    enable = true;
-  #    plugins = [ pkgs.networkmanager-l2tp ];
-  #  };
 
   secrix.services.wireguard-wireg0.secrets.local_nas.encrypted.file = ../../secrets/wiregaurd/wg_local-nas;
   environment.vpn =
