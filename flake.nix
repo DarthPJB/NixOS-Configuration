@@ -31,7 +31,7 @@
     in
     {
       formatter.x86_64-linux = nixpkgs_stable.legacyPackages.x86_64-linux.nixpkgs-fmt;
-      apps.x86_64-linux = (nixinate.nixinate.x86_64-linux self).nixinate // ({ secrix = secrix.secrix self; });
+      apps.x86_64-linux = { secrix = secrix.secrix self; } // (nixinate.lib.genDeploy.x86_64-linux self);
 
       # -----------------------------------IMAGES-------------------------------------------------
 

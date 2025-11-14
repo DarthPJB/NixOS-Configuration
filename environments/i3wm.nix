@@ -6,6 +6,7 @@
     GDK_PIXBUF_MODULE_FILE = "${pkgs.librsvg.out}/lib/gdk-pixbuf-2.0/*/loaders.cache)";
   };
   environment.systemPackages = [
+  pkgs.adwaita-qt pkgs.adwaita-qt6
     pkgs.arc-theme
     pkgs.betterlockscreen
     pkgs.brightnessctl
@@ -39,6 +40,31 @@
     MaxRetentionSec=1month
   '';
   programs.dconf.enable = true;
+
+  environment.sessionVariables = {
+    GTK_THEME = "Arc-Dark";
+    QT_STYLE_OVERRIDE = "Adwaita-Dark";
+  };
+
+  # System-wide GTK3 settings
+  environment.etc."gtk-3.0/settings.ini".text = ''
+    [Settings]
+    gtk-application-prefer-dark-theme=1
+    gtk-theme-name=Arc-Dark
+  '';
+
+  # System-wide GTK4 settings
+  environment.etc."gtk-4.0/settings.ini".text = ''
+    [Settings]
+    gtk-application-prefer-dark-theme=1
+    gtk-theme-name=Arc-Dark
+  '';
+
+  # System-wide GTK2 settings
+  environment.etc."gtk-2.0/gtkrc".text = ''
+    gtk-theme-name="Arc-Dark"
+    gtk-application-prefer-dark-theme=1
+  '';
   services.xserver =
     let
       xConfig = pkgs.writeText "i3.config" ''
@@ -207,10 +233,6 @@
           #autoNumlock = true;
         };
       enable = true;
-      desktopManager.gnome.extraGSettingsOverrides = ''
-        [org.gnome.desktop.interface]
-        gtk-theme='Arc-Dark'
-      '';
       windowManager.i3 =
         {
           enable = true;

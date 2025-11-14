@@ -10,10 +10,10 @@
       ./hardware-configuration.nix
     ];
   services.pulseaudio.support32Bit = true;
+  services.pulseaudio.enable = true;
   hardware = {
     sane.enable = true;
     graphics.enable = true;
-    pulseaudio.enable = true;
     graphics.enable32Bit = true;
     nvidia = {
       open = false;
