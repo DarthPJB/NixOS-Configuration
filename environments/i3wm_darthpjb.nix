@@ -14,7 +14,7 @@
         {
           Restart = "always";
           ExecStart = ''
-             ${lib.getExe pkgs.xwinwrap}  -ni -fs -s -st -sp -b -nf -ov -- ${lib.getExe pkgs.xterm} -into WID -geometry 1920x1080 -bg black -e ${lib.getExe pkgs.bottom}
+             ${lib.getExe pkgs.xwinwrap}  -ni -fs -s -st -sp -b -nf -ov -- ${lib.getExe' pkgs.xterm "xterm"} -into WID -geometry 1920x1080 -bg black -e ${lib.getExe pkgs.bottom}
             # ${pkgs.xwinwrap}/bin/xwinwrap -ov -fs -- ${pkgs.xscreensaver}/libexec/xscreensaver/atlantis -root -window-id WID
           '';
           PassEnvironment = "DISPLAY XAUTHORITY";

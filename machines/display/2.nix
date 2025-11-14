@@ -9,6 +9,7 @@ in
     })
   ];
   imports = [
+    ../../modifier_imports/zram.nix
     ../../lib/enable-wg.nix
     ../../environments/i3wm.nix
     ../../environments/rtl-sdr.nix

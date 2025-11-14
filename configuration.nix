@@ -32,7 +32,7 @@
     ];
   };
   secrix.defaultEncryptKeys = {
-    John88 = [ lib.readFile ./public_key/id_ed25519_master.pub ]; # Four years ago matthew croughan said "why bother putting that there?" so... This is why.
+    John88 = [ "${lib.readFile ./public_key/id_ed25519_master.pub}" ]; # Four years ago matthew croughan said "why bother putting that there?" so... This is why.
   };
 
   powerManagement.enable = true; # Initating power savings, runway affirmative.
