@@ -6,7 +6,14 @@
 {
   imports =
     [
-      # Include the results of the hardware scan.
+      ../../modifier_imports/bluetooth.nix
+      ../../locale/home_networks.nix
+      ../../environments/browsers.nix
+      ../../environments/i3wm.nix
+      ../../environments/rtl-sdr.nix
+      ../../environments/pio.nix
+      ../../environments/code.nix
+      ../../locale/tailscale.nix
       ./hardware-configuration.nix
       ../../environments/steam.nix
       ../../lib/enable-wg.nix

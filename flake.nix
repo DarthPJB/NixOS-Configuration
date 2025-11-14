@@ -3,8 +3,7 @@
 
   inputs = {
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
-    nixinate.url = "github:DarthPJB/nixinate";
-    nixinate.inputs.nixpkgs.follows = "nixpkgs_stable";
+    nixinate = { url = "github:DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     secrix.url = "github:Platonic-Systems/secrix";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
@@ -77,7 +76,6 @@
         display-1 = nixpkgs_stable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
-            determinate.nixosModules.default
             "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
             secrix.nixosModules.default
@@ -86,6 +84,9 @@
             ./configuration.nix
             ./locale/home_networks.nix
             {
+              nixpkgs.localSystem.system = "x86_64-linux";
+              nixpkgs.crossSystem.system = "aarch64-linux";
+              documentation.dev.enable = false;
               disabledModules = [
                 "profiles/all-hardware.nix"
                 "profiles/base.nix"
@@ -95,7 +96,11 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
-                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
+                  unstable = import nixpkgs_unstable {
+                    localSystem.system = "x86_64-linux";
+                    crossSystem.system = "aarch64-linux";
+                    config.allowUnfree = true;
+                  };
                   inherit self;
                   nixinate = {
                     port = "1108";
@@ -311,16 +316,8 @@
           modules = [
             determinate.nixosModules.default
             secrix.nixosModules.default
-            ./modifier_imports/bluetooth.nix
-            (import ./locale/home_networks.nix)
-            (import ./environments/browsers.nix)
-            (import ./configuration.nix)
-            (import ./environments/i3wm.nix)
-            (import ./environments/rtl-sdr.nix)
-            (import ./environments/pio.nix)
-            (import ./machines/terminal-zero)
-            (import ./environments/code.nix)
-            (import ./locale/tailscale.nix)
+            ./configuration.nix
+            ./machines/terminal-zero
             nixos-hardware.nixosModules.lenovo-thinkpad-x220
             {
               _module.args =
@@ -352,13 +349,9 @@
           modules = [
             determinate.nixosModules.default
             secrix.nixosModules.default
-            (import ./locale/hotel_wifi.nix)
-            (import ./locale/home_networks.nix)
-            (import ./environments/browsers.nix)
-            (import ./configuration.nix)
-            (import ./environments/i3wm_darthpjb.nix)
-            (import ./machines/terminal-media)
-            (import ./environments/code.nix)
+            ./configuration.nix
+            ./machines/terminal-media
+
             {
               nixpkgs.config.allowUnfree = true;
               nixpkgs.config.nvidia.acceptLicense = true;
@@ -460,13 +453,10 @@
           modules = [
             determinate.nixosModules.default
             secrix.nixosModules.default
-            ./modifier_imports/zfs.nix
             ./machines/local-nas
-            ./server_services/minio-insecure.nix
+            ./users/build.nix
             ./configuration.nix
-            ./environments/neovim.nix
-            ./environments/emacs.nix
-            ./environments/sshd.nix
+
             {
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINlCggPwFP5VX3YDA1iji0wxX8+mIzmrCJ1aHj9f1ofx";
@@ -478,7 +468,7 @@
                   nixinate = {
                     port = 1108;
                     host = "10.88.127.3";
-                    sshUser = "John88";
+                    sshUser = "deploy";
                     substituteOnTarget = false;
                     hermetic = true;
                     buildOn = "local";
@@ -497,29 +487,6 @@
               secrix.nixosModules.default
               ./configuration.nix
               ./machines/alpha-two
-              ./locale/home_networks.nix
-              ./environments/i3wm_darthpjb.nix
-              ./environments/steam.nix
-              ./environments/code.nix
-              ./environments/neovim.nix
-              ./environments/communications.nix
-              ./environments/emacs.nix
-              ./environments/browsers.nix
-              ./environments/mudd.nix
-              ./environments/cad_and_graphics.nix
-              ./environments/audio_visual_editing.nix
-              ./environments/general_fonts.nix
-              ./environments/video_call_streaming.nix
-              ./environments/cloud_and_backup.nix
-              ./locale/tailscale.nix
-              ./environments/rtl-sdr.nix
-              ./modifier_imports/bluetooth.nix
-              ./modifier_imports/memtest.nix
-              ./modifier_imports/hosts.nix
-              ./modifier_imports/virtualisation-libvirtd.nix
-              ./modifier_imports/binfmt-emulation.nix
-              ./environments/sshd.nix
-              ./modifier_imports/remote-builder.nix
               {
                 environment.systemPackages =
                   [
@@ -548,31 +515,6 @@
             secrix.nixosModules.default
             ./configuration.nix
             ./machines/LINDA
-            ./environments/i3wm_darthpjb.nix
-            ./environments/steam.nix
-            ./environments/code.nix
-            ./environments/neovim.nix
-            ./environments/communications.nix
-            ./environments/emacs.nix
-            ./environments/browsers.nix
-            ./environments/mudd.nix
-            ./environments/cad_and_graphics.nix
-            ./environments/3dPrinting.nix
-            ./environments/audio_visual_editing.nix
-            ./environments/general_fonts.nix
-            ./environments/video_call_streaming.nix
-            ./environments/cloud_and_backup.nix
-            ./locale/tailscale.nix
-            ./environments/rtl-sdr.nix
-            ./modifier_imports/bluetooth.nix
-            ./modifier_imports/memtest.nix
-            ./modifier_imports/hosts.nix
-            ./modifier_imports/zfs.nix
-            ./modifier_imports/virtualisation-libvirtd.nix
-            ./modifier_imports/binfmt-emulation.nix
-            ./environments/sshd.nix
-            ./modifier_imports/cuda.nix
-            ./modifier_imports/remote-builder.nix
             {
               environment.systemPackages = [
                 parsecgaming.packages.x86_64-linux.parsecgaming

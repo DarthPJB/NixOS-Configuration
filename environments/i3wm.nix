@@ -6,7 +6,8 @@
     GDK_PIXBUF_MODULE_FILE = "${pkgs.librsvg.out}/lib/gdk-pixbuf-2.0/*/loaders.cache)";
   };
   environment.systemPackages = [
-  pkgs.adwaita-qt pkgs.adwaita-qt6
+    pkgs.adwaita-qt
+    pkgs.adwaita-qt6
     pkgs.arc-theme
     pkgs.betterlockscreen
     pkgs.brightnessctl

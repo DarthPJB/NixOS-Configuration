@@ -7,6 +7,32 @@
       ./hardware-configuration.nix
       ../../lib/enable-wg.nix
       ../../lib/rclone-target.nix
+
+      ../../environments/i3wm_darthpjb.nix
+      ../../environments/steam.nix
+      ../../environments/code.nix
+      ../../environments/neovim.nix
+      ../../environments/communications.nix
+      ../../environments/emacs.nix
+      ../../environments/browsers.nix
+      ../../environments/mudd.nix
+      ../../environments/cad_and_graphics.nix
+      ../../environments/3dPrinting.nix
+      ../../environments/audio_visual_editing.nix
+      ../../environments/general_fonts.nix
+      ../../environments/video_call_streaming.nix
+      ../../environments/cloud_and_backup.nix
+      ../../locale/tailscale.nix
+      ../../environments/rtl-sdr.nix
+      ../../modifier_imports/bluetooth.nix
+      ../../modifier_imports/memtest.nix
+      ../../modifier_imports/hosts.nix
+      ../../modifier_imports/zfs.nix
+      ../../modifier_imports/virtualisation-libvirtd.nix
+      # ../../modifier_imports/binfmt-emulation.nix
+      ../../environments/sshd.nix
+      ../../modifier_imports/cuda.nix
+      ../../modifier_imports/remote-builder.nix
     ];
   secrix.services.wireguard-wireg0.secrets.LINDA.encrypted.file = ../../secrets/wiregaurd/wg_LINDA;
   environment = {
@@ -190,11 +216,10 @@
     firewall.interfaces = {
       "br0".allowedTCPPorts = [ 2108 4010 1108 27015 4549 ];
       "br0".allowedTCPPortRanges = [{ from = 17780; to = 17785; }];
-      "wireg0".allowedTCPPorts = [ 80 ];
+      "wireg0".allowedTCPPorts = [ 80 1108 ];
 
       "br0".allowedUDPPorts = [ 2108 1108 4010 27015 4175 4179 4171 ];
       "br0".allowedUDPPortRanges = [{ from = 17780; to = 17785; }];
-      "wireg0".allowedUDPPorts = [ 1108 ];
 
     };
 

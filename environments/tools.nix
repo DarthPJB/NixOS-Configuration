@@ -9,7 +9,7 @@
     pkgs.ranger
     pkgs.killall
     pkgs.magic-wormhole
-    pkgs.wpa_supplicant_gui
+    #pkgs.wpa_supplicant_gui
     pkgs.dnsutils
     pkgs.pciutils
     pkgs.lshw
