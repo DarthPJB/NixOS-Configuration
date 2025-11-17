@@ -9,7 +9,7 @@ in
     ../../lib/enable-wg.nix
     #../../environments/hyperland.nix
     ../../environments/i3wm.nix
-    ../../environments/browsers.nix
+    #../../environments/browsers.nix
   ];
   system.name = "${hostname}";
   fileSystems."/" = {
