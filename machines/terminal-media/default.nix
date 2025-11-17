@@ -27,6 +27,7 @@
     pkgs.moonlight-qt
   ];
 
+
   systemd.user.services.browser =
     {
       enable = true;

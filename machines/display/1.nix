@@ -7,7 +7,7 @@ in
   imports = [
     ../../modifier_imports/zram.nix
     ../../lib/enable-wg.nix
-    ../../environments/i3wm.nix
+    ../../environments/hyperland.nix
     ../../environments/browsers.nix
   ];
   system.name = "${hostname}";
