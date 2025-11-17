@@ -3,17 +3,19 @@ let
   hostname = "display-2";
 in
 {
+
   nixpkgs.overlays = [
     (final: super: {
       makeModulesClosure = x: super.makeModulesClosure (x // { allowMissing = true; });
     })
   ];
-  imports = [
-    ../../modifier_imports/zram.nix
+
+imports = [
+    #../../modifier_imports/zram.nix
     ../../lib/enable-wg.nix
-    ../../environments/i3wm.nix
-    ../../environments/rtl-sdr.nix
-    ../../environments/browsers.nix
+    #../../environments/i3wm.nix
+    # ../../environments/rtl-sdr.nix
+    #../../environments/browsers.nix
   ];
   system.name = "${hostname}";
   fileSystems."/" = {
@@ -40,7 +42,7 @@ in
       enable = true;
     };
   };
-
+#boot.initrd.allowMissingModules = true;
   boot = {
     initrd.kernelModules = [ "vc4" "snd_bcm2835" ];
     #  supportedFilesystems.zfs = lib.mkForce false;

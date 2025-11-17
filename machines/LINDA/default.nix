@@ -32,7 +32,7 @@
       # ../../modifier_imports/binfmt-emulation.nix
       ../../environments/sshd.nix
       ../../modifier_imports/cuda.nix
-      ../../modifier_imports/remote-builder.nix
+         ../../modifier_imports/remote-builder.nix
     ];
   secrix.services.wireguard-wireg0.secrets.LINDA.encrypted.file = ../../secrets/wiregaurd/wg_LINDA;
   environment = {
@@ -69,10 +69,18 @@
     pkgs.virt-manager
     #self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.nixd
   ];
-  services.avahi = {
-    enable = true;
-    nssmdns4 = true;
-    openFirewall = true;
+  #  services.avahi = {
+  #    enable = true;
+  #    nssmdns4 = true;
+  #    openFirewall = true;
+  #  };
+  nix = {
+    settings = {
+      download-buffer-size = 524288000;
+      max-jobs = 30;
+      cores = 0;
+    };
+    nrBuildUsers = 30;
   };
   services.printing.enable = true; #
   services.guix.enable = true;

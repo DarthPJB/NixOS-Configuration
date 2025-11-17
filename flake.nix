@@ -2,16 +2,18 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
+    hyprland.url = "github:hyprwm/Hyprland";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     nixinate = { url = "github:DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     secrix.url = "github:Platonic-Systems/secrix";
-    nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
+    nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
+    #nixpkgs_unstable.url = "github:NixOS/nixpkgs?ref=nixos-24.11";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
   # --------------------------------------------------------------------------------------------------
-  outputs = { self, parsecgaming, nixos-hardware, secrix, nixinate, nixpkgs_unstable, nixpkgs_stable, determinate }:
+  outputs = { self, parsecgaming, nixos-hardware, hyprland, secrix, nixinate, nixpkgs_unstable, nixpkgs_stable, determinate }:
     let
       # Define the function for a single configuration
       mkUncompressedSdImage = config:
@@ -73,12 +75,13 @@
       # --------------------------------------------------------------------------------------------------
       nixosConfigurations = {
         # -----------------------------------ARM DEVICES-------------------------------------------------
-        display-1 = nixpkgs_stable.lib.nixosSystem {
-          system = "aarch64-linux";
+        display-1 = nixpkgs_unstable.lib.nixosSystem {
+          #system = "aarch64-linux";
           modules = [
-            "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-            "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
+            "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
             secrix.nixosModules.default
+            #hyprland.nixosModules.default
             nixos-hardware.nixosModules.raspberry-pi-4
             ./machines/display/1.nix
             ./configuration.nix
@@ -86,7 +89,7 @@
             {
               nixpkgs.localSystem.system = "x86_64-linux";
               nixpkgs.crossSystem.system = "aarch64-linux";
-              documentation.dev.enable = false;
+              documentation = { dev.enable = false; man.enable = false; info.enable = false; enable = false; };
               disabledModules = [
                 "profiles/all-hardware.nix"
                 "profiles/base.nix"
@@ -118,15 +121,21 @@
         display-2 = nixpkgs_stable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
-            determinate.nixosModules.default
+            #determinate.nixosModules.default
             "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
             secrix.nixosModules.default
             nixos-hardware.nixosModules.raspberry-pi-4
             ./machines/display/2.nix
+	    #./environments/hyperland.nix
+            #hyprland.nixosModules.default
             ./configuration.nix
             ./locale/home_networks.nix
+            ./users/build.nix
             {
+#              nixpkgs.localSystem.system = "x86_64-linux";
+#              nixpkgs.crossSystem.system = "aarch64-linux";
+              documentation = { dev.enable = false; man.enable = false; info.enable = false; enable = false; };
               disabledModules = [
                 "profiles/all-hardware.nix"
                 "profiles/base.nix"
@@ -327,7 +336,7 @@
                   nixinate = {
                     host = "10.88.127.20";
                     port = 1108;
-                    sshUser = "John88";
+                    sshUser = "deploy";
                     substituteOnTarget = true;
                     hermetic = true;
                     buildOn = "local";

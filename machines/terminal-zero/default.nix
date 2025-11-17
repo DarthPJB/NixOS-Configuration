@@ -19,6 +19,10 @@
       ../../lib/enable-wg.nix
       ../../lib/rclone-target.nix
     ];
+  environment.systemPackages = with pkgs; [
+    pkgs.moonlight-qt
+  ];
+
   secrix.services.wireguard-wireg0.secrets.terminal-zero.encrypted.file = ../../secrets/wiregaurd/wg_terminal-zero;
   environment = {
     vpn =
