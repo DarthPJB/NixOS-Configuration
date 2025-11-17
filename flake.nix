@@ -7,12 +7,13 @@
     nixinate = { url = "github:DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     secrix.url = "github:Platonic-Systems/secrix";
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
+    nixpkgs_legacy.url = "github:nixos/nixpkgs?ref=nixos-23.05";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
   # --------------------------------------------------------------------------------------------------
-  outputs = { self, parsecgaming, nixos-hardware, hyprland, secrix, nixinate, nixpkgs_unstable, nixpkgs_stable, determinate }:
+  outputs = { self, parsecgaming, nixos-hardware, hyprland, secrix, nixinate, nixpkgs_legacy, nixpkgs_unstable, nixpkgs_stable, determinate }:
     let
       # Define the function for a single configuration
       mkUncompressedSdImage = config:
@@ -85,6 +86,7 @@
             ./machines/display/1.nix
             ./configuration.nix
             ./locale/home_networks.nix
+	    ./users/build.nix
             {
 #              nixpkgs.localSystem.system = "x86_64-linux";
 #              nixpkgs.crossSystem.system = "aarch64-linux";
@@ -98,6 +100,7 @@
               system.stateVersion = "24.11";
               _module.args =
                 {
+			# This is fine for the occasional package; and browsers, big fat piggy browsers.
                   unstable = import nixpkgs_unstable {
                     localSystem.system = "x86_64-linux";
                     crossSystem.system = "aarch64-linux";
@@ -107,7 +110,7 @@
                   nixinate = {
                     port = "1108";
                     host = "10.88.127.41";
-                    sshUser = "John88";
+                    sshUser = "deploy";
                     substituteOnTarget = true;
                     hermetic = true;
                     buildOn = "local";
@@ -126,7 +129,7 @@
             secrix.nixosModules.default
             nixos-hardware.nixosModules.raspberry-pi-4
             ./machines/display/2.nix
-            #hyprland.nixosModules.default
+           # hyprland.nixosModules.default
             ./configuration.nix
             ./locale/home_networks.nix
             ./users/build.nix
@@ -158,41 +161,38 @@
           ];
 
         };
-        #        beta-one = nixpkgs_stable.lib.nixosSystem {
-        #          system = "armv7l-linux";
-        #          modules = [
-        #            determinate.nixosModules.default
-        #            "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-raspberrypi.nix"
-        #            secrix.nixosModules.default
-        #            nixos-hardware.nixosModules.raspberry-pi-2
-        #            ./machines/beta/1.nix
-        #            ./configuration.nix
-        #            ./locale/home_networks.nix
-        #            {
-        #
-        #              disabledModules = [
-        #                "profiles/all-hardware.nix"
-        #                "profiles/base.nix"
-        #              ];
-        #              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
-        #              # secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
-        #              system.stateVersion = "24.11";
-        #              _module.args =
-        #                {
-        #                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
-        #                  inherit self;
-        #                  nixinate = {
-        #                    port = "1108";
-        #                    host = "10.88.128.126";
-        #                    sshUser = "John88";
-        #                    substituteOnTarget = true;
-        #                    hermetic = true;
-        #                    buildOn = "local";
-        #                  };
-        #                };
-        #            }
-        #          ];
-        #        };
+#                beta-one = nixpkgs_legacy.legacyPackages.x86_64-linux.pkgsCross.armv7l-hf-multiplatform.nixos 
+#		{
+#                  system = "armv7l-linux";
+#                  modules = [
+#          	    "${nixpkgs_legacy}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
+#                    secrix.nixosModules.default
+#                    nixos-hardware.nixosModules.raspberry-pi-2
+#                    ./machines/beta/1.nix
+#             #       ./configuration.nix
+#                    ./locale/home_networks.nix
+#                    {
+#        
+#	             # nixpkgs.localSystem.system = "aarch64-linux";
+#        	     # nixpkgs.crossSystem.system = "armv7l-linux";
+#                      secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
+#                      # secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
+#                      system.stateVersion = "24.11";
+#                      _module.args =
+#                        {
+#                          inherit self;
+#                          nixinate = {
+#                            port = "1108";
+#                            host = "10.88.128.126";
+#                            sshUser = "John88";
+#                            substituteOnTarget = true;
+#                            hermetic = true;
+#                            buildOn = "local";
+#                          };
+#                        };
+#                    }
+#                  ];
+#                };
         #        beta-two = nixpkgs_unstable.lib.nixosSystem {
         #          system = "riscv64-linux";
         #          modules = [
