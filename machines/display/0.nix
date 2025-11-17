@@ -18,7 +18,7 @@
 
   networking =
     {
-      hostName = "display-zero";
+      hostName = "display-0";
     };
   boot = {
     supportedFilesystems.zfs = lib.mkForce false;

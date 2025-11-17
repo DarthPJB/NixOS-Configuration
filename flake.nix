@@ -28,7 +28,6 @@
         nixpkgs_stable.lib.genAttrs
           (map (cfg: cfg.config.system.name) configs)
           (name: mkUncompressedSdImage (builtins.getAttr name self.nixosConfigurations));
-
     in
     {
       formatter.x86_64-linux = nixpkgs_stable.legacyPackages.x86_64-linux.nixpkgs-fmt;
