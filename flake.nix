@@ -525,7 +525,10 @@
               environment.systemPackages = [
                 parsecgaming.packages.x86_64-linux.parsecgaming
               ];
-              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
+              secrix.defaultEncryptKeys = {
+	        John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; 
+		#bossman = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF/4fdGIOGIQtpHGg/sTcTJFjyNH7vNEZN4tQgp2+9sQ ishapira.ctr@anduril.com" ];
+	      };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDMfuVEzn9keN1iVk4rjJmB07+/ynTMaZCKPvbaZ1cF6";
               system.stateVersion = "24.11";
               nixpkgs.config.allowUnfree = true;
