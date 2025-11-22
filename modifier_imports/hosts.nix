@@ -4,7 +4,7 @@
     ''
               167.172.199.21 forme.prod
               193.16.42.101 remote.worker
-              100.68.215.11 propylaia.platonic
+              100.127.45.55 propylaia.platonic
               100.107.101.14 hyperhyper.platonic
       	      100.91.247.95 acropolis.platonic
               100.75.142.109 tumulus.platonic
