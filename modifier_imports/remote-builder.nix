@@ -4,18 +4,18 @@
   secrix.services.nix-daemon.secrets.hyperhyper.encrypted.file = ../secrets/hyper_build_private_key;
   secrix.services.nix-daemon.secrets.personal-builder.encrypted.file = ../secrets/builder-key;
   nix.buildMachines = [
-# {
-#    hostName = "100.107.101.14";
-#    system = "x86_64-linux";
-#    protocol = "ssh-ng";
-#    sshUser = "build"; #
-#    sshKey = config.secrix.services.nix-daemon.secrets.hyperhyper.decrypted.path;
-#    systems = [ "x86_64-linux" ];
-#    maxJobs = 20;
-#    speedFactor = 5;
-#    supportedFeatures = [ "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
-#    mandatoryFeatures = [ ];
-#  }
+ {
+    hostName = "100.107.101.14";
+    system = "x86_64-linux";
+    protocol = "ssh-ng";
+    sshUser = "build"; #
+    sshKey = config.secrix.services.nix-daemon.secrets.hyperhyper.decrypted.path;
+    systems = [ "x86_64-linux" ];
+    maxJobs = 10;
+    speedFactor = 10;
+    supportedFeatures = [ "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
+    mandatoryFeatures = [ ];
+  }
     {
       hostName = "10.88.127.42"; #Display-2
       system = "aarch64-linux";
@@ -40,20 +40,40 @@
       supportedFeatures = [];# "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
       mandatoryFeatures = [ ];
     }
-#    {
-#      hostName = "10.88.127.3"; #The Nas
-#      system = "x86_64-linux";
-#      protocol = "ssh-ng";
-#      sshUser = "build"; #
-#      sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
-#      systems = [ "x86_64-linux" ];
-#      maxJobs = 2;
-#      speedFactor = 3;
-#      supportedFeatures = [];# "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
-#      mandatoryFeatures = [ ];
-#    }
+   {
+      hostName = "remote-worker.johnbargman.net"; # remote-builder
+      system = "x86_64-linux";
+      protocol = "ssh-ng";
+      sshUser = "build"; #
+      sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
+      systems = [ "x86_64-linux" ];
+      maxJobs = 3;
+      speedFactor = 2;
+      supportedFeatures = [ ];# "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
+      mandatoryFeatures = [ ];
+    }
+   {
+      hostName = "remote-builder.johnbargman.net"; # remote-builder
+      system = "x86_64-linux";
+      protocol = "ssh-ng";
+      sshUser = "build"; #
+      sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
+      systems = [ "x86_64-linux" ];
+      maxJobs = 6;
+      speedFactor = 4;
+      supportedFeatures = [ ];# "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
+      mandatoryFeatures = [ ];
+    }
 ];
   programs.ssh.knownHosts = {
+    display-1 = {
+      hostNames = [ "display-1" "10.88.127.41" ];
+      publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOOxb+iAm5nTcC3oRsMIcxcciKRj8VnGpp1JIAdGVTZU root@display-1";
+    };
+    display-2 = {
+      hostNames = [ "display-2" "10.88.127.42" ];
+      publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
+    };
     data-storage = {
       hostNames = [ "data-storage" "10.88.127.3" "10.88.128.3" ];
       publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINlCggPwFP5VX3YDA1iji0wxX8+mIzmrCJ1aHj9f1ofx";
