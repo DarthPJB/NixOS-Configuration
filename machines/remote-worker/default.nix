@@ -4,7 +4,11 @@
 
 {
   imports = [
-    # Include the results of the hardware scan.
+    ../../configuration.nix
+    ../../locale/tailscale.nix
+    ../../server_services/nextcloud.nix
+    ../../users/build.nix
+    ../../services/dynamic_domain_gandi.nix
     ../../lib/enable-wg.nix
     (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
     (import ../../services/acme_server.nix { fqdn = "johnbargman.com"; })

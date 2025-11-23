@@ -109,8 +109,6 @@
                     port = "1108";
                     host = "10.88.127.41";
                     sshUser = "deploy";
-                    substituteOnTarget = true;
-                    hermetic = true;
                     buildOn = "local";
                   };
                 };
@@ -150,8 +148,6 @@
                     port = "1108";
                     host = "10.88.127.42";
                     sshUser = "deploy";
-                    substituteOnTarget = true;
-                    hermetic = true;
                     buildOn = "local";
                   };
                 };
@@ -183,8 +179,8 @@
 #                            port = "1108";
 #                            host = "10.88.128.126";
 #                            sshUser = "John88";
-#                            substituteOnTarget = true;
-#                            hermetic = true;
+#                 
+#                 
 #                            buildOn = "local";
 #                          };
 #                        };
@@ -223,8 +219,8 @@
         #                    port = "1108";
         #                    host = "10.88.127.127";
         #                    sshUser = "John88";
-        #                    substituteOnTarget = true;
-        #                    hermetic = true;
+        #         
+        #         
         #                    buildOn = "local";
         #                  };
         #                };
@@ -258,8 +254,6 @@
                     port = "1108";
                     host = "10.88.127.30";
                     sshUser = "John88";
-                    substituteOnTarget = true;
-                    hermetic = true;
                     buildOn = "local";
                   };
                 };
@@ -307,8 +301,6 @@
                     host = "alpha-one.johnbargman.net";
                     sshUser = "John88";
                     port = 1108;
-                    substituteOnTarget = true;
-                    hermetic = true;
                     buildOn = "local";
                   };
                 };
@@ -333,8 +325,6 @@
                     host = "10.88.127.20";
                     port = 1108;
                     sshUser = "deploy";
-                    substituteOnTarget = true;
-                    hermetic = true;
                     buildOn = "local";
                   };
                 };
@@ -371,8 +361,6 @@
                     host = "10.88.127.21";
                     port = "1108";
                     sshUser = "deploy";
-                    substituteOnTarget = true;
-                    hermetic = true;
                     buildOn = "local";
                   };
                 };
@@ -411,8 +399,6 @@
                   nixinate = {
                     host = "10.88.127.89";
                     sshUser = "John88";
-                    substituteOnTarget = true;
-                    hermetic = true;
                     buildOn = "local";
                   };
                 };
@@ -442,10 +428,8 @@
                   nixinate = {
                     #host = "cortex-alpha.johnbargman.net"; #"10.88.128.1";
                     host = "10.88.127.1";
-                    sshUser = "John88";
+                    sshUser = "deploy";
                     port = 1108;
-                    substituteOnTarget = true;
-                    hermetic = true;
                     buildOn = "local";
                   };
                 };
@@ -474,8 +458,6 @@
                     port = 1108;
                     host = "10.88.127.3";
                     sshUser = "deploy";
-                    substituteOnTarget = false;
-                    hermetic = true;
                     buildOn = "local";
                   };
                 };
@@ -505,8 +487,8 @@
                       host = "10.88.127.90";
                       port = 1108;
                       sshUser = "John88";
-                      substituteOnTarget = true;
-                      hermetic = true;
+
+
                       buildOn = "local";
                     };
                   };
@@ -539,8 +521,6 @@
                     host = "LINDACORE.johnbargman.net";
                     port = 1108;
                     sshUser = "John88";
-                    substituteOnTarget = true;
-                    hermetic = true;
                     buildOn = "remote";
                   };
                 };
@@ -553,12 +533,7 @@
           modules = [
             determinate.nixosModules.default
             secrix.nixosModules.default
-            ./configuration.nix
             ./machines/remote-worker
-            ./locale/tailscale.nix
-            ./server_services/nextcloud.nix
-            ./users/build.nix
-            ./services/dynamic_domain_gandi.nix
             {
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M";
@@ -572,10 +547,8 @@
                   inherit self;
                   nixinate = {
                     port = 1108;
-                    host = "remote-worker.johnbargman.net";
-                    sshUser = "John88";
-                    substituteOnTarget = true;
-                    hermetic = true;
+                    host = "10.88.127.50"; # "remote-worker.johnbargman.net";
+                    sshUser = "deploy";
                     buildOn = "local";
                   };
                 };
@@ -609,8 +582,6 @@
                     host = "10.88.127.4";
                     sshUser = "John88";
                     port = 1108;
-                    substituteOnTarget = true;
-                    hermetic = true;
                     buildOn = "local";
                   };
                 };
@@ -622,19 +593,11 @@
           modules = [
             determinate.nixosModules.default
             secrix.nixosModules.default
-            ./users/darthpjb.nix
-            ./modifier_imports/flakes.nix
-            ./environments/sshd.nix
-            ./environments/tools.nix
-            ./services/dynamic_domain_gandi.nix
-            ./services/github_runners.nix
             ./machines/remote-builder
-            ./users/build.nix
             {
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC7Owkd/9PC7j/L5PbPXrSMx0Aw/1owIoCsfp7+5OKek";
               system.stateVersion = "24.11";
-              networking.hostName = "remote-builder"; # remote-builder"; #TODO: decide between DNS and WG-IP
               imports = [
                 "${nixpkgs_stable}/nixos/modules/virtualisation/openstack-config.nix"
               ];
@@ -645,8 +608,8 @@
                   nixinate = {
                     port = 1108;
                     host = "10.88.127.51"; #TODO: decide between DNS and WG-IP "remote-builder.johnbargman.net";
-                    sshUser = "John88";
-                    buildOn = "remote";
+                    sshUser = "deploy";
+                    buildOn = "local";
                   };
                 };
             }
