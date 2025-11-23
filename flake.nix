@@ -85,7 +85,6 @@
             ./machines/display/1.nix
             ./configuration.nix
             ./locale/home_networks.nix
-	    ./users/build.nix
             {
 #              nixpkgs.localSystem.system = "x86_64-linux";
 #              nixpkgs.crossSystem.system = "aarch64-linux";
@@ -122,7 +121,7 @@
         display-2 = nixpkgs_stable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
-            1determinate.nixosModules.default
+#            determinate.nixosModules.default
             "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
             secrix.nixosModules.default
@@ -558,7 +557,7 @@
             ./machines/remote-worker
             ./locale/tailscale.nix
             ./server_services/nextcloud.nix
-            # ./server_services/hedgedoc.nix
+            ./users/build.nix
             ./services/dynamic_domain_gandi.nix
             {
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
@@ -630,11 +629,12 @@
             ./services/dynamic_domain_gandi.nix
             ./services/github_runners.nix
             ./machines/remote-builder
+            ./users/build.nix
             {
               secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
               secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC7Owkd/9PC7j/L5PbPXrSMx0Aw/1owIoCsfp7+5OKek";
               system.stateVersion = "24.11";
-              networking.hostName = "remote-builder";
+              networking.hostName = "remote-builder"; # remote-builder"; #TODO: decide between DNS and WG-IP
               imports = [
                 "${nixpkgs_stable}/nixos/modules/virtualisation/openstack-config.nix"
               ];
@@ -644,7 +644,7 @@
                   inherit self;
                   nixinate = {
                     port = 1108;
-                    host = "remote-builder.johnbargman.net";
+                    host = "10.88.127.51"; #TODO: decide between DNS and WG-IP "remote-builder.johnbargman.net";
                     sshUser = "John88";
                     buildOn = "remote";
                   };
