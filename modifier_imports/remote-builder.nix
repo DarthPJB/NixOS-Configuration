@@ -41,7 +41,7 @@
       mandatoryFeatures = [ ];
     }
    {
-      hostName = "remote-worker.johnbargman.net"; # remote-builder
+      hostName = "10.88.127.50";# "remote-worker.johnbargman.net"; # remote-builder
       system = "x86_64-linux";
       protocol = "ssh-ng";
       sshUser = "build"; #
@@ -53,7 +53,7 @@
       mandatoryFeatures = [ ];
     }
    {
-      hostName = "remote-builder.johnbargman.net"; # remote-builder
+      hostName = "10.88.127.51"; #"remote-builder.johnbargman.net"; # remote-builder
       system = "x86_64-linux";
       protocol = "ssh-ng";
       sshUser = "build"; #
@@ -73,6 +73,14 @@
     display-2 = {
       hostNames = [ "display-2" "10.88.127.42" ];
       publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
+    };
+    remote-builder = {
+      hostNames = [ "remote-builder" "10.88.127.50" "remote-builder.johnbargman.net" ];
+      publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMfb/Bbr0PaFDyO92q+GXHHXTAlTYR4uSLm0jivou4IB";
+    };
+    remote-worker = {
+      hostNames = [ "remote-worker" "10.88.127.51" "remote-worker.johnbargman.net"];
+      publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC7Owkd/9PC7j/L5PbPXrSMx0Aw/1owIoCsfp7+5OKek";
     };
     data-storage = {
       hostNames = [ "data-storage" "10.88.127.3" "10.88.128.3" ];
