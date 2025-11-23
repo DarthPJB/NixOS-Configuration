@@ -4,18 +4,18 @@
   secrix.services.nix-daemon.secrets.hyperhyper.encrypted.file = ../secrets/hyper_build_private_key;
   secrix.services.nix-daemon.secrets.personal-builder.encrypted.file = ../secrets/builder-key;
   nix.buildMachines = [
- {
-    hostName = "100.107.101.14";
-    system = "x86_64-linux";
-    protocol = "ssh-ng";
-    sshUser = "build"; #
-    sshKey = config.secrix.services.nix-daemon.secrets.hyperhyper.decrypted.path;
-    systems = [ "x86_64-linux" ];
-    maxJobs = 20;
-    speedFactor = 5;
-    supportedFeatures = [ "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
-    mandatoryFeatures = [ ];
-  }
+# {
+#    hostName = "100.107.101.14";
+#    system = "x86_64-linux";
+#    protocol = "ssh-ng";
+#    sshUser = "build"; #
+#    sshKey = config.secrix.services.nix-daemon.secrets.hyperhyper.decrypted.path;
+#    systems = [ "x86_64-linux" ];
+#    maxJobs = 20;
+#    speedFactor = 5;
+#    supportedFeatures = [ "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
+#    mandatoryFeatures = [ ];
+#  }
     {
       hostName = "10.88.127.42"; #Display-2
       system = "aarch64-linux";
@@ -40,18 +40,18 @@
       supportedFeatures = [];# "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
       mandatoryFeatures = [ ];
     }
-    {
-      hostName = "10.88.127.3"; #The Nas
-      system = "x86_64-linux";
-      protocol = "ssh-ng";
-      sshUser = "build"; #
-      sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
-      systems = [ "x86_64-linux" ];
-      maxJobs = 2;
-      speedFactor = 3;
-      supportedFeatures = [];# "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
-      mandatoryFeatures = [ ];
-    }
+#    {
+#      hostName = "10.88.127.3"; #The Nas
+#      system = "x86_64-linux";
+#      protocol = "ssh-ng";
+#      sshUser = "build"; #
+#      sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
+#      systems = [ "x86_64-linux" ];
+#      maxJobs = 2;
+#      speedFactor = 3;
+#      supportedFeatures = [];# "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
+#      mandatoryFeatures = [ ];
+#    }
 ];
   programs.ssh.knownHosts = {
     data-storage = {
