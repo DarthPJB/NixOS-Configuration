@@ -5,7 +5,7 @@
     hyprland.url = "github:hyprwm/Hyprland";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     nixinate = { url = "github:DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
-    secrix.url = "github:Platonic-Systems/secrix";
+    secrix.url = "github:DarthPJB/secrix";
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_legacy.url = "github:nixos/nixpkgs?ref=nixos-23.05";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
@@ -122,13 +122,13 @@
         display-2 = nixpkgs_stable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
-            #determinate.nixosModules.default
+            1determinate.nixosModules.default
             "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
             secrix.nixosModules.default
             nixos-hardware.nixosModules.raspberry-pi-4
             ./machines/display/2.nix
-           # hyprland.nixosModules.default
+            hyprland.nixosModules.default
             ./configuration.nix
             ./locale/home_networks.nix
             ./users/build.nix
@@ -371,7 +371,7 @@
                   nixinate = {
                     host = "10.88.127.21";
                     port = "1108";
-                    sshUser = "John88";
+                    sshUser = "deploy";
                     substituteOnTarget = true;
                     hermetic = true;
                     buildOn = "local";
