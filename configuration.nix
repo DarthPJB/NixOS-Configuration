@@ -27,7 +27,8 @@
       experimental-features = [ "nix-command" "flakes" "auto-allocate-uids" "cgroups" ];
       extra-experimental-features = [ "ca-derivations" ];
       auto-allocate-uids = true;
-      eval-cores = 0;
+      max-jobs = lib.mkDefault "auto";
+      cores = lib.mkDefault 0;
       auto-optimise-store = true;
       builders-use-substitutes = true;
 
