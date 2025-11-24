@@ -120,7 +120,7 @@
             meta.description = "itsa make the pizza delivery";
             program = lib.getExe (flake_pkgs.writeShellApplication {
               name = "deploy-all";
-              runtimeInputs = [ flake_pkgs.nix flake_pkgs.jq ];
+              runtimeInputs = with flake_pkgs; [ nix jq figlet ];
               text = ''
                 # Fail fast
                 set -euo pipefail
@@ -131,17 +131,17 @@
                   | grep -E '^(terminal-zero|terminal-nx-01|cortex-alpha|data-storage|LINDA|remote-worker|storage-array|remote-builder|local-worker)$' || true)
 
                 if [ -z "$CONFIGS" ]; then
-                  echo "No deployable configurations found."
+                  figlet "No deployable configurations found."
                   exit 1
                 fi
 
                 # Optional argument: pass to every nix run
                 ARG="$1"
-
-                echo "Deploying to all hosts..."
-                echo "$CONFIGS" | while read -r config; do
-                  echo "Deploying $config ..."
-                  nix run ".#$config" -- "$ARG"
+                
+                figlet "Deploying to all hosts..."
+                for config in $CONFIGS; do 
+                  echo "------------------- Deploying $config -------------------"
+                  nix run ".#$config" -- "$ARG" || figlet "$config HAS FAILED!!"
                 done
 
                 echo "All deployments finished."
@@ -283,7 +283,6 @@
 
         local-worker = mkX86_64 "local-worker" "local-worker" {
           host = "10.88.127.89";
-          sshUser = "John88";
           extraModules = [ "${nixpkgs_stable}/nixos/modules/virtualisation/libvirtd.nix" ];
         };
 
@@ -309,7 +308,6 @@
           dt = true;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDMfuVEzn9keN1iVk4rjJmB07+/ynTMaZCKPvbaZ1cF6";
           host = "10.88.127.88"; #"LINDACORE.johnbargman.net";
-          sshUser = "John88";
           buildOn = "remote";
           extraModules = [{ environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; }];
         };
