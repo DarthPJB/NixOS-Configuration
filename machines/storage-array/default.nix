@@ -5,7 +5,13 @@
 {
   imports =
     [
-      # Include the results of the hardware scan.
+      ../../modifier_imports/zfs.nix
+      ../../environments/neovim.nix
+      ../../environments/emacs.nix
+      ../../environments/code.nix
+      ../../environments/sshd.nix
+      ../../environments/audio_visual_editing.nix
+      ../../services/dynamic_domain_gandi.nix
       ./hardware-configuration.nix
       ../../lib/enable-wg.nix
     ];

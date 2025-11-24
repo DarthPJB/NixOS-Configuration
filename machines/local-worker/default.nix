@@ -6,7 +6,11 @@
 {
   imports =
     [
-      # Include the results of the hardware scan.
+      ../../environments/blender.nix
+      ../../modifier_imports/cuda.nix
+      ../../environments/neovim.nix
+      ../../environments/emacs.nix
+      ../../environments/sshd.nix
       ./hardware-configuration.nix
     ];
   services.pulseaudio.support32Bit = true;
