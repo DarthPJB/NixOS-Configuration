@@ -82,7 +82,6 @@
   networking =
     {
       useDHCP = false;
-      hostName = "Terminal-zero"; # Define your hostname.
       interfaces =
         {
           "enp0s25" = {

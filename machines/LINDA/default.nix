@@ -54,7 +54,7 @@
       };
     };
   };
-
+  nix.gc.automatic = lib.mkForce false; # Never collect this nix-store and it's cache.
   services.sunshine = {
     enable = true;
     autoStart = true;

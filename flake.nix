@@ -2,6 +2,7 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
+    deadnix = { url = "github:astro/deadnix"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     hyprland.url = "github:hyprwm/Hyprland";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     nixinate = { url = "github:DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
@@ -13,8 +14,13 @@
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
   # --------------------------------------------------------------------------------------------------
-  outputs = { self, parsecgaming, nixos-hardware, hyprland, secrix, nixinate, nixpkgs_legacy, nixpkgs_unstable, nixpkgs_stable, determinate }:
+  outputs = { self, parsecgaming, nixos-hardware, hyprland, secrix, nixinate, nixpkgs_legacy, nixpkgs_unstable, nixpkgs_stable, determinate, deadnix }:
     let
+      # ------------------------------------------------------------------
+      # those handy little things.
+      # ------------------------------------------------------------------  
+      flake_pkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
+      lib = nixpkgs_stable.lib;
       # ------------------------------------------------------------------
       # Global args & common modules
       # ------------------------------------------------------------------
@@ -88,6 +94,13 @@
       # ------------------------------------------------------------------
       # Image-specific builders
       # ------------------------------------------------------------------
+      mkLibVirtImage = { config, name, format ? "qcow2", partitionTableType ? "efi", installBootLoader ? true, touchEFIVars ? true, diskSize ? "auto", additionalSpace ? "2048M", copyChannel ? true }:
+        import "${nixpkgs_stable}/nixos/lib/make-disk-image.nix" {
+          pkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
+          lib = nixpkgs_stable.lib;
+          inherit config name format partitionTableType installBootLoader touchEFIVars diskSize additionalSpace copyChannel;
+        };
+
       mkUncompressedSdImage = config:
         (config.extendModules {
           modules = [{ sdImage.compressImage = false; }];
@@ -99,11 +112,50 @@
           (name: mkUncompressedSdImage (builtins.getAttr name self.nixosConfigurations));
     in
     {
-      formatter.x86_64-linux = nixpkgs_stable.legacyPackages.x86_64-linux.nixpkgs-fmt;
-      apps.x86_64-linux = { secrix = secrix.secrix self; } // (nixinate.lib.genDeploy.x86_64-linux self);
+      formatter."x86_64-linux" = flake_pkgs.nixpkgs-fmt;
+      apps."x86_64-linux" = { secrix = secrix.secrix self; } // (nixinate.lib.genDeploy.x86_64-linux self) //
+        {
+          deploy-all = {
+            type = "app";
+            meta.description = "itsa make the pizza delivery";
+            program = lib.getExe (flake_pkgs.writeShellApplication {
+              name = "deploy-all";
+              runtimeInputs = [ flake_pkgs.nix flake_pkgs.jq ];
+              text = ''
+                # Fail fast
+                set -euo pipefail
+
+                # Get all nixinate-generated apps (they are under apps.x86_64-linux)
+                CONFIGS=$(nix flake show --json . \
+                  | jq -r '.apps."x86_64-linux" | keys[]' \
+                  | grep -E '^(terminal-zero|terminal-nx-01|cortex-alpha|data-storage|LINDA|remote-worker|storage-array|remote-builder|local-worker)$' || true)
+
+                if [ -z "$CONFIGS" ]; then
+                  echo "No deployable configurations found."
+                  exit 1
+                fi
+
+                # Optional argument: pass to every nix run
+                ARG="$1"
+
+                echo "Deploying to all hosts..."
+                echo "$CONFIGS" | while read -r config; do
+                  echo "Deploying $config ..."
+                  nix run ".#$config" -- "$ARG"
+                done
+
+                echo "All deployments finished."
+              '';
+            });
+          };
+        };
 
       # -----------------------------------IMAGES-------------------------------------------------
       packages = {
+        "x86_64-linux".local-worker-image = mkLibVirtImage {
+          config = self.nixosConfigurations.local-worker.config;
+          name = "local-worker-image";
+        };
         "aarch64-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.print-controller
           self.nixosConfigurations.display-0
@@ -117,27 +169,6 @@
         #          self.nixosConfigurations.beta-two
         #        ];
         #
-
-        #"x86_64-linux".local-worker-image = self.nixosConfigurations.local-worker.build.vm;
-        /*import "${nixpkgs_stable}/nixos/lib/make-disk-image.nix"
-          #local-image = import "${self}/lib/make-storeless-image.nix"
-          rec {
-            pkgs = nixpkgs_unstable;
-            inherit (pkgs) lib;
-            inherit (self.nixosConfigurations.local-worker) config;
-            additionalPaths = [ ];
-            name = "local.worker-image";
-            format = "qcow2";
-            onlyNixStore = false;
-            label = "root_FS_nixos";
-            partitionTableType = "efi";
-            installBootLoader = true;
-            touchEFIVars = true;
-            diskSize = "auto";
-            additionalSpace = "2048M";
-            copyChannel = true;
-            OVMF = pkgs.OVMF.fd;
-          };*/
       };
       # --------------------------------------------------------------------------------------------------
       nixosConfigurations = {
@@ -222,7 +253,6 @@
           extraModules = [ hyprland.nixosModules.default ./users/build.nix ];
         };
         print-controller = mkAarch64 "print-controller" "print-controller" {
-          dt = false;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBqeo8ceyMoi+SIRP5hhilbhJvFflphD0efolDCxccj9";
           host = "10.88.127.30";
           sshUser = "John88";
@@ -252,7 +282,6 @@
         # -----------------------------------VIRTUALISED-------------------------------------------------
 
         local-worker = mkX86_64 "local-worker" "local-worker" {
-          dt = true;
           host = "10.88.127.89";
           sshUser = "John88";
           extraModules = [ "${nixpkgs_stable}/nixos/modules/virtualisation/libvirtd.nix" ];
@@ -266,7 +295,6 @@
           extraModules = [ ./environments/neovim.nix ./services/dynamic_domain_gandi.nix ];
         };
         data-storage = mkX86_64 "local-nas" "DataStorage" {
-          dt = false;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINlCggPwFP5VX3YDA1iji0wxX8+mIzmrCJ1aHj9f1ofx";
           host = "10.88.127.3";
           extraModules = [ ./users/build.nix ];
@@ -280,7 +308,7 @@
         LINDA = mkX86_64 "LINDA" "LINDACORE" {
           dt = true;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDMfuVEzn9keN1iVk4rjJmB07+/ynTMaZCKPvbaZ1cF6";
-          host = "LINDACORE.johnbargman.net";
+          host = "10.88.127.88"; #"LINDACORE.johnbargman.net";
           sshUser = "John88";
           buildOn = "remote";
           extraModules = [{ environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; }];
@@ -288,7 +316,6 @@
 
         # -----------------------------------REMOTE SYSTEMS-------------------------------------------------
         remote-worker = mkX86_64 "remote-worker" "remote-worker" {
-          dt = false;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M";
           host = "10.88.127.50";
           extraModules = [ "${nixpkgs_stable}/nixos/modules/virtualisation/openstack-config.nix" ];
@@ -297,15 +324,30 @@
           dt = true;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMfb/Bbr0PaFDyO92q+GXHHXTAlTYR4uSLm0jivou4IB";
           host = "10.88.127.4";
-          extraModules = [ "${nixpkgs_stable}/nixos/modules/virtualisation/openstack-config.nix" ];
         };
         remote-builder = mkX86_64 "remote-builder" "remote-builder" {
-          dt = false;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC7Owkd/9PC7j/L5PbPXrSMx0Aw/1owIoCsfp7+5OKek";
           host = "10.88.127.51";
           extraModules = [ "${nixpkgs_stable}/nixos/modules/virtualisation/openstack-config.nix" ];
         };
         # -------------------------------------------------------------------------------------------------------
       };
+      checks."x86_64-linux".deadnix = flake_pkgs.writeShellApplication {
+        name = "run-deadnix";
+        meta.description = "runs deadnix on the flake source";
+        text = ''
+          # Runs deadnix from nixpkgs or local flake
+            nix run ${deadnix}#deadnix "${self}"
+        '';
+      };
+      checks."x86_64-linux".formatting = flake_pkgs.writeShellApplication {
+        name = "run-deadnix";
+        meta.description = "runs deadnix on the flake source";
+        text = ''
+          # Runs deadnix from nixpkgs or local flake
+            nix fmt --check "${self}"
+        '';
+      };
     };
+
 }
