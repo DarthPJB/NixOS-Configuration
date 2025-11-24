@@ -20,7 +20,6 @@
       # ------------------------------------------------------------------
       globalArgs = {
         inherit self;
-        unstable = import nixpkgs_unstable { config.allowUnfree = true; };
       };
 
       commonModules = [
@@ -48,7 +47,7 @@
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;
 
               _module.args = globalArgs // {
-
+                unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                 nixinate = {
                   inherit host sshUser buildOn;
                   port = 1108;
@@ -77,6 +76,7 @@
               ];
 
               _module.args = globalArgs // {
+                unstable = import nixpkgs_unstable { system = "aarch64-linux"; config.allowUnfree = true; };
                 nixinate = {
                   inherit host sshUser buildOn;
                   port = 1108;
@@ -265,7 +265,7 @@
           host = "10.88.127.1";
           extraModules = [ ./environments/neovim.nix ./services/dynamic_domain_gandi.nix ];
         };
-        data-storage = mkX86_64 "local-nas" "data-storage" {
+        data-storage = mkX86_64 "local-nas" "DataStorage" {
           dt = false;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINlCggPwFP5VX3YDA1iji0wxX8+mIzmrCJ1aHj9f1ofx";
           host = "10.88.127.3";
