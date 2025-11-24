@@ -7,12 +7,12 @@
 
     # This is the key part: make sshd *always* restart, no matter why it died
     serviceConfig = {
-      Restart = "always";          # restart on any exit (clean or crash)
-      RestartSec = "300";          # wait 5 minutes (300 seconds) between restarts
+      Restart = "always"; # restart on any exit (clean or crash)
+      RestartSec = "300"; # wait 5 minutes (300 seconds) between restarts
     };
 
     # make sure it never gives up; burn the freaking CPU down with failures; at this point it's life or death.
-    startLimitIntervalSec = 0;     # 0 = no limit (disable start-rate limiting)
+    startLimitIntervalSec = 0; # 0 = no limit (disable start-rate limiting)
     startLimitBurst = 0;
   };
 

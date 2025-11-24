@@ -4,18 +4,18 @@
   secrix.services.nix-daemon.secrets.hyperhyper.encrypted.file = ../secrets/hyper_build_private_key;
   secrix.services.nix-daemon.secrets.personal-builder.encrypted.file = ../secrets/builder-key;
   nix.buildMachines = [
- {
-    hostName = "100.107.101.14";
-    system = "x86_64-linux";
-    protocol = "ssh-ng";
-    sshUser = "build"; #
-    sshKey = config.secrix.services.nix-daemon.secrets.hyperhyper.decrypted.path;
-    systems = [ "x86_64-linux" ];
-    maxJobs = 10;
-    speedFactor = 10;
-    supportedFeatures = [ "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
-    mandatoryFeatures = [ ];
-  }
+    {
+      hostName = "100.107.101.14";
+      system = "x86_64-linux";
+      protocol = "ssh-ng";
+      sshUser = "build"; #
+      sshKey = config.secrix.services.nix-daemon.secrets.hyperhyper.decrypted.path;
+      systems = [ "x86_64-linux" ];
+      maxJobs = 10;
+      speedFactor = 10;
+      supportedFeatures = [ "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
+      mandatoryFeatures = [ ];
+    }
     {
       hostName = "10.88.127.42"; #Display-2
       system = "aarch64-linux";
@@ -25,7 +25,7 @@
       systems = [ "aarch64-linux" ];
       maxJobs = 3;
       speedFactor = 5;
-      supportedFeatures = [];# "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
+      supportedFeatures = [ ]; # "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
       mandatoryFeatures = [ ];
     }
     {
@@ -37,11 +37,11 @@
       systems = [ "aarch64-linux" ];
       maxJobs = 3;
       speedFactor = 3;
-      supportedFeatures = [];# "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
+      supportedFeatures = [ ]; # "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
       mandatoryFeatures = [ ];
     }
-   {
-      hostName = "10.88.127.50";# "remote-worker.johnbargman.net"; # remote-builder
+    {
+      hostName = "10.88.127.50"; # "remote-worker.johnbargman.net"; # remote-builder
       system = "x86_64-linux";
       protocol = "ssh-ng";
       sshUser = "build"; #
@@ -49,10 +49,10 @@
       systems = [ "x86_64-linux" ];
       maxJobs = 3;
       speedFactor = 2;
-      supportedFeatures = [ ];# "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
+      supportedFeatures = [ ]; # "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
       mandatoryFeatures = [ ];
     }
-   {
+    {
       hostName = "10.88.127.51"; #"remote-builder.johnbargman.net"; # remote-builder
       system = "x86_64-linux";
       protocol = "ssh-ng";
@@ -61,10 +61,10 @@
       systems = [ "x86_64-linux" ];
       maxJobs = 6;
       speedFactor = 4;
-      supportedFeatures = [ ];# "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
+      supportedFeatures = [ ]; # "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
       mandatoryFeatures = [ ];
     }
-];
+  ];
   programs.ssh.knownHosts = {
     display-1 = {
       hostNames = [ "display-1" "10.88.127.41" ];
@@ -79,7 +79,7 @@
       publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC7Owkd/9PC7j/L5PbPXrSMx0Aw/1owIoCsfp7+5OKek";
     };
     remote-worker = {
-      hostNames = [ "remote-worker" "10.88.127.50" "remote-worker.johnbargman.net"];
+      hostNames = [ "remote-worker" "10.88.127.50" "remote-worker.johnbargman.net" ];
       publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M";
     };
     data-storage = {
@@ -94,11 +94,11 @@
 
   nix = {
     settings = {
-     # download-buffer-size = 524288000;
-#      max-jobs = 10;
- #     cores = 0;
+      # download-buffer-size = 524288000;
+      #      max-jobs = 10;
+      #     cores = 0;
     };
-#    nrBuildUsers = 50;
+    #    nrBuildUsers = 50;
     distributedBuilds = true;
     extraOptions = ''
       builders-use-substitutes = true

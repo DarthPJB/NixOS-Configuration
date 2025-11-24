@@ -10,7 +10,7 @@ in
     })
   ];
 
-imports = [
+  imports = [
     #../../modifier_imports/zram.nix
     ../../lib/enable-wg.nix
     #../../environments/i3wm.nix
@@ -42,7 +42,7 @@ imports = [
       enable = true;
     };
   };
-#boot.initrd.allowMissingModules = true;
+  #boot.initrd.allowMissingModules = true;
   boot = {
     initrd.kernelModules = [ "vc4" "snd_bcm2835" ];
     #  supportedFilesystems.zfs = lib.mkForce false;

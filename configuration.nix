@@ -21,7 +21,7 @@
       pkgs.parted
       pkgs.bottom
     ];
-# This is all you actually need; just this - and.. that, and...
+  # This is all you actually need; just this - and.. that, and...
   nix = {
     settings = {
       experimental-features = [ "nix-command" "flakes" "auto-allocate-uids" "cgroups" ];
@@ -40,7 +40,7 @@
         "cache.platonic.systems:ePE43vrTvMW4177G3LfAYWCSdZkSBA5gY3WZCO1Y3ew="
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
       ];
-      };
+    };
   };
   secrix.defaultEncryptKeys = {
     John88 = [ "${lib.readFile ./public_key/id_ed25519_master.pub}" ]; # Four years ago matthew croughan said "why bother putting that there?" so... This is why.

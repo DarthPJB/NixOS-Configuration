@@ -2,7 +2,7 @@
 {
   programs.hyprland = {
     enable = true;
-  #  package = self.inputs.hyprland.packages.${pkgs.system}.hyprland;
+    #  package = self.inputs.hyprland.packages.${pkgs.system}.hyprland;
   };
 
   # Optional: Enable XWayland for compatibility
