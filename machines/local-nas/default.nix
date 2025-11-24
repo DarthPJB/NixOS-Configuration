@@ -1,7 +1,7 @@
 ## --------------- LOCAL NAS aka data-storage ---------------
 
 
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   imports =
@@ -70,7 +70,7 @@
       wantedBy = [ "multi-user.target" ];
     }
   ];
-
+  nix.gc.automatic = lib.mkForce false; # Never collect this nix-store and it's cache.
   networking.hostId = "d5710c9a";
   time.timeZone = "Etc/UTC";
 

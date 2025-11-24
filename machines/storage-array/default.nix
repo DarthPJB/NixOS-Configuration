@@ -5,6 +5,7 @@
 {
   imports =
     [
+      ../../modifier_imports/zram.nix
       ../../modifier_imports/zfs.nix
       ../../environments/neovim.nix
       ../../environments/emacs.nix
@@ -15,7 +16,7 @@
       ./hardware-configuration.nix
       ../../lib/enable-wg.nix
     ];
-
+  nix.gc.automatic = lib.mkForce false; # Never collect this nix-store and it's cache.
   secrix.services.wireguard-wireg0.secrets.storage-array.encrypted.file = ../../secrets/wiregaurd/wg_storage-array;
   environment = {
     vpn =
@@ -70,8 +71,5 @@
       };
     };
   };
-
-
-  system.stateVersion = "24.11"; # Did you read the comment?
 
 }

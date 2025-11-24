@@ -23,6 +23,11 @@
     ];
   # This is all you actually need; just this - and.. that, and...
   nix = {
+    gc = {
+      automatic = true;
+      dates = "daily";
+      options = "--delete-older-than 7d";
+    };
     settings = {
       experimental-features = [ "nix-command" "flakes" "auto-allocate-uids" "cgroups" ];
       extra-experimental-features = [ "ca-derivations" ];

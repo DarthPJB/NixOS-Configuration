@@ -167,7 +167,5 @@
   networking.firewall.allowedTCPPorts = [ 1108 ];
   networking.firewall.allowedUDPPorts = [ 1108 ];
 
-  system.stateVersion = "24.11"; # Did you read the comment?
-
 }
 
