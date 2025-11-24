@@ -1,6 +1,6 @@
 { config, pkgs, lib, ... }:
 {
-users.users.build = {
+  users.users.build = {
     isNormalUser = true;
     uid = 1111;
     name = "build";
@@ -11,11 +11,11 @@ users.users.build = {
       ../secrets/builder-key.pub
     ];
   };
-  nix = { 
+  nix = {
     settings = {
-    download-buffer-size = 524288000;
+      download-buffer-size = 524288000;
       max-jobs = 10;
-      cores = 0;  
+      cores = 0;
     };
     nrBuildUsers = 10;
   };

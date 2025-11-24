@@ -32,7 +32,7 @@
       # ../../modifier_imports/binfmt-emulation.nix
       ../../environments/sshd.nix
       ../../modifier_imports/cuda.nix
-         ../../modifier_imports/remote-builder.nix
+      ../../modifier_imports/remote-builder.nix
     ];
   secrix.services.wireguard-wireg0.secrets.LINDA.encrypted.file = ../../secrets/wiregaurd/wg_LINDA;
   environment = {
