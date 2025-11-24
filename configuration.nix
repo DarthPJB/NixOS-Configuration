@@ -4,7 +4,7 @@
 {
   imports =
     [
-      # Include the results of the hardware scan.
+      ./locale/home_networks.nix
       ./modifier_imports/flakes.nix
       ./modifier_imports/hosts.nix
       ./users/darthpjb.nix
@@ -21,16 +21,26 @@
       pkgs.parted
       pkgs.bottom
     ];
-  nix.settings = {
-    trusted-users = [ "root" "John88" "build" "deploy" ];
-    trusted-substituters = [
-      "https://cache.platonic.systems" #Building things has perks, having them in prod more so. ;)
-      "https://cache.nixos.org"
-    ];
-    trusted-public-keys = [
-      "cache.platonic.systems:ePE43vrTvMW4177G3LfAYWCSdZkSBA5gY3WZCO1Y3ew="
-      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-    ];
+# This is all you actually need; just this - and.. that, and...
+  nix = {
+    settings = {
+      experimental-features = [ "nix-command" "flakes" "auto-allocate-uids" "cgroups" ];
+      extra-experimental-features = [ "ca-derivations" ];
+      auto-allocate-uids = true;
+      eval-cores = 0;
+      auto-optimise-store = true;
+      builders-use-substitutes = true;
+
+      trusted-users = [ "root" "John88" "build" "deploy" ];
+      trusted-substituters = [
+        "https://cache.platonic.systems" #Building things has perks, having them in prod more so. ;)
+        "https://cache.nixos.org"
+      ];
+      trusted-public-keys = [
+        "cache.platonic.systems:ePE43vrTvMW4177G3LfAYWCSdZkSBA5gY3WZCO1Y3ew="
+        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+      ];
+      };
   };
   secrix.defaultEncryptKeys = {
     John88 = [ "${lib.readFile ./public_key/id_ed25519_master.pub}" ]; # Four years ago matthew croughan said "why bother putting that there?" so... This is why.
