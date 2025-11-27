@@ -6,8 +6,9 @@
     [
       ./locale/home_networks.nix
       ./modifier_imports/flakes.nix
-      ./modifier_imports/hosts.nix
       ./users/darthpjb.nix
+      ./modifier_imports/hosts.nix
+      ./modifier_imports/energy_saving.nix
       ./users/deployment.nix
       ./locale/en_gb.nix
       ./locale/home_networks.nix
@@ -52,7 +53,7 @@
     John88 = [ "${lib.readFile ./public_key/id_ed25519_master.pub}" ]; # Four years ago matthew croughan said "why bother putting that there?" so... This is why.
   };
   services.openssh.settings.AllowUsers = [ "John88" "build" "deploy" ];
-  powerManagement.enable = true; # Initating power savings, runway affirmative.
+  #powerManagement.enable = true; # Initating power savings, runway affirmative.
 
   services.kmscon =
     {
