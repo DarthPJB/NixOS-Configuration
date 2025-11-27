@@ -339,10 +339,10 @@
         '';
       };
       checks."x86_64-linux".formatting = flake_pkgs.writeShellApplication {
-        name = "run-deadnix";
-        meta.description = "runs deadnix on the flake source";
+        name = "run-fmt";
+        meta.description = "runs nix-fmt on the flake source";
         text = ''
-          # Runs deadnix from nixpkgs or local flake
+          # Runs fmt from nixpkgs or local flake
             nix fmt --check "${self}"
         '';
       };
