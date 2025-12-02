@@ -6,6 +6,7 @@
 {
   imports =
     [
+      ../../configuration.nix
       ../../environments/blender.nix
       ../../modifier_imports/cuda.nix
       ../../environments/neovim.nix

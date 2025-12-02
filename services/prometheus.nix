@@ -1,4 +1,4 @@
-{ fqdn, listen-addr }: { pkgs, config, lib, ... }:
+{ fqdn, listen-addr }: { pkgs, config, lib, self, ... }:
 let
   inherit fqdn listen-addr;
   inherit (builtins) toJSON;
@@ -14,24 +14,24 @@ in
     listenAddress = "${listen-addr}";
     port = 8080;
     globalConfig.scrape_interval = "5s";
-    exporters.node = {
-      enable = true;
-      port = 3100;
-      enabledCollectors = [
-        "logind"
-        "systemd"
-      ];
-      disabledCollectors = [ "textfile" ];
-      openFirewall = true;
-      firewallFilter = "-i br0 -p tcp -m tcp --dport 9100";
-    };
     scrapeConfigs = [
       {
         job_name = "node";
         static_configs = [
           {
             targets = [
-              "localhost:${toString config.services.prometheus.exporters.node.port}"
+              "10.88.127.3:${toString self.nixosConfigurations.data-storage.config.services.prometheus.exporters.node.port}"
+              "10.88.127.1:${toString self.nixosConfigurations.cortex-alpha.config.services.prometheus.exporters.node.port}"
+              "10.88.127.4:${toString self.nixosConfigurations.storage-array.config.services.prometheus.exporters.node.port}"
+              "10.88.127.20:${toString self.nixosConfigurations.terminal-zero.config.services.prometheus.exporters.node.port}"
+              "10.88.127.21:${toString self.nixosConfigurations.terminal-nx-01.config.services.prometheus.exporters.node.port}"
+              "10.88.127.30:${toString self.nixosConfigurations.print-controller.config.services.prometheus.exporters.node.port}"
+              "10.88.127.40:${toString self.nixosConfigurations.display-0.config.services.prometheus.exporters.node.port}"
+              "10.88.127.50:${toString self.nixosConfigurations.remote-worker.config.services.prometheus.exporters.node.port}"
+              "10.88.127.51:${toString self.nixosConfigurations.remote-builder.config.services.prometheus.exporters.node.port}"
+              "10.88.127.88:${toString self.nixosConfigurations.LINDA.config.services.prometheus.exporters.node.port}"
+              "10.88.127.41:${toString self.nixosConfigurations.display-1.config.services.prometheus.exporters.node.port}"
+              "10.88.127.42:${toString self.nixosConfigurations.display-2.config.services.prometheus.exporters.node.port}"
             ];
           }
         ];
@@ -55,6 +55,13 @@ in
           };
         analytics.reporting_enabled = false;
       };
+      provision.dashboards.settings.providers = [{
+        updateInterfalSeconds = 5;
+        options = {
+          path = ./graphana_dashboards;
+          foldersFromFilesStructure = true;
+        };
+       }];
     provision.datasources.settings.datasources = [{
       name = "prometheus";
       type = "prometheus";

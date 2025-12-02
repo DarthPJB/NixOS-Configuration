@@ -13,6 +13,7 @@ in
   imports = [
     #../../modifier_imports/zram.nix
     ../../lib/enable-wg.nix
+    ../../configuration.nix
     #../../environments/hyperland.nix
     #../../environments/i3wm.nix
     ../../environments/rtl-sdr.nix

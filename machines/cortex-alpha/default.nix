@@ -7,6 +7,7 @@
       # Include the results of the hardware scan.
       (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
       ../../server_services/ldap.nix
+      ../../configuration.nix
       ./hardware-configuration.nix
     ];
   boot = {
@@ -163,7 +164,7 @@
           "wireg0".allowedTCPPorts = [ 443 ];
           "enp3s0".allowedTCPPorts = [ 443 ];
           "enp3s0".allowedUDPPorts = [ 1108 2108 /*WG*/ 67 /* DHCP */ 53 /*DNS*/ ];
-
+          
 
           #         "enp2s0".allowedTCPPorts = [ 27000 27003 ];
           "enp2s0".allowedUDPPorts = [ 1108 443 2108 4549 4175 4179 4171 ]; # 27000 27003 ];
