@@ -26,6 +26,13 @@
   security.acme.certs."johnbargman.net" = {
     extraDomainNames = [ "*.johnbargman.net" ]; #johnbargman.com"];
   };
+  services.prometheus.exporters.dnsmasq = {
+    enable = true;
+    listenAddress = "10.88.127.1";
+    port = 3101;
+    leasesPath = "/dev/null";
+    dnsmasqListenAddress = "10.88.128.1:53";
+  };
   services.nginx = {
     enable = true;
     virtualHosts = {
@@ -161,10 +168,10 @@
       {
         interfaces = {
           "wireg0".allowedUDPPorts = [ 1108 ];
-          "wireg0".allowedTCPPorts = [ 443 ];
+          "wireg0".allowedTCPPorts = [ 443 config.services.prometheus.exporters.dnsmasq.port ];
           "enp3s0".allowedTCPPorts = [ 443 ];
           "enp3s0".allowedUDPPorts = [ 1108 2108 /*WG*/ 67 /* DHCP */ 53 /*DNS*/ ];
-          
+
 
           #         "enp2s0".allowedTCPPorts = [ 27000 27003 ];
           "enp2s0".allowedUDPPorts = [ 1108 443 2108 4549 4175 4179 4171 ]; # 27000 27003 ];

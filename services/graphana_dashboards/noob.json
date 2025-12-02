@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 1,
+  "id": 3,
   "links": [],
   "panels": [
     {
@@ -40,19 +40,27 @@
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
+            "fillOpacity": 22,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
+            "lineInterpolation": "stepBefore",
+            "lineStyle": {
+              "dash": [
+                10,
+                10
+              ],
+              "fill": "dash"
+            },
+            "lineWidth": 3,
             "pointSize": 5,
             "scaleDistribution": {
-              "type": "linear"
+              "log": 2,
+              "type": "log"
             },
             "showPoints": "auto",
             "spanNulls": false,
@@ -64,7 +72,24 @@
               "mode": "off"
             }
           },
-          "mappings": [],
+          "fieldMinMax": false,
+          "mappings": [
+            {
+              "options": {
+                "10.88.127.1:3100": {
+                  "color": "dark-red",
+                  "index": 1,
+                  "text": "Cortex-Alpha"
+                },
+                "10.88.127.88:3100": {
+                  "color": "dark-purple",
+                  "index": 0,
+                  "text": "LINDA"
+                }
+              },
+              "type": "value"
+            }
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -78,7 +103,142 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "10.88.127.1:3100"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Cortex-Alpha"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-purple",
+                  "mode": "shades"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "10.88.127.20:3100"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Terminal-Zero"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-blue",
+                  "mode": "shades"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "10.88.127.21:3100"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "NX-01"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-blue",
+                  "mode": "shades"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "10.88.127.3:3100"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Data-Storage (Local)"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "semi-dark-red",
+                  "mode": "shades"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "10.88.127.50:3100"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Remote-Worker"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "semi-dark-orange",
+                  "mode": "shades"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "10.88.127.51:3100"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Remote-Builder"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-orange",
+                  "mode": "shades"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "10.88.127.88:3100"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "LINDA"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-red",
+                  "mode": "shades",
+                  "seriesBy": "min"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -94,6 +254,9 @@
           "placement": "bottom",
           "showLegend": true
         },
+        "timezone": [
+          "utc"
+        ],
         "tooltip": {
           "hideZeros": false,
           "mode": "single",
@@ -572,12 +735,12 @@
     "list": []
   },
   "time": {
-    "from": "now-5m",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "CPU-Monitor",
-  "uid": "869fb39d-0c94-4154-9457-b505336e131d",
-  "version": 20
+  "title": "CPU-Monitor-beta",
+  "uid": "a653ab4b-7b73-4d74-93c3-d5717c653d90",
+  "version": 3
 }

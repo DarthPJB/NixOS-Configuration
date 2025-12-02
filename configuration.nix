@@ -30,10 +30,15 @@
       enabledCollectors = [
         "logind"
         "systemd"
+        "hwmon"
+        "cpu"
+        "drm"
+        "ethtool"
+        "logind"
+        "pcidevice"
+        "wifi"
       ];
       disabledCollectors = [ "textfile" ];
-      #openFirewall = true;
-      #firewallFilter = "-i br0 -p tcp -m tcp --dport 9100";
     };
   };
   # This is all you actually need; just this - and.. that, and...
