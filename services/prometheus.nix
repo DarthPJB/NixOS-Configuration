@@ -16,6 +16,14 @@ in
     globalConfig.scrape_interval = "5s";
     scrapeConfigs = [
       {
+        job_name = "nvidia";
+        static_configs = [
+          {
+            targets = [ "10.88.127.88:${toString self.nixosConfigurations.LINDA.config.services.prometheus.exporters.nvidia-gpu.port}" ];
+          }
+        ];
+      }
+      {
         job_name = "dnsmasq";
         static_configs = [
           {

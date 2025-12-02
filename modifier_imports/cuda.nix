@@ -1,6 +1,12 @@
 { config, pkgs, self, ... }:
 {
-
+networking.firewall.interfaces."wireg0".allowedTCPPorts = [ config.services.prometheus.exporters.nvidia-gpu.port ];
+  services.prometheus = {
+    exporters.nvidia-gpu = {
+      enable = true;
+      port = 3103;
+    };
+  };
   environment.systemPackages =
     let
       pkgs_un = self.un_pkgs;
@@ -12,7 +18,6 @@
       pkgs.cudaPackages.cutensor
       #      pkgs.ollama
       (pkgs.llama-cpp.override { cudaSupport = true; })
-
       (pkgs.colmap.override { cudaSupport = true; })
       (pkgs.blender.override { cudaSupport = true; })
     ];

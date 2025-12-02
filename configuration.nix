@@ -28,14 +28,12 @@
       enable = true;
       port = 3100;
       enabledCollectors = [
-        "logind"
         "systemd"
         "hwmon"
         "cpu"
         "drm"
         "ethtool"
         "logind"
-        "pcidevice"
         "wifi"
       ];
       disabledCollectors = [ "textfile" ];
