@@ -31,6 +31,7 @@
     ../../modifier_imports/binfmt-emulation.nix
     ../../environments/sshd.nix
     ../../modifier_imports/remote-builder.nix
+    ../../configuration.nix
   ];
   systemd.user.services.xwinwrap =
     {

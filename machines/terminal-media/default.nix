@@ -12,7 +12,7 @@
     ../../environments/browsers.nix
     ../../environments/i3wm_darthpjb.nix
     ../../environments/code.nix
-
+    ../../configuration.nix
   ];
   secrix.services.wireguard-wireg0.secrets.nx-01.encrypted.file = ../../secrets/wiregaurd/wg_terminal-nx-01;
   environment.vpn =

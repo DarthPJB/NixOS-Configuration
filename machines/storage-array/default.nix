@@ -5,6 +5,7 @@
 {
   imports =
     [
+      ../../configuration.nix
       ../../modifier_imports/zram.nix
       ../../modifier_imports/zfs.nix
       ../../environments/neovim.nix

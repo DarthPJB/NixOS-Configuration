@@ -2,6 +2,7 @@
 { pkgs, config, lib, ... }:
 {
   imports = [
+  ../../configuration.nix
     ../../lib/enable-wg.nix
   ];
   secrix.services.wireguard-wireg0.secrets.print-controller.encrypted.file = ../../secrets/wiregaurd/wg_print-controller;

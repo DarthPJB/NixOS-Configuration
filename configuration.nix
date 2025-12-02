@@ -22,6 +22,20 @@
       pkgs.parted
       pkgs.bottom
     ];
+  networking.firewall.interfaces."wireg0".allowedTCPPorts = [ config.services.prometheus.exporters.node.port ];
+  services.prometheus = {
+    exporters.node = {
+      enable = true;
+      port = 3100;
+      enabledCollectors = [
+        "logind"
+        "systemd"
+      ];
+      disabledCollectors = [ "textfile" ];
+      #openFirewall = true;
+      #firewallFilter = "-i br0 -p tcp -m tcp --dport 9100";
+    };
+  };
   # This is all you actually need; just this - and.. that, and...
   nix = {
     gc = {

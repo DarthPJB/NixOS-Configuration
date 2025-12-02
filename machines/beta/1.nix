@@ -6,6 +6,7 @@ in
 
   imports = [
     ../../lib/enable-wg.nix
+    ../../configuration.nix
     #../../environments/i3wm.nix
     #../../environments/browsers.nix
   ];
