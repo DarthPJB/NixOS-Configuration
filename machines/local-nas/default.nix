@@ -10,6 +10,7 @@
       ../../lib/enable-wg.nix
       ../../modifier_imports/zram.nix
       ../../modifier_imports/zfs.nix
+      ../../services/prometheus.nix
       ../../server_services/minio-insecure.nix
       ../../environments/neovim.nix
       ../../environments/emacs.nix

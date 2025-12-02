@@ -6,6 +6,7 @@
     hyprland.url = "github:hyprwm/Hyprland";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     nixinate = { url = "github:DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
+#    nixinate = { url = "path:/speed-storage/repo/DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     secrix.url = "github:DarthPJB/secrix";
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_legacy.url = "github:nixos/nixpkgs?ref=nixos-23.05";
@@ -73,6 +74,8 @@
           ] ++ commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${name}
             {
+              nixpkgs.buildPlatform = "x86_64-linux"; # build arch (optional, defaults to local)
+              nixpkgs.hostPlatform = "aarch64-linux"; # target run arch
               networking.hostName = hostname; # handles display/1.nix → "1"
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;
               documentation = { dev.enable = false; man.enable = false; info.enable = false; enable = false; };
