@@ -13,8 +13,9 @@ in
   imports = [
     #../../modifier_imports/zram.nix
     ../../lib/enable-wg.nix
+    #../../environments/hyperland.nix
     #../../environments/i3wm.nix
-    # ../../environments/rtl-sdr.nix
+    ../../environments/rtl-sdr.nix
     #../../environments/browsers.nix
   ];
   system.name = "${hostname}";

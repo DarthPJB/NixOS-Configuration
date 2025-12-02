@@ -7,7 +7,6 @@
       ./hardware-configuration.nix
       ../../lib/enable-wg.nix
       ../../lib/rclone-target.nix
-
       ../../environments/i3wm_darthpjb.nix
       ../../environments/steam.nix
       ../../environments/code.nix
@@ -29,7 +28,6 @@
       ../../modifier_imports/hosts.nix
       ../../modifier_imports/zfs.nix
       ../../modifier_imports/virtualisation-libvirtd.nix
-      # ../../modifier_imports/binfmt-emulation.nix
       ../../environments/sshd.nix
       ../../modifier_imports/cuda.nix
       ../../modifier_imports/remote-builder.nix

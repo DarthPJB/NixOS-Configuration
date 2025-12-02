@@ -1,11 +1,12 @@
 # NixOS-Configuration
-My personal NixOS-Configuration, including public key.
+My personal NixOS-Configuration, including public keys.
 
-My intent here is to build a reliable way to deploy my workstation using NixOS, with the hope this may later be expandable to other technological integrations.
-In an ideal scenario this repository will eventually allow me to deploy to any hardware, with my expected environment.
+My intent here is to build a reliable way to deploy my workstation, and surrounding homelab (and further surrounding infrastructure) using NixOS, with the hope this may later be expandable to other technological integrations.
+This repository now allows me to deploy to any hardware, with my expected environment.
 
 TODO:
- - secrix
- - GenerateConfig Function
- - dynamic_domain_gandi
-
+- decide between DNS and WG-IP
+- gpg that ssh
+- TODO: LDAP simple auth (klipper)
+- port-forward module
+- more library-splitting.
