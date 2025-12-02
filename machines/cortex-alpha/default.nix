@@ -57,7 +57,6 @@
         };
       };
       "print-controller.johnbargman.net" = {
-        #serverName = "ap.local";
         useACMEHost = "johnbargman.net";
         addSSL = true;
         listenAddresses = [ "10.88.128.1" "10.88.127.1" ];
@@ -72,8 +71,37 @@
           proxyWebsockets = true; # needed if you need to use websocket
         };
       };
+      "prometheus.johnbargman.net" = {
+        useACMEHost = "johnbargman.net";
+        addSSL = true;
+        listenAddresses = [ "10.88.128.1" "10.88.127.1" ];
+        locations."~/" = {
+          proxyPass = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.data-storage.config.services.prometheus.port}";
+          extraConfig = ''
+            proxy_set_header host $host;
+            proxy_set_header x-real-ip $remote_addr;
+            proxy_set_header x-forwarded-for $proxy_add_x_forwarded_for;
+            proxy_set_header x-forwarded-proto $scheme;
+          '';
+          proxyWebsockets = true; # needed if you need to use websocket
+        };
+      };
+      "grafana.johnbargman.net" = {
+        useACMEHost = "johnbargman.net";
+        addSSL = true;
+        listenAddresses = [ "10.88.128.1" "10.88.127.1" ];
+        locations."~/" = {
+          proxyPass = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.data-storage.config.services.grafana.settings.server.http_port}";
+          extraConfig = ''
+            proxy_set_header host $host;
+            proxy_set_header x-real-ip $remote_addr;
+            proxy_set_header x-forwarded-for $proxy_add_x_forwarded_for;
+            proxy_set_header x-forwarded-proto $scheme;
+          '';
+          proxyWebsockets = true; # needed if you need to use websocket
+        };
+      };
       "ap.johnbargman.net" = {
-        #serverName = "ap.local";
         useACMEHost = "johnbargman.net";
         addSSL = true;
         listenAddresses = [ "10.88.128.1" "10.88.127.1" ];
@@ -273,6 +301,8 @@
       address = [
         "/${config.networking.hostName}.johnbargman.net/10.88.128.1"
         "/ap.johnbargman.net/10.88.128.1"
+        "/prometheus.johnbargman.net/10.88.128.1"
+        "/grafana.johnbargman.net/10.88.128.1"
         "/print-controller.johnbargman.net/10.88.128.1"
         "/minio.local/10.88.128.1"
       ];

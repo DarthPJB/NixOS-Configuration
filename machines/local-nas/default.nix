@@ -10,7 +10,7 @@
       ../../lib/enable-wg.nix
       ../../modifier_imports/zram.nix
       ../../modifier_imports/zfs.nix
-      ../../services/prometheus.nix
+      (import ../../services/prometheus.nix { fqdn = "prometheus.johnbargman.com"; listen-addr = "10.88.127.3"; })
       ../../server_services/minio-insecure.nix
       ../../environments/neovim.nix
       ../../environments/emacs.nix
