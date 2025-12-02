@@ -18,9 +18,22 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 3,
+  "id": 5,
   "links": [],
   "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 9,
+      "panels": [],
+      "title": "General View",
+      "type": "row"
+    },
     {
       "datasource": {
         "type": "prometheus",
@@ -40,27 +53,19 @@
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 22,
-            "gradientMode": "opacity",
+            "fillOpacity": 0,
+            "gradientMode": "none",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "stepBefore",
-            "lineStyle": {
-              "dash": [
-                10,
-                10
-              ],
-              "fill": "dash"
-            },
-            "lineWidth": 3,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
-              "log": 2,
-              "type": "log"
+              "type": "linear"
             },
             "showPoints": "auto",
             "spanNulls": false,
@@ -72,24 +77,7 @@
               "mode": "off"
             }
           },
-          "fieldMinMax": false,
-          "mappings": [
-            {
-              "options": {
-                "10.88.127.1:3100": {
-                  "color": "dark-red",
-                  "index": 1,
-                  "text": "Cortex-Alpha"
-                },
-                "10.88.127.88:3100": {
-                  "color": "dark-purple",
-                  "index": 0,
-                  "text": "LINDA"
-                }
-              },
-              "type": "value"
-            }
-          ],
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -101,57 +89,32 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "decbytes"
         },
         "overrides": [
           {
             "matcher": {
-              "id": "byName",
-              "options": "10.88.127.1:3100"
+              "id": "byRegexp",
+              "options": "/cortex-alpha.*/"
             },
             "properties": [
               {
-                "id": "displayName",
-                "value": "Cortex-Alpha"
-              },
-              {
                 "id": "color",
                 "value": {
-                  "fixedColor": "dark-purple",
-                  "mode": "shades"
+                  "fixedColor": "semi-dark-red",
+                  "mode": "shades",
+                  "seriesBy": "max"
                 }
               }
             ]
           },
           {
             "matcher": {
-              "id": "byName",
-              "options": "10.88.127.20:3100"
+              "id": "byRegexp",
+              "options": "/LINDA.*/"
             },
             "properties": [
-              {
-                "id": "displayName",
-                "value": "Terminal-Zero"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-blue",
-                  "mode": "shades"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "10.88.127.21:3100"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "NX-01"
-              },
               {
                 "id": "color",
                 "value": {
@@ -163,77 +126,15 @@
           },
           {
             "matcher": {
-              "id": "byName",
-              "options": "10.88.127.3:3100"
+              "id": "byRegexp",
+              "options": "/data-storage.*/"
             },
             "properties": [
               {
-                "id": "displayName",
-                "value": "Data-Storage (Local)"
-              },
-              {
                 "id": "color",
                 "value": {
-                  "fixedColor": "semi-dark-red",
+                  "fixedColor": "dark-purple",
                   "mode": "shades"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "10.88.127.50:3100"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Remote-Worker"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "semi-dark-orange",
-                  "mode": "shades"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "10.88.127.51:3100"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Remote-Builder"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-orange",
-                  "mode": "shades"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "10.88.127.88:3100"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "LINDA"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "dark-red",
-                  "mode": "shades",
-                  "seriesBy": "min"
                 }
               }
             ]
@@ -241,12 +142,12 @@
         ]
       },
       "gridPos": {
-        "h": 8,
+        "h": 6,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 1
       },
-      "id": 6,
+      "id": 7,
       "options": {
         "legend": {
           "calcs": [],
@@ -254,9 +155,6 @@
           "placement": "bottom",
           "showLegend": true
         },
-        "timezone": [
-          "utc"
-        ],
         "tooltip": {
           "hideZeros": false,
           "mode": "single",
@@ -271,18 +169,58 @@
             "uid": "prometheus01"
           },
           "disableTextWrap": false,
-          "editorMode": "code",
-          "expr": "sum(1 - rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) by (instance)",
+          "editorMode": "builder",
+          "expr": "idelta(node_zfs_zpool_dataset_reads[$__interval])",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
-          "legendFormat": "{{instance}}",
+          "legendFormat": "{{instance}} {{dataset}}",
           "range": true,
           "refId": "A",
           "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "idelta(node_zfs_zpool_dataset_reads[$__interval])",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "{{instance}} {{dataset}}",
+          "range": true,
+          "refId": "B",
+          "useBackend": false
         }
       ],
-      "title": "CPU - All Systems",
+      "title": "ZFS Access",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.88:3100(.*)/",
+            "renamePattern": "LINDA $1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.1:3100(.*)/",
+            "renamePattern": "cortex-alpha $1 "
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.3:3100(.*)/",
+            "renamePattern": "data-storage $1"
+          }
+        }
+      ],
       "transparent": true,
       "type": "timeseries"
     },
@@ -307,191 +245,201 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
-        "w": 12,
-        "x": 0,
-        "y": 8
-      },
-      "id": 1,
-      "options": {
-        "calculate": false,
-        "cellGap": 0,
-        "cellValues": {
-          "unit": "rothz"
-        },
-        "color": {
-          "exponent": 0.5,
-          "fill": "dark-red",
-          "mode": "scheme",
-          "reverse": false,
-          "scale": "exponential",
-          "scheme": "RdYlGn",
-          "steps": 16
-        },
-        "exemplars": {
-          "color": "rgba(255,0,255,0.7)"
-        },
-        "filterValues": {
-          "le": 800000000
-        },
-        "legend": {
-          "show": true
-        },
-        "rowsFrame": {
-          "layout": "auto"
-        },
-        "tooltip": {
-          "mode": "single",
-          "showColorScale": false,
-          "yHistogram": false
-        },
-        "yAxis": {
-          "axisPlacement": "hidden",
-          "reverse": false,
-          "unit": ""
-        }
-      },
-      "pluginVersion": "12.0.6",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus01"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.3:3100\", job=\"node\"}",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "Core: {{cpu}}",
-          "range": true,
-          "refId": "A",
-          "useBackend": false
-        }
-      ],
-      "title": "CPU - Data-storage",
-      "transparent": true,
-      "type": "heatmap"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus01"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "scaleDistribution": {
-              "type": "linear"
-            }
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 12,
-        "x": 12,
-        "y": 8
-      },
-      "id": 3,
-      "options": {
-        "calculate": false,
-        "cellGap": 0,
-        "cellValues": {
-          "unit": "rothz"
-        },
-        "color": {
-          "exponent": 0.5,
-          "fill": "dark-red",
-          "mode": "scheme",
-          "reverse": false,
-          "scale": "exponential",
-          "scheme": "RdYlGn",
-          "steps": 16
-        },
-        "exemplars": {
-          "color": "rgba(255,0,255,0.7)"
-        },
-        "filterValues": {
-          "le": 900000000
-        },
-        "legend": {
-          "show": true
-        },
-        "rowsFrame": {
-          "layout": "auto"
-        },
-        "tooltip": {
-          "mode": "single",
-          "showColorScale": false,
-          "yHistogram": false
-        },
-        "yAxis": {
-          "axisPlacement": "hidden",
-          "reverse": false,
-          "unit": ""
-        }
-      },
-      "pluginVersion": "12.0.6",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus01"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.1:3100\", job=\"node\"}",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "Core: {{cpu}}",
-          "range": true,
-          "refId": "A",
-          "useBackend": false
-        }
-      ],
-      "title": "CPU - cortex-alpha",
-      "transparent": true,
-      "type": "heatmap"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus01"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "scaleDistribution": {
-              "type": "linear"
-            }
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
         "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 6,
+      "options": {
+        "calculate": false,
+        "cellGap": 1,
+        "color": {
+          "exponent": 0.5,
+          "fill": "dark-purple",
+          "mode": "scheme",
+          "reverse": false,
+          "scale": "exponential",
+          "scheme": "Spectral",
+          "steps": 64
+        },
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-9
+        },
+        "legend": {
+          "show": false
+        },
+        "rowsFrame": {
+          "layout": "le"
+        },
+        "tooltip": {
+          "mode": "single",
+          "showColorScale": false,
+          "yHistogram": false
+        },
+        "yAxis": {
+          "axisPlacement": "hidden",
+          "reverse": false
+        }
+      },
+      "pluginVersion": "12.0.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "exemplar": false,
+          "expr": "idelta(node_cpu_seconds_total{mode!=\"idle\"}[5m])",
+          "fullMetaSearch": false,
+          "includeNullMetadata": false,
+          "instant": false,
+          "legendFormat": "{{instance}}",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        }
+      ],
+      "title": "CPU - All Systems",
+      "transparent": true,
+      "type": "heatmap"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "id": 10,
+      "panels": [],
+      "title": "Row title",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 4,
+      "options": {
+        "calculate": false,
+        "cellGap": 1,
+        "cellValues": {
+          "unit": "rothz"
+        },
+        "color": {
+          "exponent": 0.5,
+          "fill": "dark-red",
+          "mode": "scheme",
+          "reverse": false,
+          "scale": "exponential",
+          "scheme": "Spectral",
+          "steps": 64
+        },
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-9
+        },
+        "legend": {
+          "show": true
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "tooltip": {
+          "mode": "single",
+          "showColorScale": false,
+          "yHistogram": false
+        },
+        "yAxis": {
+          "axisPlacement": "hidden",
+          "reverse": false,
+          "unit": ""
+        }
+      },
+      "pluginVersion": "12.0.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.88:3100\", job=\"node\"}",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "Core: {{cpu}}",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        }
+      ],
+      "title": "CPU - LINDA",
+      "transparent": true,
+      "type": "heatmap"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
         "w": 12,
         "x": 0,
-        "y": 12
+        "y": 22
       },
       "id": 2,
       "options": {
         "calculate": false,
-        "cellGap": 0,
+        "cellGap": 1,
         "cellValues": {
           "unit": "rothz"
         },
@@ -501,17 +449,17 @@
           "mode": "scheme",
           "reverse": false,
           "scale": "exponential",
-          "scheme": "RdYlGn",
-          "steps": 16
+          "scheme": "Spectral",
+          "steps": 64
         },
         "exemplars": {
           "color": "rgba(255,0,255,0.7)"
         },
         "filterValues": {
-          "le": 800000000
+          "le": 1e-9
         },
         "legend": {
-          "show": true
+          "show": false
         },
         "rowsFrame": {
           "layout": "auto"
@@ -571,15 +519,125 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 4,
         "w": 12,
         "x": 12,
-        "y": 12
+        "y": 22
       },
-      "id": 5,
+      "id": 8,
       "options": {
         "calculate": false,
         "cellGap": 0,
+        "color": {
+          "exponent": 0.5,
+          "fill": "dark-orange",
+          "mode": "scheme",
+          "reverse": false,
+          "scale": "exponential",
+          "scheme": "Spectral",
+          "steps": 64
+        },
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-9
+        },
+        "legend": {
+          "show": false
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "tooltip": {
+          "mode": "single",
+          "showColorScale": false,
+          "yHistogram": false
+        },
+        "yAxis": {
+          "axisPlacement": "hidden",
+          "reverse": false
+        }
+      },
+      "pluginVersion": "12.0.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "exemplar": false,
+          "expr": "idelta(node_cpu_seconds_total{mode!=\"idle\", instance=\"10.88.127.50:3100\"}[5m])",
+          "fullMetaSearch": false,
+          "includeNullMetadata": false,
+          "instant": false,
+          "legendFormat": "{{instance}}",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "exemplar": false,
+          "expr": "idelta(node_cpu_seconds_total{mode!=\"idle\", instance=\"10.88.127.51:3100\"}[5m])",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": false,
+          "instant": false,
+          "legendFormat": "{{instance}}",
+          "range": true,
+          "refId": "B",
+          "useBackend": false
+        }
+      ],
+      "title": "CPU -  Remote Systems",
+      "transparent": true,
+      "type": "heatmap"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID"
+            },
+            "properties": []
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 12,
+        "x": 0,
+        "y": 26
+      },
+      "id": 3,
+      "options": {
+        "calculate": false,
+        "cellGap": 1,
         "cellValues": {
           "unit": "rothz"
         },
@@ -589,17 +647,170 @@
           "mode": "scheme",
           "reverse": false,
           "scale": "exponential",
-          "scheme": "RdYlGn",
-          "steps": 16
+          "scheme": "Spectral",
+          "steps": 64
         },
         "exemplars": {
           "color": "rgba(255,0,255,0.7)"
         },
         "filterValues": {
-          "le": 1300000000
+          "le": 1e-9
         },
         "legend": {
-          "show": true
+          "show": false
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "tooltip": {
+          "mode": "single",
+          "showColorScale": false,
+          "yHistogram": false
+        },
+        "yAxis": {
+          "axisPlacement": "hidden",
+          "reverse": false,
+          "unit": ""
+        }
+      },
+      "pluginVersion": "12.0.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.1:3100\", job=\"node\"}",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "Core: {{cpu}}",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "node_cpu_scaling_frequency_max_hertz{instance=\"10.88.127.1:3100\", job=\"node\"}",
+          "fullMetaSearch": false,
+          "hide": true,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "Core: {{cpu}}",
+          "range": true,
+          "refId": "B",
+          "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "node_cpu_frequency_min_hertz{instance=\"10.88.127.1:3100\", job=\"node\"}",
+          "fullMetaSearch": false,
+          "hide": true,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "Core: {{cpu}}",
+          "range": true,
+          "refId": "C",
+          "useBackend": false
+        }
+      ],
+      "title": "CPU - cortex-alpha",
+      "transformations": [
+        {
+          "id": "configFromData",
+          "options": {
+            "applyTo": {
+              "id": "byType",
+              "options": "number"
+            },
+            "configRefId": "B",
+            "mappings": [
+              {
+                "fieldName": "Core: 0",
+                "handlerKey": "max",
+                "reducerId": "lastNotNull"
+              }
+            ]
+          }
+        },
+        {
+          "id": "configFromData",
+          "options": {
+            "configRefId": "C",
+            "mappings": [
+              {
+                "fieldName": "Core: 0",
+                "handlerKey": "min"
+              }
+            ]
+          }
+        }
+      ],
+      "transparent": true,
+      "type": "heatmap"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 26
+      },
+      "id": 5,
+      "options": {
+        "calculate": false,
+        "cellGap": 1,
+        "cellValues": {
+          "unit": "rothz"
+        },
+        "color": {
+          "exponent": 0.5,
+          "fill": "dark-red",
+          "mode": "scheme",
+          "reverse": false,
+          "scale": "exponential",
+          "scheme": "Spectral",
+          "steps": 64
+        },
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-9
+        },
+        "legend": {
+          "show": false
         },
         "rowsFrame": {
           "layout": "auto"
@@ -659,15 +870,15 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 24,
+        "h": 4,
+        "w": 12,
         "x": 0,
-        "y": 20
+        "y": 29
       },
-      "id": 4,
+      "id": 1,
       "options": {
         "calculate": false,
-        "cellGap": 0,
+        "cellGap": 1,
         "cellValues": {
           "unit": "rothz"
         },
@@ -677,17 +888,17 @@
           "mode": "scheme",
           "reverse": false,
           "scale": "exponential",
-          "scheme": "RdYlGn",
-          "steps": 16
+          "scheme": "Spectral",
+          "steps": 62
         },
         "exemplars": {
           "color": "rgba(255,0,255,0.7)"
         },
         "filterValues": {
-          "le": 600000000
+          "le": 1e-9
         },
         "legend": {
-          "show": true
+          "show": false
         },
         "rowsFrame": {
           "layout": "auto"
@@ -712,7 +923,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.88:3100\", job=\"node\"}",
+          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.3:3100\", job=\"node\"}",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -722,25 +933,25 @@
           "useBackend": false
         }
       ],
-      "title": "CPU - LINDA",
+      "title": "CPU - Data-storage",
       "transparent": true,
       "type": "heatmap"
     }
   ],
   "preload": false,
-  "refresh": "5s",
+  "refresh": "30s",
   "schemaVersion": 41,
   "tags": [],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "CPU-Monitor-beta",
-  "uid": "a653ab4b-7b73-4d74-93c3-d5717c653d90",
-  "version": 3
+  "title": "CPU-Monitor-disk",
+  "uid": "6602138c-7333-4d02-9462-156e0c9c011c",
+  "version": 24
 }
