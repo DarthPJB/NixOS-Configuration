@@ -280,8 +280,15 @@
           dt = true;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOK07xnXN3O2v4EZ7YUzWSL5O+Uf2vM6+jzxROWzaTD5";
           host = "10.88.127.21";
-          extraModules = [{ nixpkgs.config.nvidia.acceptLicense = true; environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; }];
+          extraModules = [./users/build.nix
+	  	{ 
+			nixpkgs.config.nvidia.acceptLicense = true; 
+			environment.systemPackages = [ 
+			parsecgaming.packages.x86_64-linux.parsecgaming ]; 
+		}
+	  ];
         };
+         
         # -----------------------------------VIRTUALISED-------------------------------------------------
 
         local-worker = mkX86_64 "local-worker" "local-worker" {
