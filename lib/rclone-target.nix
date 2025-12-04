@@ -34,8 +34,10 @@
     secrix.services = lib.mapAttrs'
       (name: target:
         lib.nameValuePair "rclone-sync-${name}" { secrets.config-file.encrypted.file = config.environment.rclone-target.configFile; })
+      config.environment.rclone-target.targets // lib.mapAttrs'
+      (name: target:
+        lib.nameValuePair "rclone-sync-${name}-resync" { secrets.config-file.encrypted.file = config.environment.rclone-target.configFile; })
       config.environment.rclone-target.targets;
-
     # Create a systemd service for each sync target
     systemd.services = lib.mapAttrs'
       (name: target:
@@ -56,7 +58,7 @@
           description = "Rclone sync service for ${name}";
           serviceConfig = {
             Type = "oneshot";
-            ExecStart = "${pkgs.rclone}/bin/rclone --config ${config.secrix.services."rclone-sync-${name}".secrets.config-file.decrypted.path} bisync --resync --resilient --recover --max-lock 2m --conflict-resolve newer --check-access ${target.filePath} ${target.remoteName}";
+            ExecStart = "${pkgs.rclone}/bin/rclone --config ${config.secrix.services."rclone-sync-${name}-resync".secrets.config-file.decrypted.path} bisync --resync --resilient --recover --max-lock 2m --conflict-resolve newer --check-access ${target.filePath} ${target.remoteName}";
             User = "John88"; # Adjust user as needed
           };
         }

@@ -1,5 +1,7 @@
 # ------------------ CORTEX ALPHA -------------------
+# this is my router gateway everything its bad plz look
 
+# YEEEEEEEEEEE PAAAAINN :)
 { config, lib, pkgs, self, ... }:
 {
   imports =
@@ -26,6 +28,10 @@
   security.acme.certs."johnbargman.net" = {
     extraDomainNames = [ "*.johnbargman.net" ]; #johnbargman.com"];
   };
+  # - here is my ideal senario
+  # each system will, spread throughout the day, ipferf each other system.
+  # just a small burst, so A ->B C->E etc
+  # > "the iperf3 exporter does this it looks like, it will run iperf on demand" ~ @chloe.kever
   services.prometheus.exporters.dnsmasq = {
     enable = true;
     listenAddress = "10.88.127.1";
@@ -96,7 +102,7 @@
       };
       "grafana.johnbargman.net" = {
         useACMEHost = "johnbargman.net";
-        addSSL = true;
+        addSSL = true; # Senpai teaches this
         listenAddresses = [ "10.88.128.1" "10.88.127.1" ];
         locations."~/" = {
           proxyPass = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.data-storage.config.services.grafana.settings.server.http_port}";
@@ -127,6 +133,11 @@
     };
   };
 
+  # so i'm thinking a 'port proxy' mother of all modules
+  #  - TODO: the dream here is that i can have a list of source -> destination - type
+  # - and map over that, outputting nginx proxies, port forwards, or port proxies
+  #  - The possibilitites here are truely beyond imagining. 
+  #  > "I would just converge the config of each system and map that in the module" ~ @Chloe.kever
 
   # Set your time zone.
   time.timeZone = "Etc/UTC";
@@ -204,6 +215,7 @@
       internalInterfaces = [ "eno3" ];
       forwardPorts = [
         {
+          # because i need something * to converge * first
           sourcePort = 17780;
           proto = "udp";
           destination = "10.88.128.88:17780";
@@ -299,7 +311,6 @@
         "18:26:49:c5:48:24,LINDACORE,10.88.128.89,infinite"
       ];
       interface = "enp3s0";
-
       # local domains
       local = "/local/";
       domain = "local";

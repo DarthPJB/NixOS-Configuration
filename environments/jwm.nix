@@ -5,7 +5,7 @@
   environment.systemPackages =
     [
       pkgs.neovim
-      pkgs.firefox
+      pkgs.chromium
       pkgs.pavucontrol
       pkgs.alacritty
     ];

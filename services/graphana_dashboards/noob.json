@@ -17,7 +17,7 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "id": 5,
   "links": [],
   "panels": [
@@ -28,6 +28,563 @@
         "w": 24,
         "x": 0,
         "y": 0
+      },
+      "id": 14,
+      "panels": [],
+      "title": "Status",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-YlBl"
+          },
+          "custom": {
+            "axisPlacement": "auto",
+            "fillOpacity": 100,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 1,
+            "spanNulls": false
+          },
+          "fieldMinMax": false,
+          "mappings": [],
+          "min": 0,
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "bool_on_off"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 15,
+      "options": {
+        "alignValue": "center",
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": false
+        },
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "showValue": "auto",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "exemplar": false,
+          "expr": "node_systemd_system_running",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "Systemd:{{instance}}",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "exemplar": true,
+          "expr": "node_scrape_collector_success{collector=\"systemd\", job=\"node\"}",
+          "format": "heatmap",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "Scrape:{{instance}}",
+          "range": true,
+          "refId": "B",
+          "useBackend": false
+        }
+      ],
+      "title": "System Statuses",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/(.*)10\\.88\\.127\\.88.*/",
+            "renamePattern": "$1 LINDA"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/(.*)10\\.88\\.127\\.1.*/",
+            "renamePattern": "$1 cortex-alpha"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/(.*)10\\.88\\.127\\.20.*/",
+            "renamePattern": "$1 terminal zero"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/(.*)10\\.88\\.127\\.21.*/",
+            "renamePattern": "$1 terminal NX-01"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/(.*)10\\.88\\.127\\.3.*/",
+            "renamePattern": "$1 data-storage"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/(.*)10\\.88\\.127\\.50.*/",
+            "renamePattern": "$1 remote-worker"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/(.*)10\\.88\\.127\\.51.*/",
+            "renamePattern": "$1 remote-builder"
+          }
+        }
+      ],
+      "transparent": true,
+      "type": "state-timeline"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 13,
+      "panels": [],
+      "title": "Metrics",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": true,
+            "axisCenteredZero": true,
+            "axisColorMode": "series",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 73,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "stepBefore",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 7,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "fieldMinMax": false,
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "decbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 11,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "idelta(node_ethtool_received_bytes_total[$__interval])",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "disableTextWrap": false,
+          "editorMode": "code",
+          "expr": "0 - idelta(node_ethtool_transmitted_bytes_total[5m])",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "B",
+          "useBackend": false
+        }
+      ],
+      "title": "Data Throughput",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": true,
+            "axisCenteredZero": false,
+            "axisColorMode": "series",
+            "axisGridShow": true,
+            "axisLabel": "",
+            "axisPlacement": "left",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 73,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "stepBefore",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 7,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "watt"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "10.88.127.88:3100"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "LINDA"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-BlPu"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "10.88.127.20:3100"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Terminal-Zero"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-red",
+                  "mode": "shades"
+                }
+              },
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "10.88.127.21:3100"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Terminal NX-01"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-green",
+                  "mode": "shades"
+                }
+              },
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byValue",
+              "options": {
+                "op": "gte",
+                "reducer": "allIsZero",
+                "value": 0
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": true,
+                  "tooltip": true,
+                  "viz": true
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "10.88.127.88:3103"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "LINDA - GPU"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 12,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "timezone": [
+          "utc"
+        ],
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "node_hwmon_power_watt",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "{{instance}}",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "node_power_supply_energy_watthour",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "{{instance}}",
+          "range": true,
+          "refId": "B",
+          "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "nvidia_smi_power_draw_watts",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "{{instance}}",
+          "range": true,
+          "refId": "C",
+          "useBackend": false
+        }
+      ],
+      "title": "Energy Usage",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 15
       },
       "id": 9,
       "panels": [],
@@ -45,15 +602,15 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
+            "axisBorderShow": true,
+            "axisCenteredZero": true,
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 0,
+            "fillOpacity": 100,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -142,10 +699,10 @@
         ]
       },
       "gridPos": {
-        "h": 6,
-        "w": 24,
+        "h": 7,
+        "w": 12,
         "x": 0,
-        "y": 1
+        "y": 16
       },
       "id": 7,
       "options": {
@@ -153,7 +710,7 @@
           "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
-          "showLegend": true
+          "showLegend": false
         },
         "tooltip": {
           "hideZeros": false,
@@ -185,8 +742,8 @@
             "uid": "prometheus01"
           },
           "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "idelta(node_zfs_zpool_dataset_reads[$__interval])",
+          "editorMode": "code",
+          "expr": "-idelta(node_zfs_zpool_dataset_reads[$__interval])",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -195,9 +752,43 @@
           "range": true,
           "refId": "B",
           "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "idelta(node_disk_read_bytes_total[$__interval])",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "C",
+          "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "disableTextWrap": false,
+          "editorMode": "code",
+          "expr": "-idelta(node_disk_written_bytes_total[$__interval])",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "D",
+          "useBackend": false
         }
       ],
-      "title": "ZFS Access",
+      "title": "Disk RW Access",
       "transformations": [
         {
           "id": "renameByRegex",
@@ -245,10 +836,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 7
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 16
       },
       "id": 6,
       "options": {
@@ -295,7 +886,8 @@
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "idelta(node_cpu_seconds_total{mode!=\"idle\"}[5m])",
+          "expr": "idelta(node_cpu_seconds_total{mode!=\"idle\", job=\"node\"}[5m])",
+          "format": "time_series",
           "fullMetaSearch": false,
           "includeNullMetadata": false,
           "instant": false,
@@ -315,11 +907,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 15
+        "y": 23
       },
       "id": 10,
       "panels": [],
-      "title": "Row title",
+      "title": "CPU - General",
       "type": "row"
     },
     {
@@ -346,7 +938,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 16
+        "y": 24
       },
       "id": 4,
       "options": {
@@ -434,7 +1026,7 @@
         "h": 4,
         "w": 12,
         "x": 0,
-        "y": 22
+        "y": 30
       },
       "id": 2,
       "options": {
@@ -522,7 +1114,7 @@
         "h": 4,
         "w": 12,
         "x": 12,
-        "y": 22
+        "y": 30
       },
       "id": 8,
       "options": {
@@ -632,7 +1224,7 @@
         "h": 3,
         "w": 12,
         "x": 0,
-        "y": 26
+        "y": 34
       },
       "id": 3,
       "options": {
@@ -785,7 +1377,7 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 26
+        "y": 34
       },
       "id": 5,
       "options": {
@@ -873,7 +1465,7 @@
         "h": 4,
         "w": 12,
         "x": 0,
-        "y": 29
+        "y": 37
       },
       "id": 1,
       "options": {
@@ -946,12 +1538,13 @@
     "list": []
   },
   "time": {
-    "from": "now-3h",
+    "from": "now-6h",
     "to": "now"
   },
   "timepicker": {},
-  "timezone": "browser",
+  "timezone": "utc",
   "title": "CPU-Monitor-disk",
   "uid": "6602138c-7333-4d02-9462-156e0c9c011c",
-  "version": 24
+  "version": 41,
+  "weekStart": "monday"
 }

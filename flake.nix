@@ -307,6 +307,24 @@
           sshUser = "John88";
           extraModules = [{ nixpkgs.config.nvidia.acceptLicense = true; environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; }];
         };
+
+        #TODO: Kaida has expressed intrest in transitioning...
+        #						TO NIX :)
+        #	This means her machine RazorCrest can do things. like be here.
+        #	But, there's a bonus optional secret mission
+        #	in ./modifier-imports/remote_builder.nix
+        #	Can i make a sheduler that will use machine down time as build-power
+        #	without ruining her AAA story game-experiences?
+        #		OH YEAAAAAAH, Builder VM? On demand?
+        #		Low priority resourcing on the VM!
+        # CuDA is a thing gaming GPU's do well too <_< 
+        # Nix build -- COLM
+
+        # A wizard uses spellbooks in their mac, the shellscript they they are
+
+        #	A sourcer has MANA POOL AND SPITS RAW DATA
+        #	We are borg, we are 88, your technology will be ass-immolated.
+        # New from apple, the Iplexing-implant, to join the borg.
         LINDA = mkX86_64 "LINDA" "LINDACORE" {
           dt = true;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDMfuVEzn9keN1iVk4rjJmB07+/ynTMaZCKPvbaZ1cF6";
@@ -321,6 +339,7 @@
           host = "10.88.127.50";
           extraModules = [ "${nixpkgs_stable}/nixos/modules/virtualisation/openstack-config.nix" ];
         };
+        # EJ better give this back, i haven't heard anything from him
         storage-array = mkX86_64 "storage-array" "storage-array" {
           dt = true;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMfb/Bbr0PaFDyO92q+GXHHXTAlTYR4uSLm0jivou4IB";
@@ -333,6 +352,7 @@
         };
         # -------------------------------------------------------------------------------------------------------
       };
+      # Yes; nix run, deadnix, on self. that's fine...?
       checks."x86_64-linux".deadnix = flake_pkgs.writeShellApplication {
         name = "run-deadnix";
         meta.description = "runs deadnix on the flake source";
@@ -341,6 +361,7 @@
             nix run ${deadnix}#deadnix "${self}"
         '';
       };
+      # Obviously i need esoteric complex formatnix-module-eshtoglith right?
       checks."x86_64-linux".formatting = flake_pkgs.writeShellApplication {
         name = "run-fmt";
         meta.description = "runs nix-fmt on the flake source";
