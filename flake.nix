@@ -274,7 +274,11 @@
           dt = true;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGlV1inLX9o+Qyf/B3dp6xjb4f9bGisvkT6eFL/f8JIl";
           host = "10.88.127.20";
-          extraModules = [ nixos-hardware.nixosModules.lenovo-thinkpad-x220 { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
+          extraModules = [ 
+	  	./modifier_imports/central-builder.nix
+	  	nixos-hardware.nixosModules.lenovo-thinkpad-x220 
+		{ environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } 
+	  ];
         };
         terminal-nx-01 = mkX86_64 "terminal-media" "terminal-nx-01" {
           dt = true;
@@ -337,7 +341,7 @@
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDMfuVEzn9keN1iVk4rjJmB07+/ynTMaZCKPvbaZ1cF6";
           host = "10.88.127.88"; #"LINDACORE.johnbargman.net";
           buildOn = "remote";
-          extraModules = [{ environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; }];
+          extraModules = [./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; }];
         };
 
         # -----------------------------------REMOTE SYSTEMS-------------------------------------------------
