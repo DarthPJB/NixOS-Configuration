@@ -14,7 +14,7 @@
   environment.systemPackages =
     [
       pkgs.neovim
-      pkgs.firefox
+      pkgs.chromium
     ];
   services.xserver.enable = true;
   services.xserver.desktopManager.xfce.enable = true;

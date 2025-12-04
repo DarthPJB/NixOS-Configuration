@@ -14,7 +14,7 @@
   environment.systemPackages =
     [
       pkgs.neovim
-      pkgs.firefox
+      pkgs.chromium
     ];
   services.xserver.enable = true;
   services.xserver.desktopManager.cinnamon.enable = true;

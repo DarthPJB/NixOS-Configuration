@@ -2,7 +2,7 @@
 {
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = [
-    pkgs.firefox
+    #  pkgs.firefox
     pkgs.obsidian
     unstable.vivaldi
     pkgs.chromium

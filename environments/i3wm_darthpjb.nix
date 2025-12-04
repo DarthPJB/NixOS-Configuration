@@ -104,7 +104,7 @@
         "100:class_g = 'betterlockscreen' && !focused"
         "80:class_g = 'i3bar'"
         "80:class_g = 'Polybar'"
-        "100:class_g = 'firefox'"
+        "100:class_g = 'chromium'"
         "50:class_g = 'Alacritty' && focused"
         "50:class_g = 'Alacritty' && !focused"
         "100:class_g = 'Vivaldi-stable' && focused"

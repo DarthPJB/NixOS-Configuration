@@ -4,7 +4,7 @@ let
   inherit (builtins) toJSON;
   inherit (pkgs) writeText;
   inherit (lib.modules) mkIf;
-
+  inherit (lib.strings) concatStringsSep;
   prometheus-dn = "prometheus.${fqdn}";
   graphana-dn = "grafana.${fqdn}";
 in
@@ -19,6 +19,11 @@ in
         job_name = "nvidia";
         static_configs = [
           {
+            labels = {
+              hostname = config.networking.hostName;
+              #terminal ghost is fun
+              wgip = concatStringsSep "," config.networking.wireguard.interfaces.wireg0.ips;
+            };
             targets = [ "10.88.127.88:${toString self.nixosConfigurations.LINDA.config.services.prometheus.exporters.nvidia-gpu.port}" ];
           }
         ];
@@ -52,7 +57,7 @@ in
           }
         ];
       }
-            {
+      {
         job_name = "zfs";
         static_configs = [
           {
@@ -60,7 +65,6 @@ in
               "10.88.127.3:${toString self.nixosConfigurations.data-storage.config.services.prometheus.exporters.zfs.port}"
               "10.88.127.1:${toString self.nixosConfigurations.cortex-alpha.config.services.prometheus.exporters.zfs.port}"
               "10.88.127.4:${toString self.nixosConfigurations.storage-array.config.services.prometheus.exporters.zfs.port}"
-              "10.88.127.20:${toString self.nixosConfigurations.terminal-zero.config.services.prometheus.exporters.zfs.port}"
               "10.88.127.21:${toString self.nixosConfigurations.terminal-nx-01.config.services.prometheus.exporters.zfs.port}"
               "10.88.127.30:${toString self.nixosConfigurations.print-controller.config.services.prometheus.exporters.zfs.port}"
               "10.88.127.40:${toString self.nixosConfigurations.display-0.config.services.prometheus.exporters.zfs.port}"

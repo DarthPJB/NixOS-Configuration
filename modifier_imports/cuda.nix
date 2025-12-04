@@ -1,6 +1,6 @@
 { config, pkgs, self, ... }:
 {
-networking.firewall.interfaces."wireg0".allowedTCPPorts = [ config.services.prometheus.exporters.nvidia-gpu.port ];
+  networking.firewall.interfaces."wireg0".allowedTCPPorts = [ config.services.prometheus.exporters.nvidia-gpu.port ];
   services.prometheus = {
     exporters.nvidia-gpu = {
       enable = true;
@@ -14,8 +14,8 @@ networking.firewall.interfaces."wireg0".allowedTCPPorts = [ config.services.prom
     [
       pkgs.nvtopPackages.full
       pkgs.cudaPackages.cudatoolkit
-      pkgs.cudaPackages.cudnn
-      pkgs.cudaPackages.cutensor
+      #pkgs.cudaPackages.cudnn
+      # pkgs.cudaPackages.cutensor
       #      pkgs.ollama
       (pkgs.llama-cpp.override { cudaSupport = true; })
       (pkgs.colmap.override { cudaSupport = true; })
@@ -26,7 +26,7 @@ networking.firewall.interfaces."wireg0".allowedTCPPorts = [ config.services.prom
     cudaSupport = true;
     cudnnSupport = true;
     permittedInsecurePackages = [
-      "freeimage-3.18.0-unstable-2024-04-18"
+      # "freeimage-3.18.0-unstable-2024-04-18"
     ];
   };
 
