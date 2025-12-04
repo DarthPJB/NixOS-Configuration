@@ -18,7 +18,8 @@
       ../../environments/steam.nix
       ../../lib/enable-wg.nix
       ../../lib/rclone-target.nix
-    ];
+      ../../modifier_imports/zram.nix
+];
   environment.systemPackages = with pkgs; [
     pkgs.moonlight-qt
   ];

@@ -6,6 +6,7 @@
 {
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
+    ../../modifier_imports/cuda.nix
     ../../lib/enable-wg.nix
     ../../locale/hotel_wifi.nix
     ../../locale/home_networks.nix
