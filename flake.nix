@@ -275,7 +275,7 @@
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGlV1inLX9o+Qyf/B3dp6xjb4f9bGisvkT6eFL/f8JIl";
           host = "10.88.127.20";
           extraModules = [ 
-	  	./modifier_imports/central_builder.nix
+	  	./modifier_imports/central-builder.nix
 	  	nixos-hardware.nixosModules.lenovo-thinkpad-x220 
 		{ environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } 
 	  ];

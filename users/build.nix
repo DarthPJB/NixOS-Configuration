@@ -13,11 +13,11 @@
   };
   nix = {
     settings = {
-      download-buffer-size = 524288000;
-      max-jobs = 10;
-      cores = 0;
+      download-buffer-size = lib.mkDefault 524288000;
+      max-jobs = lib.mkDefault 10;
+      cores = lib.mkDefault 0;
     };
-    nrBuildUsers = 10;
+    nrBuildUsers = lib.mkDefault 10;
   };
   services.openssh.extraConfig = ''
     Match User build
