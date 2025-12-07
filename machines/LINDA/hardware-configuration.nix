@@ -46,8 +46,6 @@
       where = "/var/tmp";
       what = "/speed-storage/tmp";
       options = "bind";
-      after = [ "systemd-tmpfiles-setup.service" ];
-      wantedBy = [ "multi-user.target" ];
     }
   ];
   fileSystems."/tmp" =
