@@ -39,6 +39,31 @@
       disabledCollectors = [ "textfile" ];
     };
   };
+   services.journald = {
+            extraConfig = ''
+              Storage=persistent
+              SystemMaxUse=2G
+              RuntimeMaxUse=1G
+              RateLimitIntervalSec=0
+              RateLimitBurst=0
+              MaxLevelStore=debug
+              MaxLevelSyslog=debug
+              MaxLevelKMsg=debug
+              MaxLevelConsole=debug
+            '';
+          };
+
+          boot.kernel.sysctl = {
+            "kernel.printk" = "7 7 7 7";  # Maximum verbosity for dmesg
+          };
+
+          services.rsyslogd.enable = true;
+          services.rsyslogd.extraConfig = ''
+            kern.* /var/log/kern.log
+            *.debug /var/log/debug.log
+          '';
+
+
   # This is all you actually need; just this - and.. that, and...
   nix = {
     gc = {

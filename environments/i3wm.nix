@@ -8,6 +8,7 @@
   environment.systemPackages = [
     pkgs.adwaita-qt
     pkgs.adwaita-qt6
+    pkgs.papirus-icon-theme
     pkgs.arc-theme
     pkgs.betterlockscreen
     pkgs.brightnessctl
@@ -45,6 +46,7 @@
   environment.sessionVariables = {
     GTK_THEME = "Arc-Dark";
     QT_STYLE_OVERRIDE = "Adwaita-Dark";
+    GTK_ICON_THEME = "Papirus-Red";
   };
 
   # System-wide GTK3 settings
