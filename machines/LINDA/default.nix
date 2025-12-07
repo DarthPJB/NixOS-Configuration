@@ -199,7 +199,7 @@
     graphics.enable32Bit = true;
     nvidia = {
       nvidiaSettings = true;
-      open = true;
+      open = false;
       modesetting.enable = false;
       powerManagement.enable = true;
     };
