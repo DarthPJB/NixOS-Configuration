@@ -67,11 +67,6 @@
     pkgs.virt-manager
     #self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.nixd
   ];
-  #  services.avahi = {
-  #    enable = true;
-  #    nssmdns4 = true;
-  #    openFirewall = true;
-  #  };
   nix = {
     settings = {
       download-buffer-size = 524288000;
@@ -80,7 +75,7 @@
     };
     nrBuildUsers = 30;
   };
-  services.printing.enable = true; #
+  services.printing.enable = true; 
   services.guix.enable = true;
   programs.adb.enable = true;
   users.users.John88.extraGroups = [ "adbusers" ];
@@ -169,19 +164,20 @@
 
 
 
-      extraModprobeConfig = ''
+      /*extraModprobeConfig = ''
         options vfio-pci ids=1b21:2142,10de:1c81,10de:0fb9
-      '';
+      '';*/
       # ,
       # 0000:21:00.0 0000:21:00.1
       # echo ""
+      /*
       initrd.preDeviceCommands = ''
         DEVS="0000:46:00.0 0000:4d:00.0 0000:4d:00.1"
         for DEV in $DEVS; do
             echo "vfio-pci" > /sys/bus/pci/devices/$DEV/driver_override
         done
         modprobe -i vfio-pci
-      '';
+      ''; */
     };
 
 

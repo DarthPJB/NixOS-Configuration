@@ -35,49 +35,12 @@
   #       };
   #   };
 
-  /*usage: fastcompmgr [options]
-    Options
-     -d display
-    Which display should be managed.
-     -r radius
-    The blur radius for shadows. (default 12)
-     -o opacity
-    The translucency for shadows. (default .75)
-     -l left-offset
-    The left offset for shadows. (default -15)
-     -t top-offset
-    The top offset for shadows. (default -15)
-     -I fade-in-step
-    Opacity change between steps while fading in. (default 0.028)
-     -O fade-out-step
-    Opacity change between steps while fading out. (default 0.03)
-     -D fade-delta-time
-    The time between steps in a fade in milliseconds. (default 10)
-     -m opacity
-    The opacity for menus. (default 1.0)
-     -c
-    Enabled client-side shadows on windows.
-     -C
-    Avoid drawing shadows on dock/panel windows.
-     -f
-    Fade windows in/out when opening/closing.
-     -F
-    Fade windows during opacity changes.
-     -i opacity
-    Opacity of inactive windows. (0.1 - 1.0)
-     -e opacity
-    Opacity of window titlebars and borders. (0.1 - 1.0)
-     -S
-    Enable synchronous operation (for debugging).
-  */
-
   services.picom =
     {
       enable = true;
       activeOpacity = 1;
       inactiveOpacity = 0.96;
       backend = "glx";
-      fade = true;
       fadeDelta = 5;
 
       #you can get the CLASS_NAME of any window by executing the following command and clicking on a window.
@@ -116,5 +79,27 @@
         "100:fullscreen"
       ];
     };
+     environment.systemPackages = with pkgs; [
+            papirus-icon-theme
+            qt5ct
+            lxappearance
+          ];
+
+          qt5 = {
+            enable = true;
+            style = "gtk2";
+            platformTheme = "gtk2";
+          };
+
+          gtk = {
+            enable = true;
+            theme.name = "Adwaita-dark";
+            iconTheme.name = "Papirus-Dark";
+          };
+
+          environment.variables = {
+            QT_QPA_PLATFORMTHEME = "gtk2";
+          };
+
   programs.dconf.enable = true;
 }
