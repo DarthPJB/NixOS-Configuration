@@ -79,27 +79,5 @@
         "100:fullscreen"
       ];
     };
-     environment.systemPackages = with pkgs; [
-            papirus-icon-theme
-            qt5ct
-            lxappearance
-          ];
-
-          qt5 = {
-            enable = true;
-            style = "gtk2";
-            platformTheme = "gtk2";
-          };
-
-          gtk = {
-            enable = true;
-            theme.name = "Adwaita-dark";
-            iconTheme.name = "Papirus-Dark";
-          };
-
-          environment.variables = {
-            QT_QPA_PLATFORMTHEME = "gtk2";
-          };
-
   programs.dconf.enable = true;
 }
