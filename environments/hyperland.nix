@@ -16,7 +16,7 @@
 
   # Hint apps (e.g., Electron-based) to prefer Wayland
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
-  services.displayManager.defaultSession = "hyprland";
+  services.displayManager.defaultSession = "hyprland-uwsm";
   programs.dconf.profiles.user.databases = [
     {
       settings."org/gnome/desktop/interface" = {
