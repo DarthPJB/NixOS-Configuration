@@ -5,6 +5,8 @@
   secrix.services.nix-daemon.secrets.personal-builder.encrypted.file = ../secrets/builder-key;
   nix.buildMachines = [
     {
+      # in nix.conf this reads:
+      #  builders = 'ssh://build@100.107.101.14 x86_64-linux /home/razvan/.ssh/??? 30 5 big-parallel,kvm,nixos-test,benchmark - c3NoLWVkMjU1MTkgQUFBQUMzTnphQzFsWkRJMU5URTVBQUFBSUV4N3B1QW1wQXJmNVBYa0k1d1JGa053cVFpdWxoSHh6ZUJFVnZDNTJJT0gK';  
       hostName = "100.107.101.14";
       system = "x86_64-linux";
       protocol = "ssh-ng";

@@ -2,13 +2,11 @@
 
 {
 
-  systemd.services.sshd = {
-    wantedBy = [ "multi-user.target" ];
-
+  systemd.sockets.sshd = {
     # This is the key part: make sshd *always* restart, no matter why it died
-    serviceConfig = {
+    socketConfig = {
       Restart = "always"; # restart on any exit (clean or crash)
-      RestartSec = "300"; # wait 5 minutes (300 seconds) between restarts
+      RestartSec = "60"; # wait 1 minute between restarts
     };
 
     # make sure it never gives up; burn the freaking CPU down with failures; at this point it's life or death.
@@ -20,6 +18,7 @@
   services = {
     openssh = {
       enable = true;
+      startWhenNeeded = lib.mkDefault true;
       ports = [ 1108 ];
       settings = {
         PermitRootLogin = lib.mkForce "no";
