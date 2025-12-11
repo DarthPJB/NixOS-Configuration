@@ -156,6 +156,10 @@
       #kernelPackages= pkgs.linuxPackages_5_18;
       kernelModules = [ "kvm-amd" "vfio_pci" "vfio_iommu_type1" "vfio" ];
       kernelParams = [
+        "video=HDMI-0:1920x1080@60,rotate=270"
+        "video=DP-1:1920x1080@60,rotate=90"
+        "video=HDMI-1:3840x2160@60,rotate=0"
+        "video=HDMI-2-0:400x1280@30,rotate=0"
         "acpi_enforce_resources=lax"
         "amd_iommu=on"
         "amd_pstate=active"
@@ -200,7 +204,7 @@
     nvidia = {
       nvidiaSettings = true;
       open = false;
-      modesetting.enable = false;
+      modesetting.enable = true;
       powerManagement.enable = true;
     };
   };
