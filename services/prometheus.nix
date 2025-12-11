@@ -24,10 +24,10 @@ in
               #terminal ghost is fun
               wgip = concatStringsSep "," config.networking.wireguard.interfaces.wireg0.ips;
             };
-            targets = [ 
-	    "10.88.127.88:${toString self.nixosConfigurations.LINDA.config.services.prometheus.exporters.nvidia-gpu.port}" 
-	    "10.88.127.21:${toString self.nixosConfigurations.LINDA.config.services.prometheus.exporters.nvidia-gpu.port}" 
-	    ];
+            targets = [
+              "10.88.127.88:${toString self.nixosConfigurations.LINDA.config.services.prometheus.exporters.nvidia-gpu.port}"
+              "10.88.127.21:${toString self.nixosConfigurations.LINDA.config.services.prometheus.exporters.nvidia-gpu.port}"
+            ];
           }
         ];
       }

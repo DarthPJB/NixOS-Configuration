@@ -6,7 +6,6 @@
     hyprland.url = "github:hyprwm/Hyprland";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     nixinate = { url = "github:DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
-    #    nixinate = { url = "path:/speed-storage/repo/DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     secrix.url = "github:DarthPJB/secrix";
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_legacy.url = "github:nixos/nixpkgs?ref=nixos-23.05";
@@ -74,9 +73,9 @@
           ] ++ commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${name}
             {
-              nixpkgs.buildPlatform = "x86_64-linux"; # build arch (optional, defaults to local)
+              nixpkgs.buildPlatform = "x86_64-linux"; # build arch
               nixpkgs.hostPlatform = "aarch64-linux"; # target run arch
-              networking.hostName = hostname; # handles display/1.nix → "1"
+              networking.hostName = hostname; 
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;
               documentation = { dev.enable = false; man.enable = false; info.enable = false; enable = false; };
               disabledModules = [
@@ -87,7 +86,8 @@
               _module.args = globalArgs // {
                 unstable = import nixpkgs_unstable { system = "aarch64-linux"; config.allowUnfree = true; };
                 nixinate = {
-                  inherit host sshUser buildOn;
+                  inherit host sshUser;
+                  buildOn = "local";
                   port = 1108;
                 };
               };
@@ -165,94 +165,14 @@
           self.nixosConfigurations.display-1
           self.nixosConfigurations.display-2
         ];
-        #        "armv7l-linux" = mkUncompressedSdImages [
-        #          self.nixosConfigurations.beta-one
-        #        ];
-        #        "riscv64-linux" = mkUncompressedSdImages [
-        #          self.nixosConfigurations.beta-two
-        #        ];
-        #
       };
       # --------------------------------------------------------------------------------------------------
       nixosConfigurations = {
-
-        # -----------------------------------ARM DEVICES-------------------------------------------------
-        #                beta-one = nixpkgs_legacy.legacyPackages.x86_64-linux.pkgsCross.armv7l-hf-multiplatform.nixos 
-        #		{
-        #                  system = "armv7l-linux";
-        #                  modules = [
-        #          	    "${nixpkgs_legacy}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
-        #                    secrix.nixosModules.default
-        #                    nixos-hardware.nixosModules.raspberry-pi-2
-        #                    ./machines/beta/1.nix
-        #             #       ./configuration.nix
-        #                    ./locale/home_networks.nix
-        #                    {
-        #        
-        #	             # nixpkgs.localSystem.system = "aarch64-linux";
-        #        	     # nixpkgs.crossSystem.system = "armv7l-linux";
-        #                      secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
-        #                      # secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
-        #                      system.stateVersion = "24.11";
-        #                      _module.args =
-        #                        {
-        #                          inherit self;
-        #                          nixinate = {
-        #                            port = "1108";
-        #                            host = "10.88.128.126";
-        #                            sshUser = "John88";
-        #                 
-        #                 
-        #                            buildOn = "local";
-        #                          };
-        #                        };
-        #                    }
-        #                  ];
-        #                };
-        #        beta-two = nixpkgs_unstable.lib.nixosSystem {
-        #          system = "riscv64-linux";
-        #          modules = [
-        #            determinate.nixosModules.default
-        #            "${nixos-hardware}/starfive/visionfive/v1/sd-image-installer.nix"
-        #            "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
-        #            secrix.nixosModules.default
-        #            ./machines/beta/2.nix
-        #            ./configuration.nix
-        #            ./locale/home_networks.nix
-        #            {
-        #              # the platform that performs the build-step
-        #              disabledModules = [
-        #                "profiles/all-hardware.nix"
-        #                "profiles/base.nix"
-        #              ];
-        #              nixpkgs.localSystem.system = "x86_64-linux";
-        #              nixpkgs.crossSystem = {
-        #                config = "riscv64-unknown-linux-gnu";
-        #                system = "riscv64-linux";
-        #              };
-        #              secrix.defaultEncryptKeys = { John88 = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhzz/CAb74rLQkDF2weTCb0DICw1oyXNv6XmdLfEsT5" ]; };
-        #              # secrix.hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
-        #              system.stateVersion = "24.11";
-        #              _module.args =
-        #                {
-        #                  unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
-        #                  inherit self;
-        #                  nixinate = {
-        #                    port = "1108";
-        #                    host = "10.88.127.127";
-        #                    sshUser = "John88";
-        #         
-        #         
-        #                    buildOn = "local";
-        #                  };
-        #                };
-        #            }
-        #          ];
-        #        };
         display-1 = mkAarch64 "display/1.nix" "display-1" { hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOOxb+iAm5nTcC3oRsMIcxcciKRj8VnGpp1JIAdGVTZU root@display-1"; host = "10.88.127.41"; };
         display-2 = mkAarch64 "display/2.nix" "display-2" {
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
           host = "10.88.127.42";
+          sshUser = "deploy";
           extraModules = [ hyprland.nixosModules.default ./users/build.nix ];
         };
         print-controller = mkAarch64 "print-controller" "print-controller" {
@@ -274,25 +194,27 @@
           dt = true;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGlV1inLX9o+Qyf/B3dp6xjb4f9bGisvkT6eFL/f8JIl";
           host = "10.88.127.20";
-          extraModules = [ 
-	  	./modifier_imports/central-builder.nix
-	  	nixos-hardware.nixosModules.lenovo-thinkpad-x220 
-		{ environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } 
-	  ];
+          extraModules = [
+            ./modifier_imports/central-builder.nix
+            nixos-hardware.nixosModules.lenovo-thinkpad-x220
+            { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; }
+          ];
         };
         terminal-nx-01 = mkX86_64 "terminal-media" "terminal-nx-01" {
           dt = true;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOK07xnXN3O2v4EZ7YUzWSL5O+Uf2vM6+jzxROWzaTD5";
           host = "10.88.127.21";
-          extraModules = [./users/build.nix
-	  	{ 
-			nixpkgs.config.nvidia.acceptLicense = true; 
-			environment.systemPackages = [ 
-			parsecgaming.packages.x86_64-linux.parsecgaming ]; 
-		}
-	  ];
+          extraModules = [
+            ./users/build.nix
+            {
+              nixpkgs.config.nvidia.acceptLicense = true;
+              environment.systemPackages = [
+                parsecgaming.packages.x86_64-linux.parsecgaming
+              ];
+            }
+          ];
         };
-         
+
         # -----------------------------------VIRTUALISED-------------------------------------------------
 
         local-worker = mkX86_64 "local-worker" "local-worker" {
@@ -341,11 +263,12 @@
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDMfuVEzn9keN1iVk4rjJmB07+/ynTMaZCKPvbaZ1cF6";
           host = "10.88.127.88"; #"LINDACORE.johnbargman.net";
           buildOn = "remote";
-          extraModules = [./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; }];
+          extraModules = [ ./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
         };
 
         # -----------------------------------REMOTE SYSTEMS-------------------------------------------------
         remote-worker = mkX86_64 "remote-worker" "remote-worker" {
+          dt=false;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M";
           host = "10.88.127.50";
           extraModules = [ "${nixpkgs_stable}/nixos/modules/virtualisation/openstack-config.nix" ];
@@ -357,6 +280,7 @@
           host = "10.88.127.4";
         };
         remote-builder = mkX86_64 "remote-builder" "remote-builder" {
+          dt=false;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC7Owkd/9PC7j/L5PbPXrSMx0Aw/1owIoCsfp7+5OKek";
           host = "10.88.127.51";
           extraModules = [ "${nixpkgs_stable}/nixos/modules/virtualisation/openstack-config.nix" ];

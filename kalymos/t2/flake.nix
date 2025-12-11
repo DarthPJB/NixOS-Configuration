@@ -7,8 +7,9 @@
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
-      esp32-src = ./esp32-controller;  # Directory with platformio.ini and code
-    in {
+      esp32-src = ./esp32-controller; # Directory with platformio.ini and code
+    in
+    {
       packages.${system}.esp32-firmware = pkgs.stdenv.mkDerivation {
         name = "esp32-firmware";
         src = esp32-src;
