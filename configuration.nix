@@ -1,6 +1,17 @@
 # This is the general configuration for all of my systems; anything in here will be found on every possible system I have.
 
 { config, pkgs, self, lib, ... }:
+let
+  build-all-script = pkgs.writeShellApplication {
+    name = "nix-build-all";
+    meta.description = "like a baby CI, locally.. oh that's just a builder...";
+    runtimeInputs = [ pkgs.jq pkgs.nix ];
+    text = ''
+      nix flake show --json | jq '.packages."x86_64-linux" | keys_unsorted[]' |
+      while IFS= read -r pkg; do nix build .#"$pkg"; done
+    '';
+  };
+in
 {
   imports =
     [
@@ -17,6 +28,7 @@
     ];
   environment.systemPackages = with pkgs;
     [
+      build-all-script
       pkgs.tmux
       pkgs.progress
       pkgs.parted
