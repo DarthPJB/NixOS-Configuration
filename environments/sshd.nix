@@ -10,6 +10,8 @@
     };
 
     # make sure it never gives up; burn the freaking CPU down with failures; at this point it's life or death.
+    upheldBy =  [ "sockets.target" ];
+    after = [ "wiregaurd-wireg0.target" ];
     startLimitIntervalSec = 0; # 0 = no limit (disable start-rate limiting)
     startLimitBurst = 0;
   };
@@ -31,7 +33,7 @@
         ClientAliveInterval = 300;
         ClientAliveCountMax = 0;
         KbdInteractiveAuthentication = false;
-        AllowUsers = [ "John88" ]; # Replace with actual user(s)
+        AllowUsers = [ "John88" ]; 
       };
       hostKeys = [{
         path = "/etc/ssh/ssh_host_ed25519_key";

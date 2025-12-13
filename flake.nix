@@ -64,18 +64,18 @@
         };
 
       mkAarch64 = name: hostname: { extraModules ? [ ], hostPubKey ? null, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? false, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
-        nixpkgs_stable.lib.nixosSystem {
+        nixpkgs_unstable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
-            "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-            "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
+            "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
             hardware
           ] ++ commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${name}
             {
-              nixpkgs.buildPlatform = "x86_64-linux"; # build arch
+              #nixpkgs.buildPlatform = "x86_64-linux"; # build arch
               nixpkgs.hostPlatform = "aarch64-linux"; # target run arch
-              networking.hostName = hostname; 
+              networking.hostName = hostname;
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;
               documentation = { dev.enable = false; man.enable = false; info.enable = false; enable = false; };
               disabledModules = [
@@ -168,11 +168,14 @@
       };
       # --------------------------------------------------------------------------------------------------
       nixosConfigurations = {
-        display-1 = mkAarch64 "display/1.nix" "display-1" { hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOOxb+iAm5nTcC3oRsMIcxcciKRj8VnGpp1JIAdGVTZU root@display-1"; host = "10.88.127.41"; };
+          display-1 = mkAarch64 "display/1.nix" "display-1" { 
+	  hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOOxb+iAm5nTcC3oRsMIcxcciKRj8VnGpp1JIAdGVTZU root@display-1"; 
+	  host = "10.88.127.41"; 
+	  extraModules = [ ./users/build.nix ];
+	};
         display-2 = mkAarch64 "display/2.nix" "display-2" {
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
           host = "10.88.127.42";
-          sshUser = "deploy";
           extraModules = [ hyprland.nixosModules.default ./users/build.nix ];
         };
         print-controller = mkAarch64 "print-controller" "print-controller" {
@@ -268,7 +271,7 @@
 
         # -----------------------------------REMOTE SYSTEMS-------------------------------------------------
         remote-worker = mkX86_64 "remote-worker" "remote-worker" {
-          dt=false;
+          dt = false;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M";
           host = "10.88.127.50";
           extraModules = [ "${nixpkgs_stable}/nixos/modules/virtualisation/openstack-config.nix" ];
@@ -280,7 +283,7 @@
           host = "10.88.127.4";
         };
         remote-builder = mkX86_64 "remote-builder" "remote-builder" {
-          dt=false;
+          dt = false;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC7Owkd/9PC7j/L5PbPXrSMx0Aw/1owIoCsfp7+5OKek";
           host = "10.88.127.51";
           extraModules = [ "${nixpkgs_stable}/nixos/modules/virtualisation/openstack-config.nix" ];
