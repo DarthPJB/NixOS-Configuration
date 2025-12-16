@@ -73,7 +73,12 @@
           ] ++ commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${name}
             {
-              #nixpkgs.buildPlatform = "x86_64-linux"; # build arch
+              nixpkgs.overlays = [
+                (final: super: {
+                  makeModulesClosure = x: super.makeModulesClosure (x // { allowMissing = true; });
+                })
+              ];
+              #nixpkgs.buildPlatform = "x86_64-linux"; # build arch - not compatible with more complex systems, but good for bootstrap images.
               nixpkgs.hostPlatform = "aarch64-linux"; # target run arch
               networking.hostName = hostname;
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;
@@ -86,6 +91,7 @@
               _module.args = globalArgs // {
                 unstable = import nixpkgs_unstable { system = "aarch64-linux"; config.allowUnfree = true; };
                 nixinate = {
+                  #nixOptions = [ "--ask-sudo-password" ]; # This is how you oneshot override default behaviour TODO: move an example of this to nixinate remadme
                   inherit host sshUser;
                   buildOn = "local";
                   port = 1108;
@@ -168,20 +174,20 @@
       };
       # --------------------------------------------------------------------------------------------------
       nixosConfigurations = {
-          display-1 = mkAarch64 "display/1.nix" "display-1" { 
-	  hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOOxb+iAm5nTcC3oRsMIcxcciKRj8VnGpp1JIAdGVTZU root@display-1"; 
-	  host = "10.88.127.41"; 
-	  extraModules = [ ./users/build.nix ];
-	};
+        display-1 = mkAarch64 "display/1.nix" "display-1" {
+          hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOOxb+iAm5nTcC3oRsMIcxcciKRj8VnGpp1JIAdGVTZU";
+          host = "10.88.127.41";
+          extraModules = [ ./users/build.nix ];
+        };
         display-2 = mkAarch64 "display/2.nix" "display-2" {
-          hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
+          hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p";
           host = "10.88.127.42";
-          extraModules = [ hyprland.nixosModules.default ./users/build.nix ];
+          extraModules = [ ./users/build.nix ];
         };
         print-controller = mkAarch64 "print-controller" "print-controller" {
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBqeo8ceyMoi+SIRP5hhilbhJvFflphD0efolDCxccj9";
           host = "10.88.127.30";
-          sshUser = "John88";
+          hardware = nixos-hardware.nixosModules.raspberry-pi-3;
           extraModules = [ ./server_services/klipper.nix ];
         };
         display-0 = mkAarch64 "display/0.nix" "display-0" {

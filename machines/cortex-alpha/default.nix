@@ -11,6 +11,7 @@
       ../../server_services/ldap.nix
       ../../configuration.nix
       ./hardware-configuration.nix
+      ../../modifier_imports/zfs.nix
     ];
   boot = {
     #  zfs.extraPools = [ "external" ];

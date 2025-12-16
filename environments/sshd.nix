@@ -10,10 +10,10 @@
     };
 
     # make sure it never gives up; burn the freaking CPU down with failures; at this point it's life or death.
-    upheldBy =  [ "sockets.target" ];
+    upheldBy = [ "sockets.target" ];
     after = [ "wiregaurd-wireg0.target" ];
-    startLimitIntervalSec = 0; # 0 = no limit (disable start-rate limiting)
-    startLimitBurst = 0;
+    startLimitIntervalSec = 5;
+    startLimitBurst = 3;
   };
 
   # Enable the OpenSSH daemon.
@@ -33,7 +33,7 @@
         ClientAliveInterval = 300;
         ClientAliveCountMax = 0;
         KbdInteractiveAuthentication = false;
-        AllowUsers = [ "John88" ]; 
+        AllowUsers = [ "John88" ];
       };
       hostKeys = [{
         path = "/etc/ssh/ssh_host_ed25519_key";

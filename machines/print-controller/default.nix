@@ -3,6 +3,7 @@
 {
   imports = [
     ../../configuration.nix
+    ../../modifier_imports/zram.nix
     ../../lib/enable-wg.nix
   ];
   secrix.services.wireguard-wireg0.secrets.print-controller.encrypted.file = ../../secrets/wiregaurd/wg_print-controller;
