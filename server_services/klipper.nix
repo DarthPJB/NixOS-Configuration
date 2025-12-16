@@ -1,10 +1,23 @@
 { config, pkgs, self, ... }: {
+
+
+#TODO: prometheus-klipper-exporter
+  services.prometheus = {
+    exporters.klipper = {
+      enable = true;
+      port = 3104;
+      #extraFlags = [ "st
+    };
+  };
+  networking.firewall.interfaces."wireg0".allowedTCPPorts = [ config.services.prometheus.exporters.klipper.port ];
+
+
   services.klipper = {
     enable = true;
     user = "klipper";
     group = "klipper";
     mutableConfig = true; # Use declarative config
-    configDir = "/var/lib/moonraker/config"; #TODO: investigate post 25.05
+    configDir = "/var/lib/moonraker/config";
 
     firmwares =
       {
@@ -182,7 +195,7 @@
     };
   };
   systemd.tmpfiles.rules = [
-    "d /var/lib/moonraker 0775 moonraker moonraker - -"
+    "d /var/lib/moonraker 0775 klipper moonraker - -"
     "d /var/lib/moonraker/config 0775 klipper moonraker - -"
   ];
   security.polkit.enable = true;
@@ -220,7 +233,7 @@
     group = "klipper";
     extraGroups = [ "moonraker" ]; # Moonraker needs access to Klipper files
     home = "/var/lib/klipper";
-    createHome = true;
+    #createHome = true;
   };
   users.groups.klipper = { };
 
@@ -229,7 +242,7 @@
     group = "moonraker";
     extraGroups = [ "klipper" ]; # Moonraker needs access to Klipper files
     home = "/var/lib/moonraker";
-    createHome = true;
+    #createHome = true;
   };
   users.groups.moonraker = { };
 
