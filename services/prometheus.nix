@@ -9,7 +9,7 @@ let
   graphana-dn = "grafana.${fqdn}";
 in
 {
- # TODO: with convergence style, automate scraper addition.
+  # TODO: with convergence style, automate scraper addition.
   services.prometheus = {
     enable = true;
     listenAddress = "${listen-addr}";

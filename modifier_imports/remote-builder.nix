@@ -5,10 +5,20 @@
   secrix.services.nix-daemon.secrets.personal-builder.encrypted.file = ../secrets/builder-key;
   nix.buildMachines = [
     {
+      hostName = "100.127.177.30";
+      protocol = "ssh-ng";
+      sshUser = "build"; 
+      sshKey = config.secrix.services.nix-daemon.secrets.hyperhyper.decrypted.path;
+      systems = [ "aarch64-darwin" ];
+      maxJobs = 10;
+      speedFactor = 10;
+      supportedFeatures = [ "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
+      mandatoryFeatures = [ ];
+    }
+    {
       # in nix.conf this reads:
       #  builders = 'ssh://build@100.107.101.14 x86_64-linux /home/razvan/.ssh/??? 30 5 big-parallel,kvm,nixos-test,benchmark - c3NoLWVkMjU1MTkgQUFBQUMzTnphQzFsWkRJMU5URTVBQUFBSUV4N3B1QW1wQXJmNVBYa0k1d1JGa053cVFpdWxoSHh6ZUJFVnZDNTJJT0gK';  
       hostName = "100.107.101.14";
-      system = "x86_64-linux";
       protocol = "ssh-ng";
       sshUser = "build"; #
       sshKey = config.secrix.services.nix-daemon.secrets.hyperhyper.decrypted.path;
@@ -20,7 +30,6 @@
     }
     {
       hostName = "10.88.127.42"; #Display-2
-      system = "aarch64-linux";
       protocol = "ssh-ng";
       sshUser = "build"; #
       sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
@@ -32,7 +41,6 @@
     }
     {
       hostName = "10.88.127.41"; #Display-1
-      system = "aarch64-linux";
       protocol = "ssh-ng";
       sshUser = "build"; #
       sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
@@ -92,6 +100,10 @@
     #    }
   ];
   programs.ssh.knownHosts = {
+     pompeii= {
+      hostNames = [ "pompeii" "100.127.177.30" ];
+      publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL4FWg5satPAkNLJ0kRFEUi7DFtly4Xb3Yr0kUrrb53d";
+    };
     display-1 = {
       hostNames = [ "display-1" "10.88.127.41" ];
       publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOOxb+iAm5nTcC3oRsMIcxcciKRj8VnGpp1JIAdGVTZU root@display-1";
