@@ -119,6 +119,7 @@
         nixpkgs_stable.lib.genAttrs
           (map (cfg: cfg.config.system.name) configs)
           (name: mkUncompressedSdImage (builtins.getAttr name self.nixosConfigurations));
+
     in
     {
       formatter."x86_64-linux" = flake_pkgs.nixpkgs-fmt;
@@ -171,9 +172,23 @@
           self.nixosConfigurations.display-1
           self.nixosConfigurations.display-2
         ];
+        "armv7l-linux" = mkUncompressedSdImages [
+          self.nixosConfigurations.beta-one
+        ];
       };
       # --------------------------------------------------------------------------------------------------
       nixosConfigurations = {
+        beta-one = nixpkgs_unstable.lib.nixosSystem {
+          system = "armv7l-linux";
+          modules =
+            [
+              "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
+              "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
+              ./machines/beta/1.nix
+            ];
+        };
+
+
         display-1 = mkAarch64 "display/1.nix" "display-1" {
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOOxb+iAm5nTcC3oRsMIcxcciKRj8VnGpp1JIAdGVTZU";
           host = "10.88.127.41";
