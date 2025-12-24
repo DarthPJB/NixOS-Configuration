@@ -190,6 +190,31 @@
   services.xserver.enable = true;
   services.xserver.videoDrivers = [ "nvidia" ];
   services.pipewire = {
+    extraConfig.pipewire-pulse = {
+      "50-discord-block-source-volume" = {
+        "pulse.rules" = [
+          {
+            matches = [
+              { application.process.binary = "Discord"; }
+              { application.process.binary = ".Discord-wrapped"; }
+              { application.process.binary = "discord"; }
+              { application.process.binary = "*[Dd]iscord*"; }
+            ];
+            actions = { quirks = [ "block-source-volume" ]; };
+          }
+        ];
+      };
+      "50-vivaldi-block-source-volume" = {
+        "pulse.rules" = [
+          {
+            matches = [
+              { application.process.binary = "*[V]ivaldi*"; }
+            ];
+            actions = { quirks = [ "block-source-volume" ]; };
+          }
+        ];
+      };
+    };
     enable = true;
     alsa.enable = true;
     alsa.support32Bit = true;
@@ -211,7 +236,7 @@
 
   networking = {
     interfaces = {
-      br0.useDHCP = true;
+      "bond0".useDHCP = true;
       enp69s0f0 = {
         useDHCP = true;
       };
@@ -220,22 +245,29 @@
       };
     };
     firewall.interfaces = {
-      "br0".allowedTCPPorts = [ 2108 4010 1108 5201 27015 4549 24070 ];
-      "br0".allowedTCPPortRanges = [{ from = 17780; to = 17785; }];
+      "bond0".allowedTCPPorts = [ 2108 4010 1108 5201 27015 4549 24070 ];
+      "bond0".allowedTCPPortRanges = [{ from = 17780; to = 17785; }];
       "wireg0".allowedTCPPorts = [ 80 1108 5201 ];
 
-      "br0".allowedUDPPorts = [ 2108 1108 4010 27015 4175 4179 4171 ];
-      "br0".allowedUDPPortRanges = [{ from = 17780; to = 17785; }{ from = 27031; to = 27036;}];
+      "bond0".allowedUDPPorts = [ 2108 1108 4010 27015 4175 4179 4171 ];
+      "bond0".allowedUDPPortRanges = [{ from = 17780; to = 17785; }{ from = 27031; to = 27036;}];
 
+    };
+    bonds."bond0" = {
+      interfaces = [ "enp69s0f1" "enp69s0f0" ];
+      driverOptions = {
+        mode = "active-backup";
+        miimon = "100";
+      };
     };
 
     hostName = "LINDACORE";
     hostId = "b4120de4";
-    bridges = {
-      "br0" = {
-        interfaces = [ "enp69s0f0" ];
-      };
-    };
+#    bridges = {
+#      "br0" = {
+#        interfaces = [ "enp69s0f0" ];
+#      };
+#    };
     useDHCP = false;
     wireless =
       {
