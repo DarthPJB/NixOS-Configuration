@@ -309,6 +309,7 @@
         "52:54:00:e9:4a:af,LINDA-WM,10.88.128.24,infinite"
         "18:c0:4d:8d:53:6c,LINDACORE,10.88.128.87,infinite"
         "18:c0:4d:8d:53:6d,LINDACORE,10.88.128.88,infinite"
+        #"62:ca:ae:42:43:45,LINDACORE,10.88.128.88,infinite" #failover bond
         "18:26:49:c5:48:24,LINDACORE,10.88.128.89,infinite"
       ];
       interface = "enp3s0";

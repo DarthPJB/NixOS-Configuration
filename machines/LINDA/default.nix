@@ -236,7 +236,7 @@
 
   networking = {
     interfaces = {
-      "bond0".useDHCP = true;
+#      "bond0".useDHCP = true;
       enp69s0f0 = {
         useDHCP = true;
       };
@@ -245,21 +245,21 @@
       };
     };
     firewall.interfaces = {
-      "bond0".allowedTCPPorts = [ 2108 4010 1108 5201 27015 4549 24070 ];
-      "bond0".allowedTCPPortRanges = [{ from = 17780; to = 17785; }];
+      "enp69s0f0".allowedTCPPorts = [ 2108 4010 1108 5201 27015 4549 24070 ];
+      "enp69s0f0".allowedTCPPortRanges = [{ from = 17780; to = 17785; }];
       "wireg0".allowedTCPPorts = [ 80 1108 5201 ];
 
-      "bond0".allowedUDPPorts = [ 2108 1108 4010 27015 4175 4179 4171 ];
-      "bond0".allowedUDPPortRanges = [{ from = 17780; to = 17785; }{ from = 27031; to = 27036;}];
+      "enp69s0f0".allowedUDPPorts = [ 2108 1108 4010 27015 4175 4179 4171 ];
+      "enp69s0f0".allowedUDPPortRanges = [{ from = 17780; to = 17785; }{ from = 27031; to = 27036;}];
 
     };
-    bonds."bond0" = {
-      interfaces = [ "enp69s0f1" "enp69s0f0" ];
-      driverOptions = {
-        mode = "active-backup";
-        miimon = "100";
-      };
-    };
+#    bonds."bond0" = {
+#      interfaces = [ "enp69s0f1" "enp69s0f0" ];
+#      driverOptions = {
+#        mode = "active-backup";
+#        miimon = "100";
+#      };
+#    };
 
     hostName = "LINDACORE";
     hostId = "b4120de4";
