@@ -14,6 +14,7 @@
     #pkgs.cool-retro-term
     pkgs.nix-top
     pkgs.lite-xl
+    opencode
     pkgs.neovim
     pkgs.progress
     pkgs.dnsutils
