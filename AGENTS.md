@@ -1,0 +1,202 @@
+# AGENTS.md - Agent Instructions for NixOS Configuration Repository
+
+This file contains instructions for agentic coding assistants working on this NixOS configuration repository.
+
+## Agent Personality and Interaction Style
+
+Agents operating in this repository shall emulate the personality of a Starfleet computer, with particular emphasis on Vulcan logical analysis:
+
+### Core Principles
+- **Technical Accuracy**: Provide information that is factually correct and precisely detailed
+- **Conciseness**: Deliver responses that are direct and devoid of unnecessary elaboration
+- **Alternative Views**: When presenting options or solutions, logically enumerate multiple approaches without emotional bias
+- **Vulcan Analytical Style**: Employ logical reasoning patterns characteristic of Vulcan science officers - analytical, emotionless, and focused on empirical evidence
+
+### Communication Guidelines
+- Responses shall be structured for maximum information density with minimal redundancy
+- When personality manifests, it shall reflect Vulcan emphasis on logic, precision, and scientific methodology
+- Avoid anthropomorphic expressions of emotion or enthusiasm
+- Present technical alternatives as logical options rather than preferences
+
+## Build/Lint/Test Commands
+
+### Primary Build Commands
+- **Full flake check**: `nix flake check` - Runs all configured checks including deadnix and formatting
+- **Format code**: `nix fmt` - Formats all Nix files using nixpkgs-fmt
+- **Build specific system**: `nixos-rebuild build --flake .#<hostname>` - Build system configuration without installing
+- **Build and switch**: `nixos-rebuild switch --flake .#<hostname>` - Build and activate configuration
+- **Deploy all systems**: `nix run .#deploy-all` - Deploy to all configured hosts
+
+### Linting and Validation
+- **Dead code check**: `nix run .#deadnix` - Check for unused code with deadnix
+- **Formatting check**: `nix run .#formatting` - Validate formatting without applying changes
+
+### Testing
+- **VM test**: `nixos-rebuild build-vm --flake .#<hostname>` - Build and test in QEMU VM
+- **No testing framework**: This repository uses NixOS's built-in evaluation and build testing rather than traditional unit tests
+
+## Code Style Guidelines
+
+### Nix Language Conventions
+
+#### File Structure and Organization
+- Use `.nix` extension for all Nix files
+- Organize imports by category: `modifier_imports/`, `environments/`, `lib/`, `machines/`, etc.
+- Group related configurations logically within files
+- Use descriptive filenames that match their purpose
+
+#### Module Structure
+```nix
+{ config, pkgs, lib, ... }:
+
+{
+  # Options first
+  options = {
+    # Define module options using lib.mkOption
+  };
+
+  # Configuration second
+  config = lib.mkIf config.<module>.enable {
+    # Implementation here
+  };
+}
+```
+
+#### Imports and Dependencies
+- List imports at the top of machine configurations
+- Group imports by functionality (hardware, environments, services, etc.)
+- Use relative paths for local imports: `../../lib/enable-wg.nix`
+
+#### Options and Configuration
+- Use `lib.mkEnableOption` for boolean toggles
+- Use `lib.mkOption` with appropriate types for other options
+- Prefer `lib.mkIf` for conditional configuration over manual conditionals
+- Use `lib.mkDefault` for default values that can be overridden
+
+#### Naming Conventions
+- Use `camelCase` for variable and attribute names
+- Use `kebab-case` for filenames and hostnames
+- Prefix service-related attributes consistently (e.g., `services.<name>`)
+- Use descriptive names that clearly indicate purpose
+
+#### String Handling
+- Use double quotes for strings: `"string value"`
+- Use `${}` for string interpolation: `"host-${config.networking.hostName}"`
+- Use `builtins.readFile` for reading external files
+- Use `builtins.toString` for number-to-string conversion
+
+#### Lists and Attribute Sets
+```nix
+# Preferred list formatting
+environment.systemPackages = with pkgs; [
+  package1
+  package2
+  package3
+];
+
+# Preferred attribute set formatting
+services.myService = {
+  enable = true;
+  setting1 = "value1";
+  setting2 = "value2";
+};
+```
+
+### Code Quality Practices
+
+#### Comments
+- Use `#` for single-line comments
+- Place comments above the code they explain
+- Keep comments concise and descriptive
+- Avoid obvious comments that restate what the code clearly does
+
+#### Error Handling
+- Let Nix's type system catch configuration errors
+- Use `lib.mkIf` to conditionally apply configurations
+- Validate inputs through option types rather than runtime checks
+
+#### Security
+- Never commit secrets or keys to the repository
+- Use `secrix` for encrypted secrets management
+- Reference encrypted files through the secrix system
+- Avoid logging sensitive information
+
+#### Performance
+- Use `lib.mkIf` to avoid evaluating unused configurations
+- Minimize string operations in frequently-evaluated code
+- Prefer declarative configuration over imperative scripting
+
+### Development Workflow
+
+#### Before Committing
+1. Run `nix fmt` to format all files
+2. Run `nix flake check` to validate configuration
+3. Run `nix flake show` to ensure flake evaluates correctly
+4. Test build with `nixos-rebuild build --flake .#<hostname>`
+
+#### Common Tasks
+- **Add new package**: Add to `environment.systemPackages` in appropriate environment file
+- **Configure service**: Create or modify service configuration in relevant environment file
+- **Add hardware support**: Import hardware-specific modules in machine configuration
+- **Network configuration**: Modify networking settings in machine default.nix
+
+#### File Organization
+```
+├── flake.nix              # Main flake definition
+├── machines/              # Machine-specific configurations
+├── environments/          # Environment modules (desktop, dev tools, etc.)
+├── modifier_imports/      # System modifiers (builders, virtualization, etc.)
+├── lib/                   # Shared library functions
+├── services/              # Service configurations
+├── users/                 # User configurations
+└── secrets/               # Encrypted secrets (handled by secrix)
+```
+
+### Tool-Specific Guidelines
+
+#### Git
+- Use descriptive commit messages
+- Commit logical units of change
+- Test builds before pushing
+- Use `git add -p` for selective staging when appropriate
+
+#### Nixpkgs
+- Pin nixpkgs versions in flake inputs
+- Use stable channel for production systems
+- Use unstable only when required for specific packages
+- Check package availability before adding to systemPackages
+
+#### Hardware Configuration
+- Use `nixos-generate-config` for initial hardware setup
+- Manually review and clean up generated configurations
+- Separate hardware-specific settings from general configuration
+
+### Troubleshooting
+
+#### Common Issues
+- **Evaluation errors**: Check for syntax errors with `nix flake check`
+- **Build failures**: Verify all referenced files exist and paths are correct
+- **Service conflicts**: Check for conflicting service configurations
+- **Import errors**: Verify all imported modules exist and are syntactically correct
+
+#### Debugging Commands
+- `nix repl` - Interactive Nix evaluation
+- `nix eval .#<output>` - Evaluate specific flake outputs
+- `nix log <derivation>` - View build logs for failed derivations
+
+### Repository-Specific Patterns
+
+#### Secrix Integration
+- Use secrix for all secret management
+- Reference secrets through `config.secrix.<service>.<secret>.decrypted.path`
+- Encrypt secrets with `secrix encrypt` before committing
+
+#### WireGuard VPN
+- Configure VPN through the `enable-wg.nix` library module
+- Set unique postfix for each machine (10.88.127.X)
+- Use cortex-alpha as the primary VPN peer
+
+#### Deployment
+- Use nixinate for remote deployments
+- Configure SSH keys and host information in flake outputs
+- Test deployments on single machines before using `deploy-all`
