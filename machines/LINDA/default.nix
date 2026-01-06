@@ -57,6 +57,7 @@
     enable = true;
     autoStart = true;
     openFirewall = true;
+    capSysAdmin = true;
   };
   #programs.zoom-us.enable = true;
   environment.systemPackages = [
@@ -229,7 +230,7 @@
     nvidia = {
       nvidiaSettings = true;
       open = false;
-      modesetting.enable = true;
+      modesetting.enable = false;
       powerManagement.enable = true;
     };
   };
@@ -246,11 +247,11 @@
     };
     firewall.interfaces = {
       "enp69s0f0".allowedTCPPorts = [ 2108 4010 1108 5201 27015 4549 24070 ];
-      "enp69s0f0".allowedTCPPortRanges = [{ from = 17780; to = 17785; }];
+      "enp69s0f0".allowedTCPPortRanges = [{ from = 17780; to = 17785; }{ from = 47984; to = 48010;}];
       "wireg0".allowedTCPPorts = [ 80 1108 5201 ];
 
       "enp69s0f0".allowedUDPPorts = [ 2108 1108 4010 27015 4175 4179 4171 ];
-      "enp69s0f0".allowedUDPPortRanges = [{ from = 17780; to = 17785; }{ from = 27031; to = 27036;}];
+      "enp69s0f0".allowedUDPPortRanges = [{ from = 17780; to = 17785; }{ from = 27031; to = 27036;}{ from = 47984; to = 48010;}];
 
     };
 #    bonds."bond0" = {
