@@ -123,7 +123,7 @@
     in
     {
       formatter."x86_64-linux" = flake_pkgs.nixpkgs-fmt;
-      apps."x86_64-linux" = { secrix = (secrix.secrix self) // { meta = { description = "Secrix encryption tool"; }; }; } // (nixinate.lib.genDeploy.x86_64-linux self) //
+      apps."x86_64-linux" = { secrix = secrix.secrix self; } // (nixinate.lib.genDeploy.x86_64-linux self) //
         {
           deploy-all = {
             type = "app";
