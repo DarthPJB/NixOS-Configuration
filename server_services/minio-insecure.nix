@@ -6,7 +6,14 @@ let
   toAddress = p: "${host-address}:${toString p}";
 in
 {
-  secrix.services.minio.secrets.minio-rootCredentialsFile.encrypted.file = ../secrets/minio-rootCredentialsFile;
+  secrix.system.secrets.minio-rootCredentialsFile = {
+    encrypted.file = ../secrets/minio-rootCredentialsFile;
+    decrypted = {
+      user = "minio";
+      group = "minio";
+      mode = "0400";
+    };
+  };
 
   services = {
     minio = {
@@ -16,8 +23,9 @@ in
       listenAddress = toAddress host-port;
       consoleAddress = toAddress console-port;
       dataDir = [ "/bulk-storage/minio" ];
-      rootCredentialsFile = config.secrix.services.minio.secrets.minio-rootCredentialsFile.decrypted.path;
+      rootCredentialsFile = config.secrix.system.secrets.minio-rootCredentialsFile.decrypted.path;
     };
   };
   networking.firewall.interfaces."wireg0".allowedTCPPorts = [ host-port console-port ];
+  systemd.services.minio.environment.MINIO_PROMETHEUS_AUTH_TYPE = "public";
 }
