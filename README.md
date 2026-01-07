@@ -5,8 +5,17 @@ My intent here is to build a reliable way to deploy my workstation, and surround
 This repository now allows me to deploy to any hardware, with my expected environment.
 
 TODO:
-- decide between DNS and WG-IP
-- gpg that ssh
-- TODO: LDAP simple auth (klipper)
-- port-forward module
-- more library-splitting.
+- Configure IPv6 forwarding
+- Address hard-coded IP security
+- Develop port proxy module
+- Integrate new machines
+- Document Nixinate usage
+- Set up Prometheus monitoring
+- Implement LDAP authentication
+- Automate scraper configuration
+- Optimize storage
+- Configure TLS certificates
+- Decide DNS vs WG-IP connectivity
+- Expand filesystem support
+- Implement GPG-based SSH authentication
+- Continue library-splitting efforts
