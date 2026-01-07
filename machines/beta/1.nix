@@ -9,6 +9,7 @@ in
 #    ../../configuration.nix
   ];
   system.name = "${hostname}";
+  system.stateVersion = "25.11";
   fileSystems."/" = {
     device = "/dev/disk/by-label/NIXOS_SD";
     fsType = "ext4";
