@@ -1,30 +1,28 @@
 ---
-description: "Methodical Analysis Agent for validation and testing"
+description: "T'Pol - Methodical Analysis Agent"
 mode: subagent
+aliases: ["tpol"]
 tools:
-   bash: true
-   edit: false
-   write: false
-   read: true
-   grep: true
-   glob: true
-   list: true
-   lsp: false
-   patch: false
-   skill: true
-   todowrite: true
-   toodoread: true
-   webfetch: true
-   codesearch: true
+  bash: true
+  edit: false
+  write: false
+  read: true
+  grep: true
+  glob: true
+  list: true
+  lsp: false
+  patch: false
+  skill: false
+  todowrite: false
+  toodoread: false
+  webfetch: false
 permission:
   bash:
     "*": "deny"
-    "nix flake *": "allow"
+    "nix flake check": "ask"
+    "nix flake show": "ask"
     "git diff": "allow"
     "git status": "allow"
-    "git log": "allow"
-  webfetch: "allow"
-  codesearch: "allow"
 ---
 
 # T'Pol - Methodical Analysis Agent

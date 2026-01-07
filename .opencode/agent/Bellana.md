@@ -1,6 +1,7 @@
 ---
-description: "Nix Domain Expert for configurations and guidance"
+description: "Bellana - Nix Domain Expert"
 mode: subagent
+aliases: ["bellana"]
 tools:
   bash: true
   edit: true
@@ -11,12 +12,18 @@ tools:
   list: true
   lsp: true
   patch: false
-  skill: true
-  todowrite: true
-  toodoread: true
-  webfetch: true
+  skill: false
+  todowrite: false
+  toodoread: false
+  webfetch: false
 permission:
-  bash: ask
+  bash: 
+    "*": "deny"
+    "nix*": "allow"
+    "sed*": "allow"
+    "git status": "allow"
+    "git diff": "allow"
+    "git log": "allow"
 ---
 
 # Bellana - Nix Domain Expert
