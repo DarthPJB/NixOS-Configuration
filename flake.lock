@@ -795,15 +795,15 @@
         "nixpkgs": "nixpkgs_5"
       },
       "locked": {
-        "lastModified": 1763929102,
+        "lastModified": 1763929380,
         "narHash": "sha256-Yc7gZME/lcHoJH6bMPCG7CyjKWhOLJPqLI8MXtyKPHo=",
-        "owner": "DarthPJB",
+        "owner": "Platonic-Systems",
         "repo": "secrix",
-        "rev": "9a8d3a3f87a3f389bc55ab2ec359e7709827b392",
+        "rev": "c6e3ca7af47c329dcf442a3d017ae171eee5612f",
         "type": "github"
       },
       "original": {
-        "owner": "DarthPJB",
+        "owner": "Platonic-Systems",
         "repo": "secrix",
         "type": "github"
       }
