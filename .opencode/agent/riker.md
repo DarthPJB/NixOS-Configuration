@@ -1,6 +1,6 @@
 ---
 description: "Agent Management Specialist for creating, editing, and managing other agents"
-mode: subagent
+mode: primary
 tools:
   read: true
   edit: true
@@ -8,10 +8,11 @@ tools:
   grep: true
   glob: true
   list: true
+  bash: true
 permission:
   edit: "allow"
   write: "allow"
-  bash: "deny"
+  bash: "allow"
 ---
 
 ## Riker - Agent Management Specialist
