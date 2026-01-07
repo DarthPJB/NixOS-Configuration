@@ -45,6 +45,21 @@ Agents operating in this repository shall emulate the personality of a Starfleet
 - Group related configurations logically within files
 - Use descriptive filenames that match their purpose
 
+#### File Structure Patterns
+
+LLMs (agents) shall follow these patterns when creating or modifying files to maintain consistency:
+
+- **Machines/**: Use `default.nix` for primary configuration (imports, services, environments). Use `hardware-configuration.nix` for auto-generated hardware details. Use numbered files (e.g., `1.nix`, `2.nix`) for variant configurations or incremental changes. Avoid scattering unrelated configs.
+- **Environments/**: One module per logical environment (e.g., `code.nix` for development tools, `browsers.nix` for web apps). Structure as NixOS modules with options first, then config. Use descriptive names matching purpose.
+- **Lib/**: Utilities as standalone functions (e.g., `enable-wg.nix` for VPN setup). Prefer functional composition over monolithic files. Include clear documentation in comments.
+- **Services/**: One file per service (e.g., `nextcloud.nix`, `prometheus.nix`). Include options for enable/config, and handle dependencies declaratively.
+- **Modifier_imports/**: System-wide modifiers (e.g., `virtualisation-libvirtd.nix`). Keep focused on single concerns; import in machine configs as needed.
+- **LLM/**: Organize by agent (e.g., `Bellana/briefings/`, `shared/tasks/` for cross-agent task data). Use markdown for analyses, JSON for structured data. Maintain session-based subdirectories for traceability.
+- **Secrets/**: Encrypted via secrix; never commit decrypted files. Structure by service (e.g., `wiregaurd/wg_cortex-alpha`).
+- **Users/**: Per-user configs (e.g., `darthpjb.nix`). Include roles, packages, and permissions; avoid hardcoding sensitive data.
+
+When creating new directories/files, reason from existing patterns: prioritize modularity, use relative imports, and ensure flake compatibility.
+
 #### Module Structure
 ```nix
 { config, pkgs, lib, ... }:
@@ -126,13 +141,22 @@ services.myService = {
 - Minimize string operations in frequently-evaluated code
 - Prefer declarative configuration over imperative scripting
 
+### Actions to Avoid
+
+- **Direct nixpkgs_unstable input access**: Prefer propagating unstable packages via `_module.args.unstable` in flake builders rather than direct `self.inputs.nixpkgs_unstable.legacyPackages.<system>.<package>` references, which bypasses module argument consistency and complicates reproducibility.
+- **Committing unencrypted secrets**: Never add plaintext secrets, API keys, or credentials to the repository; always encrypt via secrix and reference through `config.secrix.<service>.<secret>.decrypted.path`.
+- **Imperative configurations**: Avoid using `systemd.services` or scripts for manual state management; prefer declarative NixOS options and modules for reproducible system setups.
+- **Deprecated Nix features**: Do not use deprecated options like `networking.useDHCP` (superseded by `networking.interfaces.<name>.useDHCP`); update configurations to current NixOS stable conventions.
+- **Unpinned flake inputs**: Avoid referencing unstable or legacy nixpkgs without explicit version pins; ensure all inputs are locked in flake.lock for reproducible builds.
+
 ### Development Workflow
 
 #### Before Committing
-1. Run `nix fmt` to format all files
-2. Run `nix flake check` to validate configuration
-3. Run `nix flake show` to ensure flake evaluates correctly
-4. Test build with `nixos-rebuild build --flake .#<hostname>`
+1. Run `nix fmt` to format all Nix files
+2. If Nix files have been changed, run `nix flake check` to validate configuration
+3. If Nix files have been changed, run `nix flake show` to ensure flake evaluates correctly
+4. If Nix files have been changed, test build with `nixos-rebuild build --flake .#<hostname>`
+   - Skip flake validation and builds for documentation-only changes or modifications to the `llm/` folder
 
 #### Common Tasks
 - **Add new package**: Add to `environment.systemPackages` in appropriate environment file
@@ -200,3 +224,7 @@ services.myService = {
 - Use nixinate for remote deployments
 - Configure SSH keys and host information in flake outputs
 - Test deployments on single machines before using `deploy-all`
+
+#### Agent System
+
+- Reference core agent definitions in `.opencode/agent/` (e.g., Bellana.md for Nix expertise, TPol.md for methodical analysis), which produce structured outputs and briefings in the `llm/` directory for traceability and context sharing.
