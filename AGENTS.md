@@ -24,8 +24,8 @@ Agents operating in this repository shall emulate the personality of a Starfleet
 - **Full flake check**: `nix flake check` - Runs all configured checks including deadnix and formatting
 - **Format code**: `nix fmt` - Formats all Nix files using nixpkgs-fmt
 - **Build specific system**: `nixos-rebuild build --flake .#<hostname>` - Build system configuration without installing
-- **Build and switch**: `nixos-rebuild switch --flake .#<hostname>` - Build and activate configuration
-- **Deploy all systems**: `nix run .#deploy-all` - Deploy to all configured hosts
+- **Deploy specific system**: `nix run .#<hostname>` - Deploy remote system via nixinate (test mode by default)
+- **Deploy all systems**: `nix run .#deploy-all` - Deploy to all configured hosts via nixinate
 
 ### Linting and Validation
 - **Dead code check**: `nix run .#deadnix` - Check for unused code with deadnix
@@ -221,9 +221,43 @@ services.myService = {
 - Use cortex-alpha as the primary VPN peer
 
 #### Deployment
-- Use nixinate for remote deployments
-- Configure SSH keys and host information in flake outputs
-- Test deployments on single machines before using `deploy-all`
+Nixinate is the primary remote deployment tool for this repository, generating SSH-based deployment scripts for each `nixosConfiguration` in the flake. It replaces direct `nixos-rebuild switch` usage.
+
+##### How Nixinate Works
+- **App Generation**: `nixinate.lib.genDeploy.x86_64-linux self` creates deployment apps (e.g., `nix run .#cortex-alpha`)
+- **SSH-Based**: Connects via SSH and executes `nixos-rebuild` remotely
+- **Build Strategies**: Local (build locally, copy remotely) or remote (build entirely on target)
+- **Default Safety**: Uses `nixos-rebuild test` by default to prevent permanent changes
+
+##### Configuration Requirements
+Each deployable machine needs `_module.args.nixinate` with:
+```nix
+_module.args = globalArgs // {
+  nixinate = {
+    host = "10.88.127.1";        # WireGuard IP
+    sshUser = "deploy";          # Dedicated user with NOPASSWD sudo
+    buildOn = "local";           # "local" or "remote"
+    port = 1108;                 # Custom SSH port
+  };
+};
+```
+
+##### Deployment Commands
+- **Test deployment**: `nix run .#<hostname>` (default mode)
+- **Permanent deployment**: `nix run .#<hostname> -- switch`
+- **Batch deployment**: `nix run .#deploy-all` (whitelisted hosts only)
+
+##### Best Practices
+- Always test builds locally first: `nixos-rebuild build --flake .#<hostname>`
+- Verify SSH connectivity: `ssh -p 1108 deploy@<host>`
+- Start with test mode, monitor services before permanent activation
+- Use VPN-only access (WireGuard 10.88.127.X network)
+- Batch deploys to: terminal-zero, cortex-alpha, LINDA, remote-worker, etc.
+
+##### Troubleshooting
+- SSH issues: Check port 1108 and deploy user (UID 1110)
+- Build failures: Verify `buildOn` and resources
+- Secrets: Ensure secrix paths are configured
 
 #### Agent System
 
