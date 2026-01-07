@@ -86,7 +86,32 @@ in
           }
         ];
       }
-    ];
+      {
+        job_name = "nginx";
+        static_configs = [
+          {
+            targets = [ "10.88.127.50:3105" ];
+          }
+        ];
+      }
+      {
+        job_name = "nextcloud";
+        static_configs = [
+          {
+            targets = [ "10.88.127.50:3106" ];
+          }
+        ];
+      }
+      {
+        job_name = "minio";
+        metrics_path = "/minio/v2/metrics/cluster";
+        static_configs = [
+          {
+            targets = [ "10.88.127.3:2222" ];
+          }
+        ];
+       }
+     ];
     webExternalUrl = "https://${prometheus-dn}";
   };
 
