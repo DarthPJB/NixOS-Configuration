@@ -1,0 +1,35 @@
+{
+  "filename": "services/prometheus.nix",
+  "line_number": 12,
+  "todo_text": "TODO: with convergence style, automate scraper addition.",
+  "context": {
+    "before_lines": [
+      "in",
+      "{"
+    ],
+    "after_lines": [
+      "  services.prometheus = {",
+      "    enable = true;",
+      "    listenAddress = \"${listen-addr}\";",
+      "    port = 8080;",
+      "    globalConfig.scrape_interval = \"5s\";"
+    ]
+  },
+  "file_info": {
+    "size": 5001,
+    "last_modified": 1765918093
+  },
+  "assessment": {
+    "priority_assessment": "Medium",
+    "priority_rationale": "Configuration automation improving monitoring setup and maintenance",
+    "estimated_effort": "Medium",
+    "effort_rationale": "Requires functional Nix programming for dynamic scraper generation. Moderate complexity with convergence pattern implementation.",
+    "bellana_analysis_timestamp": "2026-01-06T22:52:00+00:00"
+  },
+  "scan_metadata": {
+    "scan_timestamp": "2026-01-06T22:39:32+00:00",
+    "git_revision": "6d89247076427360adc1838aa0399ca00bff203e",
+    "git_branch": "jb/AI-overlord",
+    "task_id": "task_services_prometheus_nix_12"
+  }
+}

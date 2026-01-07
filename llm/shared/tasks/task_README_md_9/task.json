@@ -1,0 +1,30 @@
+{
+  "filename": "README.md",
+  "line_number": 9,
+  "todo_text": "gpg that ssh",
+  "context": {
+    "before_lines": [
+      "- decide between DNS and WG-IP"
+    ],
+    "after_lines": [
+      "- TODO: LDAP simple auth (klipper)"
+    ]
+  },
+  "file_info": {
+    "size": 528,
+    "last_modified": 1767746627
+  },
+  "assessment": {
+    "priority_assessment": "High",
+    "priority_rationale": "Security enhancement via GPG-SSH authentication",
+    "estimated_effort": "Medium",
+    "effort_rationale": "2-4 hours implementation",
+    "bellana_analysis_timestamp": "2026-01-07T01:00:00+00:00"
+  },
+  "scan_metadata": {
+    "scan_timestamp": "2026-01-07T01:00:00+00:00",
+    "git_revision": "65dbf71ddd7708cab89205b2ce2e213b525cff55",
+    "git_branch": "jb/AI-overlord",
+    "task_id": "task_README_md_9"
+  }
+}

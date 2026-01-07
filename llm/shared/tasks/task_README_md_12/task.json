@@ -1,0 +1,28 @@
+{
+  "filename": "README.md",
+  "line_number": 12,
+  "todo_text": "more library-splitting.",
+  "context": {
+    "before_lines": [
+      "- port-forward module"
+    ],
+    "after_lines": []
+  },
+  "file_info": {
+    "size": 528,
+    "last_modified": 1767746627
+  },
+  "assessment": {
+    "priority_assessment": "Medium",
+    "priority_rationale": "Configuration refactoring to reduce duplication",
+    "estimated_effort": "Medium",
+    "effort_rationale": "3-5 hours implementation",
+    "bellana_analysis_timestamp": "2026-01-07T01:00:00+00:00"
+  },
+  "scan_metadata": {
+    "scan_timestamp": "2026-01-07T01:00:00+00:00",
+    "git_revision": "65dbf71ddd7708cab89205b2ce2e213b525cff55",
+    "git_branch": "jb/AI-overlord",
+    "task_id": "task_README_md_12"
+  }
+}
