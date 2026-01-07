@@ -1,0 +1,34 @@
+{
+  "filename": "flake.nix",
+  "line_number": 94,
+  "todo_text": "TODO: move an example of this to nixinate remadme",
+  "context": {
+    "before_lines": [
+      "                unstable = import nixpkgs_unstable { system = \"aarch64-linux\"; config.allowUnfree = true; };",
+      "                nixinate = {"
+    ],
+    "after_lines": [
+      "                  inherit host sshUser;",
+      "                  buildOn = \"local\";",
+      "                  port = 1108;",
+      "                };"
+    ]
+  },
+  "file_info": {
+    "size": 15607,
+    "last_modified": 1765932127
+  },
+  "assessment": {
+    "priority_assessment": "Medium",
+    "priority_rationale": "Documentation improvement for nixinate tool usage, affects developer experience",
+    "estimated_effort": "Low",
+    "effort_rationale": "Simple documentation addition to README. No code changes required, just clear example formatting.",
+    "bellana_analysis_timestamp": "2026-01-06T22:48:00+00:00"
+  },
+  "scan_metadata": {
+    "scan_timestamp": "2026-01-06T22:39:32+00:00",
+    "git_revision": "6d89247076427360adc1838aa0399ca00bff203e",
+    "git_branch": "jb/AI-overlord",
+    "task_id": "task_flake_nix_94"
+  }
+}

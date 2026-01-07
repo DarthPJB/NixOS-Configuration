@@ -1,0 +1,33 @@
+{
+  "filename": "lib/make-storeless-image.nix",
+  "line_number": 183,
+  "todo_text": "TODO: support other filesystems someday.",
+  "context": {
+    "before_lines": [
+      ", rootGPUID ? \"F222513B-DED1-49FA-B591-20CE86A2FE7F\"",
+      "  # When fsType = ext4, this is the root Filesystem Unique Identifier."
+    ],
+    "after_lines": [
+      ", rootFSUID ? (if fsType == \"ext4\" then rootGPUID else null)",
+      "",
+      ", # Whether a nix channel based on the current source tree should be"
+    ]
+  },
+  "file_info": {
+    "size": 25593,
+    "last_modified": 1701499173
+  },
+  "assessment": {
+    "priority_assessment": "Low",
+    "priority_rationale": "Future enhancement expanding image creation capabilities",
+    "estimated_effort": "High",
+    "effort_rationale": "Requires deep understanding of multiple filesystem formats, partition schemes, and Nix image building. High complexity with extensive testing needs.",
+    "bellana_analysis_timestamp": "2026-01-06T22:56:00+00:00"
+  },
+  "scan_metadata": {
+    "scan_timestamp": "2026-01-06T22:39:32+00:00",
+    "git_revision": "6d89247076427360adc1838aa0399ca00bff203e",
+    "git_branch": "jb/AI-overlord",
+    "task_id": "task_lib_make_storeless_image_nix_183"
+  }
+}

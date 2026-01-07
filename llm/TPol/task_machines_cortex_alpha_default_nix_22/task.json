@@ -1,0 +1,33 @@
+{
+  "filename": "machines/cortex-alpha/default.nix",
+  "line_number": 22,
+  "todo_text": "TODO: v6 please god",
+  "context": {
+    "before_lines": [
+      "      sysctl = {",
+      "        \"net.ipv4.conf.all.forwarding\" = true;"
+    ],
+    "after_lines": [
+      "      };",
+      "    };",
+      "    loader.systemd-boot.enable = true;"
+    ]
+  },
+  "file_info": {
+    "size": 11850,
+    "last_modified": 1766555167
+  },
+  "assessment": {
+    "priority_assessment": "High",
+    "priority_rationale": "Critical network configuration affecting system connectivity and multiple services",
+    "estimated_effort": "Medium",
+    "effort_rationale": "Requires understanding of NixOS networking modules and error handling patterns. Moderate complexity with testing needs.",
+    "bellana_analysis_timestamp": "2026-01-06T22:45:00+00:00"
+  },
+  "scan_metadata": {
+    "scan_timestamp": "2026-01-06T22:39:32+00:00",
+    "git_revision": "6d89247076427360adc1838aa0399ca00bff203e",
+    "git_branch": "jb/AI-overlord",
+    "task_id": "task_machines_cortex_alpha_default_nix_22"
+  }
+}
