@@ -6,7 +6,7 @@
     hyprland.url = "github:hyprwm/Hyprland";
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     nixinate = { url = "github:DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
-    secrix.url = "github:DarthPJB/secrix";
+    secrix.url = "github:Platonic-Systems/secrix";
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_legacy.url = "github:nixos/nixpkgs?ref=nixos-23.05";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
