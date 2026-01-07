@@ -1,6 +1,7 @@
 ---
-description: "Fast agent specialized for exploring codebases"
+description: "Explore - Code Exploration Agent"
 mode: subagent
+aliases: ["explore"]
 tools:
   read: true
   grep: true
