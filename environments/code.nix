@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, unstable, ... }:
 
 {
   environment.shellAliases = {
@@ -14,7 +14,7 @@
     #pkgs.cool-retro-term
     pkgs.nix-top
     pkgs.lite-xl
-    opencode
+    unstable.opencode
     pkgs.neovim
     pkgs.progress
     pkgs.dnsutils
