@@ -69,7 +69,7 @@ in
     "kernel.printk" = "7 7 7 7"; # Maximum verbosity for dmesg
   };
 
-  services.rsyslogd = lib.mkIf (pkgs.system == "x86_64-linux") {
+  services.rsyslogd = lib.mkIf (config.nixpkgs.system == "x86_64-linux") {
     enable = true;
     extraConfig = ''
       kern.* /var/log/kern.log

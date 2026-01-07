@@ -28,7 +28,7 @@ in
     {
       configureRedis = true;
       enable = true;
-      package = pkgs.nextcloud31;
+      package = pkgs.nextcloud32;
       hostName = "${fqdn}";
       https = true;
       enableImagemagick = true;
