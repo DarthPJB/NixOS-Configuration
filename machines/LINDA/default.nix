@@ -53,6 +53,11 @@
     };
   };
   nix.gc.automatic = lib.mkForce false; # Never collect this nix-store and it's cache.
+  services.ollama = {
+    enable = true;
+    acceleration = "cuda";
+    models = "/speed-storage/ollama";
+  };
   services.sunshine = {
     enable = true;
     autoStart = true;

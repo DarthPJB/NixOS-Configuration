@@ -4,6 +4,7 @@
   inputs = {
     deadnix = { url = "github:astro/deadnix"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     hyprland.url = "github:hyprwm/Hyprland";
+    lint-utils = { url = "github:homotopic/lint-utils"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     nixinate = { url = "github:DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     secrix.url = "github:Platonic-Systems/secrix";
@@ -14,7 +15,7 @@
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
   # --------------------------------------------------------------------------------------------------
-  outputs = { self, parsecgaming, nixos-hardware, hyprland, secrix, nixinate, nixpkgs_legacy, nixpkgs_unstable, nixpkgs_stable, determinate, deadnix }:
+  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nixos-hardware, nixpkgs_legacy, nixpkgs_stable, nixpkgs_unstable, parsecgaming, secrix }:
     let
       # ------------------------------------------------------------------
       # those handy little things.
@@ -320,15 +321,8 @@
             nix run ${deadnix}#deadnix "${self}"
         '';
       };
-      # Obviously i need esoteric complex formatnix-module-eshtoglith right?
-      checks."x86_64-linux".formatting = flake_pkgs.writeShellApplication {
-        name = "run-fmt";
-        meta.description = "runs nix-fmt on the flake source";
-        text = ''
-          # Runs fmt from nixpkgs or local flake
-            nix fmt --check "${self}"
-        '';
-      };
+
+      checks."x86_64-linux".nixpkgs-fmt = lint-utils.linters.x86_64-linux.nixpkgs-fmt { src = self; };
     };
 
 }

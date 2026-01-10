@@ -21,7 +21,7 @@ Agents operating in this repository shall emulate the personality of a Starfleet
 ## Build/Lint/Test Commands
 
 ### Primary Build Commands
-- **Full flake check**: `nix flake check` - Runs all configured checks including deadnix and formatting
+- **Full flake check**: `nix flake check` - Runs all configured checks including deadnix, formatting, and lint-utils linters like nixpkgs-fmt
 - **Format code**: `nix fmt` - Formats all Nix files using nixpkgs-fmt
 - **Build specific system**: `nixos-rebuild build --flake .#<hostname>` - Build system configuration without installing
 - **Deploy specific system**: `nix run .#<hostname>` - Deploy remote system via nixinate (test mode by default)
@@ -29,7 +29,7 @@ Agents operating in this repository shall emulate the personality of a Starfleet
 
 ### Linting and Validation
 - **Dead code check**: `nix run .#deadnix` - Check for unused code with deadnix
-- **Formatting check**: `nix run .#formatting` - Validate formatting without applying changes
+- **Formatting check**: `nix flake check` includes lint-utils nixpkgs-fmt linter
 
 ### Testing
 - **VM test**: `nixos-rebuild build-vm --flake .#<hostname>` - Build and test in QEMU VM
