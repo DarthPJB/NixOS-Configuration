@@ -1,1 +1,0 @@
-{"path": "environments/blender.nix", "analysis": "This is a minimal or placeholder module for Blender 3D software, currently containing no configurations. The file structure is standard NixOS module format but empty. Reasoning: Likely intended for 3D modeling tools but not yet populated, or Blender installation is handled elsewhere in the configuration."}
