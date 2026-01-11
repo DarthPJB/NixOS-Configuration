@@ -11,6 +11,12 @@
   boot.kernelModules = [ "virtio_balloon" "virtio_console" "virtio_rng" ];
   boot.extraModulePackages = [ ];
 
+  # Filesystem configuration for VM harness testing
+  fileSystems."/" =
+    { device = "/dev/vda1";
+      fsType = "ext4";
+    };
+
   swapDevices = [ ];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
