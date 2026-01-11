@@ -12,10 +12,11 @@
     nixpkgs_legacy.url = "github:nixos/nixpkgs?ref=nixos-23.05";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
+    nix-mcp-servers.url = "github:cameronfyfe/nix-mcp-servers";
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
   # --------------------------------------------------------------------------------------------------
-  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nixos-hardware, nixpkgs_legacy, nixpkgs_stable, nixpkgs_unstable, parsecgaming, secrix }:
+  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_legacy, nixpkgs_stable, nixpkgs_unstable, parsecgaming, secrix }:
     let
       # ------------------------------------------------------------------
       # those handy little things.
