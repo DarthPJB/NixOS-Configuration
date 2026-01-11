@@ -71,6 +71,7 @@
     pkgs.virtiofsd
     pkgs.gwe
     pkgs.virt-manager
+    self.inputs.nix-mcp-servers.packages.x86_64-linux.github-mcp-server
     #self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.nixd
   ];
   nix = {
