@@ -296,7 +296,6 @@
           dt = false;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M";
           host = "10.88.127.50";
-          extraModules = [ "${nixpkgs_stable}/nixos/modules/virtualisation/openstack-config.nix" ];
         };
         # EJ better give this back, i haven't heard anything from him
         storage-array = mkX86_64 "storage-array" "storage-array" {
@@ -308,7 +307,6 @@
           dt = false;
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC7Owkd/9PC7j/L5PbPXrSMx0Aw/1owIoCsfp7+5OKek";
           host = "10.88.127.51";
-          extraModules = [ "${nixpkgs_stable}/nixos/modules/virtualisation/openstack-config.nix" ];
         };
         # -------------------------------------------------------------------------------------------------------
       };
