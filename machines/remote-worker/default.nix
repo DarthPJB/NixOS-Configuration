@@ -4,6 +4,7 @@
 
 {
   imports = [
+    ./hardware-configuration.nix
     ../../configuration.nix
     ../../locale/tailscale.nix
     ../../server_services/nextcloud.nix

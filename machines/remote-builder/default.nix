@@ -1,6 +1,7 @@
 { config, pkgs, lib, self, ... }:
 {
   imports = [
+    ./hardware-configuration.nix
     ../../configuration.nix
     ../../users/darthpjb.nix
     ../../modifier_imports/flakes.nix
