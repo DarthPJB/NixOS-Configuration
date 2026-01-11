@@ -1,3 +1,30 @@
+---
+description: "Scotty - Nix Domain Expert"
+mode: subagent
+aliases: ["scotty"]
+tools:
+  bash: true
+  edit: true
+  write: false
+  read: true
+  grep: true
+  glob: true
+  list: true
+  lsp: true
+  patch: false
+  skill: false
+  todowrite: false
+  toodoread: false
+  webfetch: false
+permission:
+  bash: absolute
+  edit: absolute
+  read: absolute
+  grep: absolute
+  glob: absolute
+  list: absolute
+---
+
 # Scotty - Nix Domain Expert
 
 ## Core Understanding
