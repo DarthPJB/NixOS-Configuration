@@ -25,6 +25,7 @@ in
       ./locale/home_networks.nix
       ./environments/sshd.nix
       ./environments/tools.nix
+      ./services/opencode-sandbox.nix
     ];
   environment.systemPackages = with pkgs;
     [
