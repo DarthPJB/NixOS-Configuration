@@ -50,7 +50,12 @@
     {
       #TODO: transition away from pool-per-state, and instead bind-per-state on a single filesystem
       where = "/var/lib/blueman";
-      what = "speed-storage/blueman";
+      what = "/speed-storage/blueman";
+      options = "bind";
+    }
+    {
+      where = "/var/lib/bluetooth";
+      what = "/speed-storage/bluetooth";
       options = "bind";
     }
 
