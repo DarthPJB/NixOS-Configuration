@@ -52,6 +52,7 @@
       };
     };
   };
+
   nix.gc.automatic = lib.mkForce false; # Never collect this nix-store and it's cache.
   services.ollama = {
     enable = true;
@@ -64,6 +65,7 @@
     openFirewall = true;
     capSysAdmin = true;
   };
+  services.opencode-sandbox.enable = true;
   #programs.zoom-us.enable = true;
   environment.systemPackages = [
     self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.looking-glass-client
@@ -86,112 +88,99 @@
   services.guix.enable = true;
   programs.adb.enable = true;
   users.users.John88.extraGroups = [ "adbusers" ];
-  systemd.user.services =
-    {
-      obsidian =
-        {
-          description = "obsidian-autostart";
-          wantedBy = [ "graphical-session.target" ];
-          serviceConfig =
-            {
-              Restart = "always";
-              ExecStart = ''
-                ${pkgs.obsidian}/bin/obsidian
-              '';
-              PassEnvironment = "DISPLAY XAUTHORITY";
-            };
-        };
-      dino =
-        {
-          description = "dino-autostart";
-          wantedBy = [ "graphical-session.target" ];
-          serviceConfig =
-            {
-              Restart = "always";
-              ExecStart = ''
-                ${pkgs.dino}/bin/dino
-              '';
-              PassEnvironment = "DISPLAY XAUTHORITY";
-            };
-        };
-      discord =
-        {
-          description = "discord-autostart";
-          wantedBy = [ "graphical-session.target" ];
-          serviceConfig =
-            {
-              Restart = "always";
-              ExecStart = ''
-                ${pkgs.discord}/bin/discord
-              '';
-              PassEnvironment = "DISPLAY XAUTHORITY";
-            };
-        };
-
-      scream-ivshmem = {
-        enable = true;
-        description = "Scream br0";
-        serviceConfig = {
-          ExecStart = "${pkgs.scream}/bin/scream  -u -i  br0 -p 4010";
-        };
-        wantedBy = [ "multi-user.target" ];
-        requires = [ "pipewire.service" ];
+  systemd.user.services = {
+    obsidian = {
+      description = "obsidian-autostart";
+      wantedBy = [ "graphical-session.target" ];
+      serviceConfig = {
+        Restart = "always";
+        ExecStart = ''
+          ${pkgs.obsidian}/bin/obsidian
+        '';
+        PassEnvironment = "DISPLAY XAUTHORITY";
       };
     };
-
+    dino = {
+      description = "dino-autostart";
+      wantedBy = [ "graphical-session.target" ];
+      serviceConfig = {
+        Restart = "always";
+        ExecStart = ''
+          ${pkgs.dino}/bin/dino
+        '';
+        PassEnvironment = "DISPLAY XAUTHORITY";
+      };
+    };
+    discord = {
+      description = "discord-autostart";
+      wantedBy = [ "graphical-session.target" ];
+      serviceConfig = {
+        Restart = "always";
+        ExecStart = ''
+          ${pkgs.discord}/bin/discord
+        '';
+        PassEnvironment = "DISPLAY XAUTHORITY";
+      };
+    };
+    scream-ivshmem = {
+      enable = true;
+      description = "Scream br0";
+      serviceConfig = {
+        ExecStart = "${pkgs.scream}/bin/scream  -u -i  br0 -p 4010";
+      };
+      wantedBy = [ "multi-user.target" ];
+      requires = [ "pipewire.service" ];
+    };
+  };
   systemd.tmpfiles.rules = [
     "f /dev/shm/looking-glass 0660 John88 qemu-libvirtd -"
     "d /rendercache 0755 John88 users"
+    "d /var/lib/opencode 0755 pokej users"
   ];
-
-  boot =
-    {
-      tmp.useTmpfs = false;
-      supportedFilesystems = [ "zfs" "ntfs" ];
-      zfs.extraPools = [ "speed-storage" "bulk-storage" ];
-      loader =
-        {
-          systemd-boot.enable = true;
-          efi.canTouchEfiVariables = true;
-        };
-      initrd =
-        {
-          availableKernelModules = [ "vfio_pci" "vfio_iommu_type1" "vfio" "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "uas" "sd_mod" ];
-          kernelModules = [ "vfio_pci" ];
-        };
-
-      #kernelPackages= pkgs.linuxPackages_5_18;
-      kernelModules = [ "kvm-amd" "vfio_pci" "vfio_iommu_type1" "vfio" ];
-      kernelParams = [
-        "video=HDMI-0:1920x1080@60"
-        "video=DP-1:1920x1080@60"
-        "video=HDMI-1:3840x2160@60"
-        "video=HDMI-2-0:400x1280@30"
-        "acpi_enforce_resources=lax"
-        "amd_iommu=on"
-        "amd_pstate=active"
-      ];
-      extraModulePackages = [ ];
-
-
-
-      /*extraModprobeConfig = ''
-        options vfio-pci ids=1b21:2142,10de:1c81,10de:0fb9
-      '';*/
-      # ,
-      # 0000:21:00.0 0000:21:00.1
-      # echo ""
-      /*
-      initrd.preDeviceCommands = ''
-        DEVS="0000:46:00.0 0000:4d:00.0 0000:4d:00.1"
-        for DEV in $DEVS; do
-            echo "vfio-pci" > /sys/bus/pci/devices/$DEV/driver_override
-        done
-        modprobe -i vfio-pci
-      ''; */
+  boot = {
+    tmp.useTmpfs = false;
+    supportedFilesystems = [ "zfs" "ntfs" ];
+    zfs.extraPools = [ "speed-storage" "bulk-storage" ];
+    loader = {
+      systemd-boot.enable = true;
+      efi.canTouchEfiVariables = true;
     };
-
-
+    initrd = {
+      availableKernelModules = [ "vfio_pci" "vfio_iommu_type1" "vfio" "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "uas" "sd_mod" ];
+      kernelModules = [ "vfio_pci" ];
+    };
+    #kernelPackages= pkgs.linuxPackages_5_18;
+    kernelModules = [ "kvm-amd" "vfio_pci" "vfio_iommu_type1" "vfio" ];
+    kernelParams = [
+      "video=HDMI-0:1920x1080@60"
+      "video=DP-1:1920x1080@60"
+      "video=HDMI-1:3840x2160@60"
+      "video=HDMI-2-0:400x1280@30"
+      "acpi_enforce_resources=lax"
+      "amd_iommu=on"
+      "amd_pstate=active"
+    ];
+    extraModulePackages = [ ];
+    /*extraModprobeConfig = ''
+      options vfio-pci ids=1b21:2142,10de:1c81,10de:0fb9
+    '';*/
+    # ,
+    # 0000:21:00.0 0000:21:00.1
+    # echo ""
+    /*
+    initrd.preDeviceCommands = ''
+      DEVS="0000:46:00.0 0000:4d:00.0 0000:4d:00.1"
+      for DEV in $DEVS; do
+          echo "vfio-pci" > /sys/bus/pci/devices/$DEV/driver_override
+      done
+      modprobe -i vfio-pci
+    ''; */
+  };
+  fileSystems."/var/lib/opencode" = {
+    device = "speed-storage/opencode";
+    fsType = "zfs";
+    options = [ "nofail" ];
+  };
   # Set your time zone.
   time.timeZone = "Etc/UTC";
   services.xserver.enable = true;
@@ -283,5 +272,26 @@
         interfaces = [ "wlp72s0" ];
       };
   };
-}
 
+  systemd.services = {
+    opencode-push = {
+      description = "Push OpenCode session branches to remote";
+      serviceConfig = {
+        ExecStart = ''${pkgs.bash}/bin/bash -c 'cd /var/lib/opencode && git push origin opencode-session-*' '';
+        User = "pokej";
+        Type = "oneshot";
+      };
+    };
+  };
+  systemd.timers = {
+    opencode-push-timer = {
+      description = "Hourly push of OpenCode session branches";
+      timerConfig = {
+        OnCalendar = "hourly";
+        Persistent = true;
+      };
+      wantedBy = [ "timers.target" ];
+    };
+  };
+
+}
