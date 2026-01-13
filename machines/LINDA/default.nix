@@ -39,6 +39,11 @@
     options = [ "bind" ];
   };
 
+  fileSystems."/speed-storage" = {
+    device = "speed-storage";
+    fsType = "zfs";
+  };
+
   secrix.services.wireguard-wireg0.secrets.LINDA.encrypted.file = ../../secrets/wiregaurd/wg_LINDA;
   environment = {
     vpn =
