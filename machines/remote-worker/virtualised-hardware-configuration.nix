@@ -3,7 +3,8 @@
 
 {
   imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
+    [
+      (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
   boot.initrd.availableKernelModules = [ "virtio_net" "virtio_pci" "virtio_mmio" "virtio_blk" "virtio_scsi" "9p" "9pnet_virtio" ];
@@ -13,7 +14,8 @@
 
   # Filesystem configuration for VM harness testing
   fileSystems."/" =
-    { device = "/dev/vda1";
+    {
+      device = "/dev/vda1";
       fsType = "ext4";
     };
 

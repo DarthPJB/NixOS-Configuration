@@ -110,8 +110,8 @@ in
             targets = [ "10.88.127.3:2222" ];
           }
         ];
-       }
-     ];
+      }
+    ];
     webExternalUrl = "https://${prometheus-dn}";
   };
 

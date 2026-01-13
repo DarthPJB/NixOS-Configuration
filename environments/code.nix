@@ -1,4 +1,4 @@
- { config, lib, pkgs, unstable, ... }:
+{ config, lib, pkgs, unstable, ... }:
 
 {
   environment.shellAliases = {
@@ -21,7 +21,6 @@
     #pkgs.cool-retro-term
     pkgs.nix-top
     pkgs.lite-xl
-    unstable.opencode
     pkgs.neovim
     pkgs.progress
     pkgs.dnsutils
@@ -51,7 +50,7 @@
         sha256 = "sha256-xH1oXNTwsOvIKv3XhP6Riqp2FtfncyMDOWSAgVRpkT8=";
       })
       { inherit pkgs; })
-  ];
+  ] ++ lib.optionals config.services.opencode-sandbox.enable [ config.services.opencode-sandbox.opencodeShell config.services.opencode-sandbox.opencodeUnwrapped ];
 
   services.opencode-sandbox.enable = true;
 }

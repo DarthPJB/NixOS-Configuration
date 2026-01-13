@@ -4,7 +4,8 @@
 
 {
   imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
+    [
+      (modulesPath + "/installer/scan/not-detected.nix")
       (modulesPath + "/virtualisation/openstack-config.nix")
     ];
 

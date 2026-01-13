@@ -65,23 +65,23 @@
       privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.remote-worker.decrypted.path;
     };
 
-   networking.hostId = "e3fabb5b";
-   networking.hostName = "remote-worker";
+  networking.hostId = "e3fabb5b";
+  networking.hostName = "remote-worker";
 
-   networking.firewall.allowedTCPPorts = [ 3105 3106 ];
+  networking.firewall.allowedTCPPorts = [ 3105 3106 ];
 
-   services.prometheus.exporters.nginx = {
-     enable = true;
-     port = 3105;
-   };
+  services.prometheus.exporters.nginx = {
+    enable = true;
+    port = 3105;
+  };
 
-   services.prometheus.exporters.nextcloud = {
-     enable = true;
-     port = 3106;
-     url = "https://nextcloud.johnbargman.net";
-     username = "admin";
-     passwordFile = config.secrix.system.secrets.nextcloud_password_file.decrypted.path;
-   };
+  services.prometheus.exporters.nextcloud = {
+    enable = true;
+    port = 3106;
+    url = "https://nextcloud.johnbargman.net";
+    username = "admin";
+    passwordFile = config.secrix.system.secrets.nextcloud_password_file.decrypted.path;
+  };
 
 }
 
