@@ -37,9 +37,9 @@ let
        rsync -a "$SESSION_FULL"/.opencode/ "$SESSION_DOT"/
        rm -rf "$SESSION_DOT"/.git
 
-      SAVE_ORIGINAL="$SESSION_FULL-original"; cp -a "$SESSION_FULL" "$SAVE_ORIGINAL"
+       SAVE_ORIGINAL="$SESSION_FULL-original"; cp -a "$SESSION_FULL" "$SAVE_ORIGINAL"
 
-       handle_exit() {
+        handle_exit() {
          cd /speed-storage/opencode
          git stash -m temp || true
          git checkout main || git checkout master
@@ -70,15 +70,15 @@ let
         --tmpfs /tmp \
         --bind "$SESSION_PROJECT" /work \
         --bind "$SESSION_FULL" /speed-storage/opencode \
-        --bind "$SESSION_DOT" /var/lib/opencode \
+        --bind "$SESSION_FULL/.opencode" /home/opencode-sandbox/.config/opencode \
         --unshare-all \
         --share-net \
-        --uid "$(id -u)" \
-        --gid "$(id -g)" \
+        --uid 4000 \
+        --gid 4000 \
         --chdir /work \
-        --setenv HOME /home/user \
+        --setenv HOME /home/opencode-sandbox \
         --setenv PATH ${lib.makeBinPath [pkgs.bash pkgs.coreutils pkgs.git pkgs.neovim unstable.opencode]} \
-        --dir /home/user \
+        --dir /home/opencode-sandbox \
         -- bash -c "ls /nix/store/*opencode 2>/dev/null || echo NO OPENCODE; echo PATH=\$PATH; cd /work && exec \${lib.getExe unstable.opencode}"
     '';
   };
