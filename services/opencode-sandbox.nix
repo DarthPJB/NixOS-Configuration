@@ -23,27 +23,37 @@ let
       WORKING_DIR="$(pwd)"
       PROJECT_NAME=$(basename "$WORKING_DIR")
       TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-      SESSION_DIR="/tmp/session-$TIMESTAMP-agents"
+      SESSION_PROJECT="/tmp/session-project-$TIMESTAMP"
       BRANCH_NAME="$PROJECT_NAME-$TIMESTAMP"
 
-      mkdir -p "$SESSION_DIR"
-      rsync -a /var/lib/opencode/ "$SESSION_DIR"/
-      rm -rf "$SESSION_DIR"/.git
+      mkdir -p "$SESSION_PROJECT"; rsync -a --exclude='.git' "$WORKING_DIR/" "$SESSION_PROJECT"/
+      SAVE_PROJECT="$SESSION_PROJECT-original"; cp -a "$SESSION_PROJECT" "$SAVE_PROJECT"
 
-      SAVE_ORIGINAL="$SESSION_DIR-original"
-      cp -a /var/lib/opencode "$SAVE_ORIGINAL"
+       SESSION_FULL="/tmp/session-full-$TIMESTAMP"
+       rsync -a /speed-storage/opencode/ "$SESSION_FULL"/
+       rm -rf "$SESSION_FULL"/.git
 
-      handle_exit() {
-        cd /var/lib/opencode
-        git checkout -b "$PROJECT_NAME-$TIMESTAMP" || git checkout -b "$BRANCH_NAME"
-        rm -rf -- * .git
-        rsync -a "$SESSION_DIR"/ .
-        if ! diff -rq "$SAVE_ORIGINAL" "$SESSION_DIR"; then
-          git add .
-          git commit -m "OpenCode: $PROJECT_NAME $TIMESTAMP"
-          echo "Review/merge cmds"
-        fi
-      }
+       SESSION_DOT="/tmp/session-dot-$TIMESTAMP"
+       rsync -a "$SESSION_FULL"/.opencode/ "$SESSION_DOT"/
+       rm -rf "$SESSION_DOT"/.git
+
+      SAVE_ORIGINAL="$SESSION_FULL-original"; cp -a "$SESSION_FULL" "$SAVE_ORIGINAL"
+
+       handle_exit() {
+         cd /speed-storage/opencode
+         git stash -m temp || true
+         git checkout main || git checkout master
+         git checkout -b "config-$BRANCH_NAME"
+          rm -rf -- * .git
+          rsync -a "$SESSION_FULL"/ .
+         if ! diff -rq "$SAVE_ORIGINAL" "$SESSION_FULL"; then
+           git add .
+           git commit -m "OpenCode config: $PROJECT_NAME $TIMESTAMP"
+         fi
+         git checkout main
+         git stash pop || true
+         echo "Config branch: $BRANCH_NAME; Review: git log $BRANCH_NAME"
+       }
 
       trap 'handle_exit' EXIT
 
@@ -58,9 +68,9 @@ let
         --ro-bind /proc /proc \
         --ro-bind /sys /sys \
         --tmpfs /tmp \
-        --bind "$SESSION_DIR" /var/lib/opencode \
-        --bind "$SESSION_DIR" /speed-storage/opencode \
-        --bind "$WORKING_DIR" /work \
+        --bind "$SESSION_PROJECT" /work \
+        --bind "$SESSION_FULL" /speed-storage/opencode \
+        --bind "$SESSION_DOT" /var/lib/opencode \
         --unshare-all \
         --share-net \
         --uid "$(id -u)" \
