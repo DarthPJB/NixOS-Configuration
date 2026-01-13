@@ -8,6 +8,10 @@
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     nixinate = { url = "github:DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     secrix.url = "github:Platonic-Systems/secrix";
+    sl = {
+      url = "github:pinktrink/sl/a613b55b692304f8e020af8889ff996c0918fa7d";
+      flake = false;
+    };
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_legacy.url = "github:nixos/nixpkgs?ref=nixos-23.05";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
@@ -16,7 +20,7 @@
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
   # --------------------------------------------------------------------------------------------------
-  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_legacy, nixpkgs_stable, nixpkgs_unstable, parsecgaming, secrix }:
+  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_legacy, nixpkgs_stable, nixpkgs_unstable, parsecgaming, secrix, sl }:
     let
       # ------------------------------------------------------------------
       # those handy little things.
@@ -28,6 +32,7 @@
       # ------------------------------------------------------------------
       globalArgs = {
         inherit self;
+        sl = sl;
       };
 
       commonModules = [

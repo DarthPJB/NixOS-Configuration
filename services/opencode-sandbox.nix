@@ -3,8 +3,6 @@
 with lib;
 
 let
-  cfg = config.services.opencode-sandbox;
-
   opencodeWrapper = pkgs.writeShellApplication {
     name = "opencode";
     runtimeInputs = with pkgs; [
@@ -39,6 +37,7 @@ let
 
       WORKING_DIR="$(pwd)"
       SESSION_FULL="$WORKING_DIR"
+
 
 
 
@@ -83,54 +82,8 @@ let
 
 in
 {
-  options.services.opencode-sandbox = {
-    enable = mkEnableOption "OpenCode sandbox wrapper";
-
-    workingDir = mkOption {
-      type = types.str;
-      default = "/home/pokej/NixOS-Configuration";
-      description = "Default working directory (if PWD is invalid)";
-    };
-
-    speedStorage = mkOption {
-      type = types.bool;
-      default = true;
-      description = "Mount /var/lib/opencode if available";
-    };
-
-    opencodeShell = mkOption {
-      type = types.package;
-      description = "OpenCode sandbox shell wrapper";
-    };
-
-    opencodeUnwrapped = mkOption {
-      type = types.package;
-      description = "OpenCode unwrapped launcher";
-    };
-  };
-
-  config = mkIf cfg.enable {
-    services.opencode-sandbox.opencodeShell = opencodeWrapper;
-    services.opencode-sandbox.opencodeUnwrapped = opencodeUnwrapped;
-    environment.systemPackages = [
-      opencodeWrapper
-      opencodeUnwrapped
-    ];
-
-    systemd.services.opencode-init = {
-      description = "Init OpenCode git repo";
-      wantedBy = ["multi-user.target"];
-      script = ''
-        export PATH=${lib.makeBinPath [pkgs.git]};
-        cd /speed-storage/opencode
-        if ! git rev-parse --git-dir > /dev/null 2>&1; then
-          git init
-          git config user.name "OpenCode"
-          git config user.email "opencode@local"
-          git add .
-          git commit -m "Initial OpenCode repo"
-        fi
-      '';
-    };
-  };
+  environment.systemPackages = [
+    opencodeWrapper
+    opencodeUnwrapped
+  ];
 }

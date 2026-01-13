@@ -33,11 +33,11 @@
       ../../modifier_imports/remote-builder.nix
     ];
 
-  fileSystems."/var/lib/opencode" = {
-    device = "/speed-storage/opencode";
-    fsType = "none";
-    options = [ "bind" ];
-  };
+ # fileSystems."/var/lib/opencode" = {
+ #   device = "/speed-storage/opencode";
+ #   fsType = "none";
+  #  options = [ "bind" ];
+ # };
 
   fileSystems."/speed-storage" = {
     device = "speed-storage";
@@ -77,7 +77,7 @@
     openFirewall = true;
     capSysAdmin = true;
   };
-  services.opencode-sandbox.enable = true;
+  # services.opencode-sandbox.enable = true;
   #programs.zoom-us.enable = true;
   environment.systemPackages = [
     self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.looking-glass-client
