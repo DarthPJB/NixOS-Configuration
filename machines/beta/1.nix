@@ -5,8 +5,8 @@ in
 {
 
   imports = [
-#    ../../lib/enable-wg.nix
-#    ../../configuration.nix
+    #    ../../lib/enable-wg.nix
+    #    ../../configuration.nix
   ];
   system.name = "${hostname}";
   system.stateVersion = "25.11";
@@ -28,10 +28,10 @@ in
   #boot.kernelPackages = pkgs.linuxPackages_5_0;
   nixpkgs.buildPlatform = "x86_64-linux"; # build arch - not compatible with more complex systems, but good for bootstrap images.
   nixpkgs.hostPlatform = "armv7l-linux"; # target run arch
- # boot.kernelPackages = lib.mkForce pkgs.linuxKernel.packages.linux_rpi2;
+  # boot.kernelPackages = lib.mkForce pkgs.linuxKernel.packages.linux_rpi2;
   # set cross compiling
   #nixpkgs.crossSystem = nixpkgs.crossSystems.armv7l-hf-multiplatform;
- /* nixpkgs.crossSystem = lib.systems.elaborate {
+  /* nixpkgs.crossSystem = lib.systems.elaborate {
     config = "armv7l-unknown-linux-gnueabihf";
     platform = {
       name = "raspberrypi2";
@@ -48,7 +48,7 @@ in
       };
     }; 
   }; */
-  boot.loader.grub.enable = false;  
+  boot.loader.grub.enable = false;
   boot.loader.generic-extlinux-compatible.enable = true;
   #sdImage.bootSize = lib.mkOverride 1050 32;
   documentation = { dev.enable = false; man.enable = false; info.enable = false; enable = false; };

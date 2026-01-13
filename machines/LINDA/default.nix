@@ -32,6 +32,13 @@
       ../../modifier_imports/cuda.nix
       ../../modifier_imports/remote-builder.nix
     ];
+
+  fileSystems."/var/lib/opencode" = {
+    device = "/speed-storage/opencode";
+    fsType = "none";
+    options = [ "bind" ];
+  };
+
   secrix.services.wireguard-wireg0.secrets.LINDA.encrypted.file = ../../secrets/wiregaurd/wg_LINDA;
   environment = {
     vpn =
@@ -135,7 +142,6 @@
   systemd.tmpfiles.rules = [
     "f /dev/shm/looking-glass 0660 John88 qemu-libvirtd -"
     "d /rendercache 0755 John88 users"
-    "d /var/lib/opencode 0755 pokej users"
   ];
   boot = {
     tmp.useTmpfs = false;
@@ -168,7 +174,7 @@
     # 0000:21:00.0 0000:21:00.1
     # echo ""
     /*
-    initrd.preDeviceCommands = ''
+      initrd.preDeviceCommands = ''
       DEVS="0000:46:00.0 0000:4d:00.0 0000:4d:00.1"
       for DEV in $DEVS; do
           echo "vfio-pci" > /sys/bus/pci/devices/$DEV/driver_override
@@ -176,11 +182,7 @@
       modprobe -i vfio-pci
     ''; */
   };
-  fileSystems."/var/lib/opencode" = {
-    device = "speed-storage/opencode";
-    fsType = "zfs";
-    options = [ "nofail" ];
-  };
+
   # Set your time zone.
   time.timeZone = "Etc/UTC";
   services.xserver.enable = true;
@@ -232,7 +234,7 @@
 
   networking = {
     interfaces = {
-#      "bond0".useDHCP = true;
+      #      "bond0".useDHCP = true;
       enp69s0f0 = {
         useDHCP = true;
       };
@@ -242,28 +244,28 @@
     };
     firewall.interfaces = {
       "enp69s0f0".allowedTCPPorts = [ 2108 4010 1108 5201 27015 4549 24070 ];
-      "enp69s0f0".allowedTCPPortRanges = [{ from = 17780; to = 17785; }{ from = 47984; to = 48010;}];
+      "enp69s0f0".allowedTCPPortRanges = [{ from = 17780; to = 17785; } { from = 47984; to = 48010; }];
       "wireg0".allowedTCPPorts = [ 80 1108 5201 ];
 
       "enp69s0f0".allowedUDPPorts = [ 2108 1108 4010 27015 4175 4179 4171 ];
-      "enp69s0f0".allowedUDPPortRanges = [{ from = 17780; to = 17785; }{ from = 27031; to = 27036;}{ from = 47984; to = 48010;}];
+      "enp69s0f0".allowedUDPPortRanges = [{ from = 17780; to = 17785; } { from = 27031; to = 27036; } { from = 47984; to = 48010; }];
 
     };
-#    bonds."bond0" = {
-#      interfaces = [ "enp69s0f1" "enp69s0f0" ];
-#      driverOptions = {
-#        mode = "active-backup";
-#        miimon = "100";
-#      };
-#    };
+    #    bonds."bond0" = {
+    #      interfaces = [ "enp69s0f1" "enp69s0f0" ];
+    #      driverOptions = {
+    #        mode = "active-backup";
+    #        miimon = "100";
+    #      };
+    #    };
 
     hostName = "LINDACORE";
     hostId = "b4120de4";
-#    bridges = {
-#      "br0" = {
-#        interfaces = [ "enp69s0f0" ];
-#      };
-#    };
+    #    bridges = {
+    #      "br0" = {
+    #        interfaces = [ "enp69s0f0" ];
+    #      };
+    #    };
     useDHCP = false;
     wireless =
       {
@@ -273,25 +275,6 @@
       };
   };
 
-  systemd.services = {
-    opencode-push = {
-      description = "Push OpenCode session branches to remote";
-      serviceConfig = {
-        ExecStart = ''${pkgs.bash}/bin/bash -c 'cd /var/lib/opencode && git push origin opencode-session-*' '';
-        User = "pokej";
-        Type = "oneshot";
-      };
-    };
-  };
-  systemd.timers = {
-    opencode-push-timer = {
-      description = "Hourly push of OpenCode session branches";
-      timerConfig = {
-        OnCalendar = "hourly";
-        Persistent = true;
-      };
-      wantedBy = [ "timers.target" ];
-    };
-  };
+
 
 }

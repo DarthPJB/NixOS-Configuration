@@ -7,7 +7,7 @@
     {
       hostName = "100.127.177.30";
       protocol = "ssh-ng";
-      sshUser = "build"; 
+      sshUser = "build";
       sshKey = config.secrix.services.nix-daemon.secrets.hyperhyper.decrypted.path;
       systems = [ "aarch64-darwin" ];
       maxJobs = 10;
@@ -100,7 +100,7 @@
     #    }
   ];
   programs.ssh.knownHosts = {
-     pompeii= {
+    pompeii = {
       hostNames = [ "pompeii" "100.127.177.30" ];
       publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL4FWg5satPAkNLJ0kRFEUi7DFtly4Xb3Yr0kUrrb53d";
     };
