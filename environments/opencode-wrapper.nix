@@ -52,7 +52,6 @@ let
       TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)"
       PROJECT_NAME="$(basename "$current_working_dir" | sed 's/[^a-zA-Z0-9]/-/g')"
       BRANCH_NAME="sandbox/$PROJECT_NAME/$TIMESTAMP"
-      SAVE_FULL="/tmp/opencode-backup-$TIMESTAMP"
       ORPHAN_DIR="/tmp/agent-orphan-$TIMESTAMP"
       HOST_AGENT_FILES="/speed-storage/opencode"
 
