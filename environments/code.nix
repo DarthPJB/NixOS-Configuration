@@ -5,9 +5,6 @@
     ./opencode-wrapper.nix
   ];
 
-
-
-{
   environment.shellAliases = {
     code = "lite-xl";
     opencode-session = "opencode-session";
