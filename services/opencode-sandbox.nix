@@ -20,31 +20,37 @@ let
       # shellcheck disable=SC2215
 
       handle_exit() {
-        cd /speed-storage/opencode
-        git stash push -m "opencode-temp" || true
-        git checkout main || git checkout master
-        git checkout -b "$BRANCH_NAME"
-        rm -rf -- * .git
-        rsync -a "$SESSION_FULL"/ .
-        if ! diff -rq "$SAVE_FULL" "$SESSION_FULL"; then git add .; git commit -m "OpenCode config: $PROJECT_NAME $TIMESTAMP"; fi
-        git checkout main
-        git stash pop || true
-        echo "Config branch: $BRANCH_NAME"
-        # No project git ops.
+        cd "$SESSION_FULL"
+        if git diff --quiet && git diff --cached --quiet; then
+          echo "No changes to commit"
+        else
+          git add . >/dev/null 2>&1
+          git commit -q -m "OpenCode session: $PROJECT_NAME $TIMESTAMP" || echo "Commit failed"
+          git push -q origin "$BRANCH_NAME" || echo "Push failed"
+        fi
+        rsync -a "$SAVE_FULL"/ "$SESSION_FULL"/ >/dev/null 2>&1
+        rm -rf "$SAVE_FULL"
       }
 
       trap handle_exit EXIT
 
       WORKING_DIR="$(pwd)"
       SESSION_FULL="$WORKING_DIR"
+      TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)"
+      PROJECT_NAME="$(basename "$WORKING_DIR" | sed 's/[^a-zA-Z0-9]/-/g')"
+      BRANCH_NAME="sandbox/$PROJECT_NAME/$TIMESTAMP"
+      SAVE_FULL="/tmp/opencode-backup-$TIMESTAMP"
 
-
-
-
-
-
-
-
+      # PRE: Backup and init orphan git
+      mkdir -p "$SAVE_FULL"
+      rsync -a "$SESSION_FULL"/ "$SAVE_FULL"/
+      cd "$SESSION_FULL"
+      git fetch --depth=1 origin main >/dev/null 2>&1 || git fetch --depth=1 origin master >/dev/null 2>&1
+      git checkout --orphan "$BRANCH_NAME" >/dev/null 2>&1
+      git rm -rf . >/dev/null 2>&1 || true
+      git checkout FETCH_HEAD -- . >/dev/null 2>&1
+      git add . >/dev/null 2>&1
+      git commit -q -m "base commit for $PROJECT_NAME $TIMESTAMP"
       
 
             # Bubblewrap mounts
