@@ -74,7 +74,7 @@ let
 
       # Bubblewrap sandbox
       exec bwrap \
-        --ro-bind /speed-storage/opencode /home/sandbox_user/tree \
+        --ro-bind /speed-storage/opencode "$TREE_DIR" \
         --bind "$SESSION_FULL" "$WORK_DIR" \
         --bind "$ORPHAN_DIR" "$CONFIG_DIR" \
         --tmpfs /tmp \
