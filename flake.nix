@@ -19,7 +19,7 @@
     nix-mcp-servers.url = "github:cameronfyfe/nix-mcp-servers";
     nixos-hardware.url = "github:nixos/nixos-hardware";
     agent-files = {
-      path = "/speed-storage/opencode";
+      url = "path:/speed-storage/opencode";
       flake = false;
     };
   };
@@ -29,7 +29,7 @@
     globalArgs = {
       inherit self;
       sl = sl;
-      agentFiles = inputs.agent-files;
+      agentFiles = agent-files;
     };
     commonModules = [
       secrix.nixosModules.default
