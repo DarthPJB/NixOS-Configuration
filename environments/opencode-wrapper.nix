@@ -23,11 +23,17 @@ let
       if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Script starting"; fi
 
       handle_exit() {
+        local TIMESTAMP="$TIMESTAMP"
+        local PROJECT_NAME="$PROJECT_NAME"
+        local BRANCH_NAME="$BRANCH_NAME"
+        local ORPHAN_DIR="$ORPHAN_DIR"
+        local HOST_AGENT_FILES="$HOST_AGENT_FILES"
         if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Entering trap"; fi
         if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Starting cd to orphan in trap"; fi
         cd "$ORPHAN_DIR/master"
         if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: cd complete"; fi
         if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Checking for changes with git diff"; fi
+        git status --porcelain | grep -q . || echo "No changes"
         if ! git diff --quiet master; then
           if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: git diff complete, changes detected"; fi
           if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Generating patch"; fi
@@ -37,14 +43,12 @@ let
           cd "$HOST_AGENT_FILES"
           if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: cd complete"; fi
           if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Applying to host"; fi
+          if ! git rev-parse --git-dir > /dev/null 2>&1; then echo "ERROR: Host not git"; exit 1; fi
           if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Starting git checkout"; fi
           git checkout -b "$BRANCH_NAME" || git switch -c "$BRANCH_NAME"
           if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: git checkout complete"; fi
-          if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Starting git add"; fi
-          git add .
-          if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: git add complete"; fi
           if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Starting git apply"; fi
-          if git apply "/tmp/patch-$BRANCH_NAME.patch"; then
+          if git apply --index "/tmp/patch-$BRANCH_NAME.patch"; then
             if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: git apply complete"; fi
             git commit -m "Sandbox patch: $PROJECT_NAME $TIMESTAMP"
             git push -u origin "$BRANCH_NAME" || echo "Push failed"
@@ -97,7 +101,7 @@ let
       mkdir -p .config/opencode
       if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: mkdir complete"; fi
       if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Starting rsync"; fi
-      rsync -a "$agent_files_dir"/.opencode/ .config/opencode/ 2>/dev/null || true  # Config subset
+      rsync -a "$agent_files_dir"/.opencode/ .config/opencode/  # Config subset
       if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: rsync complete"; fi
       if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Orphan ready"; fi
 
