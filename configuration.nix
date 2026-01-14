@@ -25,7 +25,7 @@ in
       ./locale/home_networks.nix
       ./environments/sshd.nix
       ./environments/tools.nix
-      ./services/opencode-sandbox.nix
+      # ./services/opencode-sandbox.nix  # Moved to environments/opencode-wrapper.nix
     ];
   environment.systemPackages = with pkgs;
     [
