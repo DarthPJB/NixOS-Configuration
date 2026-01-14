@@ -1,5 +1,18 @@
 {
   "nodes": {
+    "agent-files": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1768369082,
+        "narHash": "sha256-AO07a1A95CVGW14kHvpyoJBYGiHce9j1B5I0TVMKdYY=",
+        "path": "/speed-storage/opencode",
+        "type": "path"
+      },
+      "original": {
+        "path": "/speed-storage/opencode",
+        "type": "path"
+      }
+    },
     "aquamarine": {
       "inputs": {
         "hyprutils": [
@@ -867,6 +880,7 @@
     },
     "root": {
       "inputs": {
+        "agent-files": "agent-files",
         "deadnix": "deadnix",
         "determinate": "determinate",
         "hyprland": "hyprland",
