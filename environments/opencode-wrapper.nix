@@ -19,7 +19,7 @@ let
 
     text = ''
       set -e
-      if [ "$OPCODE_DEBUG" = "1 = "1" ]; then set -x; fi
+      if [ "$OPCODE_DEBUG" = "1" ]; then set -x; fi
 
       handle_exit() {
         if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Entering trap"; fi
@@ -93,7 +93,7 @@ let
         --setenv PWD /home/sandbox_user/work \
         --setenv PATH ${lib.makeBinPath [pkgs.bash pkgs.coreutils pkgs.git pkgs.neovim unstable.opencode]} \
         --dir /home/sandbox_user \
-        -- bash -c "cd /home/sandbox_user/work && exec ${lib.getExe unstable.opencode} ${OPENCODE_DEBUG:+--log-level DEBUG --print-logs} \"\$@\"" opencode \"\$@\"
+        -- bash -c "cd /home/sandbox_user/work && exec ${lib.getExe unstable.opencode} ''${OPENCODE_DEBUG:+--log-level DEBUG --print-logs} \"\$@\"" opencode \"\$@\"
     '';
   };
 
