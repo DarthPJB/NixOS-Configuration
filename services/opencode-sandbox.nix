@@ -17,6 +17,7 @@ let
 
     text = ''
             set -e
+      if [ "$OPENCODE_DEBUG" = "1" ]; then set -x; fi
       # shellcheck disable=SC2215,SC2086,SC2012
 
       handle_exit() {
@@ -84,9 +85,9 @@ let
       cd "$SESSION_FULL"
       # shellcheck disable=SC2012
       if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: cd SESSION_FULL complete: $(ls -la | head -3 || true)"; fi
-      if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: $(basename "$0"): git fetch"; fi
-      git fetch --depth=1 origin main >/dev/null 2>&1 || git fetch --depth=1 origin master >/dev/null 2>&1
-      if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: git fetch complete"; fi
+      if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: $(basename "$0"): git remote add and fetch"; fi
+      git remote add origin-persistent file:///speed-storage/opencode; git fetch origin-persistent main
+      if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: git remote add and fetch complete"; fi
       if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: $(basename "$0"): git checkout orphan"; fi
       git checkout --orphan "$BRANCH_NAME" >/dev/null 2>&1
       if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: git checkout orphan complete"; fi
@@ -129,7 +130,7 @@ let
        --setenv PWD /home/opencode-sandbox/work \
        --setenv PATH ${lib.makeBinPath [pkgs.bash pkgs.coreutils pkgs.git pkgs.neovim unstable.opencode]} \
               --dir /home/opencode-sandbox \
-               -- bash -c "cd /home/opencode-sandbox/work && exec ${lib.getExe unstable.opencode} \"\$@\"" opencode "$@"
+               -- bash -c "cd /home/opencode-sandbox/work && if [ \"\$OPENCODE_DEBUG\" = \"1\" ]; then exec ${lib.getExe unstable.opencode} agent list; else exec ${lib.getExe unstable.opencode} \"\$@\"; fi" opencode "$@" ; bwrap_rc=$?; echo "DEBUG: bwrap rc: $bwrap_rc" >&2
     '';
   };
 
