@@ -36,9 +36,10 @@ let
           if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: $(basename "$0"): git commit"; fi
           git commit -q -m "OpenCode session: $PROJECT_NAME $TIMESTAMP" || echo "Commit failed"
           if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: git commit complete"; fi
-          if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: $(basename "$0"): git push"; fi
-          git push -q origin "$BRANCH_NAME" || echo "Push failed"
-          if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: git push complete"; fi
+           if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: $(basename "$0"): git push"; fi
+           git remote add origin-push file:///speed-storage/opencode || true
+           git push origin-push HEAD:"$BRANCH_NAME" || git push origin-push HEAD:"$BRANCH_NAME"
+           if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: git push complete"; fi
         fi
         if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: $(basename "$0"): rsync restore"; fi
         rsync -a "$SAVE_FULL"/ "$SESSION_FULL"/ >/dev/null 2>&1
@@ -85,12 +86,13 @@ let
       cd "$SESSION_FULL"
       # shellcheck disable=SC2012
       if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: cd SESSION_FULL complete: $(ls -la | head -3 || true)"; fi
-      if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: $(basename "$0"): git remote add and fetch"; fi
-      git remote add origin-persistent file:///speed-storage/opencode; git fetch origin-persistent main
-      if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: git remote add and fetch complete"; fi
-      if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: $(basename "$0"): git checkout orphan"; fi
-      git checkout --orphan "$BRANCH_NAME" >/dev/null 2>&1
-      if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: git checkout orphan complete"; fi
+       if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: $(basename "$0"): git remote add and fetch"; fi
+       git remote add origin-persistent file:///speed-storage/opencode
+       git fetch origin-persistent main || git fetch origin-persistent master || git fetch origin-persistent HEAD
+       if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: git remote add and fetch complete"; fi
+       if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: $(basename "$0"): git checkout orphan"; fi
+       git checkout --orphan "$BRANCH_NAME" FETCH_HEAD >/dev/null 2>&1  # Use FETCH_HEAD
+       if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: git checkout orphan complete"; fi
       if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: $(basename "$0"): git rm"; fi
       git rm -rf . >/dev/null 2>&1 || true
       if [ "$OPENCODE_DEBUG" = "1" ]; then echo "DEBUG: git rm complete"; fi
