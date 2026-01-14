@@ -89,7 +89,7 @@ let
       cd "$ORPHAN_DIR"
       if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: cd complete"; fi
       if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Starting git clone"; fi
-       git -c safe.directory="$agent_files_dir" clone --bare "$agent_files_dir" .  # Bare clone RO base
+       git -c safe.directory="$agent_files_dir/.git" clone --bare "$agent_files_dir" .  # Bare clone RO base
       if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: git clone complete"; fi
       if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Starting git worktree"; fi
       git worktree add master  # RW master-only orphan tree
