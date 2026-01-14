@@ -274,6 +274,23 @@
       '';
     };
 
+    checks."x86_64-linux"."code-sandbox-test" = flake_pkgs.writeShellApplication {
+      name = "test-code-sandbox";
+      text = ''
+        set -euo pipefail
+        TEST_DIR=$(mktemp -d)
+        cd "$TEST_DIR"
+        echo "dummy file" > test.txt
+        echo "dummy config" > .opencode/config.txt
+        OPCODE_DEBUG=1 code-sandbox 2>&1 | tee test.log
+        grep -q "DEBUG: bwrap exec complete" test.log || (cat test.log; exit 1)
+        grep -q "DEBUG: Trap complete" test.log || (cat test.log; exit 1)
+        rm -rf "$TEST_DIR"
+      '';
+    };
+
     checks."x86_64-linux".nixpkgs-fmt = lint-utils.linters.x86_64-linux.nixpkgs-fmt { src = self; };
   };
+};
+
 }
