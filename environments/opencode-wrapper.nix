@@ -1,8 +1,10 @@
-{ config, lib, pkgs, unstable, ... }:
+{ config, lib, pkgs, unstable, agentFiles, ... }:
 
 with lib;
 
 let
+  hostAgentFiles = "/speed-storage/opencode";
+
   codeSandbox = pkgs.writeShellApplication {
     name = "code-sandbox";
     runtimeInputs = with pkgs; [
@@ -13,86 +15,90 @@ let
       rsync
       diffutils
       bubblewrap
-      patch
     ];
 
     text = ''
       set -e
-      # shellcheck disable=SC2215
+      if [ "$OPCODE_DEBUG" = "1 = "1" ]; then set -x; fi
 
-      # OPCODE_DEBUG flag
-      if [ -n "$OPCODE_DEBUG" ]; then
-        set -x
-      fi
-
-      # Var renames
-      PROJECT_NAME="$1"
-      TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
-      BRANCH_NAME="opencode-$PROJECT_NAME-$TIMESTAMP"
-      WORKING_DIR="$(pwd)"
-      SESSION_FULL="$WORKING_DIR"
-      SAVE_FULL="/tmp/opencode-session-$TIMESTAMP"
-
-      # Orphan temp RW from RO base
-      ORPHAN_DIR="/tmp/opencode-orphan-$TIMESTAMP"
-      mkdir -p "$ORPHAN_DIR"
-
-      # RW mounts: tree/config/work
-      WORK_DIR="/home/sandbox_user/work"
-      CONFIG_DIR="/home/sandbox_user/config"
-      TREE_DIR="/home/sandbox_user/tree"
-
-      # Patch trap
       handle_exit() {
-        cd /speed-storage/opencode
-        # Create patch from changes
-        if [ -d "$SAVE_FULL" ]; then
-          diff -ruN "$SAVE_FULL" "$SESSION_FULL" > "/tmp/$BRANCH_NAME.patch" || true
-          # Apply patch to host branch
-          git stash push -m "opencode-temp" || true
-          git checkout main || git checkout master
-          git checkout -b "$BRANCH_NAME"
-          rm -rf -- * .git
-          rsync -a "$SESSION_FULL"/ .
-          if ! diff -rq "$SAVE_FULL" "$SESSION_FULL"; then
-            git add .
-            git commit -m "OpenCode config: $PROJECT_NAME $TIMESTAMP"
+        if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Entering trap"; fi
+        cd "$ORPHAN_DIR/master"
+        if ! git diff --quiet master; then
+          if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Generating patch"; fi
+          git diff master > "/tmp/patch-$BRANCH_NAME.patch"
+          cd "$HOST_AGENT_FILES"
+          if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Applying to host"; fi
+          git checkout -b "$BRANCH_NAME" || git switch -c "$BRANCH_NAME"
+          git add .
+          if git apply "/tmp/patch-$BRANCH_NAME.patch"; then
+            git commit -m "Sandbox patch: $PROJECT_NAME $TIMESTAMP"
+            git push -u origin "$BRANCH_NAME" || echo "Push failed"
+          else
+            echo "Patch apply failed"
           fi
-          git checkout main
-          git stash pop || true
+          rm -f "/tmp/patch-$BRANCH_NAME.patch"
+        else
+          echo "No changes in orphan"
         fi
-        echo "Config branch: $BRANCH_NAME"
-        # Cleanup
-        rm -rf "$ORPHAN_DIR" "$SAVE_FULL"
+        rm -rf "$ORPHAN_DIR"
+        if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Trap complete"; fi
       }
 
       trap handle_exit EXIT
 
-      # Copy initial state for patch
-      mkdir -p "$SAVE_FULL"
-      rsync -a "$SESSION_FULL"/ "$SAVE_FULL"/
+      current_working_dir="$(pwd)"
+      agent_files_dir="${agentFiles}"
+      TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)"
+      PROJECT_NAME="$(basename "$current_working_dir" | sed 's/[^a-zA-Z0-9]/-/g')"
+      BRANCH_NAME="sandbox/$PROJECT_NAME/$TIMESTAMP"
+      SAVE_FULL="/tmp/opencode-backup-$TIMESTAMP"
+      ORPHAN_DIR="/tmp/agent-orphan-$TIMESTAMP"
+      HOST_AGENT_FILES="/speed-storage/opencode"
 
-      # Bubblewrap sandbox
-      exec bwrap \
-        --ro-bind /speed-storage/opencode "$TREE_DIR" \
-        --bind "$SESSION_FULL" "$WORK_DIR" \
-        --bind "$ORPHAN_DIR" "$CONFIG_DIR" \
+      if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Vars set"; fi
+
+      # PRE: Backup and init orphan git from RO base
+      mkdir -p "$ORPHAN_DIR"
+      if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Cloning RO base"; fi
+      cd "$ORPHAN_DIR"
+      git clone --bare "$agent_files_dir" .  # Bare clone RO base
+      git worktree add master  # RW master-only orphan tree
+      cd master
+      mkdir -p .config/opencode
+      rsync -a "$agent_files_dir"/.opencode/ .config/opencode/ 2>/dev/null || true  # Config subset
+      if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Orphan ready"; fi
+
+      # Bubblewrap mounts
+      if [ "$OPCODE_DEBUG" = "1" ]; then echo "DEBUG: Launching bwrap"; fi
+      ${pkgs.bubblewrap}/bin/bwrap \
+        --ro-bind /nix/store /nix/store \
+        --bind /run /run \
+        --ro-bind /etc /etc \
+        --dev-bind /dev/null /dev/null \
+        --dev-bind /dev/random /dev/random \
+        --dev-bind /dev/urandom /dev/urandom \
+        --ro-bind /proc /proc \
+        --ro-bind /sys /sys \
         --tmpfs /tmp \
-        --proc /proc \
-        --dev /dev \
+        --bind "$ORPHAN_DIR/master" /speed-storage/opencode \
+        --bind "$ORPHAN_DIR/master/.config/opencode" /home/sandbox_user/.config/opencode \
+        --bind "$current_working_dir" /home/sandbox_user/work \
         --unshare-all \
-        --uid 1000 \
-        --gid 1000 \
+        --share-net \
+        --uid 4000 \
+        --gid 4000 \
+        --chdir /home/sandbox_user/work \
         --setenv HOME /home/sandbox_user \
-        --setenv USER sandbox_user \
-        --chdir "$WORK_DIR" \
-        -- ${lib.getExe unstable.opencode} "$@"
+        --setenv PWD /home/sandbox_user/work \
+        --setenv PATH ${lib.makeBinPath [pkgs.bash pkgs.coreutils pkgs.git pkgs.neovim unstable.opencode]} \
+        --dir /home/sandbox_user \
+        -- bash -c "cd /home/sandbox_user/work && exec ${lib.getExe unstable.opencode} ${OPENCODE_DEBUG:+--log-level DEBUG --print-logs} \"\$@\"" opencode \"\$@\"
     '';
   };
 
   opencodeUnwrapped = pkgs.writeShellApplication {
     name = "opencode-unwrapped";
-
     text = ''${lib.getExe unstable.opencode} "$@"'';
   };
 
