@@ -291,6 +291,4 @@
 
     checks."x86_64-linux".nixpkgs-fmt = lint-utils.linters.x86_64-linux.nixpkgs-fmt { src = self; };
   };
-};
-
 }
