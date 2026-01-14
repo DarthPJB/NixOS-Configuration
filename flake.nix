@@ -2,6 +2,7 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
+    agent-files = { url = "path:/speed-storage/opencode"; flake = false; };
     deadnix = { url = "github:astro/deadnix"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     hyprland.url = "github:hyprwm/Hyprland";
     lint-utils = { url = "github:homotopic/lint-utils"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
@@ -20,7 +21,7 @@
     nixos-hardware.url = "github:nixos/nixos-hardware";
   };
   # --------------------------------------------------------------------------------------------------
-  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_legacy, nixpkgs_stable, nixpkgs_unstable, parsecgaming, secrix, sl }:
+  outputs = { self, agent-files, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_legacy, nixpkgs_stable, nixpkgs_unstable, parsecgaming, secrix, sl }:
     let
       # ------------------------------------------------------------------
       # those handy little things.
@@ -30,10 +31,11 @@
       # ------------------------------------------------------------------
       # Global args & common modules
       # ------------------------------------------------------------------
-      globalArgs = {
-        inherit self;
-        sl = sl;
-      };
+       globalArgs = {
+         inherit self agent-files;
+         hostAgentFiles = "/speed-storage/opencode";
+         sl = sl;
+       };
 
       commonModules = [
         secrix.nixosModules.default
