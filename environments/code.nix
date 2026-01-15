@@ -46,6 +46,7 @@
     pkgs.inotify-tools
     pkgs.rsync
     pkgs.git
+    unstable.opencode
     ((import config._module.args.sl) { inherit pkgs; })
   ];
 }
