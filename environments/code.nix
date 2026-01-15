@@ -8,12 +8,6 @@
   environment.shellAliases = {
     code = "lite-xl";
     opencode-session = "opencode-session";
-    opencode-list-sessions = "git branch -a | grep 'opencode-session' || echo 'No OpenCode sessions found'";
-    opencode-review-session = "git checkout";
-    opencode-merge-session = "git merge --no-ff -m 'Merge OpenCode session'";
-    opencode-diff-session = "git diff main..";
-    opencode-audit-all = "git branch -a | grep 'opencode-session' | xargs -I {} sh -c 'echo \"Branch: {}\"; git log --oneline -1 {}'";
-    opencode-merge-all-approved = "git branch -a | grep 'opencode-session' | xargs -I {} git merge {} --no-ff -m 'Batch merge approved OpenCode session {}'";
   };
   environment.systemPackages = with pkgs; [
     pkgs.gpp
