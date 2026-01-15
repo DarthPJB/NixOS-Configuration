@@ -6,7 +6,7 @@ let
   hostAgentFiles = "/speed-storage/opencode";
 
   codeSandbox = pkgs.writeShellApplication {
-    name = "code-sandbox";
+    name = "opencode-boxed";
     runtimeInputs = with pkgs; [
       bash
       coreutils
@@ -60,9 +60,6 @@ let
           if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: git diff complete, no changes"; fi
           echo "No changes in orphan"
         fi
-        if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: Starting cleanup rm -rf"; fi
-        rm -rf "$ORPHAN_DIR"
-        if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: rm -rf complete"; fi
         if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: Trap complete"; fi
       }
 
@@ -103,9 +100,12 @@ let
       if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: Starting rsync"; fi
       rsync -a "$agent_files_dir"/.opencode/ .config/opencode/  # Config subset
       if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: rsync complete"; fi
-      if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: Orphan ready"; fi
+       if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: Orphan ready"; fi
 
-      # Bubblewrap mounts
+       uid=$(id -u)
+       gid=$(id -g)
+
+       # Bubblewrap mounts
       if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: Launching bwrap"; fi
       if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: Starting bwrap exec"; fi
       ${pkgs.bubblewrap}/bin/bwrap \
@@ -123,8 +123,8 @@ let
         --bind "$current_working_dir" /home/sandbox_user/work \
         --unshare-all \
         --share-net \
-        --uid-host \
-        --gid-host \
+        --uid $uid \
+        --gid $gid \
         --chdir /home/sandbox_user/work \
         --setenv HOME /home/sandbox_user \
         --setenv PWD /home/sandbox_user/work \
