@@ -63,10 +63,6 @@ let
         if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: Trap complete"; fi
       }
 
-      if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: Setting trap"; fi
-      trap handle_exit EXIT
-      if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: Trap set"; fi
-
       if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: Setting variables"; fi
       current_working_dir="$(pwd)"
       agent_files_dir="${agentFiles}"
@@ -76,6 +72,10 @@ let
       ORPHAN_DIR="/tmp/agent-orphan-$TIMESTAMP"
       HOST_AGENT_FILES="/speed-storage/opencode"
       if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: Vars set"; fi
+
+      if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: Setting trap"; fi
+      trap handle_exit EXIT
+      if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: Trap set"; fi
 
       # PRE: Backup and init orphan git from RO base
       if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: Starting mkdir"; fi
@@ -123,14 +123,14 @@ let
         --bind "$current_working_dir" /home/sandbox_user/work \
         --unshare-all \
         --share-net \
-        --uid $uid \
-        --gid $gid \
+        --uid "$uid" \
+        --gid "$gid" \
         --chdir /home/sandbox_user/work \
         --setenv HOME /home/sandbox_user \
         --setenv PWD /home/sandbox_user/work \
-        --setenv PATH ${lib.makeBinPath [pkgs.bash pkgs.coreutils pkgs.git pkgs.neovim unstable.opencode]} \
+        --setenv PATH "${lib.makeBinPath [pkgs.bash pkgs.coreutils pkgs.git pkgs.neovim unstable.opencode]}" \
         --dir /home/sandbox_user \
-        -- bash -c "cd /home/sandbox_user/work && exec ${lib.getExe unstable.opencode} ''${OPENCODE_DEBUG:+--log-level DEBUG --print-logs} \"\$@\"" opencode \"\$@\"
+        -- bash -c "cd /home/sandbox_user/work && exec ${lib.getExe unstable.opencode} ''${OPCODE_DEBUG:+--log-level DEBUG --print-logs} \"\$@\"" -- "$@"
       if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: bwrap exec complete"; fi
     '';
   };

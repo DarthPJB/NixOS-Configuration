@@ -282,7 +282,7 @@
         cd "$TEST_DIR"
         echo "dummy file" > test.txt
         echo "dummy config" > .opencode/config.txt
-        OPCODE_DEBUG=1 code-sandbox "hello this is a test" 2>&1 | tee test.log
+        OPCODE_DEBUG=1 opencode-boxed "hello this is a test" 2>&1 | tee test.log
         grep -q "DEBUG: bwrap exec complete" test.log || (cat test.log; exit 1)
         grep -q "DEBUG: Trap complete" test.log || (cat test.log; exit 1)
         rm -rf "$TEST_DIR"
