@@ -123,8 +123,8 @@ let
         --bind "$current_working_dir" /home/sandbox_user/work \
         --unshare-all \
         --share-net \
-        --uid 4000 \
-        --gid 4000 \
+        --uid-host \
+        --gid-host \
         --chdir /home/sandbox_user/work \
         --setenv HOME /home/sandbox_user \
         --setenv PWD /home/sandbox_user/work \
