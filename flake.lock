@@ -3,8 +3,8 @@
     "agent-files": {
       "flake": false,
       "locked": {
-        "lastModified": 1768369082,
-        "narHash": "sha256-AO07a1A95CVGW14kHvpyoJBYGiHce9j1B5I0TVMKdYY=",
+        "lastModified": 1768462704,
+        "narHash": "sha256-XY5P68n5dhiAV/OHkYjZQL8rP1ytco32e06qmQpRpUM=",
         "path": "/speed-storage/opencode",
         "type": "path"
       },
