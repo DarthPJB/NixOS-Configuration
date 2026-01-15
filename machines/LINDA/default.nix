@@ -33,16 +33,7 @@
       ../../modifier_imports/remote-builder.nix
     ];
 
- # fileSystems."/var/lib/opencode" = {
- #   device = "/speed-storage/opencode";
- #   fsType = "none";
-  #  options = [ "bind" ];
- # };
-
-  fileSystems."/speed-storage" = {
-    device = "speed-storage";
-    fsType = "zfs";
-  };
+ 
 
   secrix.services.wireguard-wireg0.secrets.LINDA.encrypted.file = ../../secrets/wiregaurd/wg_LINDA;
   environment = {
