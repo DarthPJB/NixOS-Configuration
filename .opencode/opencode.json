@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "git": {
+      "type": "local",
+      "command": ["mcp-server-git", "--repository", "."],
+      "enabled": true
+    },
+    "filesystem": {
+      "type": "local",
+      "command": ["mcp-server-filesystem", "./"],
+      "enabled": true
+    }
+  }
+}
