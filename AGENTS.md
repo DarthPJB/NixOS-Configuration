@@ -216,9 +216,10 @@ services.myService = {
 - Encrypt secrets with `secrix encrypt` before committing
 
 #### WireGuard VPN
-- Configure VPN through the `enable-wg.nix` library module
-- Set unique postfix for each machine (10.88.127.X)
-- Use cortex-alpha as the primary VPN peer
+- Configure VPN through the `enable-wg.nix` library module.
+- For peers: Add public key in `secrets/wiregaurd/wg_<name>_pub`; append to `lib/wg_peers.nix` attrset (e.g., '\"External_Peer-acropolis\" = \"128\";').
+- Set unique postfix for internal machines (10.88.127.X); use 128+ for external.
+- Use cortex-alpha as the primary VPN peer (hub).
 
 #### Deployment
 Nixinate is the primary remote deployment tool for this repository, generating SSH-based deployment scripts for each `nixosConfiguration` in the flake. It replaces direct `nixos-rebuild switch` usage.
