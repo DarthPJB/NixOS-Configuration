@@ -25,9 +25,11 @@
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
   };
-  security.acme.defaults.email = "commander@johnbargman.net";
-  security.acme.certs."johnbargman.net" = {
-    extraDomainNames = [ "*.johnbargman.net" ]; #johnbargman.com"];
+  security.acme = {
+    defaults.email = "commander@johnbargman.net";
+    certs."johnbargman.net" = {
+      extraDomainNames = [ "*.johnbargman.net" ]; #johnbargman.com"];
+    };
   };
   # - here is my ideal senario
   # each system will, spread throughout the day, ipferf each other system.
@@ -61,9 +63,7 @@
         };
       };
       "cortex-alpha.johnbargman.net" = {
-        #serverName = "cortex-alpha.johnbargman.net";
         useACMEHost = "johnbargman.net";
-        #enableACME = true;
         forceSSL = true;
         listenAddresses = [ "10.88.128.1" "10.88.127.1" "82.5.173.252" ]; #TODO: handle this assignment in a fixed fashion 82.5.173.252
         locations."/" = {
@@ -133,7 +133,6 @@
       };
     };
   };
-
   # so i'm thinking a 'port proxy' mother of all modules
   #  - TODO: the dream here is that i can have a list of source -> destination - type
   # - and map over that, outputting nginx proxies, port forwards, or port proxies
@@ -144,30 +143,59 @@
   time.timeZone = "Etc/UTC";
   secrix.services.wireguard-wireg0.secrets.cortex-alpha.encrypted.file = ../../secrets/wiregaurd/wg_cortex-alpha;
   networking = {
+    nat.enable = lib.mkForce false;
+    nftables =
+      {
+        enable = true;
+        ruleset = ''
+          table ip nat {
+            chain prerouting {
+              type nat hook prerouting priority dstnat; policy accept;
+        
+              # Gitolite SSH
+              iifname "enp2s0" tcp dport 2208 dnat to 10.88.127.3:22
+        
+              # LINDACORE forwards
+              iifname "enp2s0" udp dport 17780 dnat to 10.88.128.88:17780
+              iifname "enp2s0" udp dport 17781 dnat to 10.88.128.88:17781
+              iifname "enp2s0" udp dport 17782 dnat to 10.88.128.88:17782
+              iifname "enp2s0" udp dport 17783 dnat to 10.88.128.88:17783
+              iifname "enp2s0" udp dport 17784 dnat to 10.88.128.88:17784
+              iifname "enp2s0" udp dport 17785 dnat to 10.88.128.88:17785
+              iifname "enp2s0" udp dport 27015 dnat to 10.88.128.88:27015
+              iifname "enp2s0" tcp dport 27015 dnat to 10.88.128.88:27015
+              iifname "enp2s0" udp dport 4175 dnat to 10.88.128.88:4175
+              iifname "enp2s0" udp dport 4179 dnat to 10.88.128.88:4179
+              iifname "enp2s0" udp dport 4171 dnat to 10.88.128.88:4171
+              iifname "enp2s0" tcp dport 4549 dnat to 10.88.128.88:4549
+            };
+            chain postrouting {
+              type nat hook postrouting priority srcnat; policy accept;
+              oifname "enp2s0" ip saddr 10.88.128.0/24 masquerade
+            };
+          };
+    
+          # Internal NAT for LAN/VPN
+          chain prerouting {
+            type nat hook prerouting priority dstnat; policy accept;
+            iifname "enp3s0" tcp dport 22 dnat to 10.88.127.3:22
+            iifname "wireg0" tcp dport 22 dnat to 10.88.127.3:22
+          };
+        '';
+      };
     wireguard = {
       enable = true;
-      interfaces = {
-        wireg0 =
-          {
-            #persistentKeepalive = 25;
-            ips = [ "10.88.127.1/32" "10.88.127.0/24" ];
-            listenPort = 2108;
-            /* postSetup = ''
-            ${pkgs.iptables}/bin/iptables -t nat -A POSTROUTING -s 10.88.127.0/24 -o enp2s0 -j MASQUERADE
-          '';
-          postShutdown = ''
-            ${pkgs.iptables}/bin/iptables -t nat -D POSTROUTING -s 10.88.127.0/24 -o enp2s0 -j MASQUERADE
-            '';*/
-            privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
-            peers = (import ../../lib/wg_peers.nix { inherit self; });
-          };
+      interfaces.wireg0 = {
+        ips = [ "10.88.127.1/32" "10.88.127.0/24" ];
+        listenPort = 2108;
+        privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
+        peers = (import ../../lib/wg_peers.nix { inherit self; });
       };
     };
-    hostName = "cortex-alpha"; # Define your hostname.
+    hostName = "cortex-alpha";
     hostId = "c043a1fa";
     interfaces.enp3s0 = {
       useDHCP = lib.mkDefault false;
-      # Network output
       ipv4.addresses = [{
         address = "10.88.128.1";
         prefixLength = 24;
@@ -176,119 +204,36 @@
     interfaces.enp2s0 = {
       useDHCP = lib.mkDefault true;
     };
-    firewall =
-      {
-        interfaces = {
-          "wireg0".allowedUDPPorts = [ 1108 ];
-          "wireg0".allowedTCPPorts = [ 443 config.services.prometheus.exporters.dnsmasq.port ];
-          "enp3s0".allowedTCPPorts = [ 443 ];
-          "enp3s0".allowedUDPPorts = [ 1108 2108 /*WG*/ 67 /* DHCP */ 53 /*DNS*/ ];
-
-
-          #         "enp2s0".allowedTCPPorts = [ 27000 27003 ];
-          "enp2s0".allowedUDPPorts = [ 1108 443 2108 4549 4175 4179 4171 ]; # 27000 27003 ];
-          #          "enp2s0".allowedTCPPortRanges = [{ from = 27020; to = 27021; }];
-          #          "enp2s0".allowedUDPPortRanges = [{ from = 27020; to = 27021; }];
-        };
+    firewall = {
+      allowedTCPPorts = [ 22 1108 ];
+      interfaces = {
+        "wireg0".allowedUDPPorts = [ 1108 ];
+        "wireg0".allowedTCPPorts = [ 443 config.services.prometheus.exporters.dnsmasq.port ];
+        "enp3s0".allowedTCPPorts = [ 443 2208 ];
+        "enp3s0".allowedUDPPorts = [ 1108 2108 67 53 ];
+        "enp2s0".allowedTCPPorts = [ 2208 ];
+        "enp2s0".allowedUDPPorts = [ 1108 443 2108 4549 4175 4179 4171 ];
       };
-    #        nftables = {
-    #          enable = true;
-    #          ruleset = ''
-    #            table ip nat {
-    #              chain PREROUTING {
-    #                type nat hook prerouting priority dstnat; policy accept;
-    #                iifname "enp2s0" tcp dport 27015 dnat to 10.88.128.88:17780
-    #                iifname "enp2s0" udp dport 17780 dnat to 10.88.128.88:17780
-    #                iifname "enp2s0" udp dport 17780 dnat to 10.88.128.88:17780
-    #                iifname "enp2s0" udp dport 17781 dnat to 10.88.128.88:17781
-    #                iifname "enp2s0" udp dport 17782 dnat to 10.88.128.88:17782
-    #                iifname "enp2s0" udp dport 17783 dnat to 10.88.128.88:17783
-    #                iifname "enp2s0" udp dport 17784 dnat to 10.88.128.88:17784
-    #                iifname "enp2s0" udp dport 17785 dnat to 10.88.128.88:17785
-    #              }
-    #           }
-    #          '';
-    #        };
-    nat = {
-      enable = true;
-      internalIPs = [ "10.88.128.0/24" ];
-      externalInterface = "enp2s0";
-      internalInterfaces = [ "eno3" ];
-      forwardPorts = [
-        {
-          # because i need something * to converge * first
-          sourcePort = 17780;
-          proto = "udp";
-          destination = "10.88.128.88:17780";
-        }
-        {
-          sourcePort = 17781;
-          proto = "udp";
-          destination = "10.88.128.88:17781";
-        }
-        {
-          sourcePort = 17782;
-          proto = "udp";
-          destination = "10.88.128.88:17782";
-        }
-        {
-          sourcePort = 17783;
-          proto = "udp";
-          destination = "10.88.128.88:17783";
-        }
-        {
-          sourcePort = 17784;
-          proto = "udp";
-          destination = "10.88.128.88:17784";
-        }
-        {
-          sourcePort = 17785;
-          proto = "udp";
-          destination = "10.88.128.88:17785";
-        }
-        {
-          sourcePort = 27015;
-          proto = "udp";
-          destination = "10.88.128.88:27015";
-        }
-        {
-          sourcePort = 27015;
-          proto = "tcp";
-          destination = "10.88.128.88:27015";
-        }
-        {
-          sourcePort = 4175;
-          proto = "udp";
-          destination = "10.88.128.88:4175";
-        }
-        {
-          sourcePort = 4179;
-          proto = "udp";
-          destination = "10.88.128.88:4179";
-        }
-        {
-          sourcePort = 4171;
-          proto = "udp";
-          destination = "10.88.128.88:4171";
-        }
-        {
-          sourcePort = 4549;
-          proto = "tcp";
-          destination = "10.88.128.88:4549";
-        }
-      ];
     };
-    nameservers = [ "127.0.0.1" ];
   };
   services.dnsmasq = {
     enable = true;
     settings = {
-      # upstream DNS servers
-      # sensible behaviours
+      interface = "enp3s0";
+      address = [
+        "/git.johnbargman.net/10.88.128.1"
+        "/${config.networking.hostName}.johnbargman.net/10.88.128.1"
+        "/ap.johnbargman.net/10.88.128.1"
+        "/prometheus.johnbargman.net/10.88.128.1"
+        "/grafana.johnbargman.net/10.88.128.1"
+        "/print-controller.johnbargman.net/10.88.128.1"
+        "/minio.johnbargman.net/10.88.128.1"
+      ];
+      local = "/cortex-alpha/";
+      domain = "cortex-alpha";
       domain-needed = true;
       bogus-priv = true;
       no-resolv = true;
-      # Cache dns queries.
       cache-size = 1000;
       server = [
         "208.67.220.220"
@@ -296,9 +241,7 @@
         "1.0.0.1"
         "8.8.8.8"
       ];
-      # Addressable range
       dhcp-range = [ "enp3s0,10.88.128.128,10.88.128.254,24h" ];
-      # Static hosts
       dhcp-host = [
         "f8:32:e4:b9:77:0b,data-storage,10.88.128.3,infinite"
         "b8:27:eb:7f:f0:38,print-controller,10.88.128.10,infinite"
@@ -309,29 +252,8 @@
         "52:54:00:e9:4a:af,LINDA-WM,10.88.128.24,infinite"
         "18:c0:4d:8d:53:6c,LINDACORE,10.88.128.87,infinite"
         "18:c0:4d:8d:53:6d,LINDACORE,10.88.128.88,infinite"
-        #"62:ca:ae:42:43:45,LINDACORE,10.88.128.88,infinite" #failover bond
         "18:26:49:c5:48:24,LINDACORE,10.88.128.89,infinite"
-      ];
-      interface = "enp3s0";
-      # local domains
-      local = "/local/";
-      domain = "local";
-      expand-hosts = true;
-
-      no-hosts = true;
-      address = [
-        "/${config.networking.hostName}.johnbargman.net/10.88.128.1"
-        "/ap.johnbargman.net/10.88.128.1"
-        "/prometheus.johnbargman.net/10.88.128.1"
-        "/grafana.johnbargman.net/10.88.128.1"
-        "/print-controller.johnbargman.net/10.88.128.1"
-        "/minio.local/10.88.128.1"
       ];
     };
   };
-
-  # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
-
 }
-
