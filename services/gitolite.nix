@@ -1,33 +1,27 @@
 { config, lib, pkgs, ... }:
-
-let
-  cfg = config.services.gitolite;
-in
-{
-  options.services.gitolite.enable = lib.mkEnableOption "Gitolite Git hosting";
   services.openssh = {
-
-       settings = {
-
          # Gitolite user (22 only)
          extraConfig = ''
-         Match User deploy
-           Port 22
+         Match LocalPort 22 User git Address 10.88.127.1/24
            PermitRootLogin no
            PasswordAuthentication = no
+          
+         Match LocalPort 22
+           DenyUsers *
          '';
-       };
      };
-  config = lib.mkIf cfg.enable {
-    users.users.git = {
-      isSystemUser = true;
-      group = "git";
-      home = "/bulk-storage/git-repos";
-      shell = pkgs.gitolite;
-      openssh.authorizedKeys.keys = [ builtins.readFile ./public_key/id_ed25519_master.pub ];
-    };
+       services.gitolite = {
+    enable = true;
+    user = "git";
+    group = "git";
+    adminPubkey = builtins.readFile ${self}/public_key/id_ed25519_master.pub;
+    extraGitoliteRc = ''
+      $RC{UMASK} = 0027;
+      $RC{GIT_CONFIG_KEYS} = '.*';
+    '';
+  };
 
-    users.groups.git = { };
+    #openssh.authorizedKeys.keys = [ builtins.readFile ./public_key/id_ed25519_master.pub ];
 
     systemd.tmpfiles.rules = [
       "d /bulk-storage/git-repos 0770 git git - -"

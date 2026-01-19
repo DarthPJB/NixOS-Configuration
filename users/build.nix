@@ -20,12 +20,12 @@
     #nrBuildUsers = lib.mkDefault 10;
   };
   services.openssh.extraConfig = ''
-    Match User build
-      Port 22
-      PermitTTY no
-      X11Forwarding no
-      AllowAgentForwarding no
-      AllowTcpForwarding no
+         Match LocalPort 22 User build Address 10.88.127.0/24
+           PermitRootLogin no
+           PasswordAuthentication = no
+
+         Match LocalPort 22
+           DenyUsers *
   '';
 
   services.openssh.listenAddresses = [{
