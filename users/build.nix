@@ -21,6 +21,7 @@
   };
   services.openssh.extraConfig = ''
     Match User build
+      Port 22
       PermitTTY no
       X11Forwarding no
       AllowAgentForwarding no

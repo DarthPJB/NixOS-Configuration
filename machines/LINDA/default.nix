@@ -33,7 +33,7 @@
       ../../modifier_imports/remote-builder.nix
     ];
 
- 
+
 
   secrix.services.wireguard-wireg0.secrets.LINDA.encrypted.file = ../../secrets/wiregaurd/wg_LINDA;
   environment = {
