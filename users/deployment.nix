@@ -14,15 +14,12 @@
 
   services.openssh = {
        #enable = true;
-       settings = {
-
          # Deploy user (1108 only)
          extraConfig = ''
-         Match LocalPort=1108 User=deploy Address=10.88.127.0/24
+         Match LocalPort 1108 User deploy Address 10.88.127.0/24
            PermitRootLogin no
            PasswordAuthentication = no
          '';
-       };
      };
   
   security.sudo.extraRules = [
