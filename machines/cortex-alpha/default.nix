@@ -243,6 +243,7 @@
       ];
       dhcp-range = [ "enp3s0,10.88.128.128,10.88.128.254,24h" ];
       dhcp-host = [
+        "f8:32:e4:b9:77:0d,alpha-one,10.88.128.108,infinite"
         "f8:32:e4:b9:77:0b,data-storage,10.88.128.3,infinite"
         "b8:27:eb:7f:f0:38,print-controller,10.88.128.10,infinite"
         "10:0b:a9:7e:cc:8c,terminal-zero,10.88.128.20,infinite"

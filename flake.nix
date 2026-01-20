@@ -237,10 +237,10 @@
         };
         alpha-one = mkX86_64 "alpha-one" "alpha-one" {
           dt = true;
-          host = "10.88.128.237";
+          host = "10.88.127.108";
           sshUser = "deploy";
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINfV4fNuig3xDPKlagqsAp2L2JMJG9L+6BZ/4dY6/UBx";
-          sshPort = 22;
+          #sshPort = 22;
           extraModules = [ ./users/build.nix ];
         };
         alpha-two = mkX86_64 "alpha-two" "alpha-two" {
