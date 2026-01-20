@@ -43,7 +43,7 @@
           ];
         }
       ];
-      mkX86_64 = name: hostname: { extraModules ? [ ], hostPubKey ? null, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? false }:
+      mkX86_64 = name: hostname: { extraModules ? [ ], hostPubKey ? null, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? false, sshPort ? 1108 }:
         nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
@@ -55,7 +55,7 @@
                 unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                 nixinate = {
                   inherit host sshUser buildOn;
-                  port = 1108;
+                  port = sshPort;
                 };
               };
             }
@@ -189,7 +189,7 @@
         };
         display-0 = mkAarch64 "display/0.nix" "display-0" {
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINkAJhTTF+WVWixTwIvEtRq5KdpjxPy4ptlcmFSEetrU";
-          host = "alpha-one.johnbargman.net";
+          host = "display-0.johnbargman.net";
           hardware = nixos-hardware.nixosModules.raspberry-pi-3;
           extraModules = [ ./modifier_imports/minimal.nix ./modifier_imports/pi-firmware.nix ];
         };
@@ -233,6 +233,14 @@
         data-storage = mkX86_64 "local-nas" "DataStorage" {
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINlCggPwFP5VX3YDA1iji0wxX8+mIzmrCJ1aHj9f1ofx";
           host = "10.88.127.3";
+          extraModules = [ ./users/build.nix ];
+        };
+        alpha-one = mkX86_64 "alpha-one" "alpha-one" {
+          dt = true;
+          host = "10.88.128.237";
+          sshUser = "deploy";
+          hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINfV4fNuig3xDPKlagqsAp2L2JMJG9L+6BZ/4dY6/UBx";
+          sshPort = 22;
           extraModules = [ ./users/build.nix ];
         };
         alpha-two = mkX86_64 "alpha-two" "alpha-two" {
