@@ -147,41 +147,11 @@
     nftables =
       {
         enable = true;
-        ruleset = ''
-          table ip nat {
-            chain prerouting {
-              type nat hook prerouting priority dstnat; policy accept;
-        
-              # Gitolite SSH
-              iifname "enp2s0" tcp dport 2208 dnat to 10.88.127.3:22
-        
-              # LINDACORE forwards
-              iifname "enp2s0" udp dport 17780 dnat to 10.88.128.88:17780
-              iifname "enp2s0" udp dport 17781 dnat to 10.88.128.88:17781
-              iifname "enp2s0" udp dport 17782 dnat to 10.88.128.88:17782
-              iifname "enp2s0" udp dport 17783 dnat to 10.88.128.88:17783
-              iifname "enp2s0" udp dport 17784 dnat to 10.88.128.88:17784
-              iifname "enp2s0" udp dport 17785 dnat to 10.88.128.88:17785
-              iifname "enp2s0" udp dport 27015 dnat to 10.88.128.88:27015
-              iifname "enp2s0" tcp dport 27015 dnat to 10.88.128.88:27015
-              iifname "enp2s0" udp dport 4175 dnat to 10.88.128.88:4175
-              iifname "enp2s0" udp dport 4179 dnat to 10.88.128.88:4179
-              iifname "enp2s0" udp dport 4171 dnat to 10.88.128.88:4171
-              iifname "enp2s0" tcp dport 4549 dnat to 10.88.128.88:4549
-            };
-            chain postrouting {
-              type nat hook postrouting priority srcnat; policy accept;
-              oifname "enp2s0" ip saddr 10.88.128.0/24 masquerade
-            };
-    
-            # Internal NAT for LAN/VPN
-            chain prerouting {
-              type nat hook prerouting priority dstnat; policy accept;
-           #   iifname "enp3s0" tcp dport 22 dnat to 10.88.127.3:22
-           #   iifname "wireg0" tcp dport 22 dnat to 10.88.127.3:22
-            };
-          }
-        '';
+        ruleset =
+          (import ../../lib/mkNftables.nix lib).mkNftables {
+            enp2s0.tcp = [ 2208 27015 4549 ];
+            enp2s0.udp = [ 17780 17781 17782 17783 17784 17785 27015 4175 4179 4171 ];
+          };
       };
     wireguard = {
       enable = true;
