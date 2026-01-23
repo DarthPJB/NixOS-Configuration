@@ -3,7 +3,10 @@
 
 # YEEEEEEEEEEE PAAAAINN :)
 { config, lib, pkgs, self, ... }:
-let mkDhcpReservations = import ../../lib/mkDhcpReservations.nix lib;
+let
+  mkDhcpReservations = import ../../lib/mkDhcpReservations.nix lib;
+  mkNftables = import ../../lib/mkNftables.nix lib;
+  wgPeers = import ../../lib/wg_peers.nix { inherit self; };
 in
 {
   imports =
@@ -150,7 +153,7 @@ in
       {
         enable = true;
         ruleset =
-          (import ../../lib/mkNftables.nix lib).mkNftables {
+          mkNftables {
             enp2s0.tcp = [
               { port = 2208; dest = "10.88.127.3:22"; }
               { port = 27015; dest = "10.88.128.88:27015"; }
@@ -176,7 +179,7 @@ in
         ips = [ "10.88.127.1/32" "10.88.127.0/24" ];
         listenPort = 2108;
         privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
-        peers = (import ../../lib/wg_peers.nix { inherit self; });
+        peers = wgPeers;
       };
     };
     hostName = "cortex-alpha";
@@ -229,7 +232,7 @@ in
         "8.8.8.8"
       ];
       dhcp-range = [ "enp3s0,10.88.128.128,10.88.128.254,24h" ];
-dhcp-host = (import ../../lib/mkDhcpReservations.nix { inherit lib; }) {
+dhcp-host = mkDhcpReservations {
   dhcpHosts = {
     "f8:32:e4:b9:77:0d" = { hostname = "alpha-one"; ip = "10.88.128.108"; lease = "infinite"; };
     "f8:32:e4:b9:77:0b" = { hostname = "data-storage"; ip = "10.88.128.3"; lease = "infinite"; };
