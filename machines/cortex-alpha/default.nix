@@ -6,7 +6,27 @@
 let
   mkDhcpReservations = import ../../lib/mkDhcpReservations.nix lib;
   mkNftables = import ../../lib/mkNftables.nix lib;
+  mkProxyPass = import ../../lib/mkProxyPass.nix lib;
   wgPeers = import ../../lib/wg_peers.nix { inherit self; };
+  
+  proxyConfigs = [
+    {
+      name = "print-controller.johnbargman.net";
+      proxyPass = "http://10.88.127.30:80";
+    }
+    {
+      name = "prometheus.johnbargman.net";
+      proxyPass = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.data-storage.config.services.prometheus.port}";
+    }
+    {
+      name = "grafana.johnbargman.net";
+      proxyPass = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.data-storage.config.services.grafana.settings.server.http_port}";
+    }
+    {
+      name = "ap.johnbargman.net";
+      proxyPass = "http://10.88.128.2:80";
+    }
+  ];
 in
 {
   imports =
@@ -76,67 +96,7 @@ in
           #proxyWebsockets = false; # needed if you need to use websocket
         };
       };
-      "print-controller.johnbargman.net" = {
-        useACMEHost = "johnbargman.net";
-        addSSL = true;
-        listenAddresses = [ "10.88.128.1" "10.88.127.1" ];
-        locations."~/" = {
-          proxyPass = "http://10.88.127.30:80";
-          extraConfig = ''
-            proxy_set_header host $host;
-            proxy_set_header x-real-ip $remote_addr;
-            proxy_set_header x-forwarded-for $proxy_add_x_forwarded_for;
-            proxy_set_header x-forwarded-proto $scheme;
-          '';
-          proxyWebsockets = true; # needed if you need to use websocket
-        };
-      };
-      "prometheus.johnbargman.net" = {
-        useACMEHost = "johnbargman.net";
-        addSSL = true;
-        listenAddresses = [ "10.88.128.1" "10.88.127.1" ];
-        locations."~/" = {
-          proxyPass = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.data-storage.config.services.prometheus.port}";
-          extraConfig = ''
-            proxy_set_header host $host;
-            proxy_set_header x-real-ip $remote_addr;
-            proxy_set_header x-forwarded-for $proxy_add_x_forwarded_for;
-            proxy_set_header x-forwarded-proto $scheme;
-          '';
-          proxyWebsockets = true; # needed if you need to use websocket
-        };
-      };
-      "grafana.johnbargman.net" = {
-        useACMEHost = "johnbargman.net";
-        addSSL = true; # Senpai teaches this
-        listenAddresses = [ "10.88.128.1" "10.88.127.1" ];
-        locations."~/" = {
-          proxyPass = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.data-storage.config.services.grafana.settings.server.http_port}";
-          extraConfig = ''
-            proxy_set_header host $host;
-            proxy_set_header x-real-ip $remote_addr;
-            proxy_set_header x-forwarded-for $proxy_add_x_forwarded_for;
-            proxy_set_header x-forwarded-proto $scheme;
-          '';
-          proxyWebsockets = true; # needed if you need to use websocket
-        };
-      };
-      "ap.johnbargman.net" = {
-        useACMEHost = "johnbargman.net";
-        addSSL = true;
-        listenAddresses = [ "10.88.128.1" "10.88.127.1" ];
-        locations."~/" = {
-          proxyPass = "http://10.88.128.2:80";
-          extraConfig = ''
-            proxy_set_header host $host;
-            proxy_set_header x-real-ip $remote_addr;
-            proxy_set_header x-forwarded-for $proxy_add_x_forwarded_for;
-            proxy_set_header x-forwarded-proto $scheme;
-          '';
-          proxyWebsockets = true; # needed if you need to use websocket
-        };
-      };
-    };
+    } // (mkProxyPass.mkProxyPass proxyConfigs);
   };
   # so i'm thinking a 'port proxy' mother of all modules
   #  - TODO: the dream here is that i can have a list of source -> destination - type
@@ -246,7 +206,5 @@ dhcp-host = mkDhcpReservations {
     "18:c0:4d:8d:53:6d" = { hostname = "LINDACORE"; ip = "10.88.128.88"; lease = "infinite"; };
     "18:26:49:c5:48:24" = { hostname = "LINDACORE"; ip = "10.88.128.89"; lease = "infinite"; };
   };
-};
-    };
   };
 }
