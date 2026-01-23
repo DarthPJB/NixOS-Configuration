@@ -3,6 +3,8 @@
 
 # YEEEEEEEEEEE PAAAAINN :)
 { config, lib, pkgs, self, ... }:
+let mkDhcpReservations = import ../../lib/mkDhcpReservations.nix lib;
+in
 {
   imports =
     [
@@ -149,8 +151,23 @@
         enable = true;
         ruleset =
           (import ../../lib/mkNftables.nix lib).mkNftables {
-            enp2s0.tcp = [ 2208 27015 4549 ];
-            enp2s0.udp = [ 17780 17781 17782 17783 17784 17785 27015 4175 4179 4171 ];
+            enp2s0.tcp = [
+              { port = 2208; dest = "10.88.127.3:22"; }
+              { port = 27015; dest = "10.88.128.88:27015"; }
+              { port = 4549; dest = "10.88.128.88:4549"; }
+            ];
+            enp2s0.udp = [
+              { port = 17780; dest = "10.88.128.88:17780"; }
+              { port = 17781; dest = "10.88.128.88:17781"; }
+              { port = 17782; dest = "10.88.128.88:17782"; }
+              { port = 17783; dest = "10.88.128.88:17783"; }
+              { port = 17784; dest = "10.88.128.88:17784"; }
+              { port = 17785; dest = "10.88.128.88:17785"; }
+              { port = 27015; dest = "10.88.128.88:27015"; }
+              { port = 4175; dest = "10.88.128.88:4175"; }
+              { port = 4179; dest = "10.88.128.88:4179"; }
+              { port = 4171; dest = "10.88.128.88:4171"; }
+            ];
           };
       };
     wireguard = {
@@ -212,19 +229,21 @@
         "8.8.8.8"
       ];
       dhcp-range = [ "enp3s0,10.88.128.128,10.88.128.254,24h" ];
-      dhcp-host = [
-        "f8:32:e4:b9:77:0d,alpha-one,10.88.128.108,infinite"
-        "f8:32:e4:b9:77:0b,data-storage,10.88.128.3,infinite"
-        "b8:27:eb:7f:f0:38,print-controller,10.88.128.10,infinite"
-        "10:0b:a9:7e:cc:8c,terminal-zero,10.88.128.20,infinite"
-        "f0:de:f1:c7:fe:30,terminal-zero,10.88.128.21,infinite"
-        "dc:85:de:86:a8:77,terminal-nx-01,10.88.128.22,infinite"
-        "70:54:d2:17:d1:c4,terminal-nx-01,10.88.128.23,infinite"
-        "52:54:00:e9:4a:af,LINDA-WM,10.88.128.24,infinite"
-        "18:c0:4d:8d:53:6c,LINDACORE,10.88.128.87,infinite"
-        "18:c0:4d:8d:53:6d,LINDACORE,10.88.128.88,infinite"
-        "18:26:49:c5:48:24,LINDACORE,10.88.128.89,infinite"
-      ];
+dhcp-host = (import ../../lib/mkDhcpReservations.nix { inherit lib; }) {
+  dhcpHosts = {
+    "f8:32:e4:b9:77:0d" = { hostname = "alpha-one"; ip = "10.88.128.108"; lease = "infinite"; };
+    "f8:32:e4:b9:77:0b" = { hostname = "data-storage"; ip = "10.88.128.3"; lease = "infinite"; };
+    "b8:27:eb:7f:f0:38" = { hostname = "print-controller"; ip = "10.88.128.10"; lease = "infinite"; };
+    "10:0b:a9:7e:cc:8c" = { hostname = "terminal-zero"; ip = "10.88.128.20"; lease = "infinite"; };
+    "f0:de:f1:c7:fe:30" = { hostname = "terminal-zero"; ip = "10.88.128.21"; lease = "infinite"; };
+    "dc:85:de:86:a8:77" = { hostname = "terminal-nx-01"; ip = "10.88.128.22"; lease = "infinite"; };
+    "70:54:d2:17:d1:c4" = { hostname = "terminal-nx-01"; ip = "10.88.128.23"; lease = "infinite"; };
+    "52:54:00:e9-4a:af" = { hostname = "LINDA-WM"; ip = "10.88.128.24"; lease = "infinite"; };
+    "18:c0:4d:8d:53:6c" = { hostname = "LINDACORE"; ip = "10.88.128.87"; lease = "infinite"; };
+    "18:c0:4d:8d:53:6d" = { hostname = "LINDACORE"; ip = "10.88.128.88"; lease = "infinite"; };
+    "18:26:49:c5:48:24" = { hostname = "LINDACORE"; ip = "10.88.128.89"; lease = "infinite"; };
+  };
+};
     };
   };
 }
