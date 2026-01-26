@@ -241,7 +241,7 @@
           sshUser = "deploy";
           hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINfV4fNuig3xDPKlagqsAp2L2JMJG9L+6BZ/4dY6/UBx";
           #sshPort = 22;
-          extraModules = [ ./users/build.nix ];
+          extraModules = [ ./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
         };
         alpha-two = mkX86_64 "alpha-two" "alpha-two" {
           dt = true;

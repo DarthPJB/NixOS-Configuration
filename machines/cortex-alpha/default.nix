@@ -4,29 +4,63 @@
 # YEEEEEEEEEEE PAAAAINN :)
 { config, lib, pkgs, self, ... }:
 let
-  mkDhcpReservations = import ../../lib/mkDhcpReservations.nix lib;
-  mkNftables = import ../../lib/mkNftables.nix lib;
-  mkProxyPass = import ../../lib/mkProxyPass.nix lib;
-  wgPeers = import ../../lib/wg_peers.nix { inherit self; };
-  
-  proxyConfigs = [
-    {
-      name = "print-controller.johnbargman.net";
-      proxyPass = "http://10.88.127.30:80";
-    }
-    {
-      name = "prometheus.johnbargman.net";
-      proxyPass = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.data-storage.config.services.prometheus.port}";
-    }
-    {
-      name = "grafana.johnbargman.net";
-      proxyPass = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.data-storage.config.services.grafana.settings.server.http_port}";
-    }
-    {
-      name = "ap.johnbargman.net";
-      proxyPass = "http://10.88.128.2:80";
-    }
-  ];
+  proxyConfigs = {
+    "print-controller.johnbargman.net" = "http://10.88.127.30:80"; 
+    "prometheus.johnbargman.net" = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.data-storage.config.services.prometheus.port}"; 
+    "grafana.johnbargman.net" = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.data-storage.config.services.grafana.settings.server.http_port}"; 
+    "ap.johnbargman.net" = "http://10.88.128.2:80"; 
+  };
+  peerList = {
+    #  "cortex-alpha"    = "1";
+    "local-nas" = "3";
+    "storage-array" = "4";
+    "terminal-zero" = "20";
+    "terminal-nx-01" = "21";
+    "print-controller" = "30";
+    "display-module" = "40";
+    "remote-worker" = "50";
+    "remote-builder" = "51";
+    "LINDA" = "88";
+    "alpha-one" = "108";
+    "display-1" = "41";
+    "display-2" = "42";
+  };
+  nftableAttrs = {
+    enp2s0.tcp = [
+      { port = 2208; dest = "10.88.127.3:22"; }
+      { port = 27015; dest = "10.88.128.88:27015"; }
+      { port = 4549; dest = "10.88.128.88:4549"; }
+    ];
+    enp2s0.udp = [
+      { port = 17780; dest = "10.88.128.88:17780"; }
+      { port = 17781; dest = "10.88.128.88:17781"; }
+      { port = 17782; dest = "10.88.128.88:17782"; }
+      { port = 17783; dest = "10.88.128.88:17783"; }
+      { port = 17784; dest = "10.88.128.88:17784"; }
+      { port = 17785; dest = "10.88.128.88:17785"; }
+      { port = 27015; dest = "10.88.128.88:27015"; }
+      { port = 4175; dest = "10.88.128.88:4175"; }
+      { port = 4179; dest = "10.88.128.88:4179"; }
+      { port = 4171; dest = "10.88.128.88:4171"; }
+    ];
+  };
+  dhcpHosts = {
+    "f8:32:e4:b9:77:0d" = { hostname = "alpha-one"; ip = "10.88.128.108"; lease = "infinite"; };
+    "f8:32:e4:b9:77:0b" = { hostname = "data-storage"; ip = "10.88.128.3"; lease = "infinite"; };
+    "b8:27:eb:7f:f0:38" = { hostname = "print-controller"; ip = "10.88.128.10"; lease = "infinite"; };
+    "10:0b:a9:7e:cc:8c" = { hostname = "terminal-zero"; ip = "10.88.128.20"; lease = "infinite"; };
+    "f0:de:f1:c7:fe:30" = { hostname = "terminal-zero"; ip = "10.88.128.21"; lease = "infinite"; };
+    "dc:85:de:86:a8:77" = { hostname = "terminal-nx-01"; ip = "10.88.128.22"; lease = "infinite"; };
+    "70:54:d2:17:d1:c4" = { hostname = "terminal-nx-01"; ip = "10.88.128.23"; lease = "infinite"; };
+    "52:54:00:e9-4a:af" = { hostname = "LINDA-WM"; ip = "10.88.128.24"; lease = "infinite"; };
+    "18:c0:4d:8d:53:6c" = { hostname = "LINDACORE"; ip = "10.88.128.87"; lease = "infinite"; };
+    "18:c0:4d:8d:53:6d" = { hostname = "LINDACORE"; ip = "10.88.128.88"; lease = "infinite"; };
+    "18:26:49:c5:48:24" = { hostname = "LINDACORE"; ip = "10.88.128.89"; lease = "infinite"; };
+  };
+  mkDhcpReservations = import ../../lib/mkDhcpReservations.nix { inherit dhcpHosts; };
+  mkNftables = import ../../lib/mkNftables.nix { inherit lib nftableAttrs; };
+  mkProxyPass = import ../../lib/mkProxyPass.nix { inherit proxyConfigs; };
+  wgPeers = import ../../lib/wg_peers.nix { inherit self peerList; };
 in
 {
   imports =
@@ -69,7 +103,7 @@ in
   };
   services.nginx = {
     enable = true;
-    virtualHosts = {
+    virtualHosts = mkProxyPass // {
       "_" = {
         default = true;
         listenAddresses = [ "10.88.128.1" "10.88.127.1" "82.5.173.252" ];
@@ -96,7 +130,7 @@ in
           #proxyWebsockets = false; # needed if you need to use websocket
         };
       };
-    } // (mkProxyPass.mkProxyPass proxyConfigs);
+    };
   };
   # so i'm thinking a 'port proxy' mother of all modules
   #  - TODO: the dream here is that i can have a list of source -> destination - type
@@ -112,26 +146,7 @@ in
     nftables =
       {
         enable = true;
-        ruleset =
-          mkNftables {
-            enp2s0.tcp = [
-              { port = 2208; dest = "10.88.127.3:22"; }
-              { port = 27015; dest = "10.88.128.88:27015"; }
-              { port = 4549; dest = "10.88.128.88:4549"; }
-            ];
-            enp2s0.udp = [
-              { port = 17780; dest = "10.88.128.88:17780"; }
-              { port = 17781; dest = "10.88.128.88:17781"; }
-              { port = 17782; dest = "10.88.128.88:17782"; }
-              { port = 17783; dest = "10.88.128.88:17783"; }
-              { port = 17784; dest = "10.88.128.88:17784"; }
-              { port = 17785; dest = "10.88.128.88:17785"; }
-              { port = 27015; dest = "10.88.128.88:27015"; }
-              { port = 4175; dest = "10.88.128.88:4175"; }
-              { port = 4179; dest = "10.88.128.88:4179"; }
-              { port = 4171; dest = "10.88.128.88:4171"; }
-            ];
-          };
+        ruleset = mkNftables;
       };
     wireguard = {
       enable = true;
@@ -192,19 +207,7 @@ in
         "8.8.8.8"
       ];
       dhcp-range = [ "enp3s0,10.88.128.128,10.88.128.254,24h" ];
-dhcp-host = mkDhcpReservations {
-  dhcpHosts = {
-    "f8:32:e4:b9:77:0d" = { hostname = "alpha-one"; ip = "10.88.128.108"; lease = "infinite"; };
-    "f8:32:e4:b9:77:0b" = { hostname = "data-storage"; ip = "10.88.128.3"; lease = "infinite"; };
-    "b8:27:eb:7f:f0:38" = { hostname = "print-controller"; ip = "10.88.128.10"; lease = "infinite"; };
-    "10:0b:a9:7e:cc:8c" = { hostname = "terminal-zero"; ip = "10.88.128.20"; lease = "infinite"; };
-    "f0:de:f1:c7:fe:30" = { hostname = "terminal-zero"; ip = "10.88.128.21"; lease = "infinite"; };
-    "dc:85:de:86:a8:77" = { hostname = "terminal-nx-01"; ip = "10.88.128.22"; lease = "infinite"; };
-    "70:54:d2:17:d1:c4" = { hostname = "terminal-nx-01"; ip = "10.88.128.23"; lease = "infinite"; };
-    "52:54:00:e9-4a:af" = { hostname = "LINDA-WM"; ip = "10.88.128.24"; lease = "infinite"; };
-    "18:c0:4d:8d:53:6c" = { hostname = "LINDACORE"; ip = "10.88.128.87"; lease = "infinite"; };
-    "18:c0:4d:8d:53:6d" = { hostname = "LINDACORE"; ip = "10.88.128.88"; lease = "infinite"; };
-    "18:26:49:c5:48:24" = { hostname = "LINDACORE"; ip = "10.88.128.89"; lease = "infinite"; };
-  };
+      dhcp-host = mkDhcpReservations;
+    };
   };
 }
