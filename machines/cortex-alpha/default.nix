@@ -23,6 +23,7 @@ let
     "alpha-one" = "108";
     "display-1" = "41";
     "display-2" = "42";
+    "dlyon" = "210";
   };
 
   environment.interfaces = {
