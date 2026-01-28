@@ -5,19 +5,18 @@
 { config, lib, pkgs, self, ... }:
 let
   proxyConfigs = {
-    "print-controller.johnbargman.net" = "http://10.88.127.30:80"; 
-    "prometheus.johnbargman.net" = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.data-storage.config.services.prometheus.port}"; 
-    "grafana.johnbargman.net" = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.data-storage.config.services.grafana.settings.server.http_port}"; 
-    "ap.johnbargman.net" = "http://10.88.128.2:80"; 
+    "print-controller.johnbargman.net" = "http://10.88.127.30:80";
+    "prometheus.johnbargman.net" = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.data-storage.config.services.prometheus.port}";
+    "grafana.johnbargman.net" = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.data-storage.config.services.grafana.settings.server.http_port}";
+    "ap.johnbargman.net" = "http://10.88.128.2:80";
   };
-  peerList = {
-    #  "cortex-alpha"    = "1";
+  peerList = {  #  "cortex-alpha"    = "1";
     "local-nas" = "3";
     "storage-array" = "4";
     "terminal-zero" = "20";
     "terminal-nx-01" = "21";
     "print-controller" = "30";
-    "display-module" = "40";
+    "display-module" = "40"; 
     "remote-worker" = "50";
     "remote-builder" = "51";
     "LINDA" = "88";
@@ -25,6 +24,18 @@ let
     "display-1" = "41";
     "display-2" = "42";
   };
+
+  environment.interfaces = {
+    wg0.ipv4 = {
+      prefix = "10.88.127";
+      postfix = "1";
+    };
+    enp3s0.ipv4 = {
+      prefix = "10.88.128";
+      postfix = "1";
+    };
+  };
+
   nftableAttrs = {
     enp2s0.tcp = [
       { port = 2208; dest = "10.88.127.3:22"; }
@@ -60,11 +71,13 @@ let
   mkDhcpReservations = import ../../lib/mkDhcpReservations.nix { inherit dhcpHosts; };
   mkNftables = import ../../lib/mkNftables.nix { inherit lib nftableAttrs; };
   mkProxyPass = import ../../lib/mkProxyPass.nix { inherit proxyConfigs; };
-  wgPeers = import ../../lib/wg_peers.nix { inherit self peerList; };
+  wgPeers = import ../../lib/wg_peers.nix { inherit self peerList; }; 
 in
+
 {
   imports =
     [
+    #  ../../lib/network-interfaces.nix
       # Include the results of the hardware scan.
       (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
       ../../server_services/ldap.nix
@@ -101,6 +114,7 @@ in
     leasesPath = "/dev/null";
     dnsmasqListenAddress = "10.88.128.1:53";
   };
+
   services.nginx = {
     enable = true;
     virtualHosts = mkProxyPass // {
@@ -151,7 +165,7 @@ in
     wireguard = {
       enable = true;
       interfaces.wireg0 = {
-        ips = [ "10.88.127.1/32" "10.88.127.0/24" ];
+      ips = [ "10.88.127.1/32" "10.88.127.0/24" ];
         listenPort = 2108;
         privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
         peers = wgPeers;
@@ -166,6 +180,7 @@ in
         prefixLength = 24;
       }];
     };
+
     interfaces.enp2s0 = {
       useDHCP = lib.mkDefault true;
     };
@@ -193,6 +208,7 @@ in
         "/grafana.johnbargman.net/10.88.128.1"
         "/print-controller.johnbargman.net/10.88.128.1"
         "/minio.johnbargman.net/10.88.128.1"
+
       ];
       local = "/cortex-alpha/";
       domain = "cortex-alpha";

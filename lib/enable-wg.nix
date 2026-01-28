@@ -3,7 +3,11 @@
   options.environment.vpn =
     {
       enable = lib.mkEnableOption "enable WireGaurd";
-      postfix = lib.mkOption { type = lib.types.int; };
+      postfix = lib.mkOption {
+        type = lib.types.str;
+        default = config.environment.interfaces.wg0.ipv4.postfix or 1;
+        description = "WG postfix (auto from environment.interfaces if set)";
+      };
       privateKeyFile = lib.mkOption { type = lib.types.str; };
     };
   config = lib.mkIf config.environment.vpn.enable

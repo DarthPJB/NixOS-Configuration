@@ -5,6 +5,7 @@
     [
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ../../services/ollama.nix
       ../../lib/enable-wg.nix
       ../../lib/rclone-target.nix
       ../../environments/i3wm_darthpjb.nix
@@ -57,11 +58,6 @@
   };
 
   nix.gc.automatic = lib.mkForce false; # Never collect this nix-store and it's cache.
-  services.ollama = {
-    enable = true;
-    acceleration = "cuda";
-    models = "/speed-storage/ollama";
-  };
   services.sunshine = {
     enable = true;
     autoStart = true;
@@ -76,9 +72,6 @@
     pkgs.virtiofsd
     pkgs.gwe
     pkgs.virt-manager
-    self.inputs.nix-mcp-servers.packages.x86_64-linux.github-mcp-server
-    self.inputs.nix-mcp-servers.packages.x86_64-linux.mcp-server-git
-    self.inputs.nix-mcp-servers.packages.x86_64-linux.mcp-server-filesystem
     #self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.nixd
   ];
   nix = {

@@ -1,11 +1,12 @@
-{ lib, nftableAttrs ? {} }:
+{ lib, nftableAttrs ? { } }:
 let
   interfaces = lib.attrNames nftableAttrs;
   generateRules = iface: protocol: rules: lib.concatStringsSep "\n"
     (lib.map (rule: "              iifname \"${iface}\" ${protocol} dport ${builtins.toString rule.port} dnat to ${rule.dest}") rules);
-  tcpRules = lib.concatStringsSep "\n" (lib.map (iface: generateRules iface "tcp" (nftableAttrs.${iface}.tcp or [])) interfaces);
-  udpRules = lib.concatStringsSep "\n" (lib.map (iface: generateRules iface "udp" (nftableAttrs.${iface}.udp or [])) interfaces);
-in ''
+  tcpRules = lib.concatStringsSep "\n" (lib.map (iface: generateRules iface "tcp" (nftableAttrs.${iface}.tcp or [ ])) interfaces);
+  udpRules = lib.concatStringsSep "\n" (lib.map (iface: generateRules iface "udp" (nftableAttrs.${iface}.udp or [ ])) interfaces);
+in
+''
   table ip nat {
     chain prerouting {
       type nat hook prerouting priority dstnat; policy accept;
