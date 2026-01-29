@@ -4,7 +4,7 @@
     enable = true;
     acceleration = "cuda";
     models = "/speed-storage/ollama";
-    package = unstable.ollama;
+    package = unstable.ollama-cuda;
   };
     environment.systemPackages = [
       self.inputs.nix-mcp-servers.packages.x86_64-linux.github-mcp-server

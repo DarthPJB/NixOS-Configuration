@@ -4,7 +4,7 @@
     {
       enable = lib.mkEnableOption "enable WireGaurd";
       postfix = lib.mkOption {
-        type = lib.types.str;
+        type = lib.types.int;
         default = config.environment.interfaces.wg0.ipv4.postfix or 1;
         description = "WG postfix (auto from environment.interfaces if set)";
       };
