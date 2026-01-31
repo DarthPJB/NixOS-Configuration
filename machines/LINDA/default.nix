@@ -37,6 +37,7 @@
 
 
   secrix.services.wireguard-wireg0.secrets.LINDA.encrypted.file = ../../secrets/wiregaurd/wg_LINDA;
+  secrix.services.wireguard-wiregPS0.secrets.LINDA.encrypted.file = ../../secrets/wiregaurd/wg_PLATONIC_LINDACORE;
   environment = {
     vpn =
       {
@@ -56,6 +57,32 @@
       };
     };
   };
+
+    networking.wireguard = {
+      enable = true;
+      interfaces = {
+        wiregPS0 =
+          {
+            # ensure routes exist to other clients.
+            postSetup = ''
+              ${pkgs.iproute2}/bin/ip route add 10.75.69.0/24 dev wiregPS0
+            '';
+            postShutdown = ''
+              ${pkgs.iproute2}/bin/ip route del 10.75.69.0/24 dev wiregPS0
+            '';
+            ips = [ "10.75.69.88/32" ];
+            listenPort = 2108;
+            privateKeyFile =  config.secrix.services.wireguard-wiregPS0.secrets.LINDA.decrypted.path;
+            peers = [{
+              publicKey = builtins.readFile "${self}/secrets/wiregaurd/public-acropolis.pub";
+              allowedIPs = [ "10.75.69.1/32" "10.75.69.0/24" ];
+              endpoint = "143.223.151.15:2108";
+              dynamicEndpointRefreshSeconds = 300;
+              persistentKeepalive = 60;
+            }];
+          };
+      };
+    };
 
   nix.gc.automatic = lib.mkForce false; # Never collect this nix-store and it's cache.
   services.sunshine = {
