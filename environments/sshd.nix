@@ -13,7 +13,7 @@
     upheldBy = [ "sockets.target" ];
     after = [ "wiregaurd-wireg0.target" ];
     startLimitIntervalSec = 5;
-    startLimitBurst = 3;
+    startLimitBurst = 1;
   };
 
   # Enable the OpenSSH daemon.
