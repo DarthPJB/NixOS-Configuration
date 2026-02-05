@@ -10,17 +10,19 @@ let
     "grafana.johnbargman.net" = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.data-storage.config.services.grafana.settings.server.http_port}";
     "ap.johnbargman.net" = "http://10.88.128.2:80";
   };
-  peerList = {  #  "cortex-alpha"    = "1";
+  peerList = {
+    #  "cortex-alpha"    = "1";
     "local-nas" = "3";
     "storage-array" = "4";
     "terminal-zero" = "20";
     "terminal-nx-01" = "21";
     "print-controller" = "30";
-    "display-module" = "40"; 
+    "display-module" = "40";
     "remote-worker" = "50";
     "remote-builder" = "51";
     "LINDA" = "88";
     "alpha-one" = "108";
+    "alpha-three" = "107";
     "display-1" = "41";
     "display-2" = "42";
     "dlyon" = "210";
@@ -51,6 +53,7 @@ let
       { port = 17784; dest = "10.88.128.88:17784"; }
       { port = 17785; dest = "10.88.128.88:17785"; }
       { port = 27015; dest = "10.88.128.88:27015"; }
+      { port = 2207; dest = "10.88.127.88:2207"; }
       { port = 4175; dest = "10.88.128.88:4175"; }
       { port = 4179; dest = "10.88.128.88:4179"; }
       { port = 4171; dest = "10.88.128.88:4171"; }
@@ -72,14 +75,13 @@ let
   mkDhcpReservations = import ../../lib/mkDhcpReservations.nix { inherit dhcpHosts; };
   mkNftables = import ../../lib/mkNftables.nix { inherit lib nftableAttrs; };
   mkProxyPass = import ../../lib/mkProxyPass.nix { inherit proxyConfigs; };
-  wgPeers = import ../../lib/wg_peers.nix { inherit self peerList; }; 
+  wgPeers = import ../../lib/wg_peers.nix { inherit self peerList; };
 in
 
 {
   imports =
     [
-    #  ../../lib/network-interfaces.nix
-      # Include the results of the hardware scan.
+      #  ../../lib/network-interfaces.nix
       (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
       ../../server_services/ldap.nix
       ../../configuration.nix
@@ -166,7 +168,7 @@ in
     wireguard = {
       enable = true;
       interfaces.wireg0 = {
-      ips = [ "10.88.127.1/32" "10.88.127.0/24" ];
+        ips = [ "10.88.127.1/32" "10.88.127.0/24" ];
         listenPort = 2108;
         privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
         peers = wgPeers;

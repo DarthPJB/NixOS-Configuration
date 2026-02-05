@@ -6,9 +6,9 @@
     models = "/speed-storage/ollama";
     package = unstable.ollama-cuda;
   };
-    environment.systemPackages = [
-      self.inputs.nix-mcp-servers.packages.x86_64-linux.github-mcp-server
-      self.inputs.nix-mcp-servers.packages.x86_64-linux.mcp-server-git
-      self.inputs.nix-mcp-servers.packages.x86_64-linux.mcp-server-filesystem
-    ];
+  environment.systemPackages = [
+    self.inputs.nix-mcp-servers.packages.x86_64-linux.github-mcp-server
+    self.inputs.nix-mcp-servers.packages.x86_64-linux.mcp-server-git
+    self.inputs.nix-mcp-servers.packages.x86_64-linux.mcp-server-filesystem
+  ];
 }

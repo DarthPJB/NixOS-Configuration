@@ -1,13 +1,8 @@
 { config, lib, pkgs, unstable, ... }:
 
 {
-  imports = [
-    ./opencode-wrapper.nix
-  ];
-
   environment.shellAliases = {
-    code = "lite-xl";
-    opencode-session = "opencode-session";
+    code = "lite-xl .&";
   };
   environment.systemPackages = with pkgs; [
     pkgs.gpp
@@ -41,6 +36,5 @@
     pkgs.rsync
     pkgs.git
     unstable.opencode
-    ((import config._module.args.sl) { inherit pkgs; })
   ];
 }

@@ -37,7 +37,6 @@
 
 
   secrix.services.wireguard-wireg0.secrets.LINDA.encrypted.file = ../../secrets/wiregaurd/wg_LINDA;
-  secrix.services.wireguard-wiregPS0.secrets.LINDA.encrypted.file = ../../secrets/wiregaurd/wg_PLATONIC_LINDACORE;
   environment = {
     vpn =
       {
@@ -58,32 +57,31 @@
     };
   };
 
-    networking.wireguard = {
-      enable = true;
-      interfaces = {
-        wiregPS0 =
-          {
-            # ensure routes exist to other clients.
-            postSetup = ''
-              ${pkgs.iproute2}/bin/ip route add 10.75.69.0/24 dev wiregPS0
-            '';
-            postShutdown = ''
-              ${pkgs.iproute2}/bin/ip route del 10.75.69.0/24 dev wiregPS0
-            '';
-            ips = [ "10.75.69.88/32" ];
-            listenPort = 2108;
-            privateKeyFile =  config.secrix.services.wireguard-wiregPS0.secrets.LINDA.decrypted.path;
-            peers = [{
-              publicKey = builtins.readFile "${self}/secrets/wiregaurd/public-acropolis.pub";
-              allowedIPs = [ "10.75.69.1/32" "10.75.69.0/24" ];
-              endpoint = "143.223.151.15:2108";
-              dynamicEndpointRefreshSeconds = 300;
-              persistentKeepalive = 60;
-            }];
-          };
-      };
+  networking.wireguard = {
+    enable = true;
+    interfaces = {
+      wiregPS0 =
+        {
+          # ensure routes exist to other clients.
+          postSetup = ''
+            ${pkgs.iproute2}/bin/ip route add 10.75.69.0/24 dev wiregPS0
+          '';
+          postShutdown = ''
+            ${pkgs.iproute2}/bin/ip route del 10.75.69.0/24 dev wiregPS0
+          '';
+          ips = [ "10.75.69.88/32" ];
+          listenPort = 2107;
+          privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.LINDA.decrypted.path;
+          peers = [{
+            publicKey = builtins.readFile "${self}/secrets/wiregaurd/public-acropolis.pub";
+            allowedIPs = [ "10.75.69.1/32" "10.75.69.0/24" ];
+            endpoint = "143.223.151.15:2208";
+            dynamicEndpointRefreshSeconds = 300;
+            persistentKeepalive = 60;
+          }];
+        };
     };
-
+  };
   nix.gc.automatic = lib.mkForce false; # Never collect this nix-store and it's cache.
   services.sunshine = {
     enable = true;
@@ -265,7 +263,7 @@
       "enp69s0f0".allowedTCPPortRanges = [{ from = 17780; to = 17785; } { from = 47984; to = 48010; }];
       "wireg0".allowedTCPPorts = [ 80 1108 5201 ];
 
-      "enp69s0f0".allowedUDPPorts = [ 2108 1108 4010 27015 4175 4179 4171 ];
+      "enp69s0f0".allowedUDPPorts = [ 2108 2107 1108 4010 27015 4175 4179 4171 ];
       "enp69s0f0".allowedUDPPortRanges = [{ from = 17780; to = 17785; } { from = 27031; to = 27036; } { from = 47984; to = 48010; }];
 
     };

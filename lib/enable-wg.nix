@@ -19,6 +19,8 @@
             port = 1108;
           }];
         };
+      networking.firewall.allowedTCPPorts = [ 2108 ];
+      networking.firewall.allowedUDPPorts = [ 2108 ];
       networking.wireguard = {
         enable = true;
         interfaces = {

@@ -23,12 +23,12 @@ in
         description = "IPv4 configuration for ${name} (prefix/postfix → /32 auto)";
       };
     }));
-    default = {};
+    default = { };
     description = "Interface IPv4 definitions (prefix/postfix format)";
   };
   # Generate networking.interfaces from environment.interfaces
-  config = mkIf (config.environment.interfaces != {}) (
+  config = mkIf (config.environment.interfaces != { }) (
     mapAttrs (name: iface: {
       ipv4.addresses = [ "${iface.ipv4.prefix}.${iface.ipv4.postfix}/32" ];
     })# config.environment.interfaces );
-}
+    }

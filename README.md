@@ -7,15 +7,12 @@ This repository now allows me to deploy to any hardware, with my expected enviro
 TODO:
 - Configure IPv6 forwarding
 - Address hard-coded IP security
-- Develop port proxy module
-- Integrate new machines
 - Document Nixinate usage
-- Set up Prometheus monitoring
 - Implement LDAP authentication
 - Automate scraper configuration
 - Optimize storage
-- Configure TLS certificates
 - Decide DNS vs WG-IP connectivity
 - Expand filesystem support
 - Implement GPG-based SSH authentication
 - Continue library-splitting efforts
+- STANDARDIZE KNOWNHOSTS FROM PUBLIC KEYs ;)

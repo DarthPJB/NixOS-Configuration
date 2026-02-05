@@ -8,29 +8,18 @@
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     nixinate = { url = "github:DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     secrix.url = "github:Platonic-Systems/secrix";
-    sl = {
-      url = "github:pinktrink/sl/a613b55b692304f8e020af8889ff996c0918fa7d";
-      flake = false;
-    };
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
-    nixpkgs_legacy.url = "github:nixos/nixpkgs?ref=nixos-23.05";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nix-mcp-servers.url = "github:cameronfyfe/nix-mcp-servers";
     nixos-hardware.url = "github:nixos/nixos-hardware";
-    agent-files = {
-      url = "path:/speed-storage/opencode";
-      flake = false;
-    };
   };
-  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_legacy, nixpkgs_stable, nixpkgs_unstable, parsecgaming, secrix, sl, agent-files }:
+  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, parsecgaming, secrix }:
     let
-      flake_pkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
+      nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
       globalArgs = {
         inherit self;
-        sl = sl;
-        agentFiles = agent-files;
       };
       commonModules = [
         secrix.nixosModules.default
@@ -43,7 +32,7 @@
           ];
         }
       ];
-      mkX86_64 = name: hostname: { extraModules ? [ ], hostPubKey ? null, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? false, sshPort ? 1108 }:
+      mkX86_64 = name: hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./public_key/${name}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108 }:
         nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
@@ -61,7 +50,7 @@
             }
           ];
         };
-      mkAarch64 = name: hostname: { extraModules ? [ ], hostPubKey ? null, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? false, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
+      mkAarch64 = name: hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./public_key/${name}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
         nixpkgs_unstable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
@@ -111,14 +100,14 @@
           (name: mkUncompressedSdImage (builtins.getAttr name self.nixosConfigurations));
     in
     {
-      formatter."x86_64-linux" = flake_pkgs.nixpkgs-fmt;
+      formatter."x86_64-linux" = nixpkgs.nixpkgs-fmt;
       apps."x86_64-linux" = { secrix = secrix.secrix self; } // (nixinate.lib.genDeploy.x86_64-linux self) // {
         deploy-all = {
           type = "app";
           meta.description = "itsa make the pizza delivery";
-          program = lib.getExe (flake_pkgs.writeShellApplication {
+          program = lib.getExe (nixpkgs.writeShellApplication {
             name = "deploy-all";
-            runtimeInputs = with flake_pkgs; [ nix jq figlet ];
+            runtimeInputs = with nixpkgs; [ nix jq figlet ];
             text = ''
               set -euo pipefail
 
@@ -171,32 +160,26 @@
           ];
         };
 
-        display-1 = mkAarch64 "display/1.nix" "display-1" {
-          hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOOxb+iAm5nTcC3oRsMIcxcciKRj8VnGpp1JIAdGVTZU";
+        display-1 = mkAarch64 "display-1" "display-1" {
           host = "10.88.127.41";
           extraModules = [ ./users/build.nix ];
         };
-        display-2 = mkAarch64 "display/2.nix" "display-2" {
-          hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p";
+        display-2 = mkAarch64 "display-2" "display-2" {
           host = "10.88.127.42";
           extraModules = [ ./users/build.nix ];
         };
         print-controller = mkAarch64 "print-controller" "print-controller" {
-          hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBqeo8ceyMoi+SIRP5hhilbhJvFflphD0efolDCxccj9";
           host = "10.88.127.30";
           hardware = nixos-hardware.nixosModules.raspberry-pi-3;
           extraModules = [ ./server_services/klipper.nix ];
         };
-        display-0 = mkAarch64 "display/0.nix" "display-0" {
-          hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINkAJhTTF+WVWixTwIvEtRq5KdpjxPy4ptlcmFSEetrU";
+        display-0 = mkAarch64 "display-0" "display-0" {
           host = "display-0.johnbargman.net";
           hardware = nixos-hardware.nixosModules.raspberry-pi-3;
           extraModules = [ ./modifier_imports/minimal.nix ./modifier_imports/pi-firmware.nix ];
         };
 
         terminal-zero = mkX86_64 "terminal-zero" "terminal-zero" {
-          dt = true;
-          hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGlV1inLX9o+Qyf/B3dp6xjb4f9bGisvkT6eFL/f8JIl";
           host = "10.88.127.20";
           extraModules = [
             ./modifier_imports/central-builder.nix
@@ -205,8 +188,6 @@
           ];
         };
         terminal-nx-01 = mkX86_64 "terminal-media" "terminal-nx-01" {
-          dt = true;
-          hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOK07xnXN3O2v4EZ7YUzWSL5O+Uf2vM6+jzxROWzaTD5";
           host = "10.88.127.21";
           extraModules = [
             ./users/build.nix
@@ -225,34 +206,31 @@
         };
 
         cortex-alpha = mkX86_64 "cortex-alpha" "cortex-alpha" {
-          dt = true;
-          hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILWAilZq7Ocl8zm96sSAy+fRo8wt5mMVuRQmEQsk4MsB root@cortex-alpha";
           host = "10.88.127.1";
           extraModules = [ ./environments/neovim.nix ./services/dynamic_domain_gandi.nix ];
         };
         data-storage = mkX86_64 "local-nas" "DataStorage" {
-          hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINlCggPwFP5VX3YDA1iji0wxX8+mIzmrCJ1aHj9f1ofx";
           host = "10.88.127.3";
           extraModules = [ ./users/build.nix ];
         };
         alpha-one = mkX86_64 "alpha-one" "alpha-one" {
-          dt = true;
           host = "10.88.127.108";
           sshUser = "deploy";
-          hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINfV4fNuig3xDPKlagqsAp2L2JMJG9L+6BZ/4dY6/UBx";
-          #sshPort = 22;
           extraModules = [ ./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
         };
         alpha-two = mkX86_64 "alpha-two" "alpha-two" {
-          dt = true;
           host = "10.88.127.21";
           sshUser = "John88";
           extraModules = [{ nixpkgs.config.nvidia.acceptLicense = true; environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; }];
         };
+        alpha-three = mkX86_64 "alpha-three" "alpha-three" {
+          host = "10.88.127.107";
+     #     sshUser = "root";
+      #    sshPort = 22;
+          extraModules = [ ./users/build.nix { } ];
+        };
 
         LINDA = mkX86_64 "LINDA" "LINDACORE" {
-          dt = true;
-          hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDMfuVEzn9keN1iVk4rjJmB07+/ynTMaZCKPvbaZ1cF6";
           host = "10.88.127.88";
           buildOn = "remote";
           extraModules = [ ./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
@@ -260,44 +238,27 @@
 
         remote-worker = mkX86_64 "remote-worker" "remote-worker" {
           dt = false;
-          hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M";
           host = "10.88.127.50";
         };
         storage-array = mkX86_64 "storage-array" "storage-array" {
-          dt = true;
-          hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMfb/Bbr0PaFDyO92q+GXHHXTAlTYR4uSLm0jivou4IB";
           host = "10.88.127.4";
         };
         remote-builder = mkX86_64 "remote-builder" "remote-builder" {
           dt = false;
-          hostPubKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC7Owkd/9PC7j/L5PbPXrSMx0Aw/1owIoCsfp7+5OKek";
           host = "10.88.127.51";
         };
       };
 
-      checks."x86_64-linux".deadnix = flake_pkgs.writeShellApplication {
-        name = "run-deadnix";
-        meta.description = "runs deadnix on the flake source";
-        text = ''
-          nix run ${deadnix}#deadnix "${self}"
-        '';
-      };
+      checks."x86_64-linux" = {
+        deadnix = nixpkgs.writeShellApplication {
+          name = "run-deadnix";
+          meta.description = "runs deadnix on the flake source";
+          text = ''
+            nix run ${deadnix}#deadnix "${self}"
+          '';
+        };
 
-      checks."x86_64-linux"."code-sandbox-test" = flake_pkgs.writeShellApplication {
-        name = "test-code-sandbox";
-        text = ''
-          set -euo pipefail
-          TEST_DIR=$(mktemp -d)
-          cd "$TEST_DIR"
-          echo "dummy file" > test.txt
-          echo "dummy config" > .opencode/config.txt
-          OPCODE_DEBUG=1 opencode-boxed "hello this is a test" 2>&1 | tee test.log
-          grep -q "DEBUG: bwrap exec complete" test.log || (cat test.log; exit 1)
-          grep -q "DEBUG: Trap complete" test.log || (cat test.log; exit 1)
-          rm -rf "$TEST_DIR"
-        '';
+        nixpkgs-fmt = lint-utils.linters.x86_64-linux.nixpkgs-fmt { src = self; };
       };
-
-      checks."x86_64-linux".nixpkgs-fmt = lint-utils.linters.x86_64-linux.nixpkgs-fmt { src = self; };
     };
 }

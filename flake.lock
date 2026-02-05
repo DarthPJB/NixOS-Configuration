@@ -1,18 +1,5 @@
 {
   "nodes": {
-    "agent-files": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1768467187,
-        "narHash": "sha256-r9C4SCHip5qVudsXpNDRC/ESNjofq65GGStkDCpa2Jo=",
-        "path": "/speed-storage/opencode",
-        "type": "path"
-      },
-      "original": {
-        "path": "/speed-storage/opencode",
-        "type": "path"
-      }
-    },
     "aquamarine": {
       "inputs": {
         "hyprutils": [
@@ -767,22 +754,6 @@
         "type": "github"
       }
     },
-    "nixpkgs_legacy": {
-      "locked": {
-        "lastModified": 1704290814,
-        "narHash": "sha256-LWvKHp7kGxk/GEtlrGYV68qIvPHkU9iToomNFGagixU=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "70bdadeb94ffc8806c0570eb5c2695ad29f0e421",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixos-23.05",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixpkgs_stable": {
       "locked": {
         "lastModified": 1768323494,
@@ -799,12 +770,12 @@
     },
     "nixpkgs_unstable": {
       "locked": {
-        "lastModified": 1769433173,
-        "narHash": "sha256-Gf1dFYgD344WZ3q0LPlRoWaNdNQq8kSBDLEWulRQSEs=",
-        "rev": "13b0f9e6ac78abbbb736c635d87845c4f4bee51b",
-        "revCount": 934966,
+        "lastModified": 1770073757,
+        "narHash": "sha256-Vy+G+F+3E/Tl+GMNgiHl9Pah2DgShmIUBJXmbiQPHbI=",
+        "rev": "47472570b1e607482890801aeaf29bfb749884f6",
+        "revCount": 939290,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/nixpkgs-weekly/0.1.934966%2Brev-13b0f9e6ac78abbbb736c635d87845c4f4bee51b/019bfdf9-4ec8-7a28-a5b9-d7a7d3cfef53/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/nixpkgs-weekly/0.1.939290%2Brev-47472570b1e607482890801aeaf29bfb749884f6/019c220b-311d-7d52-b63d-0d54cb2365f4/source.tar.gz"
       },
       "original": {
         "type": "tarball",
@@ -880,7 +851,6 @@
     },
     "root": {
       "inputs": {
-        "agent-files": "agent-files",
         "deadnix": "deadnix",
         "determinate": "determinate",
         "hyprland": "hyprland",
@@ -888,12 +858,10 @@
         "nix-mcp-servers": "nix-mcp-servers",
         "nixinate": "nixinate",
         "nixos-hardware": "nixos-hardware",
-        "nixpkgs_legacy": "nixpkgs_legacy",
         "nixpkgs_stable": "nixpkgs_stable",
         "nixpkgs_unstable": "nixpkgs_unstable",
         "parsecgaming": "parsecgaming",
-        "secrix": "secrix",
-        "sl": "sl"
+        "secrix": "secrix"
       }
     },
     "secrix": {
@@ -911,23 +879,6 @@
       "original": {
         "owner": "Platonic-Systems",
         "repo": "secrix",
-        "type": "github"
-      }
-    },
-    "sl": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1699397089,
-        "narHash": "sha256-xH1oXNTwsOvIKv3XhP6Riqp2FtfncyMDOWSAgVRpkT8=",
-        "owner": "pinktrink",
-        "repo": "sl",
-        "rev": "a613b55b692304f8e020af8889ff996c0918fa7d",
-        "type": "github"
-      },
-      "original": {
-        "owner": "pinktrink",
-        "repo": "sl",
-        "rev": "a613b55b692304f8e020af8889ff996c0918fa7d",
         "type": "github"
       }
     },
