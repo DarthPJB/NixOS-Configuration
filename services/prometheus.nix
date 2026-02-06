@@ -27,6 +27,8 @@ in
             };
             targets = [
               "10.88.127.88:${toString self.nixosConfigurations.LINDA.config.services.prometheus.exporters.nvidia-gpu.port}"
+              "10.88.127.107:${toString self.nixosConfigurations.LINDA.config.services.prometheus.exporters.nvidia-gpu.port}"
+              "10.88.127.108:${toString self.nixosConfigurations.LINDA.config.services.prometheus.exporters.nvidia-gpu.port}"
               "10.88.127.21:${toString self.nixosConfigurations.LINDA.config.services.prometheus.exporters.nvidia-gpu.port}"
             ];
           }
@@ -67,6 +69,8 @@ in
               "10.88.127.51:${toString self.nixosConfigurations.remote-builder.config.services.prometheus.exporters.node.port}"
               "10.88.127.88:${toString self.nixosConfigurations.LINDA.config.services.prometheus.exporters.node.port}"
               "10.88.127.41:${toString self.nixosConfigurations.display-1.config.services.prometheus.exporters.node.port}"
+              "10.88.127.108:${toString self.nixosConfigurations.display-1.config.services.prometheus.exporters.node.port}"
+              "10.88.127.107:${toString self.nixosConfigurations.display-1.config.services.prometheus.exporters.node.port}"
               "10.88.127.42:${toString self.nixosConfigurations.display-2.config.services.prometheus.exporters.node.port}"
             ];
           }
