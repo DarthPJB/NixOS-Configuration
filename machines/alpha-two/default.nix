@@ -1,7 +1,6 @@
 # -------------------------- ALPHA TWO --------------------------
 { config, lib, pkgs, hostname, ... }:
 {
-  networking.hostName = "${hostname}";
   imports = [
     ./hardware-configuration.nix
     ../../locale/home_networks.nix
@@ -76,7 +75,6 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "alpha-two"; # Define your hostname.
   # Pick only one of the below networking options.
   networking.wireless =
     {

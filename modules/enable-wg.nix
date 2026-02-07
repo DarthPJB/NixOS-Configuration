@@ -14,15 +14,13 @@
         description = "Path to WireGuard private key file (mutually exclusive with hostname)";
       };
       hostname = lib.mkOption {
-        default = null;
+        default = if config.environment.vpn.privateKeyFile == null then config.networking.hostName else null;
         type = lib.types.nullOr lib.types.str;
         description = "hostname for prekeyed hosts (mutually exclusive with privateKeyFile)";
       };
     };
   config = lib.mkIf config.environment.vpn.enable
     {
-      # Default to system hostname if not found
-      environment.vpn.hostname = lib.mkIf (config.environment.vpn.privateKeyFile == null) (lib.mkDefault config.networking.hostName);
       secrix = lib.mkIf (config.environment.vpn.hostname != null)
         {
           services.wireguard-wireg0.secrets."${config.environment.vpn.hostname}".encrypted.file = "${self}/secrets/private_keys/wiregaurd/wg_${config.environment.vpn.hostname}";

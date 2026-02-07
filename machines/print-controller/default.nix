@@ -1,7 +1,6 @@
 # ------------------------ Print Controller ------------------------
 { pkgs, config, lib, hostname, ... }:
 {
-  networking.hostName = "${hostname}";
   imports = [
     ../../configuration.nix
     ../../modifier_imports/zram.nix

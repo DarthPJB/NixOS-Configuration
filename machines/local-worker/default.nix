@@ -1,6 +1,5 @@
 { config, pkgs, hostname, ... }:
 {
-  networking.hostName = "${hostname}";
   imports =
     [
       ../../configuration.nix

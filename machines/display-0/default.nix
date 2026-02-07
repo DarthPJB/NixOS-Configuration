@@ -1,6 +1,5 @@
 { pkgs, config, lib, hostname, ... }:
 {
-  networking.hostName = "${hostname}";
   nixpkgs.overlays = [
     (final: super: {
       makeModulesClosure = x: super.makeModulesClosure (x // { allowMissing = true; });
@@ -20,10 +19,6 @@
     };
   environment.systemPackages = [ pkgs.rtl-sdr ];
 
-  networking =
-    {
-      hostName = "display-0";
-    };
   boot = {
     supportedFilesystems.zfs = lib.mkForce false;
     initrd.kernelModules = [ "vc4" "bcm2835_dma" "i2c_bcm2835" ];

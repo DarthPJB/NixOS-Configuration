@@ -2,7 +2,7 @@
 # this is my router gateway everything its bad plz look
 
 # YEEEEEEEEEEE PAAAAINN :)
-{ config, lib, pkgs, self, hostname ... }:
+{ config, lib, pkgs, self, hostname, ... }:
 let
   proxyConfigs = {
     "print-controller.johnbargman.net" = "http://10.88.127.30:80";
@@ -79,7 +79,6 @@ let
 in
 
 {
-  networking.hostName = "${hostname}";
   imports =
     [
       #  ../../lib/network-interfaces.nix
@@ -175,7 +174,7 @@ in
         peers = wgPeers;
       };
     };
-    hostName = "cortex-alpha";
+    #hostName = "cortex-alpha";
     hostId = "c043a1fa";
     interfaces.enp3s0 = {
       useDHCP = lib.mkDefault false;

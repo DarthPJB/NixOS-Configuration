@@ -1,7 +1,6 @@
 # -------------------------- LINDACORE --------------------------
 { config, pkgs, self, lib, hostname, ... }:
 {
-  networking.hostName = "${hostname}";
   imports =
     [
       # Include the results of the hardware scan.

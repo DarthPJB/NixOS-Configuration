@@ -1,7 +1,5 @@
 { pkgs, config, lib, self, hostname, ... }:
 {
-  networking.hostName = "${hostname}";
-
   imports = [
     ../../modules/enable-wg.nix
     ../../configuration.nix

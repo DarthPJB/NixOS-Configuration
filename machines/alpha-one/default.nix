@@ -1,11 +1,10 @@
 { config, lib, pkgs, self, hostname, ... }:
 {
-  networking.hostName = "${hostname}";
   imports =
     [
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      ../../lib/enable-wg.nix
+      ../../modules/enable-wg.nix
       ../../environments/i3wm_darthpjb.nix
       ../../environments/steam.nix
       ../../environments/code.nix

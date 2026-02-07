@@ -4,7 +4,6 @@
 
 { config, pkgs, lib, ... }: { hostname }
 {
-networking.hostName = "${hostname}";
 systemd.user.services.obs-auto =
 {
 description = "obs-studio-autostart";

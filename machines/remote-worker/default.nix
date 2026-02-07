@@ -2,7 +2,6 @@
 
 { config, pkgs, hostname, ... }:
 {
-  networking.hostName = "${hostname}";
   imports = [
     ./hardware-configuration.nix
     ../../configuration.nix
@@ -66,7 +65,7 @@
     };
 
   networking.hostId = "e3fabb5b";
-  networking.hostName = "remote-worker";
+ #networking.hostName = "remote-worker";
 
   networking.firewall.allowedTCPPorts = [ 3105 3106 ];
 

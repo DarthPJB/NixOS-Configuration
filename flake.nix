@@ -32,13 +32,13 @@
           ];
         }
       ];
-      mkX86_64 = name: hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/${name}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108 }:
+      mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108 }:
         nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
-            ./machines/${name}
+            ./machines/${hostname}
             {
-              #networking.hostName = hostname;
+              networking.hostName = hostname;
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;
               _module.args = globalArgs // {
                 inherit hostname;
@@ -51,7 +51,7 @@
             }
           ];
         };
-      mkAarch64 = name: hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/${name}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
+      mkAarch64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
         nixpkgs_unstable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
@@ -59,7 +59,7 @@
             "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
             hardware
           ] ++ commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
-            ./machines/${name}
+            ./machines/${hostname}
             {
               nixpkgs.overlays = [
                 (final: super: {
@@ -159,29 +159,32 @@
             "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
             "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
             ./machines/beta/1.nix
+            {
+            _module.args = globalArgs // { hostname = "beta-one"; };
+            }
           ];
         };
 
-        display-1 = mkAarch64 "display-1" "display-1" {
+        display-1 = mkAarch64 "display-1" {
           host = "10.88.127.41";
           extraModules = [ ./users/build.nix ];
         };
-        display-2 = mkAarch64 "display-2" "display-2" {
+        display-2 = mkAarch64 "display-2" {
           host = "10.88.127.42";
           extraModules = [ ./users/build.nix ];
         };
-        print-controller = mkAarch64 "print-controller" "print-controller" {
+        print-controller = mkAarch64  "print-controller" {
           host = "10.88.127.30";
           hardware = nixos-hardware.nixosModules.raspberry-pi-3;
           extraModules = [ ./server_services/klipper.nix ];
         };
-        display-0 = mkAarch64 "display-0" "display-0" {
+        display-0 = mkAarch64 "display-0" {
           host = "display-0.johnbargman.net";
           hardware = nixos-hardware.nixosModules.raspberry-pi-3;
           extraModules = [ ./modifier_imports/minimal.nix ./modifier_imports/pi-firmware.nix ];
         };
 
-        terminal-zero = mkX86_64 "terminal-zero" "terminal-zero" {
+        terminal-zero = mkX86_64 "terminal-zero" {
           host = "10.88.127.20";
           extraModules = [
             ./modifier_imports/central-builder.nix
@@ -189,7 +192,7 @@
             { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; }
           ];
         };
-        terminal-nx-01 = mkX86_64 "terminal-media" "terminal-nx-01" {
+        terminal-nx-01 = mkX86_64 "terminal-nx-01" {
           host = "10.88.127.21";
           extraModules = [
             ./users/build.nix
@@ -202,50 +205,50 @@
           ];
         };
 
-        local-worker = mkX86_64 "local-worker" "local-worker" {
+        local-worker = mkX86_64  "local-worker" {
           host = "10.88.127.89";
           extraModules = [ "${nixpkgs_stable}/nixos/modules/virtualisation/libvirtd.nix" ];
         };
 
-        cortex-alpha = mkX86_64 "cortex-alpha" "cortex-alpha" {
+        cortex-alpha = mkX86_64  "cortex-alpha" {
           host = "10.88.127.1";
           extraModules = [ ./environments/neovim.nix ./services/dynamic_domain_gandi.nix ];
         };
-        data-storage = mkX86_64 "local-nas" "DataStorage" {
+        data-storage = mkX86_64 "local-nas" {
           host = "10.88.127.3";
           extraModules = [ ./users/build.nix ];
         };
-        alpha-one = mkX86_64 "alpha-one" "alpha-one" {
+        alpha-one = mkX86_64 "alpha-one" {
           host = "10.88.127.108";
           sshUser = "deploy";
           extraModules = [ ./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
         };
-        alpha-two = mkX86_64 "alpha-two" "alpha-two" {
+        alpha-two = mkX86_64 "alpha-two" {
           host = "10.88.127.21";
           sshUser = "John88";
           extraModules = [{ nixpkgs.config.nvidia.acceptLicense = true; environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; }];
         };
-        alpha-three = mkX86_64 "alpha-three" "alpha-three" {
+        alpha-three = mkX86_64 "alpha-three" {
           host = "10.88.127.107";
           #     sshUser = "root";
           #    sshPort = 22;
           extraModules = [ ./users/build.nix { } ];
         };
 
-        LINDA = mkX86_64 "LINDA" "LINDACORE" {
+        LINDA = mkX86_64 "LINDA" {
           host = "10.88.127.88";
           buildOn = "remote";
           extraModules = [ ./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
         };
 
-        remote-worker = mkX86_64 "remote-worker" "remote-worker" {
+        remote-worker = mkX86_64 "remote-worker" {
           dt = false;
           host = "10.88.127.50";
         };
-        storage-array = mkX86_64 "storage-array" "storage-array" {
+        storage-array = mkX86_64 "storage-array"  {
           host = "10.88.127.4";
         };
-        remote-builder = mkX86_64 "remote-builder" "remote-builder" {
+        remote-builder = mkX86_64 "remote-builder" {
           dt = false;
           host = "10.88.127.51";
         };

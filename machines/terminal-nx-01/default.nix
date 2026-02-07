@@ -3,7 +3,6 @@
 # to /etc/nixos/configuration.nix instead.
 { config, lib, self, pkgs, modulesPath, hostname, ... }:
 {
-  networking.hostName = "${hostname}";
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
     ../../modifier_imports/cuda.nix
@@ -56,7 +55,7 @@
   networking = {
     firewall.allowedUDPPorts = [ 2108 ];
     useDHCP = false;
-    hostName = "terminal-nx-01"; # Define your hostname.
+    #hostName = "terminal-nx-01"; # Define your hostname.
     interfaces = {
       enp4s0.useDHCP = true;
       wlp3s0.useDHCP = true;

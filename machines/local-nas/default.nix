@@ -1,9 +1,6 @@
 ## --------------- LOCAL NAS aka data-storage ---------------
-
-
 { config, pkgs, lib, hostname, ... }:
 {
-  networking.hostName = "${hostname}";
   imports =
     [
       ../../configuration.nix
