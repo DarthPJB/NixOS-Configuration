@@ -11,20 +11,20 @@ let
     "ap.johnbargman.net" = "http://10.88.128.2:80";
   };
   peerList = {
-    #  "cortex-alpha"    = "1";
+    "alpha-one" = "108";
+    "alpha-three" = "107";
+    "cortex-alpha" = "1";
+    "display-1" = "41";
+    "display-2" = "42";    
     "local-nas" = "3";
+    "print-controller" = "30";
+    "remote-builder" = "51";
+    "remote-worker" = "50";
     "storage-array" = "4";
     "terminal-zero" = "20";
     "terminal-nx-01" = "21";
-    "print-controller" = "30";
-    "display-module" = "40";
-    "remote-worker" = "50";
-    "remote-builder" = "51";
+    "display-0" = "40";
     "LINDA" = "88";
-    "alpha-one" = "108";
-    "alpha-three" = "107";
-    "display-1" = "41";
-    "display-2" = "42";
     "dlyon" = "210";
   };
 

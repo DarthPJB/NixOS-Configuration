@@ -18,7 +18,7 @@
     createHome = true;
     home = "/home/pokej";
     hashedPassword = "$6$irFKKFRDPP$H5EaeHornoVvWcKtUBj.29tPvw.SspaSi/vOPGc3GG2bW//M.ld3E7E3XCevJ6vn175A/raHvNIotXayvMqzz0";
-    openssh.authorizedKeys.keys = [ "${lib.readFile ../public_key/id_ed25519_master.pub}" ];
+    openssh.authorizedKeys.keys = [ "${lib.readFile ../secrets/public_keys/JOHN_BARGMAN_ED_25519.pub}" ];
     extraGroups = [ "wheel" "libvirtd" "video" "vboxusers" "dialout" "disk" "networkManager" ]; # Enable ‘sudo’ for the user.
   };
 }
