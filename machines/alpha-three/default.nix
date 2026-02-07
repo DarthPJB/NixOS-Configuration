@@ -2,11 +2,9 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ config, lib, pkgs, self, ... }:
-let
-  hostname = "alpha-three";
-in
+{ config, lib, pkgs, self, hostname, ... }:
 {
+  networking.hostName = "${hostname}";
   imports =
     [
       # Include the results of the hardware scan.
@@ -22,7 +20,6 @@ in
     {
       enable = true;
       postfix = 107;
-      privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
     };
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
@@ -32,7 +29,7 @@ in
     wget
     git
   ];
-   hardware = {
+  hardware = {
     sane.enable = true;
     graphics.enable = true;
     cpu.amd.updateMicrocode = config.hardware.enableRedistributableFirmware;

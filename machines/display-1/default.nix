@@ -1,12 +1,10 @@
-{ pkgs, config, lib, self, ... }:
-let
-  hostname = "display-1";
-in
+{ pkgs, config, lib, self, hostname, ... }:
 {
+  networking.hostName = "${hostname}";
 
   imports = [
     ../../modifier_imports/zram.nix
-    ../../lib/enable-wg.nix
+    ../../modules/enable-wg.nix
     ../../configuration.nix
     #../../environments/hyperland.nix
     ../../environments/i3wm.nix

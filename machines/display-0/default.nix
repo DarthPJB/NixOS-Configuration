@@ -1,5 +1,6 @@
-{ pkgs, config, lib, ... }:
+{ pkgs, config, lib, hostname, ... }:
 {
+  networking.hostName = "${hostname}";
   nixpkgs.overlays = [
     (final: super: {
       makeModulesClosure = x: super.makeModulesClosure (x // { allowMissing = true; });

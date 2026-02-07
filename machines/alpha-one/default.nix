@@ -1,7 +1,4 @@
-{ config, lib, pkgs, self, ... }:
-let
-  hostname = "alpha-one";
-in
+{ config, lib, pkgs, self, hostname, ... }:
 {
   networking.hostName = "${hostname}";
   imports =
@@ -30,12 +27,10 @@ in
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  secrix.services.wireguard-wireg0.secrets."${hostname}".encrypted.file = "${self}/secrets/wiregaurd/wg_${hostname}";
   environment.vpn =
     {
       enable = true;
       postfix = 108;
-      privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
     };
 
   hardware = {

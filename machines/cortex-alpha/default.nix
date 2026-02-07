@@ -2,7 +2,7 @@
 # this is my router gateway everything its bad plz look
 
 # YEEEEEEEEEEE PAAAAINN :)
-{ config, lib, pkgs, self, ... }:
+{ config, lib, pkgs, self, hostname ... }:
 let
   proxyConfigs = {
     "print-controller.johnbargman.net" = "http://10.88.127.30:80";
@@ -15,7 +15,7 @@ let
     "alpha-three" = "107";
     "cortex-alpha" = "1";
     "display-1" = "41";
-    "display-2" = "42";    
+    "display-2" = "42";
     "local-nas" = "3";
     "print-controller" = "30";
     "remote-builder" = "51";
@@ -79,6 +79,7 @@ let
 in
 
 {
+  networking.hostName = "${hostname}";
   imports =
     [
       #  ../../lib/network-interfaces.nix

@@ -8,7 +8,7 @@
     description = "deploy connection user";
     createHome = true;
     home = "/tmp/deploy";
-    openssh.authorizedKeys.keys = [ "${lib.readFile ../public_key/id_ed25519_master.pub}" ];
+    openssh.authorizedKeys.keys = [ "${lib.readFile ../secrets/public_keys/host_keys/LINDA.pub}" ];
     extraGroups = [ "wheel" ];
   };
 

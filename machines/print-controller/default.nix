@@ -1,17 +1,18 @@
 # ------------------------ Print Controller ------------------------
-{ pkgs, config, lib, ... }:
+{ pkgs, config, lib, hostname, ... }:
 {
+  networking.hostName = "${hostname}";
   imports = [
     ../../configuration.nix
     ../../modifier_imports/zram.nix
-    ../../lib/enable-wg.nix
+    ../../modules/enable-wg.nix
   ];
-  secrix.services.wireguard-wireg0.secrets.print-controller.encrypted.file = ../../secrets/wiregaurd/wg_print-controller;
+  #secrix.services.wireguard-wireg0.secrets.print-controller.encrypted.file = ../../secrets/wiregaurd/wg_print-controller;
   environment.vpn =
     {
       enable = true;
       postfix = 30;
-      privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.print-controller.decrypted.path;
+      #   privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.print-controller.decrypted.path;
     };
   boot = {
     # Cleanup tmp on startup

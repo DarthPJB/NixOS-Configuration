@@ -28,19 +28,20 @@
           nixpkgs.config.allowUnfree = true;
           system.stateVersion = "25.11";
           secrix.defaultEncryptKeys.John88 = [
-            (builtins.readFile ./public_key/id_ed25519_master.pub)
+            (builtins.readFile ./secrets/public_keys/JOHN_BARGMAN_ED_25519.pub) # Four years ago matthew croughan said "why bother putting that there?" so... This is why.
           ];
         }
       ];
-      mkX86_64 = name: hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./public_key/${name}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108 }:
+      mkX86_64 = name: hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/${name}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108 }:
         nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${name}
             {
-              networking.hostName = hostname;
+              #networking.hostName = hostname;
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;
               _module.args = globalArgs // {
+                inherit hostname;
                 unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                 nixinate = {
                   inherit host sshUser buildOn;
@@ -50,7 +51,7 @@
             }
           ];
         };
-      mkAarch64 = name: hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./public_key/${name}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
+      mkAarch64 = name: hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/${name}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
         nixpkgs_unstable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
@@ -74,6 +75,7 @@
                 "profiles/base.nix"
               ];
               _module.args = globalArgs // {
+                inherit hostname;
                 unstable = import nixpkgs_unstable { system = "aarch64-linux"; config.allowUnfree = true; };
                 nixinate = {
                   inherit host sshUser;
@@ -225,8 +227,8 @@
         };
         alpha-three = mkX86_64 "alpha-three" "alpha-three" {
           host = "10.88.127.107";
-     #     sshUser = "root";
-      #    sshPort = 22;
+          #     sshUser = "root";
+          #    sshPort = 22;
           extraModules = [ ./users/build.nix { } ];
         };
 

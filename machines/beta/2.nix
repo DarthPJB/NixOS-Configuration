@@ -1,11 +1,9 @@
-{ pkgs, config, lib, self, ... }:
-let
-  hostname = "beta-two";
-in
+{ pkgs, config, lib, self, hostname, ... }:
 {
+  networking.hostName = "${hostname}";
 
   imports = [
-    ../../lib/enable-wg.nix
+    ../../modules/enable-wg.nix
     ../../configuration.nix
     #../../environments/i3wm.nix
     #../../environments/browsers.nix

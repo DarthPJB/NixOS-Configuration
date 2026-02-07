@@ -1,14 +1,14 @@
 ## --------------- LOCAL NAS aka data-storage ---------------
 
 
-{ config, pkgs, lib, ... }:
-
+{ config, pkgs, lib, hostname, ... }:
 {
+  networking.hostName = "${hostname}";
   imports =
     [
       ../../configuration.nix
       ./hardware-configuration.nix
-      ../../lib/enable-wg.nix
+      ../../modules/enable-wg.nix
       ../../modifier_imports/zram.nix
       ../../modifier_imports/zfs.nix
       (import ../../services/prometheus.nix { fqdn = "johnbargman.net"; listen-addr = "10.88.127.3"; })

@@ -1,12 +1,13 @@
 # -------------------------- LINDACORE --------------------------
-{ config, pkgs, self, lib, ... }:
+{ config, pkgs, self, lib, hostname, ... }:
 {
+  networking.hostName = "${hostname}";
   imports =
     [
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ../../services/ollama.nix
-      ../../lib/enable-wg.nix
+      ../../modules/enable-wg.nix
       ../../lib/rclone-target.nix
       ../../environments/i3wm_darthpjb.nix
       ../../environments/steam.nix
@@ -34,15 +35,14 @@
       ../../modifier_imports/remote-builder.nix
     ];
 
-
-
-  secrix.services.wireguard-wireg0.secrets.LINDA.encrypted.file = ../../secrets/wiregaurd/wg_LINDA;
+  #secrix.services.wireguard-wireg0.secrets.LINDA.encrypted.file = ../../secrets/wiregaurd/wg_LINDA;
   environment = {
     vpn =
       {
         enable = true;
         postfix = 88;
-        privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.LINDA.decrypted.path;
+        inherit hostname;
+        # privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.LINDA.decrypted.path;
       };
     rclone-target = {
       enable = true;
@@ -71,9 +71,9 @@
           '';
           ips = [ "10.75.69.88/32" ];
           listenPort = 2107;
-          privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.LINDA.decrypted.path;
+          privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
           peers = [{
-            publicKey = builtins.readFile "${self}/secrets/wiregaurd/public-acropolis.pub";
+            publicKey = builtins.readFile "${self}/secrets/public_keys/wireguard/wg_acropolis_pub";
             allowedIPs = [ "10.75.69.1/32" "10.75.69.0/24" ];
             endpoint = "143.223.151.15:2208";
             dynamicEndpointRefreshSeconds = 300;
@@ -275,7 +275,7 @@
     #      };
     #    };
 
-    hostName = "LINDACORE";
+    #hostName = "LINDACORE";
     hostId = "b4120de4";
     #    bridges = {
     #      "br0" = {

@@ -1,8 +1,6 @@
-{ pkgs, config, lib, self, ... }:
-let
-  hostname = "display-2";
-in
+{ pkgs, config, lib, self, hostname, ... }:
 {
+  networking.hostName = "${hostname}";
 
   nixpkgs.overlays = [
     (final: super: {
@@ -12,7 +10,7 @@ in
 
   imports = [
     #../../modifier_imports/zram.nix
-    ../../lib/enable-wg.nix
+    ../../modules/enable-wg.nix
     ../../configuration.nix
     #    ../../environments/hyperland.nix
     ../../environments/i3wm.nix

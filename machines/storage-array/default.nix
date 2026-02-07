@@ -1,8 +1,8 @@
 # --------------------- STORAGE ARRAY -------------------- #
 
-{ config, lib, pkgs, ... }:
-
+{ config, lib, pkgs, hostname, ... }:
 {
+  networking.hostName = "${hostname}";
   imports =
     [
       ../../configuration.nix
@@ -15,16 +15,16 @@
       ../../environments/audio_visual_editing.nix
       ../../services/dynamic_domain_gandi.nix
       ./hardware-configuration.nix
-      ../../lib/enable-wg.nix
+      ../../modules/enable-wg.nix
     ];
   nix.gc.automatic = lib.mkForce false; # Never collect this nix-store and it's cache.
-  secrix.services.wireguard-wireg0.secrets.storage-array.encrypted.file = ../../secrets/wiregaurd/wg_storage-array;
+  # secrix.services.wireguard-wireg0.secrets.storage-array.encrypted.file = ../../secrets/wiregaurd/wg_storage-array;
   environment = {
     vpn =
       {
         enable = true;
         postfix = 4;
-        privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.storage-array.decrypted.path;
+        #    privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.storage-array.decrypted.path;
       };
   };
   services.zfs = {

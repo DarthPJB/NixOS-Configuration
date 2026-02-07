@@ -1,8 +1,8 @@
 # ----------- Remote Worker -----------------
 
-{ config, pkgs, ... }:
-
+{ config, pkgs, hostname, ... }:
 {
+  networking.hostName = "${hostname}";
   imports = [
     ./hardware-configuration.nix
     ../../configuration.nix
@@ -10,7 +10,7 @@
     ../../server_services/nextcloud.nix
     ../../users/build.nix
     ../../services/dynamic_domain_gandi.nix
-    ../../lib/enable-wg.nix
+    ../../modules/enable-wg.nix
     (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
     (import ../../services/acme_server.nix { fqdn = "johnbargman.com"; })
   ];
@@ -57,12 +57,12 @@
       };
     };
   };
-  secrix.services.wireguard-wireg0.secrets.remote-worker.encrypted.file = ../../secrets/wiregaurd/wg_remote-worker;
+  #secrix.services.wireguard-wireg0.secrets.remote-worker.encrypted.file = ../../secrets/wiregaurd/wg_remote-worker;
   environment.vpn =
     {
       enable = true;
       postfix = 50;
-      privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.remote-worker.decrypted.path;
+      # privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.remote-worker.decrypted.path;
     };
 
   networking.hostId = "e3fabb5b";
