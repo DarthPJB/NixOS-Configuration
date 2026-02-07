@@ -25,6 +25,7 @@
         secrix.nixosModules.default
         ./configuration.nix
         {
+          nix.registry.nixpkgs.flake = nixpkgs_stable;
           nixpkgs.config.allowUnfree = true;
           system.stateVersion = "25.11";
           secrix.defaultEncryptKeys.John88 = [
@@ -32,7 +33,7 @@
           ];
         }
       ];
-      mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108 }:
+      mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108 }:
         nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
@@ -51,7 +52,7 @@
             }
           ];
         };
-      mkAarch64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
+      mkAarch64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
         nixpkgs_unstable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
@@ -138,7 +139,7 @@
           type = "app";
           meta.description = "itsa make the pizza delivery";
           program = lib.getExe (nixpkgs.writeShellApplication {
-            name = "deploy-all";
+            name = "build-all";
             runtimeInputs = with nixpkgs; [ nix jq figlet ];
             text = ''
               set -euo pipefail
@@ -152,12 +153,10 @@
                 exit 1
               fi
 
-              ARG="$1"
-
-              figlet "Deploying to all hosts..."
+              figlet "Building all hostnames"
               for config in $CONFIGS; do 
                 echo "------------------- Deploying $config -------------------"
-                nixos-rebuild build --flake ".#$config" -- "$ARG" || figlet "$config HAS FAILED!!"
+                nixos-rebuild build --flake ".#$config" || figlet "$config HAS FAILED!!"
               done
 
               echo "All deployments finished."

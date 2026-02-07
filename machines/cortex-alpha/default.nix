@@ -28,17 +28,6 @@ let
     "dlyon" = "210";
   };
 
-  environment.interfaces = {
-    wg0.ipv4 = {
-      prefix = "10.88.127";
-      postfix = "1";
-    };
-    enp3s0.ipv4 = {
-      prefix = "10.88.128";
-      postfix = "1";
-    };
-  };
-
   nftableAttrs = {
     enp2s0.tcp = [
       { port = 2208; dest = "10.88.127.3:22"; }
@@ -157,7 +146,7 @@ in
 
   # Set your time zone.
   time.timeZone = "Etc/UTC";
-  secrix.services.wireguard-wireg0.secrets.cortex-alpha.encrypted.file = ../../secrets/wiregaurd/wg_cortex-alpha;
+  secrix.services.wireguard-wireg0.secrets.cortex-alpha.encrypted.file = ../../secrets/private_keys/wireguard/wg_cortex-alpha;
   networking = {
     nat.enable = lib.mkForce false;
     nftables =

@@ -14,7 +14,7 @@
       ../../environments/code.nix
       ../../environments/neovim.nix
     ];
-  secrix.services.wireguard-wireg0.secrets."${hostname}".encrypted.file = "${self}/secrets/wiregaurd/wg_${hostname}";
+  # secrix.services.wireguard-wireg0.secrets."${hostname}".encrypted.file = "${self}/secrets/wiregaurd/wg_${hostname}";
   environment.vpn =
     {
       enable = true;

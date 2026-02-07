@@ -32,7 +32,7 @@
         };
       networking.firewall.allowedTCPPorts = [ config.environment.vpn.port ];
       networking.firewall.allowedUDPPorts = [ config.environment.vpn.port ];
-      secrix.services.wireguard-wireg0.secrets."${config.environment.vpn.hostname}".encrypted.file =  lib.mkIf (config.environment.vpn.privateKeyFile == null) "${self}/secrets/private_keys/wireguard/wg_${config.environment.vpn.hostname}";
+      secrix.services.wireguard-wireg0.secrets."${config.environment.vpn.hostname}".encrypted.file = lib.mkIf (config.environment.vpn.privateKeyFile == null) "${self}/secrets/private_keys/wireguard/wg_${config.environment.vpn.hostname}";
       networking.wireguard = {
         enable = true;
         interfaces = {
@@ -49,11 +49,11 @@
               listenPort = config.environment.vpn.port;
               # Conditional privateKeyFile
               privateKeyFile = lib.mkMerge [
-                (lib.mkIf (config.environment.vpn.privateKeyFile == null) 
+                (lib.mkIf (config.environment.vpn.privateKeyFile == null)
                   config.secrix.services.wireguard-wireg0.secrets."${config.environment.vpn.hostname}".decrypted.path)
-                (lib.mkIf (config.environment.vpn.privateKeyFile != null) 
+                (lib.mkIf (config.environment.vpn.privateKeyFile != null)
                   config.environment.vpn.privateKeyFile)
-                  ];
+              ];
               peers = [{
                 publicKey = builtins.readFile "${self}/secrets/public_keys/wireguard/wg_cortex-alpha_pub";
                 allowedIPs = [ "10.88.127.1/32" "10.88.127.0/24" ];

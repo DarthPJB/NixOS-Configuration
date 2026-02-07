@@ -15,12 +15,12 @@
       ../../environments/sshd.nix
     ];
 
-  secrix.services.wireguard-wireg0.secrets.local_nas.encrypted.file = ../../secrets/wiregaurd/wg_local-nas;
+  #secrix.services.wireguard-wireg0.secrets.local_nas.encrypted.file = ../../secrets/wiregaurd/wg_local-nas;
   environment.vpn =
     {
       enable = true;
       postfix = 3;
-      privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.local_nas.decrypted.path;
+      #    privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.local_nas.decrypted.path;
     };
 
   networking.useDHCP = false;
