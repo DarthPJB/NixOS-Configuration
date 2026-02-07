@@ -39,7 +39,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
- # networking.hostName = "storage-array"; # Define your hostname.
+  # networking.hostName = "storage-array"; # Define your hostname.
   networking.hostId = "b4120de6";
   networking = {
     defaultGateway = "192.168.88.1";

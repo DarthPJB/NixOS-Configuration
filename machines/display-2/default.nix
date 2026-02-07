@@ -27,7 +27,7 @@
     {
       enable = true;
       postfix = 42;
-     # privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
+      # privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
     };
 
   hardware = {

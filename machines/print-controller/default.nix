@@ -11,7 +11,7 @@
     {
       enable = true;
       postfix = 30;
-      #   privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.print-controller.decrypted.path;
+      #      privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.print-controller.decrypted.path;
     };
   boot = {
     # Cleanup tmp on startup

@@ -14,12 +14,12 @@
     fsType = "ext4";
   };
   sdImage.compressImage = false;
- # secrix.services.wireguard-wireg0.secrets."${hostname}".encrypted.file = "${self}/secrets/wiregaurd/wg_${hostname}";
+  # secrix.services.wireguard-wireg0.secrets."${hostname}".encrypted.file = "${self}/secrets/wiregaurd/wg_${hostname}";
   environment.vpn =
     {
       enable = true;
       postfix = 41;
- #     privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
+      #     privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
     };
   systemd.user.services.browser =
     {
