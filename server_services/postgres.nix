@@ -8,7 +8,7 @@
   };
   services = {
     postgresql = {
-      enable =  true;
+      enable = true;
       enableTCPIP = true;
       dataDir = "/bulk-storage/postgres/${config.services.postgresql.package.psqlSchema}";
       authentication = ''
@@ -37,8 +37,8 @@
     };
     script = ''
       # Make sure that /postgres is owned by/accessible to the postgres user
-      mkdir -p /bulk-storage/postgres
-      chown postgres /bulk-storage/postgres
+      mkdir -p "/bulk-storage/postgres/${config.services.postgresql.package.psqlSchema}";
+      chown postgres:postgres "/bulk-storage/postgres/${config.services.postgresql.package.psqlSchema}";
     '';
     requiredBy = [ "postgresql.service" ];
   };

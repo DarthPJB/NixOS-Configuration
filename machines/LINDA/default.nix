@@ -6,6 +6,7 @@
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ../../services/ollama.nix
+      ../../services/litellm.nix
       ../../modules/enable-wg.nix
       ../../lib/rclone-target.nix
       ../../environments/i3wm_darthpjb.nix
@@ -33,15 +34,11 @@
       ../../modifier_imports/cuda.nix
       ../../modifier_imports/remote-builder.nix
     ];
-
-  #secrix.services.wireguard-wireg0.secrets.LINDA.encrypted.file = ../../secrets/wiregaurd/wg_LINDA;
   environment = {
     vpn =
       {
         enable = true;
         postfix = 88;
-        inherit hostname;
-        # privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.LINDA.decrypted.path;
       };
     rclone-target = {
       enable = true;

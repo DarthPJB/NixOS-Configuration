@@ -245,6 +245,7 @@
         };
         local-nas = mkX86_64 "local-nas" {
           host = "10.88.127.3";
+          #    sshPort = "1108 -i /etc/ssh/ssh_host_ed25519_key";
           extraModules = [ ./users/build.nix ];
         };
         alpha-one = mkX86_64 "alpha-one" {

@@ -29,7 +29,7 @@ in
       }
       {
         job_name = "nvidia";
-                scrape_interval = "5s";
+        scrape_interval = "5s";
         static_configs = [
           {
             labels = {
@@ -115,7 +115,7 @@ in
         job_name = "nextcloud";
         static_configs = [
           {
-            targets = [  "10.88.127.50:${toString self.nixosConfigurations.remote-worker.config.services.prometheus.exporters.nextcloud.port}"];
+            targets = [ "10.88.127.50:${toString self.nixosConfigurations.remote-worker.config.services.prometheus.exporters.nextcloud.port}" ];
           }
         ];
       }
