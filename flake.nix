@@ -25,6 +25,7 @@
         secrix.nixosModules.default
         ./configuration.nix
         {
+          programs.ssh.knownHosts = mkKnownHosts self.nixosConfigurations;
           nixpkgs.config.allowUnfree = true;
           system.stateVersion = "25.11";
           secrix.defaultEncryptKeys.John88 = [
@@ -101,6 +102,20 @@
         nixpkgs_stable.lib.genAttrs
           (map (cfg: cfg.config.system.name) configs)
           (name: mkUncompressedSdImage (builtins.getAttr name self.nixosConfigurations));
+
+      mkKnownHosts = nixosConfigs:
+        lib.filterAttrs (name: value: value != null)
+          (lib.mapAttrs
+            (name: cfg:
+              let
+                hostPubKey = cfg.config.secrix.hostPubKey or null;
+              in
+              if hostPubKey != null then {
+                hostNames = [ name "${name}.johnbargman.net" ];
+                publicKey = hostPubKey;
+              } else null
+            )
+            nixosConfigs);
     in
     {
       formatter."x86_64-linux" = nixpkgs.nixpkgs-fmt;
@@ -114,9 +129,7 @@
             text = ''
               set -euo pipefail
 
-              CONFIGS=$(nix flake show --json . \
-                | jq -r '.apps."x86_64-linux" | keys[]' \
-                | grep -E '^(terminal-zero|terminal-nx-01|cortex-alpha|local-nas|LINDA|remote-worker|storage-array|remote-builder|local-worker)$' || true)
+             CONFIGS=$(nix flake show --json . | jq -r '.nixosConfigurations | keys[]' )
 
               if [ -z "$CONFIGS" ]; then
                 figlet "No deployable configurations found."
@@ -144,9 +157,7 @@
             text = ''
               set -euo pipefail
 
-              CONFIGS=$(nix flake show --json . \
-                | jq -r '.apps."x86_64-linux" | keys[]' \
-                | grep -E '^(terminal-zero|terminal-nx-01|cortex-alpha|local-nas|LINDA|remote-worker|storage-array|remote-builder|local-worker)$' || true)
+              CONFIGS=$(nix flake show --json . | jq -r '.nixosConfigurations | keys[]' )
 
               if [ -z "$CONFIGS" ]; then
                 figlet "No deployable configurations found."
@@ -245,24 +256,18 @@
         };
         local-nas = mkX86_64 "local-nas" {
           host = "10.88.127.3";
-          #    sshPort = "1108 -i /etc/ssh/ssh_host_ed25519_key";
-          extraModules = [ ./users/build.nix ];
         };
         alpha-one = mkX86_64 "alpha-one" {
           host = "10.88.127.108";
-          sshUser = "deploy";
           extraModules = [ ./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
         };
         alpha-two = mkX86_64 "alpha-two" {
           host = "10.88.127.21";
-          sshUser = "John88";
-          extraModules = [{ nixpkgs.config.nvidia.acceptLicense = true; environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; }];
+          extraModules = [ ./users/build.nix  { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; }];
         };
         alpha-three = mkX86_64 "alpha-three" {
           host = "10.88.127.107";
-          #     sshUser = "root";
-          #    sshPort = 22;
-          extraModules = [ ./users/build.nix { } ];
+         extraModules = [ ./users/build.nix ];
         };
 
         LINDA = mkX86_64 "LINDA" {
@@ -272,14 +277,14 @@
         };
 
         remote-worker = mkX86_64 "remote-worker" {
-          dt = false;
           host = "10.88.127.50";
+          extraModules = [ ./users/build.nix ];
         };
         storage-array = mkX86_64 "storage-array" {
           host = "10.88.127.4";
         };
         remote-builder = mkX86_64 "remote-builder" {
-          dt = false;
+          extraModules = [ ./users/build.nix ];
           host = "10.88.127.51";
         };
       };
