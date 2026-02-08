@@ -8,6 +8,7 @@
       ../../modules/enable-wg.nix
       ../../modifier_imports/zram.nix
       ../../modifier_imports/zfs.nix
+      ../../server_services/postgres.nix
       (import ../../services/prometheus.nix { fqdn = "johnbargman.net"; listen-addr = "10.88.127.3"; })
       ../../server_services/minio-insecure.nix
       ../../environments/neovim.nix

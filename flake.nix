@@ -25,7 +25,6 @@
         secrix.nixosModules.default
         ./configuration.nix
         {
-          nix.registry.nixpkgs.flake = nixpkgs_stable;
           nixpkgs.config.allowUnfree = true;
           system.stateVersion = "25.11";
           secrix.defaultEncryptKeys.John88 = [
@@ -39,6 +38,7 @@
           modules = commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${hostname}
             {
+              nix.registry.nixpkgs.flake = nixpkgs_stable;
               networking.hostName = hostname;
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;
               _module.args = globalArgs // {
@@ -52,7 +52,7 @@
             }
           ];
         };
-      mkAarch64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
+      mkAarch64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? false, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
         nixpkgs_unstable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
@@ -116,7 +116,7 @@
 
               CONFIGS=$(nix flake show --json . \
                 | jq -r '.apps."x86_64-linux" | keys[]' \
-                | grep -E '^(terminal-zero|terminal-nx-01|cortex-alpha|data-storage|LINDA|remote-worker|storage-array|remote-builder|local-worker)$' || true)
+                | grep -E '^(terminal-zero|terminal-nx-01|cortex-alpha|local-nas|LINDA|remote-worker|storage-array|remote-builder|local-worker)$' || true)
 
               if [ -z "$CONFIGS" ]; then
                 figlet "No deployable configurations found."
@@ -146,7 +146,7 @@
 
               CONFIGS=$(nix flake show --json . \
                 | jq -r '.apps."x86_64-linux" | keys[]' \
-                | grep -E '^(terminal-zero|terminal-nx-01|cortex-alpha|data-storage|LINDA|remote-worker|storage-array|remote-builder|local-worker)$' || true)
+                | grep -E '^(terminal-zero|terminal-nx-01|cortex-alpha|local-nas|LINDA|remote-worker|storage-array|remote-builder|local-worker)$' || true)
 
               if [ -z "$CONFIGS" ]; then
                 figlet "No deployable configurations found."
@@ -243,7 +243,7 @@
           host = "10.88.127.1";
           extraModules = [ ./environments/neovim.nix ./services/dynamic_domain_gandi.nix ];
         };
-        data-storage = mkX86_64 "local-nas" {
+        local-nas = mkX86_64 "local-nas" {
           host = "10.88.127.3";
           extraModules = [ ./users/build.nix ];
         };

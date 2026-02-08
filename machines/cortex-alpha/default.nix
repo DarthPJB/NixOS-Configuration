@@ -6,8 +6,8 @@
 let
   proxyConfigs = {
     "print-controller.johnbargman.net" = "http://10.88.127.30:80";
-    "prometheus.johnbargman.net" = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.data-storage.config.services.prometheus.port}";
-    "grafana.johnbargman.net" = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.data-storage.config.services.grafana.settings.server.http_port}";
+    "prometheus.johnbargman.net" = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.local-nas.config.services.prometheus.port}";
+    "grafana.johnbargman.net" = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.local-nas.config.services.grafana.settings.server.http_port}";
     "ap.johnbargman.net" = "http://10.88.128.2:80";
   };
   peerList = {
@@ -50,7 +50,7 @@ let
   };
   dhcpHosts = {
     "f8:32:e4:b9:77:0d" = { hostname = "alpha-one"; ip = "10.88.128.108"; lease = "infinite"; };
-    "f8:32:e4:b9:77:0b" = { hostname = "data-storage"; ip = "10.88.128.3"; lease = "infinite"; };
+    "f8:32:e4:b9:77:0b" = { hostname = "local-nas"; ip = "10.88.128.3"; lease = "infinite"; };
     "b8:27:eb:7f:f0:38" = { hostname = "print-controller"; ip = "10.88.128.10"; lease = "infinite"; };
     "10:0b:a9:7e:cc:8c" = { hostname = "terminal-zero"; ip = "10.88.128.20"; lease = "infinite"; };
     "f0:de:f1:c7:fe:30" = { hostname = "terminal-zero"; ip = "10.88.128.21"; lease = "infinite"; };
