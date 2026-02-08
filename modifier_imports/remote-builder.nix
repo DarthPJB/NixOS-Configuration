@@ -104,30 +104,6 @@
       hostNames = [ "pompeii" "100.127.177.30" ];
       publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL4FWg5satPAkNLJ0kRFEUi7DFtly4Xb3Yr0kUrrb53d";
     };
-    display-1 = {
-      hostNames = [ "display-1" "10.88.127.41" ];
-      publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOOxb+iAm5nTcC3oRsMIcxcciKRj8VnGpp1JIAdGVTZU root@display-1";
-    };
-    display-2 = {
-      hostNames = [ "display-2" "10.88.127.42" ];
-      publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPcOQZcWlN4XK5OYjI16PM/BWK/8AwKePb1ca/ZRuR1p root@display-2";
-    };
-    remote-builder = {
-      hostNames = [ "remote-builder" "10.88.127.51" "remote-builder.johnbargman.net" ];
-      publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC7Owkd/9PC7j/L5PbPXrSMx0Aw/1owIoCsfp7+5OKek";
-    };
-    remote-worker = {
-      hostNames = [ "remote-worker" "10.88.127.50" "remote-worker.johnbargman.net" ];
-      publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M";
-    };
-    data-storage = {
-      hostNames = [ "dataStorage" "10.88.127.3" "10.88.128.3" ];
-      publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINlCggPwFP5VX3YDA1iji0wxX8+mIzmrCJ1aHj9f1ofx";
-    };
-    nx-01 = {
-      hostNames = [ "terminal-nx-01" "10.88.127.21" ];
-      publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOK07xnXN3O2v4EZ7YUzWSL5O+Uf2vM6+jzxROWzaTD5";
-    };
     hyperhyper = {
       hostNames = [ "hyperhyper" "10.75.79.7" "100.107.101.14" ];
       publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEx7puAmpArf5PXkI5wRFkNwqQiulhHxzeBEVvC52IOH";
