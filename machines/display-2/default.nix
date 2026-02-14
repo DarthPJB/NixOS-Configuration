@@ -21,6 +21,14 @@
     device = "/dev/disk/by-label/NIXOS_SD";
     fsType = "ext4";
   };
+  fileSystems."/home/" = {
+    device = "/dev/disk/by-uuid/db8bd226-b515-466e-af90-48f1629dbacf";
+    fsType = "ext4";
+  };
+
+    swapDevices =
+    [{ device = "/dev/disk/by-uuid/0b69a66b-e675-45bb-becf-9eec8c29ec1f"; }];
+    
   sdImage.compressImage = false;
   #secrix.services.wireguard-wireg0.secrets."${hostname}".encrypted.file = "${self}/secrets/wiregaurd/wg_${hostname}";
   environment.vpn =
@@ -62,9 +70,6 @@
     alsa.support32Bit = true;
     pulse.enable = true;
   };
-
-
-  swapDevices = [{ device = "/swapfile"; size = 1024; }];
   services.openssh.enable = true;
   networking = {
     interfaces."wlan0".useDHCP = true;

@@ -86,18 +86,6 @@
     #      supportedFeatures = [ ]; # "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
     #      mandatoryFeatures = [ ];
     #    }
-    #    {
-    #      hostName = "10.88.127.3"; #"data-storage.local";
-    #      system = "x86_64-linux";
-    #      protocol = "ssh-ng";
-    #      sshUser = "build"; #
-    #      sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
-    #      systems = [ "x86_64-linux" ];
-    #      maxJobs = 2;
-    #      speedFactor = 1;
-    #      supportedFeatures = [ ]; # "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
-    #      mandatoryFeatures = [ ];
-    #    }
   ];
   programs.ssh.knownHosts = {
     pompeii = {

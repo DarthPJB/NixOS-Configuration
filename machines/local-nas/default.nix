@@ -4,6 +4,7 @@
   imports =
     [
       ../../configuration.nix
+      ../../server_services/gitolite.nix
       ./hardware-configuration.nix
       ../../modules/enable-wg.nix
       ../../modifier_imports/zram.nix

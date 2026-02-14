@@ -10,7 +10,7 @@
     #pkgs.emscripten
     #pkgs.pulsar
     #pkgs.upterm
-    #pkgs.platformio
+    pkgs.platformio
     #pkgs.cool-retro-term
     pkgs.nix-top
     pkgs.lite-xl
@@ -36,5 +36,6 @@
     pkgs.rsync
     pkgs.git
     unstable.opencode
+    unstable.crush
   ];
 }

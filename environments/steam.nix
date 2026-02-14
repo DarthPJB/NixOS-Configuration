@@ -1,6 +1,6 @@
-{ config, pkgs, ... }:
+{ config, pkgs, unstable, ... }:
 
 {
   programs.steam.enable = true;
-  environment.systemPackages = [ pkgs.prismlauncher ];
+  environment.systemPackages = [ unstable.prismlauncher  unstable.vintagestory ];
 }
