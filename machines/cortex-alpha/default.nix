@@ -26,6 +26,7 @@ let
     "display-0" = "40";
     "LINDA" = "88";
     "dlyon" = "210";
+    "cluster-box" = "211";
   };
 
   nftableAttrs = {
