@@ -26,6 +26,7 @@ let
     "display-0" = "40";
     "LINDA" = "88";
     "dlyon" = "210";
+    "grimterm" = "212";
     "cluster-box" = "211";
   };
 

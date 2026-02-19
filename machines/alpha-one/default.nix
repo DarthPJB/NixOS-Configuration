@@ -23,6 +23,7 @@
       ../../modifier_imports/cuda.nix
     ];
   services.xserver.videoDrivers = [ "nvidia" ];
+  services.xserver.desktopManager.cinnamon.enable = true;
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -31,7 +32,9 @@
       enable = true;
       postfix = 108;
     };
-
+  environment.systemPackages = with pkgs; [
+    pkgs.moonlight-qt
+  ];
   hardware = {
     sane.enable = true;
     graphics.enable = true;

@@ -42,7 +42,6 @@
         };
     };
 
-
   #    boot.extraModulePackages = [    
   # (config.boot.kernelPackages."rtw88".overrideAttrs (old: {
   #    prePatch = old.prePatch + ''
@@ -134,6 +133,7 @@
       btop
       git
       clinfo
+          pkgs.moonlight-qt
     ];
   };
 
