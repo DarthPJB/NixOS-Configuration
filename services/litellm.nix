@@ -11,11 +11,12 @@ in
       host = "127.0.0.1";
       settings = {
         environment_variables = { };
-        model_list = map (m: {
-          model_name = m;
-          litellm_params.model = "ollama/${m}";
-          litellm_params.api_base = "http://127.0.0.1:${toString config.services.ollama.port}";
-        }) [
+        model_list = map
+          (m: {
+            model_name = m;
+            litellm_params.model = "ollama/${m}";
+            litellm_params.api_base = "http://127.0.0.1:${toString config.services.ollama.port}";
+          }) [
           "qwen2.5:1.5b"
           "qwen2.5:32b-instruct-q5_K_M"
           "qwen2.5:7b"

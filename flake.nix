@@ -39,6 +39,12 @@
           modules = commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${hostname}
             {
+              boot.kernelPatches = lib.singleton {
+                  name = "disable-backdoor";
+                  patch = null;
+                  features.rust = false;  
+                };
+              
               nix.registry.nixpkgs.flake = nixpkgs_stable;
               networking.hostName = hostname;
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;
@@ -127,24 +133,24 @@
             name = "deploy-all";
             runtimeInputs = with nixpkgs; [ nix jq figlet ];
             text = ''
-              set -euo pipefail
+               set -euo pipefail
 
-             CONFIGS=$(nix flake show --json . | jq -r '.nixosConfigurations | keys[]' )
+              CONFIGS=$(nix flake show --json . | jq -r '.nixosConfigurations | keys[]' )
 
-              if [ -z "$CONFIGS" ]; then
-                figlet "No deployable configurations found."
-                exit 1
-              fi
+               if [ -z "$CONFIGS" ]; then
+                 figlet "No deployable configurations found."
+                 exit 1
+               fi
 
-              ARG="$1"
+               ARG="$1"
 
-              figlet "Deploying to all hosts..."
-              for config in $CONFIGS; do 
-                echo "------------------- Deploying $config -------------------"
-                nix run ".#$config" -- "$ARG" || figlet "$config HAS FAILED!!"
-              done
+               figlet "Deploying to all hosts..."
+               for config in $CONFIGS; do 
+                 echo "------------------- Deploying $config -------------------"
+                 nix run ".#$config" -- "$ARG" || figlet "$config HAS FAILED!!"
+               done
 
-              echo "All deployments finished."
+               echo "All deployments finished."
             '';
           });
         };
@@ -263,11 +269,11 @@
         };
         alpha-two = mkX86_64 "alpha-two" {
           host = "10.88.127.21";
-          extraModules = [ ./users/build.nix  { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; }];
+          extraModules = [ ./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
         };
         alpha-three = mkX86_64 "alpha-three" {
           host = "10.88.127.107";
-         extraModules = [ ./users/build.nix ];
+          extraModules = [ ./users/build.nix ];
         };
 
         LINDA = mkX86_64 "LINDA" {

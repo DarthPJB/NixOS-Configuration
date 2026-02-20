@@ -39,7 +39,7 @@
 
     Match LocalPort 22
       DenyUsers *
-  '';
+    '';
   */
 
   services.openssh.listenAddresses = [{

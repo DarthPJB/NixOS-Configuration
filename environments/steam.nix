@@ -2,5 +2,5 @@
 
 {
   programs.steam.enable = true;
-  environment.systemPackages = [ unstable.prismlauncher  unstable.vintagestory ];
+  environment.systemPackages = [ unstable.prismlauncher unstable.vintagestory ];
 }

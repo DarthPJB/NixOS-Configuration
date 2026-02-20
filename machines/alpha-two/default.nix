@@ -133,7 +133,7 @@
       btop
       git
       clinfo
-          pkgs.moonlight-qt
+      pkgs.moonlight-qt
     ];
   };
 
