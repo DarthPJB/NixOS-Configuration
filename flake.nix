@@ -8,6 +8,7 @@
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
     nixinate = { url = "github:DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     secrix.url = "github:Platonic-Systems/secrix";
+ #   secure_pkgs.url = "https://flakehub.com/f/DeterminateSystems/secure/0";
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
@@ -156,7 +157,7 @@
         };
         build-all = {
           type = "app";
-          meta.description = "itsa make the pizza delivery";
+          meta.description = "itsa make the pizzaz early";
           program = lib.getExe (nixpkgs.writeShellApplication {
             name = "build-all";
             runtimeInputs = with nixpkgs; [ nix jq figlet ];
