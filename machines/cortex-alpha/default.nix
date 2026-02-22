@@ -6,6 +6,8 @@
 let
   proxyConfigs = {
     "print-controller.johnbargman.net" = "http://10.88.127.30:80";
+    "code.johnbargman.net" = "http://10.88.127.3:80";
+    "git.johnbargman.net" = "http://10.88.127.3:80";
     "prometheus.johnbargman.net" = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.local-nas.config.services.prometheus.port}";
     "grafana.johnbargman.net" = "http://10.88.127.3:${builtins.toString self.nixosConfigurations.local-nas.config.services.grafana.settings.server.http_port}";
     "ap.johnbargman.net" = "http://10.88.128.2:80";
@@ -196,6 +198,7 @@ in
       interface = "enp3s0";
       address = [
         "/git.johnbargman.net/10.88.128.1"
+        "/code.johnbargman.net/10.88.128.1"
         "/${config.networking.hostName}.johnbargman.net/10.88.128.1"
         "/ap.johnbargman.net/10.88.128.1"
         "/prometheus.johnbargman.net/10.88.128.1"

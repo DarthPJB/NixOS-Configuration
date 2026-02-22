@@ -20,7 +20,10 @@
         PasswordAuthentication = no
     '';
   };
-
+  systemd.tmpfiles.rules = [
+    "d /tmp/deploy 0755 deploy deploy -"
+    "Z /tmp/deploy 0755 deploy deploy - -"
+  ];
   security.sudo.extraRules = [
     {
       users = [ "deploy" ];
