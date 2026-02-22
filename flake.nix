@@ -8,7 +8,7 @@
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
     nixinate = { url = "github:DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     secrix.url = "github:Platonic-Systems/secrix";
- #   secure_pkgs.url = "https://flakehub.com/f/DeterminateSystems/secure/0";
+    #   secure_pkgs.url = "https://flakehub.com/f/DeterminateSystems/secure/0";
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
@@ -41,11 +41,11 @@
             ./machines/${hostname}
             {
               boot.kernelPatches = lib.singleton {
-                  name = "disable-backdoor";
-                  patch = null;
-                  features.rust = false;  
-                };
-              
+                name = "disable-backdoor";
+                patch = null;
+                features.rust = false;
+              };
+
               nix.registry.nixpkgs.flake = nixpkgs_stable;
               networking.hostName = hostname;
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;
