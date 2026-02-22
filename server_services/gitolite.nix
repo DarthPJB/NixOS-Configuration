@@ -96,7 +96,14 @@
               uwsgi_read_timeout 600;
             '';
           };
-
+          # Serve all static files under /cgit-static/
+          "/cgit-static/" = {
+            alias = "${pkgs.cgit}/cgit/";
+            extraConfig = ''
+              expires 30d;
+              add_header Cache-Control "public";
+            '';
+          };
           # Optional: serve git smart-http (git clone http://...)
           "~ ^/(.*/(HEAD|info/refs|objects|git-upload-pack))$" = {
             extraConfig = ''
@@ -114,6 +121,7 @@
       };
     };
   };
+
   systemd.services.create-cgit-cache = {
     description = "Create cache directory for cgit";
     enable = true;
@@ -130,7 +138,9 @@
 
   environment.etc."cgitrc".text = ''
     virtual-root=/
-
+    css=/cgit-static/cgit.css
+    favicon=/cgit-static/favicon.ico
+    logo=/cgit-static/cgit.png
     cache-size=1000
     cache-root=/bulk-storage/cgit
 
