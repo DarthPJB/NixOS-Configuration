@@ -16,7 +16,7 @@
       pkgs.cudaPackages.cudatoolkit
       #pkgs.cudaPackages.cudnn
       # pkgs.cudaPackages.cutensor
-      pkgs.ollama
+      un_pkgs.ollama-cuda
       (pkgs.llama-cpp.override { cudaSupport = true; })
       (pkgs.colmap.override { cudaSupport = true; })
       (pkgs.blender.override { cudaSupport = true; })

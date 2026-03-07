@@ -14,7 +14,8 @@
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nix-mcp-servers.url = "github:cameronfyfe/nix-mcp-servers";
     nixos-hardware.url = "github:nixos/nixos-hardware";
-  };
+    hype-train-claw.url = "git@github.com:marijanp/zeroclaw.git";
+};
   outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, parsecgaming, secrix }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
