@@ -14,9 +14,9 @@
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nix-mcp-servers.url = "github:cameronfyfe/nix-mcp-servers";
     nixos-hardware.url = "github:nixos/nixos-hardware";
-    hype-train-claw.url = "git@github.com:marijanp/zeroclaw.git";
-};
-  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, parsecgaming, secrix }:
+    hype-train-claw.url = "github:marijanp/zeroclaw";
+  };
+  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, parsecgaming, secrix, hype-train-claw }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
@@ -283,7 +283,12 @@
           buildOn = "remote";
           extraModules = [ ./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
         };
-
+        gaming-host-1 = mkX86_64 "gaming-host-1" {
+          host = "65.108.141.32";
+          sshUser = "John88";
+          sshPort = 22;
+          extraModules = [ ];
+        };
         remote-worker = mkX86_64 "remote-worker" {
           host = "10.88.127.50";
           extraModules = [ ./users/build.nix ];

@@ -80,6 +80,7 @@ in
               "10.88.127.40:${toString self.nixosConfigurations.display-0.config.services.prometheus.exporters.node.port}"
               "10.88.127.50:${toString self.nixosConfigurations.remote-worker.config.services.prometheus.exporters.node.port}"
               "10.88.127.51:${toString self.nixosConfigurations.remote-builder.config.services.prometheus.exporters.node.port}"
+              "10.88.127.52:${toString self.nixosConfigurations.remote-builder.config.services.prometheus.exporters.node.port}"
               "10.88.127.88:${toString self.nixosConfigurations.LINDA.config.services.prometheus.exporters.node.port}"
               "10.88.127.41:${toString self.nixosConfigurations.display-1.config.services.prometheus.exporters.node.port}"
               "10.88.127.108:${toString self.nixosConfigurations.display-1.config.services.prometheus.exporters.node.port}"

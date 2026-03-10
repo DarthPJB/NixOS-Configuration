@@ -1,4 +1,4 @@
-{ config, pkgs, self, ... }:
+{ config, pkgs, self, un_pkgs, ... }:
 {
   networking.firewall.interfaces."wireg0".allowedTCPPorts = [ config.services.prometheus.exporters.nvidia-gpu.port ];
   services.prometheus = {

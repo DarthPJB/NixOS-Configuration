@@ -21,6 +21,7 @@ let
     "local-nas" = "3";
     "print-controller" = "30";
     "remote-builder" = "51";
+    "gaming-host-1" = "52";
     "remote-worker" = "50";
     "storage-array" = "4";
     "terminal-zero" = "20";
