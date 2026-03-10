@@ -284,9 +284,9 @@
           extraModules = [ ./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
         };
         gaming-host-1 = mkX86_64 "gaming-host-1" {
-          host = "65.108.141.32";
-          sshUser = "John88";
-          sshPort = 22;
+          host = "10.88.127.52";
+          #sshUser = "John88";
+          #sshPort = 22;
           extraModules = [ ];
         };
         remote-worker = mkX86_64 "remote-worker" {

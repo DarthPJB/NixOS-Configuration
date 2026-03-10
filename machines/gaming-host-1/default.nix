@@ -6,6 +6,7 @@
       ./hardware-configuration.nix
       ../../services/dynamic_domain_gandi.nix
       ../../modules/enable-wg.nix
+      ../../server_services/game_servers/space-engineers.nix
     ];
   environment.vpn =
     {
@@ -13,13 +14,14 @@
       postfix = 52;
       # privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
     };
-
+services.space-engineers-servers.enable = true;
   # Use the GRUB 2 boot loader.
   boot.loader.grub.enable = true;
   boot.loader.grub.device = "/dev/nvme0n1"; # or "nodev" for efi only
 
-  # Configure network connections interactively with nmcli or nmtui.
-  #networking.networkmanager.enable = true
-
+  environment.systemPackages = with pkgs;
+  [
+    pkgs.steamcmd
+  ];
 }
 
