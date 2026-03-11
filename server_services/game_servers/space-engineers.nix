@@ -30,13 +30,28 @@ in
       description = "Directory to store game server";
       default = "/bulk-storage/spaceengineers";
     };
-
+    
+    gameDataDir = mkOption {
+      type = types.path;
+      description = "Directory to store game server";
+      default = "/bulk-storage/server/SE-${cfg.serverName}";
+    };
+    
     launchOptions = mkOption {
       type = types.str;
       description = "Launch options to use.";
-      default = "";
+      default = "-console";
     };
-
+    serverName = mkOption {
+      type = types.str;
+      default = "SpaceEngineers";
+      description = "Server instance name for log/save paths";
+    };
+    worldName = mkOption {
+      type = types.str;
+      default = "Survival";
+      description = "World name for log init";
+    };
     openFirewall = mkOption {
       type = types.bool;
       default = false;
@@ -56,13 +71,14 @@ in
           name = "SE-Dedicated";
           runtimeInputs = [ pkgs.python3 ];
           text = ''
+            set -x
             # SteamCMD layout (this is what actually gets created)
             export STEAM_COMPAT_CLIENT_INSTALL_PATH="${cfg.dataDir}"
             export STEAM_COMPAT_DATA_PATH="${cfg.dataDir}/steamapps/compatdata/${builtins.toString cfg.gameID}"
 
             # Proton Experimental (installed by the second app_update)
             PROTON="${cfg.dataDir}/proton-experimental/proton"
-
+            mkdir -p ${cfg.gameDataDir}
             # Make sure the prefix directory exists (Proton will initialize it on first run)
             ${getExe' pkgs.coreutils "mkdir"} -p "$STEAM_COMPAT_DATA_PATH"
 
@@ -74,7 +90,9 @@ in
             # Add -console if you want console mode (recommended for headless)
             exec ${steamRun} "$PROTON" waitforexitandrun \
               "${cfg.dataDir}/DedicatedServer64/SpaceEngineersDedicated.exe" \
-              ${cfg.launchOptions}
+              "-path \"Z:\\\\bulk-storage\\\\server\\\\SE-${cfg.serverName}\"" \
+              "${config.services.space-engineers-servers.serverName}" \
+              ${cfg.launchOptions} -worldName "${config.services.space-engineers-servers.worldName}"
           '';
         };
       in
@@ -89,14 +107,21 @@ in
           #Restart = "always";
           User = "spaceengineers";
           WorkingDirectory = cfg.dataDir;
+          Environment = [
+            "STEAM_COMPAT_DATA_PATH=${cfg.dataDir}/steamapps/compatdata/${builtins.toString cfg.gameID}"
+            "PROTON_CONTENT_DIR=${cfg.dataDir}"
+            "WINEPREFIX=${cfg.dataDir}/steamapps/compatdata/${builtins.toString cfg.gameID}/pfx"
+          ];
+
+          preStart = ''
+            ${steamcmd} +force_install_dir "${cfg.dataDir}" +login anonymous +app_update ${builtins.toString cfg.gameID} validate +quit  #SE-game-files
+            ${steamcmd} +force_install_dir "${cfg.dataDir}/proton-experimental/" +login anonymous +app_update 1493710 validate +quit #Proton-Game-Files
+          '';
         };
-
-        preStart = ''
-          ${steamcmd} +force_install_dir "${cfg.dataDir}" +login anonymous +app_update ${builtins.toString cfg.gameID} validate +quit  #SE-game-files
-          ${steamcmd} +force_install_dir "${cfg.dataDir}/proton-experimental/" +login anonymous +app_update 1493710 validate +quit #Proton-Game-Files
-        '';
       };
-
+    systemd.tmpfiles.rules = [
+      "d ${cfg.gameDataDir} 0755 spaceengineers spaceengineers -"
+    ];
     users.users.spaceengineers = {
       description = "Space Engineers server service user";
       home = cfg.dataDir;

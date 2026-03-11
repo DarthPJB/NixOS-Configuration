@@ -14,10 +14,11 @@
       postfix = 52;
       # privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
     };
-  services.space-engineers-servers = 
-  {
+  services.space-engineers-servers = {
     enable = true;
-    launchOptions = "-console";
+    serverName = "ElTanko-Online-1";
+    worldName = "DefaultSurvival";
+    openFirewall = true;
   };
   # Use the GRUB 2 boot loader.
   boot.loader.grub.enable = true;
