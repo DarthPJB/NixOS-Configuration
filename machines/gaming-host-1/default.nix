@@ -14,14 +14,18 @@
       postfix = 52;
       # privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
     };
-services.space-engineers-servers.enable = true;
+  services.space-engineers-servers = 
+  {
+    enable = true;
+    launchOptions = "-console";
+  };
   # Use the GRUB 2 boot loader.
   boot.loader.grub.enable = true;
   boot.loader.grub.device = "/dev/nvme0n1"; # or "nodev" for efi only
 
   environment.systemPackages = with pkgs;
-  [
-    pkgs.steamcmd
-  ];
+    [
+      pkgs.steamcmd
+    ];
 }
 

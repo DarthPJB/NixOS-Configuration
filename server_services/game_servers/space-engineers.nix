@@ -1,12 +1,12 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
+{ config
+, lib
+, pkgs
+, ...
 }:
 with lib; let
   cfg = config.services.space-engineers-servers;
-in {
+in
+{
   options.services.space-engineers-servers = {
     enable = mkEnableOption "Space Engineers Dedicated Server";
 
@@ -17,6 +17,12 @@ in {
       description = ''
         The package implementing SteamCMD
       '';
+    };
+
+    gameID = mkOption {
+      type = types.int;
+      description = "gameID";
+      default = 298740;
     };
 
     dataDir = mkOption {
@@ -41,26 +47,55 @@ in {
   };
 
   config = mkIf cfg.enable {
-    systemd.services.space-engineers-servers = let
-      steamcmd = "${cfg.steamcmdPackage}/bin/steamcmd";
-      steam-run = "${pkgs.steam-run}/bin/steam-run";
-    in {
-      description = "Space Engineers Dedicated Server";
-      wantedBy = ["multi-user.target"];
-      after = ["network.target"];
+    systemd.services.space-engineers-servers =
+      let
+        steamcmd = "${cfg.steamcmdPackage}/bin/steamcmd";
+        steamRun = "${lib.getExe pkgs.steam-run}";
+        goscript = pkgs.writeShellApplication {
+          meta.description = "launch SE dedicated server using Proton";
+          name = "SE-Dedicated";
+          runtimeInputs = [ pkgs.python3 ];
+          text = ''
+            # SteamCMD layout (this is what actually gets created)
+            export STEAM_COMPAT_CLIENT_INSTALL_PATH="${cfg.dataDir}"
+            export STEAM_COMPAT_DATA_PATH="${cfg.dataDir}/steamapps/compatdata/${builtins.toString cfg.gameID}"
 
-      serviceConfig = {
-        TimeoutSec = "15min";
-        ExecStart = "${getExe' pkgs.coreutils "echo"} ${steam-run} ${cfg.dataDir}/FactoryServer.sh ${cfg.launchOptions}";
-        #Restart = "always";
-        User = "spaceengineers";
-        WorkingDirectory = cfg.dataDir;
+            # Proton Experimental (installed by the second app_update)
+            PROTON="${cfg.dataDir}/proton-experimental/proton"
+
+            # Make sure the prefix directory exists (Proton will initialize it on first run)
+            ${getExe' pkgs.coreutils "mkdir"} -p "$STEAM_COMPAT_DATA_PATH"
+
+            echo "=== Starting Space Engineers Dedicated Server with Proton ==="
+            echo "Prefix: $STEAM_COMPAT_DATA_PATH"
+            echo "Proton: $PROTON"
+
+            # Use waitforexitandrun (standard for servers) + your launchOptions
+            # Add -console if you want console mode (recommended for headless)
+            exec ${steamRun} "$PROTON" waitforexitandrun \
+              "${cfg.dataDir}/DedicatedServer64/SpaceEngineersDedicated.exe" \
+              ${cfg.launchOptions}
+          '';
+        };
+      in
+      {
+        description = "Space Engineers Dedicated Server";
+        wantedBy = [ "multi-user.target" ];
+        after = [ "network.target" ];
+
+        serviceConfig = {
+          TimeoutSec = "15min";
+          ExecStart = lib.getExe goscript;
+          #Restart = "always";
+          User = "spaceengineers";
+          WorkingDirectory = cfg.dataDir;
+        };
+
+        preStart = ''
+          ${steamcmd} +force_install_dir "${cfg.dataDir}" +login anonymous +app_update ${builtins.toString cfg.gameID} validate +quit  #SE-game-files
+          ${steamcmd} +force_install_dir "${cfg.dataDir}/proton-experimental/" +login anonymous +app_update 1493710 validate +quit #Proton-Game-Files
+        '';
       };
-
-      preStart = ''
-        ${steamcmd} +force_install_dir "${cfg.dataDir}" +login anonymous +app_update 298740 validate +quit
-      '';
-    };
 
     users.users.spaceengineers = {
       description = "Space Engineers server service user";
@@ -69,7 +104,7 @@ in {
       isSystemUser = true;
       group = "spaceengineers";
     };
-    users.groups.spaceengineers = {};
+    users.groups.spaceengineers = { };
 
     networking.firewall = mkIf cfg.openFirewall {
       allowedTCPPorts = [

@@ -253,10 +253,10 @@
           ];
         };
 
-      #  local-worker = mkX86_64 "local-worker" {
-      #    host = "10.88.127.89";
-      #    extraModules = [ "${nixpkgs_stable}/nixos/modules/virtualisation/libvirtd.nix" ];
-      #  };
+        #  local-worker = mkX86_64 "local-worker" {
+        #    host = "10.88.127.89";
+        #    extraModules = [ "${nixpkgs_stable}/nixos/modules/virtualisation/libvirtd.nix" ];
+        #  };
 
         cortex-alpha = mkX86_64 "cortex-alpha" {
           host = "10.88.127.1";
