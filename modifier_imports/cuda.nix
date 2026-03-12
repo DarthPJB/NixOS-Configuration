@@ -1,4 +1,4 @@
-{ config, pkgs, self, ... }:
+{ config, pkgs, unstable, self, ... }:
 {
   networking.firewall.interfaces."wireg0".allowedTCPPorts = [ config.services.prometheus.exporters.nvidia-gpu.port ];
   services.prometheus = {
@@ -8,16 +8,13 @@
     };
   };
   environment.systemPackages =
-    let
-      pkgs_un = self.un_pkgs;
-    in
     [
       pkgs.nvtopPackages.full
       pkgs.cudaPackages.cudatoolkit
       #pkgs.cudaPackages.cudnn
       # pkgs.cudaPackages.cutensor
-      pkgs_un.ollama-cuda
-      (pkgs.llama-cpp.override { cudaSupport = true; })
+      unstable.ollama-cuda
+      (unstable.llama-cpp.override { cudaSupport = true; })
       (pkgs.colmap.override { cudaSupport = true; })
       (pkgs.blender.override { cudaSupport = true; })
     ];

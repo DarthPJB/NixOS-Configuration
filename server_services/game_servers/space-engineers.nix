@@ -69,19 +69,23 @@ in
         goscript = pkgs.writeShellApplication {
           meta.description = "launch SE dedicated server using Proton";
           name = "SE-Dedicated";
-          runtimeInputs = [ pkgs.python3 ];
+          runtimeInputs = [ pkgs.python3 pkgs.protontricks ];
           text = ''
             set -x
             # SteamCMD layout (this is what actually gets created)
+            export WINEDEBUG=-all
+            export PROTON_USE_WINED3D=1
             export STEAM_COMPAT_CLIENT_INSTALL_PATH="${cfg.dataDir}"
             export STEAM_COMPAT_DATA_PATH="${cfg.dataDir}/steamapps/compatdata/${builtins.toString cfg.gameID}"
-
-            # Proton Experimental (installed by the second app_update)
-            PROTON="${cfg.dataDir}/proton-experimental/proton"
+            export PROTON_CONTENT_DIR="${cfg.dataDir}"
+            export WINEPREFIX="${cfg.dataDir}/steamapps/compatdata/${builtins.toString cfg.gameID}/pfx"
+            export PROTON="${cfg.dataDir}/proton-experimental/proton"
             mkdir -p ${cfg.gameDataDir}
             # Make sure the prefix directory exists (Proton will initialize it on first run)
             ${getExe' pkgs.coreutils "mkdir"} -p "$STEAM_COMPAT_DATA_PATH"
 
+
+            
             echo "=== Starting Space Engineers Dedicated Server with Proton ==="
             echo "Prefix: $STEAM_COMPAT_DATA_PATH"
             echo "Proton: $PROTON"
@@ -93,6 +97,7 @@ in
               "-path \"Z:\\\\bulk-storage\\\\server\\\\SE-${cfg.serverName}\"" \
               "${config.services.space-engineers-servers.serverName}" \
               ${cfg.launchOptions} -worldName "${config.services.space-engineers-servers.worldName}"
+
           '';
         };
       in
@@ -107,15 +112,19 @@ in
           #Restart = "always";
           User = "spaceengineers";
           WorkingDirectory = cfg.dataDir;
-          Environment = [
-            "STEAM_COMPAT_DATA_PATH=${cfg.dataDir}/steamapps/compatdata/${builtins.toString cfg.gameID}"
-            "PROTON_CONTENT_DIR=${cfg.dataDir}"
-            "WINEPREFIX=${cfg.dataDir}/steamapps/compatdata/${builtins.toString cfg.gameID}/pfx"
-          ];
 
           preStart = ''
-            ${steamcmd} +force_install_dir "${cfg.dataDir}" +login anonymous +app_update ${builtins.toString cfg.gameID} validate +quit  #SE-game-files
-            ${steamcmd} +force_install_dir "${cfg.dataDir}/proton-experimental/" +login anonymous +app_update 1493710 validate +quit #Proton-Game-Files
+            set -x
+            
+            PFX="${cfg.dataDir}/steamapps/compatdata/${builtins.toString cfg.gameID}/pfx"
+            ${lib.getExe pkgs.protontricks} --no-runtime ${builtins.toString cfg.gameID} prefixcreate || true
+            # Install dependencies 
+            ${lib.getExe pkgs.protontricks} ${builtins.toString cfg.gameID} dotnet48 vcrun2013 vcrun2017 || true
+
+            ${getExe' pkgs.coreutils "chown"} -R spaceengineers:spaceengineers /bulk-storage/spaceengineers
+
+            ${steamcmd} +force_install_dir "${cfg.dataDir}" +login anonymous +app_update ${builtins.toString cfg.gameID} validate +quit
+            ${steamcmd} +force_install_dir "${cfg.dataDir}/proton-experimental/" +login anonymous +app_update 1493710 validate +quit
           '';
         };
       };

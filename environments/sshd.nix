@@ -3,12 +3,6 @@
 {
 
   systemd.sockets.sshd = {
-    # This is the key part: make sshd *always* restart, no matter why it died
-    socketConfig = {
-      Restart = "always"; # restart on any exit (clean or crash)
-      RestartSec = "60"; # wait 1 minute between restarts
-    };
-
     # make sure it never gives up; burn the freaking CPU down with failures; at this point it's life or death.
     upheldBy = [ "sockets.target" ];
     after = [ "wiregaurd-wireg0.target" ];
