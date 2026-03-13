@@ -185,10 +185,10 @@
       };
 
       packages = {
-        "x86_64-linux".local-worker-image = mkLibVirtImage {
-          config = self.nixosConfigurations.local-worker.config;
-          name = "local-worker-image";
-        };
+#        "x86_64-linux".local-worker-image = mkLibVirtImage {
+#          config = self.nixosConfigurations.local-worker.config;
+#          name = "local-worker-image";
+#        };
         "aarch64-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.print-controller
           self.nixosConfigurations.display-0

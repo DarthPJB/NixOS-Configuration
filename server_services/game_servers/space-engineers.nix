@@ -19,6 +19,19 @@ in
       '';
     };
 
+    winePackage = mkOption {
+      type = types.package;
+      description = "Wine package to use";
+      default = pkgs.winePackages.staging;
+      defaultText = "pkgs.winePackages.staging";
+    };
+
+    winetricksPackage = mkOption {
+      type = types.package;
+      default = pkgs.winetricks;
+      description = "Winetricks package";
+    };
+
     gameID = mkOption {
       type = types.int;
       description = "gameID";
@@ -30,27 +43,27 @@ in
       description = "Directory to store game server";
       default = "/bulk-storage/spaceengineers";
     };
-    
+
     gameDataDir = mkOption {
       type = types.path;
-      description = "Directory to store game server";
-      default = "/bulk-storage/server/SE-${cfg.serverName}";
+      description = "Directory for game instance data";
+      default = "/bulk-storage/spaceengineers/instances/${cfg.serverName}";
     };
-    
+
     launchOptions = mkOption {
       type = types.str;
       description = "Launch options to use.";
-      default = "-console";
+      default = "-console -noconsole";
     };
     serverName = mkOption {
       type = types.str;
       default = "SpaceEngineers";
-      description = "Server instance name for log/save paths";
+      description = "Server instance name";
     };
     worldName = mkOption {
       type = types.str;
       default = "Survival";
-      description = "World name for log init";
+      description = "World name";
     };
     openFirewall = mkOption {
       type = types.bool;
@@ -65,39 +78,109 @@ in
     systemd.services.space-engineers-servers =
       let
         steamcmd = "${cfg.steamcmdPackage}/bin/steamcmd";
-        steamRun = "${lib.getExe pkgs.steam-run}";
+        wine = "${cfg.winePackage}/bin/wine";
+        wine64 = "${cfg.winePackage}/bin/wine64";
+        winetricks = "${cfg.winetricksPackage}/bin/winetricks";
         goscript = pkgs.writeShellApplication {
-          meta.description = "launch SE dedicated server using Proton";
+          meta.description = "launch SE dedicated server using Wine";
           name = "SE-Dedicated";
-          runtimeInputs = [ pkgs.python3 pkgs.protontricks ];
+          runtimeInputs = [
+            pkgs.python3
+            pkgs.xorg.xvfb
+            pkgs.cabextract
+            pkgs.winePackages.staging
+            pkgs.winetricks
+          ];
           text = ''
             set -x
-            # SteamCMD layout (this is what actually gets created)
+
+            GAME_DIR="${cfg.dataDir}/SpaceEngineersDedicated"
+            INSTANCE_DIR="${cfg.gameDataDir}"
+            PREFIX="${cfg.dataDir}/wineprefix"
+            export STEAMCMD_DIR="${cfg.dataDir}/steamcmd"
+
+            mkdir -p "$INSTANCE_DIR"
+            mkdir -p "$PREFIX"
+
+            echo "=== Installing game files ==="
+            ${steamcmd} +force_install_dir ''${GAME_DIR} +login anonymous +@sSteamCmdForcePlatformType windows +app_update ${toString cfg.gameID} validate +quit
+
+            echo "=== Checking wine prefix ==="
+            export WINEARCH=win64
             export WINEDEBUG=-all
-            export PROTON_USE_WINED3D=1
-            export STEAM_COMPAT_CLIENT_INSTALL_PATH="${cfg.dataDir}"
-            export STEAM_COMPAT_DATA_PATH="${cfg.dataDir}/steamapps/compatdata/${builtins.toString cfg.gameID}"
-            export PROTON_CONTENT_DIR="${cfg.dataDir}"
-            export WINEPREFIX="${cfg.dataDir}/steamapps/compatdata/${builtins.toString cfg.gameID}/pfx"
-            export PROTON="${cfg.dataDir}/proton-experimental/proton"
-            mkdir -p ${cfg.gameDataDir}
-            # Make sure the prefix directory exists (Proton will initialize it on first run)
-            ${getExe' pkgs.coreutils "mkdir"} -p "$STEAM_COMPAT_DATA_PATH"
+            export WINEPREFIX="$PREFIX"
 
+            if [ -d "$PREFIX" ]; then
+              echo "Removing old wine prefix..."
+              rm -rf "$PREFIX"
+            fi
 
-            
-            echo "=== Starting Space Engineers Dedicated Server with Proton ==="
-            echo "Prefix: $STEAM_COMPAT_DATA_PATH"
-            echo "Proton: $PROTON"
+            echo "Initializing wine prefix..."
+            export DISPLAY=:5
 
-            # Use waitforexitandrun (standard for servers) + your launchOptions
-            # Add -console if you want console mode (recommended for headless)
-            exec ${steamRun} "$PROTON" waitforexitandrun \
-              "${cfg.dataDir}/DedicatedServer64/SpaceEngineersDedicated.exe" \
-              "-path \"Z:\\\\bulk-storage\\\\server\\\\SE-${cfg.serverName}\"" \
-              "${config.services.space-engineers-servers.serverName}" \
-              ${cfg.launchOptions} -worldName "${config.services.space-engineers-servers.worldName}"
+            Xvfb :5 -screen 0 1024x768x16 &
+            XVFB_PID=$!
+            sleep 1
 
+            wineboot --init /nogui
+            winecfg -v win10
+
+            kill $XVFB_PID 2>/dev/null || true
+
+            echo "=== Installing winetricks dependencies ==="
+            export WINEARCH=win64
+            export WINEDEBUG=-all
+            export WINEPREFIX="$PREFIX"
+            export DISPLAY=:5
+
+            if [ ! -f "$PREFIX/.winetricks_done" ]; then
+              Xvfb :5 -screen 0 1024x768x16 &
+              XVFB_PID=$!
+              sleep 1
+
+              ${winetricks} corefonts
+              ${winetricks} sound=disabled
+              ${winetricks} -q vcrun2019
+              ${winetricks} -q --force dotnet48
+
+              touch "$PREFIX/.winetricks_done"
+
+              kill $XVFB_PID 2>/dev/null || true
+            fi
+
+            echo "=== Creating config ==="
+            mkdir -p "$INSTANCE_DIR"
+            cat > "$INSTANCE_DIR/SpaceEngineers-Dedicated.cfg" << CFGEOF
+<?xml version="1.0"?>
+<MyConfigDedicated>
+  <ServerName>${cfg.serverName}</ServerName>
+  <WorldName>${cfg.worldName}</WorldName>
+  <GameMode>SURVIVAL</GameMode>
+  <MaxPlayers>8</MaxPlayers>
+  <Port>27016</Port>
+  <IP>0.0.0.0</IP>
+  <Ping>0</Ping>
+  <OnlineMode>PUBLIC</OnlineMode>
+  <AutoRestart>true</AutoRestart>
+  <LoadWorld />
+</MyConfigDedicated>
+CFGEOF
+
+            chown -R spaceengineers:spaceengineers "${cfg.dataDir}"
+
+            echo "=== Starting Space Engineers Dedicated Server ==="
+            echo "Game dir: $GAME_DIR"
+            echo "Instance dir: $INSTANCE_DIR"
+            echo "Prefix: $PREFIX"
+
+            export WINEARCH=win64
+            export WINEDEBUG=-all
+            export WINEPREFIX="$PREFIX"
+
+            WINE_PATH="Z:\\\\${lib.strings.replaceStrings ["/"] ["\\\\"] cfg.dataDir}\\\\${lib.strings.replaceStrings ["/"] ["\\\\"] cfg.serverName}"
+            exec ${wine64} "$GAME_DIR/DedicatedServer64/SpaceEngineersDedicated.exe" \
+              -path "$WINE_PATH" \
+              ${cfg.launchOptions}
           '';
         };
       in
@@ -109,26 +192,18 @@ in
         serviceConfig = {
           TimeoutSec = "15min";
           ExecStart = lib.getExe goscript;
-          #Restart = "always";
           User = "spaceengineers";
           WorkingDirectory = cfg.dataDir;
-
-          preStart = ''
-            set -x
-            
-            PFX="${cfg.dataDir}/steamapps/compatdata/${builtins.toString cfg.gameID}/pfx"
-            ${lib.getExe pkgs.protontricks} --no-runtime ${builtins.toString cfg.gameID} prefixcreate || true
-            # Install dependencies 
-            ${lib.getExe pkgs.protontricks} ${builtins.toString cfg.gameID} dotnet48 vcrun2013 vcrun2017 || true
-
-            ${getExe' pkgs.coreutils "chown"} -R spaceengineers:spaceengineers /bulk-storage/spaceengineers
-
-            ${steamcmd} +force_install_dir "${cfg.dataDir}" +login anonymous +app_update ${builtins.toString cfg.gameID} validate +quit
-            ${steamcmd} +force_install_dir "${cfg.dataDir}/proton-experimental/" +login anonymous +app_update 1493710 validate +quit
-          '';
+          Environment = [
+            "WINEARCH=win64"
+            "WINEDEBUG=-all"
+          ];
         };
       };
     systemd.tmpfiles.rules = [
+      "d ${cfg.dataDir} 0755 spaceengineers spaceengineers -"
+      "d ${cfg.dataDir}/steamcmd 0755 spaceengineers spaceengineers -"
+      "d ${cfg.dataDir}/wineprefix 0755 spaceengineers spaceengineers -"
       "d ${cfg.gameDataDir} 0755 spaceengineers spaceengineers -"
     ];
     users.users.spaceengineers = {

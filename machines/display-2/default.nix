@@ -21,7 +21,7 @@
     device = "/dev/disk/by-label/NIXOS_SD";
     fsType = "ext4";
   };
-  fileSystems."/home/" = {
+  fileSystems."/home" = {
     device = "/dev/disk/by-uuid/db8bd226-b515-466e-af90-48f1629dbacf";
     fsType = "ext4";
   };
