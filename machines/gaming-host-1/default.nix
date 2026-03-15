@@ -14,19 +14,21 @@
       postfix = 52;
       # privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
     };
-  services.space-engineers-servers = {
+  virtualisation.docker.enable = true;
+  services.space-engineers-docker = {
     enable = true;
-    serverName = "ElTanko-Online-1";
-    worldName = "DefaultSurvival";
+    instanceName = "TanklesFinal";
+    worldName = "Moon Base Hard";
+#    gameMode = "SURVIVAL";
+    publicIP = "65.108.141.32";
     openFirewall = true;
   };
+
+  #users.users.deploy.openssh.authorizedKeys = [ "" ];
   # Use the GRUB 2 boot loader.
   boot.loader.grub.enable = true;
   boot.loader.grub.device = "/dev/nvme0n1"; # or "nodev" for efi only
 
-  environment.systemPackages = with pkgs;
-    [
-      pkgs.steamcmd
-    ];
+  environment.systemPackages = with pkgs; [ ];
 }
 
