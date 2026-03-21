@@ -2,6 +2,7 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
+    carmelsite = { url = "git+ssh://git@gitlab.platonic.systems/john.bargman/carmelsite"; flake = false;};
     deadnix = { url = "github:astro/deadnix"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     hyprland.url = "github:hyprwm/Hyprland";
     lint-utils = { url = "github:homotopic/lint-utils"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
@@ -16,7 +17,7 @@
     nixos-hardware.url = "github:nixos/nixos-hardware";
     hype-train-claw.url = "github:marijanp/zeroclaw";
   };
-  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, parsecgaming, secrix, hype-train-claw }:
+  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, parsecgaming, secrix, hype-train-claw, carmelsite }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
@@ -260,7 +261,8 @@
 
         cortex-alpha = mkX86_64 "cortex-alpha" {
           host = "10.88.127.1";
-          extraModules = [ ./environments/neovim.nix ./services/dynamic_domain_gandi.nix ];
+          extraModules = [ ./environments/neovim.nix ./services/dynamic_domain_gandi.nix 
+         ];
         };
         local-nas = mkX86_64 "local-nas" {
           host = "10.88.127.3";
@@ -291,7 +293,23 @@
         };
         remote-worker = mkX86_64 "remote-worker" {
           host = "10.88.127.50";
-          extraModules = [ ./users/build.nix ];
+          extraModules = [ ./users/build.nix 
+           {
+            services.nginx = {
+              enable = true;
+                virtualHosts."carmel-staging.johnbargman.net" = {
+                  useACMEHost = "johnbargman.net";
+                  forceSSL = true;
+                  listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #TODO: handle this assignment in a fixed fashion 82.5.173.252
+                  locations."/" = {
+                    root = carmelsite;
+                    #proxyWebsockets = false; # needed if you need to use websocket
+                  };
+                };
+              };
+          }
+          ];
+          
         };
         storage-array = mkX86_64 "storage-array" {
           host = "10.88.127.4";

@@ -67,7 +67,7 @@
   networking.hostId = "e3fabb5b";
   #networking.hostName = "remote-worker";
 
-  networking.firewall.allowedTCPPorts = [ 3105 3106 ];
+  networking.firewall.allowedTCPPorts = [ 3105 3106 80 443];
 
   services.prometheus.exporters.nginx = {
     enable = true;

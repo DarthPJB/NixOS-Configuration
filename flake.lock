@@ -33,6 +33,22 @@
         "type": "github"
       }
     },
+    "carmelsite": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1773671739,
+        "narHash": "sha256-3dj7CSSRYZ04PStnv8UrRW/TtfDv5tYqinOQQ03qDww=",
+        "ref": "refs/heads/main",
+        "rev": "f6d87095abfe4e1419cfccc098cdc71ea338feb2",
+        "revCount": 1,
+        "type": "git",
+        "url": "ssh://git@gitlab.platonic.systems/john.bargman/carmelsite"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@gitlab.platonic.systems/john.bargman/carmelsite"
+      }
+    },
     "deadnix": {
       "inputs": {
         "nixpkgs": [
@@ -875,12 +891,12 @@
     },
     "nixpkgs_unstable": {
       "locked": {
-        "lastModified": 1772956932,
-        "narHash": "sha256-M0yS4AafhKxPPmOHGqIV0iKxgNO8bHDWdl1kOwGBwRY=",
-        "rev": "608d0cadfed240589a7eea422407a547ad626a14",
-        "revCount": 960315,
+        "lastModified": 1773597492,
+        "narHash": "sha256-hQ284SkIeNaeyud+LS0WVLX+WL2rxcVZLFEaK0e03zg=",
+        "rev": "a07d4ce6bee67d7c838a8a5796e75dff9caa21ef",
+        "revCount": 963717,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/nixpkgs-weekly/0.1.960315%2Brev-608d0cadfed240589a7eea422407a547ad626a14/019cd648-bb3d-7f0c-9d1f-91eaf7028e55/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/nixpkgs-weekly/0.1.963717%2Brev-a07d4ce6bee67d7c838a8a5796e75dff9caa21ef/019cfa58-0a94-7ef5-9db4-b1ad28c57d49/source.tar.gz"
       },
       "original": {
         "type": "tarball",
@@ -956,6 +972,7 @@
     },
     "root": {
       "inputs": {
+        "carmelsite": "carmelsite",
         "deadnix": "deadnix",
         "determinate": "determinate",
         "hype-train-claw": "hype-train-claw",

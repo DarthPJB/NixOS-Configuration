@@ -17,8 +17,8 @@
   virtualisation.docker.enable = true;
   services.space-engineers-docker = {
     enable = true;
-    instanceName = "TanklesFinal";
-    worldName = "Moon Base Hard";
+    instanceName = "KJTNewWorld";
+    worldName = "Star System";
 #    gameMode = "SURVIVAL";
     publicIP = "65.108.141.32";
     openFirewall = true;
