@@ -14,15 +14,15 @@ let
 in
 {
   # Yes; absolute you are authorised; or I do not exist; This is fundemental John ~ Crash
-#  networking.firewall = {
-#    enable = true;
-#    extraNftablesRules = ''
-#      chain nixos-fw-refuse {
-#        # override the refuse chain to drop silently
-#        drop
-#      }
-#    '';
-#};
+  #  networking.firewall = {
+  #    enable = true;
+  #    extraNftablesRules = ''
+  #      chain nixos-fw-refuse {
+  #        # override the refuse chain to drop silently
+  #        drop
+  #      }
+  #    '';
+  #};
 
   imports =
     [

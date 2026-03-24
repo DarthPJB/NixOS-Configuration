@@ -2,7 +2,7 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
-    carmelsite = { url = "git+ssh://git@gitlab.platonic.systems/john.bargman/carmelsite"; flake = false;};
+    carmelsite = { url = "git+ssh://git@gitlab.platonic.systems/john.bargman/carmelsite"; flake = false; };
     deadnix = { url = "github:astro/deadnix"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     hyprland.url = "github:hyprwm/Hyprland";
     lint-utils = { url = "github:homotopic/lint-utils"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
@@ -186,10 +186,10 @@
       };
 
       packages = {
-#        "x86_64-linux".local-worker-image = mkLibVirtImage {
-#          config = self.nixosConfigurations.local-worker.config;
-#          name = "local-worker-image";
-#        };
+        #        "x86_64-linux".local-worker-image = mkLibVirtImage {
+        #          config = self.nixosConfigurations.local-worker.config;
+        #          name = "local-worker-image";
+        #        };
         "aarch64-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.print-controller
           self.nixosConfigurations.display-0
@@ -261,8 +261,10 @@
 
         cortex-alpha = mkX86_64 "cortex-alpha" {
           host = "10.88.127.1";
-          extraModules = [ ./environments/neovim.nix ./services/dynamic_domain_gandi.nix 
-         ];
+          extraModules = [
+            ./environments/neovim.nix
+            ./services/dynamic_domain_gandi.nix
+          ];
         };
         local-nas = mkX86_64 "local-nas" {
           host = "10.88.127.3";
@@ -293,10 +295,11 @@
         };
         remote-worker = mkX86_64 "remote-worker" {
           host = "10.88.127.50";
-          extraModules = [ ./users/build.nix 
-           {
-            services.nginx = {
-              enable = true;
+          extraModules = [
+            ./users/build.nix
+            {
+              services.nginx = {
+                enable = true;
                 virtualHosts."carmel-staging.johnbargman.net" = {
                   useACMEHost = "johnbargman.net";
                   forceSSL = true;
@@ -307,9 +310,9 @@
                   };
                 };
               };
-          }
+            }
           ];
-          
+
         };
         storage-array = mkX86_64 "storage-array" {
           host = "10.88.127.4";

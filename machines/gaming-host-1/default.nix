@@ -19,7 +19,7 @@
     enable = true;
     instanceName = "KJTNewWorld";
     worldName = "Star System";
-#    gameMode = "SURVIVAL";
+    #    gameMode = "SURVIVAL";
     publicIP = "65.108.141.32";
     openFirewall = true;
   };
