@@ -30,6 +30,7 @@
       ../../modifier_imports/hosts.nix
       ../../modifier_imports/zfs.nix
       ../../modifier_imports/virtualisation-libvirtd.nix
+      ../../modifier_imports/virtualisation-vmware.nix
       ../../environments/sshd.nix
       ../../modifier_imports/cuda.nix
       ../../modifier_imports/remote-builder.nix
