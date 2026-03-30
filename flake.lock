@@ -36,11 +36,11 @@
     "carmelsite": {
       "flake": false,
       "locked": {
-        "lastModified": 1774894553,
-        "narHash": "sha256-la12inqoSBRkNyB0xtelZ6hSzmXxNFnhz/56ablkXWE=",
+        "lastModified": 1774897450,
+        "narHash": "sha256-SO7AtoBlP+JoPTJuVu8PDzg5if+J1Dy4pQkFWwkH2Y4=",
         "ref": "refs/heads/main",
-        "rev": "b6ea4b682b8f6cb8de6a696ec64540588bce6eef",
-        "revCount": 3,
+        "rev": "229ad1a1d857c7339702f039024ca75ce2ee8d7e",
+        "revCount": 4,
         "type": "git",
         "url": "ssh://git@gitlab.platonic.systems/john.bargman/carmelsite"
       },

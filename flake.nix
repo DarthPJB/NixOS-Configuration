@@ -320,7 +320,7 @@
                     };
                   };
                   "carmel-staging.johnbargman.net" = {
-                    useacmehost = "johnbargman.net";
+                    useACMEHost = "johnbargman.net";
                     forceSSL = true;
                     listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
                     locations."/" = {
