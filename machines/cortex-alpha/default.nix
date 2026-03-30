@@ -76,6 +76,7 @@ in
   imports =
     [
       #  ../../lib/network-interfaces.nix
+      ../../services/dynamic_domain_gandi.nix
       (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
       ../../server_services/ldap.nix
       ../../configuration.nix
