@@ -16,8 +16,9 @@
     nix-mcp-servers.url = "github:cameronfyfe/nix-mcp-servers";
     nixos-hardware.url = "github:nixos/nixos-hardware";
     hype-train-claw.url = "github:marijanp/zeroclaw";
+    star-citizen.url = "github:LovingMelody/nix-citizen";
   };
-  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, parsecgaming, secrix, hype-train-claw, carmelsite }:
+  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
@@ -285,7 +286,11 @@
         LINDA = mkX86_64 "LINDA" {
           host = "10.88.127.88";
           buildOn = "remote";
-          extraModules = [ ./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
+          extraModules = [ ./users/build.nix { 
+          environment.systemPackages = [ 
+          parsecgaming.packages.x86_64-linux.parsecgaming 
+          star-citizen.packages.x86_64-linux.rsi-launcher
+          ]; } ];
         };
         gaming-host-1 = mkX86_64 "gaming-host-1" {
           host = "10.88.127.52";
