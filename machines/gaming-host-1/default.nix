@@ -7,6 +7,7 @@
       ../../services/dynamic_domain_gandi.nix
       ../../modules/enable-wg.nix
       ../../server_services/game_servers/space-engineers.nix
+      ../../server_services/game_servers/dragonwilds.nix
     ];
   environment.vpn =
     {
@@ -15,6 +16,7 @@
       # privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
     };
   virtualisation.docker.enable = true;
+  services.dragonwilds-server.enable = true;
   services.space-engineers-docker = {
     enable = true;
     instanceName = "KJTNewWorld";
