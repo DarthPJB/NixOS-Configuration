@@ -30,7 +30,7 @@ in
     backupDir = mkOption {
       type = types.path;
       description = "Directory to store config backups";
-      default = "/home/dragonwilds/dragonwilds_backups";
+      default = "/bulk-storage/dragonwilds/dragonwilds_backups";
     };
 
     openFirewall = mkOption {
@@ -48,6 +48,9 @@ in
         steamcmd = lib.getExe cfg.steamcmdPackage;
         bash = lib.getExe' pkgs.bash;
         mkdir = lib.getExe' pkgs.coreutils "mkdir";
+        cp = lib.getExe' pkgs.coreutils "cp";
+        chmod = lib.getExe' pkgs.coreutils "chmod";
+        steamRun = "${pkgs.steam-run}/bin/steam-run";
       in
       {
         description = "RuneScape Dragonwilds Dedicated Server";
@@ -63,15 +66,16 @@ in
           Restart = "always";
           RestartSec = 15;
 
-          ExecStartPre = ''
-            ${mkdir} -p ${cfg.dataDir}
-            ${mkdir} -p ${cfg.backupDir}
-            cp ${cfg.dataDir}/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini ${cfg.backupDir}/DedicatedServer.ini.bak || true
-            ${steamcmd} +force_install_dir ${cfg.dataDir} +login anonymous +app_update ${builtins.toString cfg.gameID} +quit
-            cp ${cfg.backupDir}/DedicatedServer.ini.bak ${cfg.dataDir}/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini || true && chmod +x ${cfg.dataDir}/RSDragonwildsServer.sh
-          '';
+          ExecStartPre = [
+            "${mkdir} -p ${cfg.dataDir} 2>/dev/null"
+            "${mkdir} -p ${cfg.backupDir} 2>/dev/null"
+            "${steamcmd} +force_install_dir ${cfg.dataDir} +login anonymous +app_update ${builtins.toString cfg.gameID} +quit"
+            "${cp} ${cfg.dataDir}/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini ${cfg.backupDir}/DedicatedServer.ini.bak"
+            "${cp} ${cfg.backupDir}/DedicatedServer.ini.bak ${cfg.dataDir}/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini"
+            "${chmod} +x ${cfg.dataDir}/RSDragonwildsServer.sh"
+          ];
 
-          ExecStart = '' ${cfg.dataDir}/RSDragonwildsServer.sh -log -NewConsole -Port=7777 '';
+          ExecStart = "${steamRun} ${cfg.dataDir}/RSDragonwildsServer.sh -log -NewConsole -Port=7777";
         };
       };
 
