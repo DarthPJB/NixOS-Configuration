@@ -16,9 +16,10 @@
     nix-mcp-servers.url = "github:cameronfyfe/nix-mcp-servers";
     nixos-hardware.url = "github:nixos/nixos-hardware";
     hype-train-claw.url = "github:marijanp/zeroclaw";
+    hype-train-outlaw.url = "git+ssh://git@gitlab.com/mecha-team-zero/macha-orchestration";
     star-citizen.url = "github:LovingMelody/nix-citizen";
   };
-  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite }:
+  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable,hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
