@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CI/CD Documentation - NixOS Configuration</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --light-bg: #ecf0f1;
+            --dark-bg: #34495e;
+            --text-color: #2c3e50;
+            --code-bg: #f8f9fa;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f5f7fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            font-size: 3rem;
+        }
+        
+        nav {
+            background-color: var(--dark-bg);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        nav a:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .page-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+        
+        .sidebar {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 80px;
+        }
+        
+        .sidebar h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+        
+        .sidebar ul {
+            list-style: none;
+        }
+        
+        .sidebar li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar a {
+            color: var(--text-color);
+            text-decoration: none;
+            display: block;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .sidebar a:hover {
+            background-color: var(--light-bg);
+            color: var(--secondary-color);
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .section {
+            margin-bottom: 3rem;
+        }
+        
+        .section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .section h3 {
+            color: var(--dark-bg);
+            margin: 1.5rem 0 1rem 0;
+        }
+        
+        .command {
+            font-family: 'Courier New', monospace;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin: 0.25rem 0;
+        }
+        
+        .code-block {
+            background: var(--code-bg);
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary-color);
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .task-card {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .task-card h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .task-card ul {
+            list-style: none;
+        }
+        
+        .task-card li {
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #ddd;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .task-card li:last-child {
+            border-bottom: none;
+        }
+        
+        .architecture-diagram {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            border: 1px solid #ddd;
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        
+        .checklist {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .checklist h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .checklist-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--secondary-color);
+            border-radius: 4px;
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .checkbox.checked {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .warning h4 {
+            color: #856404;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .success h4 {
+            color: #155724;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        footer {
+            background: var(--dark-bg);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            text-align: center;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: static;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            nav ul {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">🔄</span>
+                    <span>CI/CD Documentation</span>
+                </div>
+                <div class="version-info">
+                    <span>NixOS Configuration v2.0</span> | 
+                    <span>April 15, 2026</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="architecture.html">Architecture</a></li>
+                <li><a href="development.html">Development</a></li>
+                <li><a href="operations.html">Operations</a></li>
+                <li><a href="security.html">Security</a></li>
+                <li><a href="cicd.html">CI/CD</a></li>
+                <li><a href="roadmap.html">Roadmap</a></li>
+                <li><a href="../README.md">README</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>CI/CD Documentation</h1>
+            <p>Comprehensive guide to the CI/CD pipeline for the NixOS configuration repository, with configuration generated from Nix evaluation.</p>
+        </div>
+
+        <div class="content-grid">
+            <aside class="sidebar">
+                <h3>📑 Table of Contents</h3>
+                <ul>
+                    <li><a href="#overview">Overview</a></li>
+                    <li><a href="#architecture">Architecture</a></li>
+                    <li><a href="#setup">Setup Guide</a></li>
+                    <li><a href="#workflow">Workflow Generation</a></li>
+                    <li><a href="#jobs">CI Jobs</a></li>
+                    <li><a href="#deployment">Deployment</a></li>
+                    <li><a href="#monitoring">Monitoring</a></li>
+                </ul>
+            </aside>
+
+            <div class="main-content">
+                <section id="overview" class="section">
+                    <h2>🔄 CI/CD Overview</h2>
+                    <p>The CI/CD pipeline for this NixOS configuration repository is unique because it generates GitHub Actions workflow configuration directly from Nix evaluation. This ensures that CI configuration is always in sync with actual build requirements.</p>
+                    
+                    <div class="success">
+                        <h4>✅ Key Benefits</h4>
+                        <ul>
+                            <li><strong>Configuration as Code:</strong> CI pipeline defined in Nix, version controlled</li>
+                            <li><strong>Reproducibility:</strong> Same Nix evaluation produces same CI configuration</li>
+                            <li><strong>Consistency:</strong> CI tests exactly what you build locally</li>
+                            <li><strong>Automation:</strong> Workflow generation from machine definitions</li>
+                            <li><strong>Validation:</strong> CI configuration can be tested before deployment</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="architecture-diagram">
+┌─────────────────────────────────────────────────────────────┐
+│                    CI/CD Architecture                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
+│  │  flake.nix  │    │   ci.nix    │    │  .github/   │     │
+│  │  (Source)   │◄──►│ (CI Module) │◄──►│ workflows/  │     │
+│  └─────────────┘    └─────────────┘    └─────────────┘     │
+│         │                   │                   │           │
+│         ▼                   ▼                   ▼           │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
+│  │  nix run    │    │  Generated  │    │   GitHub    │     │
+│  │ .#ci-gen    │───►│  CI Config  │───►│   Actions   │     │
+│  └─────────────┘    └─────────────┘    └─────────────┘     │
+│         │                   │                   │           │
+│         ▼                   ▼                   ▼           │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
+│  │  Validation │    │   Build     │    │  Deployment │     │
+│  │   & Lint    │    │   Matrix    │    │   (Manual)  │     │
+│  └─────────────┘    └─────────────┘    └─────────────┘     │
+└─────────────────────────────────────────────────────────────┘</div>
+                </section>
+
+                <section id="architecture" class="section">
+                    <h2>🏗️ CI/CD Architecture</h2>
+                    <p>The CI/CD system consists of several components that work together to provide automated testing and deployment.</p>
+                    
+                    <div class="task-grid">
+                        <div class="task-card">
+                            <h4>📄 ci.nix Module</h4>
+                            <ul>
+                                <li>→ Defines CI job templates</li>
+                                <li>→ Machine categorization (x86/ARM)</li>
+                                <li>→ Job dependencies and ordering</li>
+                                <li>→ GitHub Actions YAML generation</li>
+                                <li>→ Helper functions for CI</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>🔧 Generator Scripts</h4>
+                            <ul>
+                                <li>→ <span class="command">nix run .#generate-ci-workflow</span></li>
+                                <li>→ <span class="command">nix run .#validate-ci-workflow</span></li>
+                                <li>→ YAML generation from Nix</li>
+                                <li>→ Workflow validation</li>
+                                <li>→ Error checking</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>📋 GitHub Actions</h4>
+                            <ul>
+                                <li>→ Automated workflow triggers</li>
+                                <li>→ Build matrix generation</li>
+                                <li>→ Caching strategies</li>
+                                <li>→ Deployment safeguards</li>
+                                <li>→ Manual deployment triggers</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>📊 CI Information</h4>
+                            <ul>
+                                <li>→ Machine lists and counts</li>
+                                <li>→ Build matrix information</li>
+                                <li>→ Job dependencies</li>
+                                <li>→ Resource requirements</li>
+                                <li>→ Performance metrics</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="setup" class="section">
+                    <h2>🛠️ Setup Guide</h2>
+                    <p>Step-by-step guide to setting up CI/CD for this repository.</p>
+                    
+                    <div class="checklist">
+                        <h4>✅ Prerequisites Checklist</h4>
+                        <div class="checklist-item">
+                            <div class="checkbox checked">✓</div>
+                            <span>GitHub repository with Actions enabled</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox checked">✓</div>
+                            <span>GitHub runner connected to account</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox checked">✓</div>
+                            <span>Nix installed on runner</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox checked">✓</div>
+                            <span>Flake configuration validated</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>CI workflow generated</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Workflow committed to repository</span>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+# Step 1: Generate CI workflow
+nix run .#generate-ci-workflow
+
+# Step 2: Validate workflow
+nix run .#validate-ci-workflow
+
+# Step 3: Check generated file
+cat .github/workflows/ci.yml
+
+# Step 4: Commit to repository
+git add .github/workflows/ci.yml
+git commit -m "ci: add GitHub Actions workflow"
+git push</div>
+                    
+                    <div class="warning">
+                        <h4>⚠️ Important Notes</h4>
+                        <p>The generated workflow file should be committed to the repository. This ensures that GitHub Actions can run the workflow without requiring Nix evaluation on the runner.</p>
+                    </div>
+                </section>
+
+                <section id="workflow" class="section">
+                    <h2>📝 Workflow Generation</h2>
+                    <p>How the CI workflow is generated from Nix evaluation.</p>
+                    
+                    <div class="task-grid">
+                        <div class="task-card">
+                            <h4>🔄 Generation Process</h4>
+                            <ul>
+                                <li>→ Evaluate <span class="command">ci.nix</span> module</li>
+                                <li>→ Extract machine definitions</li>
+                                <li>→ Generate job matrix</li>
+                                <li>→ Create YAML structure</li>
+                                <li>→ Write to <span class="command">.github/workflows/</span></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>📊 Machine Matrix</h4>
+                            <ul>
+                                <li>→ x86_64 machines: 12 configurations</li>
+                                <li>→ ARM machines: 4 configurations</li>
+                                <li>→ Total: 16 machine builds</li>
+                                <li>→ Parallel execution</li>
+                                <li>→ Fail-fast disabled</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>🔧 Customization</h4>
+                            <ul>
+                                <li>→ Modify <span class="command">ci.nix</span> for changes</li>
+                                <li>→ Add new machine types</li>
+                                <li>→ Adjust job dependencies</li>
+                                <li>→ Configure triggers</li>
+                                <li>→ Set deployment rules</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>✅ Validation</h4>
+                            <ul>
+                                <li>→ YAML syntax validation</li>
+                                <li>→ GitHub Actions validation</li>
+                                <li>→ Job dependency checks</li>
+                                <li>→ Resource requirement validation</li>
+                                <li>→ Trigger condition verification</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+# View CI configuration
+nix eval --json .#ci.github-actions | jq .
+
+# View machine lists
+nix eval --json .#ci-info
+
+# Generate and view workflow
+nix run .#generate-ci-workflow
+cat .github/workflows/ci.yml | head -50</div>
+                </section>
+
+                <section id="jobs" class="section">
+                    <h2>📋 CI Jobs</h2>
+                    <p>Detailed description of CI jobs and their purposes.</p>
+                    
+                    <div class="task-grid">
+                        <div class="task-card">
+                            <h4>🔍 Validation Job</h4>
+                            <ul>
+                                <li>→ Runs on all pushes and PRs</li>
+                                <li>→ Code formatting check</li>
+                                <li>→ Flake validation</li>
+                                <li>→ Dead code detection</li>
+                                <li>→ Must pass before builds</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>🏗️ Build x86 Job</h4>
+                            <ul>
+                                <li>→ Builds 12 x86_64 configurations</li>
+                                <li>→ Parallel execution</li>
+                                <li>→ Artifact upload</li>
+                                <li>→ Build time: ~10-15 minutes</li>
+                                <li>→ Cache enabled</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>📱 Build ARM Job</h4>
+                            <ul>
+                                <li>→ Builds 4 ARM configurations</li>
+                                <li>→ Raspberry Pi images</li>
+                                <li>→ Cross-compilation</li>
+                                <li>→ Build time: ~5-10 minutes</li>
+                                <li>→ SD card image generation</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>🔒 Security Job</h4>
+                            <ul>
+                                <li>→ Secret detection</li>
+                                <li>→ Configuration validation</li>
+                                <li>→ Security best practices</li>
+                                <li>→ Runs on all changes</li>
+                                <li>→ Must pass before merge</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>🚀 Deploy Job</h4>
+                            <ul>
+                                <li>→ Manual trigger only</li>
+                                <li>→ Requires workflow_dispatch</li>
+                                <li>→ Machine selection</li>
+                                <li>→ Action selection (build/test/deploy)</li>
+                                <li>→ Deployment safeguards</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="checklist">
+                        <h4>✅ Job Dependencies</h4>
+                        <div class="checklist-item">
+                            <div class="checkbox checked">✓</div>
+                            <span>Validation → Build x86 (must pass)</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox checked">✓</div>
+                            <span>Validation → Build ARM (must pass)</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox checked">✓</div>
+                            <span>Security → Deploy (must pass)</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox checked">✓</div>
+                            <span>Build jobs → Deploy (must complete)</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="deployment" class="section">
+                    <h2>🚀 Deployment</h2>
+                    <p>Deployment procedures and safeguards.</p>
+                    
+                    <div class="warning">
+                        <h4>⚠️ Deployment Requirements</h4>
+                        <p>Deployment requires manual trigger via GitHub Actions UI. Automatic deployment is disabled for security. All deployments go through WireGuard VPN and require proper secret access.</p>
+                    </div>
+                    
+                    <div class="task-grid">
+                        <div class="task-card">
+                            <h4>🔒 Deployment Security</h4>
+                            <ul>
+                                <li>→ Manual trigger required</li>
+                                <li>→ Environment protection</li>
+                                <li>→ VPN access required</li>
+                                <li>→ Secret decryption needed</li>
+                                <li>→ Audit trail maintained</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>📋 Deployment Process</h4>
+                            <ul>
+                                <li>→ Select machine from list</li>
+                                <li>→ Choose action (build/test/deploy)</li>
+                                <li>→ Run validation jobs</li>
+                                <li>→ Build configuration</li>
+                                <li>→ Execute deployment</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>🔄 Rollback Procedures</h4>
+                            <ul>
+                                <li>→ Previous generation available</li>
+                                <li>→ Manual rollback via SSH</li>
+                                <li>→ Configuration versioning</li>
+                                <li>→ Service restoration</li>
+                                <li>→ Incident documentation</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>📊 Deployment Monitoring</h4>
+                            <ul>
+                                <li>→ Build status tracking</li>
+                                <li>→ Deployment logs</li>
+                                <li>→ Service health checks</li>
+                                <li>→ Performance metrics</li>
+                                <li>→ Alert notifications</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+# Manual deployment via GitHub UI:
+# 1. Go to Actions tab
+# 2. Select "NixOS CI/CD" workflow
+# 3. Click "Run workflow"
+# 4. Select machine and action
+# 5. Click "Run workflow"
+
+# Alternative: Deploy locally (requires VPN)
+nix run .#terminal-zero -- switch
+
+# Test deployment
+nix run .#terminal-zero</div>
+                </section>
+
+                <section id="monitoring" class="section">
+                    <h2>📊 Monitoring</h2>
+                    <p>Monitoring CI/CD pipeline performance and status.</p>
+                    
+                    <div class="task-grid">
+                        <div class="task-card">
+                            <h4>📈 Build Metrics</h4>
+                            <ul>
+                                <li>→ Build success rate</li>
+                                <li>→ Average build time</li>
+                                <li>→ Resource utilization</li>
+                                <li>→ Cache hit rate</li>
+                                <li>→ Failure patterns</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>🔍 Status Monitoring</h4>
+                            <ul>
+                                <li>→ GitHub Actions dashboard</li>
+                                <li>→ Build status badges</li>
+                                <li>→ Email notifications</li>
+                                <li>→ Slack integration</li>
+                                <li>→ Webhook alerts</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>📊 Performance Tracking</h4>
+                            <ul>
+                                <li>→ Build duration trends</li>
+                                <li>→ Resource consumption</li>
+                                <li>→ Cost optimization</li>
+                                <li>→ Efficiency metrics</li>
+                                <li>→ Improvement tracking</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>🚨 Alerting</h4>
+                            <ul>
+                                <li>→ Build failure alerts</li>
+                                <li>→ Performance degradation</li>
+                                <li>→ Security issues</li>
+                                <li>→ Resource exhaustion</li>
+                                <li>→ Deployment failures</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="success">
+                        <h4>✅ Monitoring Best Practices</h4>
+                        <ul>
+                            <li>Regularly review build metrics</li>
+                            <li>Set up alerts for critical failures</li>
+                            <li>Monitor cache effectiveness</li>
+                            <li>Track build time trends</li>
+                            <li>Review security scan results</li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="version-info">
+                    <p>CI/CD Documentation v2.0</p>
+                    <p>NixOS Configuration Repository</p>
+                </div>
+                <div class="last-updated">
+                    <p>Last Updated: April 15, 2026</p>
+                    <p>Generated by OpenCode Agent Fleet</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
