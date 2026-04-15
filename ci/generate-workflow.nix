@@ -4,13 +4,13 @@
 
 let
   ci = import ../ci.nix { inherit self lib pkgs; };
-  
+
   # Convert Nix attrset to YAML
   toYAML = obj: builtins.toJSON obj;
-  
+
   # Generate workflow file
   workflow = ci.ci.github-actions;
-  
+
   # Create Python script for JSON to YAML conversion
   json2yaml = pkgs.writeScriptBin "json2yaml" ''
     #!${pkgs.python3}/bin/python3
@@ -22,7 +22,7 @@ let
     data = json.load(sys.stdin)
     print(yaml.dump(data, default_flow_style=False, sort_keys=False))
   '';
-  
+
   # Create script to generate workflow
   generateScript = pkgs.writeShellApplication {
     name = "generate-ci-workflow";
@@ -35,7 +35,7 @@ let
       nix eval --json .#ci.ci.github-actions 2>/dev/null | json2yaml
     '';
   };
-  
+
   # Validate workflow script
   validateScript = pkgs.writeShellApplication {
     name = "validate-ci-workflow";
@@ -80,10 +80,10 @@ in
     generate-ci-workflow = generateScript;
     validate-ci-workflow = validateScript;
   };
-  
+
   # The generated workflow content
   workflow = workflow;
-  
+
   # Machine information for CI
   ci-info = {
     x86-machines = ci.ci.machines.x86;

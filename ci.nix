@@ -17,8 +17,8 @@ let
     "remote-worker"
     "storage-array"
     "remote-builder"
-    "local-worker"  # Added: missing machine
-    "obs-box"       # Added: missing machine
+    "local-worker" # Added: missing machine
+    "obs-box" # Added: missing machine
   ];
 
   armMachines = [
@@ -26,7 +26,7 @@ let
     "display-1"
     "display-2"
     "print-controller"
-    "beta-one"      # Added: armv7l-linux machine
+    "beta-one" # Added: armv7l-linux machine
   ];
 
   # CI job definitions
@@ -65,7 +65,7 @@ let
 
     # Build matrix for x86_64 machines
     build-x86 = {
-      needs = [ "validation" "security" ];  # Added: enforce job hierarchy
+      needs = [ "validation" "security" ]; # Added: enforce job hierarchy
       name = "Build x86_64 Configurations";
       runs-on = "ubuntu-latest";
       strategy = {
@@ -105,7 +105,7 @@ let
 
     # Build matrix for ARM machines
     build-arm = {
-      needs = [ "validation" "security" ];  # Added: enforce job hierarchy
+      needs = [ "validation" "security" ]; # Added: enforce job hierarchy
       name = "Build ARM Configurations";
       runs-on = "ubuntu-latest";
       strategy = {
@@ -152,7 +152,7 @@ let
           name = "Checkout";
           uses = "actions/checkout@v4";
           "with" = {
-            fetch-depth = "0";  # Full history for secret scanning
+            fetch-depth = "0"; # Full history for secret scanning
           };
         }
         {
@@ -206,7 +206,7 @@ let
 
     # Deployment preparation (manual trigger)
     deploy-prep = {
-      needs = [ "validation" "security" "build-x86" "build-arm" ];  # Added: full dependency chain
+      needs = [ "validation" "security" "build-x86" "build-arm" ]; # Added: full dependency chain
       name = "Deploy - \${{ github.event.inputs.machine }}";
       runs-on = "ubuntu-latest";
       "if" = "github.event_name == 'workflow_dispatch'";
@@ -241,7 +241,7 @@ let
         }
         {
           name = "Upload deployment logs";
-          "if" = "always()";  # Upload even if deployment fails
+          "if" = "always()"; # Upload even if deployment fails
           uses = "actions/upload-artifact@v4";
           "with" = {
             name = "deploy-\${{ github.event.inputs.machine }}-logs";
@@ -305,29 +305,31 @@ in
   ci = {
     # GitHub Actions workflow
     github-actions = generateGitHubActions;
-    
+
     # Machine lists for external use
     machines = {
       x86 = x86Machines;
       arm = armMachines;
       all = x86Machines ++ armMachines;
     };
-    
+
     # Job definitions
     jobs = ciJobs;
   };
-  
+
   # Helper functions for CI
   ciHelpers = {
     # Generate matrix for a specific machine type
     mkMatrix = machines: {
       inherit machines;
-      include = map (machine: {
-        inherit machine;
-        system = if builtins.elem machine armMachines then "aarch64-linux" else "x86_64-linux";
-      }) machines;
+      include = map
+        (machine: {
+          inherit machine;
+          system = if builtins.elem machine armMachines then "aarch64-linux" else "x86_64-linux";
+        })
+        machines;
     };
-    
+
     # Generate deployment command
     mkDeployCommand = machine: action:
       if action == "deploy" then

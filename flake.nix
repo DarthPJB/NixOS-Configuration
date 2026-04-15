@@ -19,7 +19,7 @@
     hype-train-outlaw.url = "git+ssh://git@gitlab.com/mecha-team-zero/macha-orchestration";
     star-citizen.url = "github:LovingMelody/nix-citizen";
   };
-  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable,hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite }:
+  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
@@ -127,10 +127,10 @@
               } else null
             )
             nixosConfigs);
-            
+
       # CI/CD Configuration
       ci = import ./ci.nix { inherit self lib; pkgs = nixpkgs; };
-      
+
       # CI Generator Scripts
       ci-generator = import ./ci/generate-workflow.nix { inherit self lib; pkgs = nixpkgs; };
     in
@@ -303,11 +303,15 @@
         LINDA = mkX86_64 "LINDA" {
           host = "10.88.127.88";
           buildOn = "remote";
-          extraModules = [ ./users/build.nix { 
-          environment.systemPackages = [ 
-          parsecgaming.packages.x86_64-linux.parsecgaming 
-          star-citizen.packages.x86_64-linux.rsi-launcher
-          ]; } ];
+          extraModules = [
+            ./users/build.nix
+            {
+              environment.systemPackages = [
+                parsecgaming.packages.x86_64-linux.parsecgaming
+                star-citizen.packages.x86_64-linux.rsi-launcher
+              ];
+            }
+          ];
         };
         gaming-host-1 = mkX86_64 "gaming-host-1" {
           host = "10.88.127.52";
@@ -325,7 +329,7 @@
                 virtualHosts = {
                   "csfinancialconsulting.com" = {
                     forceSSL = true;
-		    enableACME = true;
+                    enableACME = true;
                     listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
                     locations."/" = {
                       root = carmelsite;
@@ -335,7 +339,7 @@
                   "csfincon.us" = {
                     forceSSL = true;
                     enableACME = true;
-		    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
+                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
                     locations."/" = {
                       root = carmelsite;
                       #proxywebsockets = false; # needed if you need to use websocket
@@ -379,7 +383,7 @@
 
       # CI Information Output
       ci-info = ci-generator.ci-info;
-      
+
       # CI Configuration (for external access)
       ci = ci;
     };
