@@ -2,6 +2,8 @@
 
 This document explains how NixOS configurations are organized in this repository.
 
+> **Note:** For comprehensive DevOps-standard documentation with HTML formatting, see the [Documentation Hub](index.html).
+
 ## Module Organization
 - **Flake-based**: All configurations use Nix flakes for reproducibility
 - **Modular imports**: Configurations import from `environments/`, `services/`, and `lib/`

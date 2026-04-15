@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NixOS Configuration - Documentation Hub</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --light-bg: #ecf0f1;
+            --dark-bg: #34495e;
+            --text-color: #2c3e50;
+            --code-bg: #f8f9fa;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f5f7fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            font-size: 3rem;
+        }
+        
+        nav {
+            background-color: var(--dark-bg);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        nav a:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .hero {
+            background: white;
+            padding: 3rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--secondary-color);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .documentation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .doc-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .doc-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        
+        .doc-card-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .doc-card-icon {
+            font-size: 2rem;
+        }
+        
+        .doc-card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .doc-card-body {
+            padding: 1.5rem;
+        }
+        
+        .doc-card-description {
+            margin-bottom: 1rem;
+            color: #5d6d7e;
+        }
+        
+        .doc-card-topics {
+            list-style: none;
+        }
+        
+        .doc-card-topics li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .doc-card-topics li:last-child {
+            border-bottom: none;
+        }
+        
+        .topic-icon {
+            color: var(--success-color);
+        }
+        
+        .quick-start {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin: 2rem 0;
+        }
+        
+        .quick-start h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .command-list {
+            background: var(--code-bg);
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .command-item {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .command-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .command {
+            font-family: 'Courier New', monospace;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .command-description {
+            color: #5d6d7e;
+            font-size: 0.9rem;
+        }
+        
+        .status-indicators {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        footer {
+            background: var(--dark-bg);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            text-align: center;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .version-info {
+            font-size: 0.9rem;
+            color: #bdc3c7;
+        }
+        
+        .last-updated {
+            font-size: 0.9rem;
+            color: #bdc3c7;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            nav ul {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">⚙️</span>
+                    <span>NixOS Configuration</span>
+                </div>
+                <div class="version-info">
+                    <span>Version 2.0</span> | 
+                    <span>Last Updated: April 15, 2026</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="architecture.html">Architecture</a></li>
+                <li><a href="development.html">Development</a></li>
+                <li><a href="operations.html">Operations</a></li>
+                <li><a href="security.html">Security</a></li>
+                <li><a href="roadmap.html">Roadmap</a></li>
+                <li><a href="../README.md">README</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero">
+            <h1>NixOS Configuration Documentation</h1>
+            <p>Comprehensive documentation for the NixOS configuration repository, providing declarative infrastructure management for 19 machines across a WireGuard VPN network.</p>
+            
+            <div class="status-indicators">
+                <div class="status-badge status-active">
+                    <span>✓</span> 19 Machines Active
+                </div>
+                <div class="status-badge status-active">
+                    <span>✓</span> VPN Network Operational
+                </div>
+                <div class="status-badge status-info">
+                    <span>ℹ</span> Last Deploy: Today
+                </div>
+                <div class="status-badge status-warning">
+                    <span>⚠</span> IPv6 TODO
+                </div>
+            </div>
+        </section>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">19</div>
+                <div class="stat-label">Configured Machines</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">26</div>
+                <div class="stat-label">Environment Modules</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">18</div>
+                <div class="stat-label">Service Configurations</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Declarative Configuration</div>
+            </div>
+        </section>
+
+        <section class="quick-start">
+            <h2>🚀 Quick Start Commands</h2>
+            <div class="command-list">
+                <div class="command-item">
+                    <div class="command">nix fmt</div>
+                    <div class="command-description">Format all Nix files (REQUIRED before commit)</div>
+                </div>
+                <div class="command-item">
+                    <div class="command">nix flake check</div>
+                    <div class="command-description">Validate flake, run deadnix + nixpkgs-fmt linters</div>
+                </div>
+                <div class="command-item">
+                    <div class="command">nixos-rebuild build --flake .#hostname</div>
+                    <div class="command-description">Build specific machine configuration without installing</div>
+                </div>
+                <div class="command-item">
+                    <div class="command">nix run .#hostname</div>
+                    <div class="command-description">Deploy to machine via WireGuard VPN (test mode)</div>
+                </div>
+                <div class="command-item">
+                    <div class="command">nix run .#deploy-all</div>
+                    <div class="command-description">Deploy to all configured hosts (whitelisted)</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="documentation-grid">
+            <div class="doc-card">
+                <div class="doc-card-header">
+                    <span class="doc-card-icon">🏗️</span>
+                    <span class="doc-card-title">Architecture Documentation</span>
+                </div>
+                <div class="doc-card-body">
+                    <p class="doc-card-description">System design, component relationships, and infrastructure overview.</p>
+                    <ul class="doc-card-topics">
+                        <li><span class="topic-icon">→</span> System Architecture Overview</li>
+                        <li><span class="topic-icon">→</span> Network Topology</li>
+                        <li><span class="topic-icon">→</span> Machine Inventory</li>
+                        <li><span class="topic-icon">→</span> Deployment Flow</li>
+                        <li><span class="topic-icon">→</span> Component Dependencies</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="doc-card">
+                <div class="doc-card-header">
+                    <span class="doc-card-icon">👨‍💻</span>
+                    <span class="doc-card-title">Development Guide</span>
+                </div>
+                <div class="doc-card-body">
+                    <p class="doc-card-description">How to develop, test, and contribute to the configuration.</p>
+                    <ul class="doc-card-topics">
+                        <li><span class="topic-icon">→</span> Development Workflow</li>
+                        <li><span class="topic-icon">→</span> Testing Procedures</li>
+                        <li><span class="topic-icon">→</span> Code Standards</li>
+                        <li><span class="topic-icon">→</span> Adding New Machines</li>
+                        <li><span class="topic-icon">→</span> Adding Services</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="doc-card">
+                <div class="doc-card-header">
+                    <span class="doc-card-icon">⚙️</span>
+                    <span class="doc-card-title">Operations Guide</span>
+                </div>
+                <div class="doc-card-body">
+                    <p class="doc-card-description">Day-to-day operations, monitoring, and maintenance.</p>
+                    <ul class="doc-card-topics">
+                        <li><span class="topic-icon">→</span> Deployment Procedures</li>
+                        <li><span class="topic-icon">→</span> Monitoring & Alerting</li>
+                        <li><span class="topic-icon">→</span> Backup & Recovery</li>
+                        <li><span class="topic-icon">→</span> Troubleshooting</li>
+                        <li><span class="topic-icon">→</span> Performance Tuning</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="doc-card">
+                <div class="doc-card-header">
+                    <span class="doc-card-icon">🔒</span>
+                    <span class="doc-card-title">Security Documentation</span>
+                </div>
+                <div class="doc-card-body">
+                    <p class="doc-card-description">Security practices, secrets management, and access control.</p>
+                    <ul class="doc-card-topics">
+                        <li><span class="topic-icon">→</span> Security Architecture</li>
+                        <li><span class="topic-icon">→</span> Secrets Management</li>
+                        <li><span class="topic-icon">→</span> Access Control</li>
+                        <li><span class="topic-icon">→</span> Network Security</li>
+                        <li><span class="topic-icon">→</span> Compliance</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="doc-card">
+                <div class="doc-card-header">
+                    <span class="doc-card-icon">📋</span>
+                    <span class="doc-card-title">API Reference</span>
+                </div>
+                <div class="doc-card-body">
+                    <p class="doc-card-description">Configuration options, modules, and function references.</p>
+                    <ul class="doc-card-topics">
+                        <li><span class="topic-icon">→</span> Flake Inputs & Outputs</li>
+                        <li><span class="topic-icon">→</span> Module Options</li>
+                        <li><span class="topic-icon">→</span> Library Functions</li>
+                        <li><span class="topic-icon">→</span> Service Configurations</li>
+                        <li><span class="topic-icon">→</span> Environment Variables</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="doc-card">
+                <div class="doc-card-header">
+                    <span class="doc-card-icon">🗺️</span>
+                    <span class="doc-card-title">Roadmap & Goals</span>
+                </div>
+                <div class="doc-card-body">
+                    <p class="doc-card-description">Development goals, future plans, and project roadmap.</p>
+                    <ul class="doc-card-topics">
+                        <li><span class="topic-icon">→</span> Current Development Goals</li>
+                        <li><span class="topic-icon">→</span> Short-term Roadmap</li>
+                        <li><span class="topic-icon">→</span> Long-term Vision</li>
+                        <li><span class="topic-icon">→</span> Technical Debt</li>
+                        <li><span class="topic-icon">→</span> Success Metrics</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="quick-start">
+            <h2>📊 Repository Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">19</div>
+                    <div class="stat-label">Machine Configurations</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">26</div>
+                    <div class="stat-label">Environment Modules</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">18</div>
+                    <div class="stat-label">Service Configurations</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">19</div>
+                    <div class="stat-label">System Modifiers</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="version-info">
+                    <p>NixOS Configuration Documentation v2.0</p>
+                    <p>Managed with Nix flakes and deployed via WireGuard VPN</p>
+                </div>
+                <div class="last-updated">
+                    <p>Last Updated: April 15, 2026</p>
+                    <p>Generated by OpenCode Agent Fleet</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

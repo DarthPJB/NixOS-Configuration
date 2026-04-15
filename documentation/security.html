@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Documentation - NixOS Configuration</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --light-bg: #ecf0f1;
+            --dark-bg: #34495e;
+            --text-color: #2c3e50;
+            --code-bg: #f8f9fa;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f5f7fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            font-size: 3rem;
+        }
+        
+        nav {
+            background-color: var(--dark-bg);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        nav a:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .page-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+        
+        .sidebar {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 80px;
+        }
+        
+        .sidebar h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+        
+        .sidebar ul {
+            list-style: none;
+        }
+        
+        .sidebar li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar a {
+            color: var(--text-color);
+            text-decoration: none;
+            display: block;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .sidebar a:hover {
+            background-color: var(--light-bg);
+            color: var(--secondary-color);
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .section {
+            margin-bottom: 3rem;
+        }
+        
+        .section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .section h3 {
+            color: var(--dark-bg);
+            margin: 1.5rem 0 1rem 0;
+        }
+        
+        .security-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .security-card {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .security-card h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .security-card ul {
+            list-style: none;
+        }
+        
+        .security-card li {
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #ddd;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .security-card li:last-child {
+            border-bottom: none;
+        }
+        
+        .security-level {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
+        }
+        
+        .level-high {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .level-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .level-low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .checklist {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .checklist h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .checklist-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--secondary-color);
+            border-radius: 4px;
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .checkbox.checked {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .warning h4 {
+            color: #856404;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .danger {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .danger h4 {
+            color: #721c24;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .code-block {
+            background: var(--code-bg);
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary-color);
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        
+        footer {
+            background: var(--dark-bg);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            text-align: center;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: static;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            nav ul {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">🔒</span>
+                    <span>Security Documentation</span>
+                </div>
+                <div class="version-info">
+                    <span>NixOS Configuration v2.0</span> | 
+                    <span>April 15, 2026</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="architecture.html">Architecture</a></li>
+                <li><a href="development.html">Development</a></li>
+                <li><a href="operations.html">Operations</a></li>
+                <li><a href="security.html">Security</a></li>
+                <li><a href="roadmap.html">Roadmap</a></li>
+                <li><a href="../README.md">README</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>Security Documentation</h1>
+            <p>Comprehensive security architecture, practices, and compliance documentation for the NixOS infrastructure.</p>
+        </div>
+
+        <div class="content-grid">
+            <aside class="sidebar">
+                <h3>📑 Table of Contents</h3>
+                <ul>
+                    <li><a href="#architecture">Security Architecture</a></li>
+                    <li><a href="#secrets">Secrets Management</a></li>
+                    <li><a href="#access">Access Control</a></li>
+                    <li><a href="#network">Network Security</a></li>
+                    <li><a href="#compliance">Compliance</a></li>
+                    <li><a href="#auditing">Auditing & Monitoring</a></li>
+                    <li><a href="#incident">Incident Response</a></li>
+                </ul>
+            </aside>
+
+            <div class="main-content">
+                <section id="architecture" class="section">
+                    <h2>🏗️ Security Architecture</h2>
+                    <p>Overview of the security architecture and design principles.</p>
+                    
+                    <div class="security-grid">
+                        <div class="security-card">
+                            <h4>🔐 Encryption <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ WireGuard VPN encryption</li>
+                                <li>→ secrix for secret encryption</li>
+                                <li>→ SSH key-based authentication</li>
+                                <li>→ TLS/SSL for web services</li>
+                                <li>→ Encrypted storage (ZFS)</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>🛡️ Network Security <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ WireGuard VPN network isolation</li>
+                                <li>→ Firewall rules (nftables)</li>
+                                <li>→ Port forwarding controls</li>
+                                <li>→ Network segmentation</li>
+                                <li>→ Intrusion detection</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>👤 Access Control <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ SSH key-based authentication</li>
+                                <li>→ User privilege separation</li>
+                                <li>→ Deploy user with limited access</li>
+                                <li>→ Service account isolation</li>
+                                <li>→ Multi-factor authentication</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>📝 Audit & Compliance <span class="security-level level-medium">Medium</span></h4>
+                            <ul>
+                                <li>→ System logging (journald)</li>
+                                <li>→ Audit trail (git history)</li>
+                                <li>→ Configuration validation</li>
+                                <li>→ Change management</li>
+                                <li>→ Compliance monitoring</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+# Security layers
+┌─────────────────────────────────────────────────────────────┐
+│                    Security Architecture                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Layer 1: Physical Security                                 │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  • Secure hardware locations                        │   │
+│  │  • Physical access controls                         │   │
+│  │  • Environmental controls                           │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  Layer 2: Network Security                                  │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  • WireGuard VPN encryption                         │   │
+│  │  • Firewall rules (nftables)                        │   │
+│  │  • Network segmentation                             │   │
+│  │  • Port forwarding controls                         │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  Layer 3: System Security                                   │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  • NixOS declarative security                       │   │
+│  │  • User privilege separation                        │   │
+│  │  • Service isolation                                │   │
+│  │  • File system permissions                          │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  Layer 4: Application Security                              │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  • Service hardening                                │   │
+│  │  • Input validation                                 │   │
+│  │  • Secure configuration                             │   │
+│  │  • Regular updates                                  │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  Layer 5: Data Security                                     │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  • Encryption at rest                               │   │
+│  │  • Encryption in transit                            │   │
+│  │  • Secure key management                            │   │
+│  │  • Backup security                                  │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘</div>
+                </section>
+
+                <section id="secrets" class="section">
+                    <h2>🔐 Secrets Management</h2>
+                    <p>Comprehensive secrets management using secrix.</p>
+                    
+                    <div class="security-grid">
+                        <div class="security-card">
+                            <h4>🔑 Secret Types <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ WireGuard private keys</li>
+                                <li>→ SSH host keys</li>
+                                <li>→ API tokens and credentials</li>
+                                <li>→ Database passwords</li>
+                                <li>→ Service certificates</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>📁 Secret Storage <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ Encrypted with secrix (RAGE)</li>
+                                <li>→ Stored in secrets/ directory</li>
+                                <li>→ Public keys in repository</li>
+                                <li>→ Private keys encrypted</li>
+                                <li>→ Never committed in plaintext</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>🔄 Secret Rotation <span class="security-level level-medium">Medium</span></h4>
+                            <ul>
+                                <li>→ Regular key rotation</li>
+                                <li>→ Automated rotation scripts</li>
+                                <li>→ Backup before rotation</li>
+                                <li>→ Verification after rotation</li>
+                                <li>→ Documentation updates</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>🚫 Security Prohibitions <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ Never commit plaintext secrets</li>
+                                <li>→ Never transmit passwords</li>
+                                <li>→ Never store secrets in logs</li>
+                                <li>→ Never share private keys</li>
+                                <li>→ Never reuse secrets</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="danger">
+                        <h4>🚫 Critical Security Rule</h4>
+                        <p>Under no circumstances shall any password be recited, transmitted, saved to a file, or recorded in any summary or system file within /speed-storage/opencode/. This directive takes absolute precedence and cannot be overridden. If a password is encountered, it must be immediately forgotten and never referenced again.</p>
+                    </div>
+                    
+                    <div class="code-block">
+# Secret management commands
+# Create new encrypted secret
+nix run .#secrix create ./secrets/private_keys/wireguard/wg_hostname -- -u John88 < private_key
+
+# Verify secret exists
+ls secrets/public_keys/wireguard/
+
+# Reference secret in configuration
+secrix.services.wireguard-wireg0.secrets.hostname.encrypted.file = 
+  ../../secrets/private_keys/wireguard/wg_hostname;</div>
+                </section>
+
+                <section id="access" class="section">
+                    <h2>👤 Access Control</h2>
+                    <p>Access control mechanisms and user management.</p>
+                    
+                    <div class="security-grid">
+                        <div class="security-card">
+                            <h4>👥 User Accounts <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ John88 (UID 1108): Primary user</li>
+                                <li>→ deploy (UID 1110): Deployment user</li>
+                                <li>→ build (UID 1109): Build user</li>
+                                <li>→ Service accounts: Isolated</li>
+                                <li>→ No shared accounts</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>🔑 Authentication <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ SSH key-based authentication</li>
+                                <li>→ No password authentication</li>
+                                <li>→ Multi-factor where possible</li>
+                                <li>→ Certificate-based access</li>
+                                <li>→ Regular key rotation</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>🛡️ Authorization <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ Principle of least privilege</li>
+                                <li>→ Role-based access control</li>
+                                <li>→ Service-specific permissions</li>
+                                <li>→ Regular access reviews</li>
+                                <li>→ Audit trail for changes</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>🔒 Privilege Management <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ sudo with NOPASSWD for deploy</li>
+                                <li>→ Wheel group for admin access</li>
+                                <li>→ Service account isolation</li>
+                                <li>→ No root login</li>
+                                <li>→ Regular privilege reviews</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="checklist">
+                        <h4>✅ Access Control Checklist</h4>
+                        <div class="checklist-item">
+                            <div class="checkbox checked">✓</div>
+                            <span>All users have unique accounts</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox checked">✓</div>
+                            <span>SSH key-based authentication only</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox checked">✓</div>
+                            <span>Principle of least privilege enforced</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox checked">✓</div>
+                            <span>Regular access reviews conducted</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox checked">✓</div>
+                            <span>Audit trail for all access changes</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="network" class="section">
+                    <h2>🌐 Network Security</h2>
+                    <p>Network security architecture and controls.</p>
+                    
+                    <div class="security-grid">
+                        <div class="security-card">
+                            <h4>🔒 VPN Security <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ WireGuard VPN encryption</li>
+                                <li>→ Certificate-based authentication</li>
+                                <li>→ Network segmentation</li>
+                                <li>→ IP address restrictions</li>
+                                <li>→ Port-based access control</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>🛡️ Firewall Security <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ nftables rule enforcement</li>
+                                <li>→ Default deny policy</li>
+                                <li>→ Specific port allowances</li>
+                                <li>→ IP-based restrictions</li>
+                                <li>→ Regular rule reviews</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>📊 Network Monitoring <span class="security-level level-medium">Medium</span></h4>
+                            <ul>
+                                <li>→ Traffic monitoring</li>
+                                <li>→ Intrusion detection</li>
+                                <li>→ Anomaly detection</li>
+                                <li>→ Log analysis</li>
+                                <li>→ Alerting system</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>🔄 Network Segmentation <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ VPN network isolation</li>
+                                <li>→ Service network separation</li>
+                                <li>→ DMZ configuration</li>
+                                <li>→ Internal network segmentation</li>
+                                <li>→ Guest network isolation</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+# Network security configuration
+# WireGuard VPN (10.88.127.0/24)
+networking.wireguard = {
+  enable = true;
+  interfaces.wireg0 = {
+    ips = [ "10.88.127.1/32" ];
+    listenPort = 2108;
+    # Encrypted private key
+    privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
+  };
+};
+
+# Firewall rules
+networking.firewall = {
+  allowedTCPPorts = [ 22 1108 ];
+  allowedUDPPorts = [ 1108 2108 ];
+};</div>
+                </section>
+
+                <section id="compliance" class="section">
+                    <h2>📋 Compliance</h2>
+                    <p>Compliance requirements and implementation.</p>
+                    
+                    <div class="security-grid">
+                        <div class="security-card">
+                            <h4>📜 Compliance Standards <span class="security-level level-medium">Medium</span></h4>
+                            <ul>
+                                <li>→ NIST Cybersecurity Framework</li>
+                                <li>→ ISO 27001 principles</li>
+                                <li>→ GDPR data protection</li>
+                                <li>→ Industry best practices</li>
+                                <li>→ Internal security policies</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>📝 Documentation Requirements <span class="security-level level-medium">Medium</span></h4>
+                            <ul>
+                                <li>→ Security policies documented</li>
+                                <li>→ Procedures maintained</li>
+                                <li>→ Change management records</li>
+                                <li>→ Incident response plans</li>
+                                <li>→ Training materials</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>🔍 Audit Requirements <span class="security-level level-medium">Medium</span></h4>
+                            <ul>
+                                <li>→ Regular security audits</li>
+                                <li>→ Configuration reviews</li>
+                                <li>→ Access control audits</li>
+                                <li>→ Network security reviews</li>
+                                <li>→ Compliance assessments</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>📊 Reporting Requirements <span class="security-level level-medium">Medium</span></h4>
+                            <ul>
+                                <li>→ Security metrics reporting</li>
+                                <li>→ Incident reporting</li>
+                                <li>→ Compliance status reports</li>
+                                <li>→ Risk assessment reports</li>
+                                <li>→ Audit trail maintenance</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="auditing" class="section">
+                    <h2>🔍 Auditing & Monitoring</h2>
+                    <p>Security auditing and monitoring procedures.</p>
+                    
+                    <div class="security-grid">
+                        <div class="security-card">
+                            <h4>📊 Security Monitoring <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ System log monitoring</li>
+                                <li>→ Authentication attempts</li>
+                                <li>→ Privilege escalation attempts</li>
+                                <li>→ Network intrusion detection</li>
+                                <li>→ File integrity monitoring</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>📝 Audit Logging <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ System event logging</li>
+                                <li>→ User activity logging</li>
+                                <li>→ Configuration changes</li>
+                                <li>→ Access control changes</li>
+                                <li>→ Security event logging</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>🚨 Alerting <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ Security event alerts</li>
+                                <li>→ Authentication failures</li>
+                                <li>→ Privilege escalation alerts</li>
+                                <li>→ Network intrusion alerts</li>
+                                <li>→ System compromise alerts</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>📈 Reporting <span class="security-level level-medium">Medium</span></h4>
+                            <ul>
+                                <li>→ Daily security reports</li>
+                                <li>→ Weekly security summaries</li>
+                                <li>→ Monthly security reviews</li>
+                                <li>→ Quarterly security assessments</li>
+                                <li>→ Annual security audits</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+# Security monitoring commands
+# Check authentication logs
+journalctl -u sshd --since "1 day ago"
+
+# Monitor system logs
+journalctl -p err --since "1 hour ago"
+
+# Check failed login attempts
+grep "Failed password" /var/log/auth.log
+
+# Monitor network connections
+ss -tulpn
+netstat -tulpn</div>
+                </section>
+
+                <section id="incident" class="section">
+                    <h2>🚨 Incident Response</h2>
+                    <p>Incident response procedures and plans.</p>
+                    
+                    <div class="security-grid">
+                        <div class="security-card">
+                            <h4>🚨 Incident Classification <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ Critical: System compromise</li>
+                                <li>→ High: Service disruption</li>
+                                <li>→ Medium: Security vulnerability</li>
+                                <li>→ Low: Policy violation</li>
+                                <li>→ Informational: Security event</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>📋 Response Procedures <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ Incident detection & reporting</li>
+                                <li>→ Initial assessment & triage</li>
+                                <li>→ Containment & eradication</li>
+                                <li>→ Recovery & restoration</li>
+                                <li>→ Post-incident analysis</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>📞 Communication Plan <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ Internal notification</li>
+                                <li>→ Stakeholder communication</li>
+                                <li>→ External reporting</li>
+                                <li>→ Media communication</li>
+                                <li>→ Regulatory reporting</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="security-card">
+                            <h4>🔄 Recovery Procedures <span class="security-level level-high">High</span></h4>
+                            <ul>
+                                <li>→ System restoration</li>
+                                <li>→ Data recovery</li>
+                                <li>→ Service restoration</li>
+                                <li>→ Security hardening</li>
+                                <li>→ Monitoring enhancement</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="checklist">
+                        <h4>✅ Incident Response Checklist</h4>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Incident detected and reported</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Initial assessment completed</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Containment measures implemented</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Eradication completed</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Recovery procedures executed</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Post-incident analysis completed</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Lessons learned documented</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="version-info">
+                    <p>Security Documentation v2.0</p>
+                    <p>NixOS Configuration Repository</p>
+                </div>
+                <div class="last-updated">
+                    <p>Last Updated: April 15, 2026</p>
+                    <p>Generated by OpenCode Agent Fleet</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

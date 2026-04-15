@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roadmap & Development Goals - NixOS Configuration</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --light-bg: #ecf0f1;
+            --dark-bg: #34495e;
+            --text-color: #2c3e50;
+            --code-bg: #f8f9fa;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f5f7fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            font-size: 3rem;
+        }
+        
+        nav {
+            background-color: var(--dark-bg);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        nav a:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .page-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+        
+        .sidebar {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 80px;
+        }
+        
+        .sidebar h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+        
+        .sidebar ul {
+            list-style: none;
+        }
+        
+        .sidebar li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar a {
+            color: var(--text-color);
+            text-decoration: none;
+            display: block;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .sidebar a:hover {
+            background-color: var(--light-bg);
+            color: var(--secondary-color);
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .section {
+            margin-bottom: 3rem;
+        }
+        
+        .section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .section h3 {
+            color: var(--dark-bg);
+            margin: 1.5rem 0 1rem 0;
+        }
+        
+        .timeline {
+            position: relative;
+            margin: 2rem 0;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--secondary-color);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+            padding-left: 60px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--secondary-color);
+            border: 4px solid white;
+            box-shadow: 0 0 0 4px var(--secondary-color);
+        }
+        
+        .timeline-item.completed::before {
+            background: var(--success-color);
+            box-shadow: 0 0 0 4px var(--success-color);
+        }
+        
+        .timeline-item.in-progress::before {
+            background: var(--warning-color);
+            box-shadow: 0 0 0 4px var(--warning-color);
+        }
+        
+        .timeline-item.planned::before {
+            background: var(--light-bg);
+            box-shadow: 0 0 0 4px var(--light-bg);
+        }
+        
+        .timeline-content {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .timeline-content h4 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .timeline-content p {
+            color: #5d6d7e;
+            margin-bottom: 0.5rem;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
+        }
+        
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-in-progress {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-planned {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+        
+        .status-future {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .goal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .goal-card {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .goal-card h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .goal-card ul {
+            list-style: none;
+        }
+        
+        .goal-card li {
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #ddd;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .goal-card li:last-child {
+            border-bottom: none;
+        }
+        
+        .progress-bar {
+            background: var(--light-bg);
+            border-radius: 10px;
+            height: 10px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--success-color);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--secondary-color);
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .checklist {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .checklist h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .checklist-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--secondary-color);
+            border-radius: 4px;
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .checkbox.checked {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .warning h4 {
+            color: #856404;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        footer {
+            background: var(--dark-bg);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            text-align: center;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: static;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            nav ul {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">🗺️</span>
+                    <span>Roadmap & Development Goals</span>
+                </div>
+                <div class="version-info">
+                    <span>NixOS Configuration v2.0</span> | 
+                    <span>April 15, 2026</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="architecture.html">Architecture</a></li>
+                <li><a href="development.html">Development</a></li>
+                <li><a href="operations.html">Operations</a></li>
+                <li><a href="security.html">Security</a></li>
+                <li><a href="roadmap.html">Roadmap</a></li>
+                <li><a href="../README.md">README</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>Roadmap & Development Goals</h1>
+            <p>Current development goals, future plans, and project roadmap for the NixOS configuration infrastructure.</p>
+        </div>
+
+        <div class="content-grid">
+            <aside class="sidebar">
+                <h3>📑 Table of Contents</h3>
+                <ul>
+                    <li><a href="#current">Current Goals</a></li>
+                    <li><a href="#timeline">Development Timeline</a></li>
+                    <li><a href="#short-term">Short-term Goals</a></li>
+                    <li><a href="#long-term">Long-term Vision</a></li>
+                    <li><a href="#technical-debt">Technical Debt</a></li>
+                    <li><a href="#metrics">Success Metrics</a></li>
+                    <li><a href="#priorities">Priorities</a></li>
+                </ul>
+            </aside>
+
+            <div class="main-content">
+                <section id="current" class="section">
+                    <h2>🎯 Current Development Goals</h2>
+                    <p>Active development goals and objectives for the current quarter.</p>
+                    
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value">19</div>
+                            <div class="metric-label">Machines Configured</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">26</div>
+                            <div class="metric-label">Environment Modules</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">18</div>
+                            <div class="metric-label">Service Configurations</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">100%</div>
+                            <div class="metric-label">Declarative Configuration</div>
+                        </div>
+                    </div>
+                    
+                    <div class="goal-grid">
+                        <div class="goal-card">
+                            <h4>🌐 Network Infrastructure</h4>
+                            <ul>
+                                <li>→ Complete IPv6 implementation</li>
+                                <li>→ Enhance network segmentation</li>
+                                <li>→ Improve VPN reliability</li>
+                                <li>→ Add network monitoring</li>
+                            </ul>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 75%;"></div>
+                            </div>
+                            <p>75% Complete</p>
+                        </div>
+                        
+                        <div class="goal-card">
+                            <h4>🔐 Security Enhancements</h4>
+                            <ul>
+                                <li>→ Implement LDAP authentication</li>
+                                <li>→ Add GPG-based SSH auth</li>
+                                <li>→ Enhance secret management</li>
+                                <li>→ Improve audit logging</li>
+                            </ul>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 60%;"></div>
+                            </div>
+                            <p>60% Complete</p>
+                        </div>
+                        
+                        <div class="goal-card">
+                            <h4>📊 Monitoring & Observability</h4>
+                            <ul>
+                                <li>→ Expand Prometheus metrics</li>
+                                <li>→ Enhance Grafana dashboards</li>
+                                <li>→ Add alerting system</li>
+                                <li>→ Implement log aggregation</li>
+                            </ul>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 80%;"></div>
+                            </div>
+                            <p>80% Complete</p>
+                        </div>
+                        
+                        <div class="goal-card">
+                            <h4>🚀 Automation & Deployment</h4>
+                            <ul>
+                                <li>→ Automate scraper configuration</li>
+                                <li>→ Enhance deployment automation</li>
+                                <li>→ Improve testing procedures</li>
+                                <li>→ Add rollback capabilities</li>
+                            </ul>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 70%;"></div>
+                            </div>
+                            <p>70% Complete</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="timeline" class="section">
+                    <h2>📅 Development Timeline</h2>
+                    <p>Timeline of completed, in-progress, and planned development items.</p>
+                    
+                    <div class="timeline">
+                        <div class="timeline-item completed">
+                            <div class="timeline-content">
+                                <h4>✅ Foundation & Core Infrastructure <span class="status-badge status-completed">Completed</span></h4>
+                                <p>Established core NixOS configuration, WireGuard VPN, and basic deployment infrastructure.</p>
+                                <p><strong>Q4 2025</strong></p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item completed">
+                            <div class="timeline-content">
+                                <h4>✅ Machine Expansion & Service Integration <span class="status-badge status-completed">Completed</span></h4>
+                                <p>Expanded to 19 machines, integrated monitoring (Prometheus/Grafana), and added core services.</p>
+                                <p><strong>Q1 2026</strong></p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item in-progress">
+                            <div class="timeline-content">
+                                <h4>🔄 Security & Authentication <span class="status-badge status-in-progress">In Progress</span></h4>
+                                <p>Implementing LDAP authentication, GPG-based SSH, and enhanced security measures.</p>
+                                <p><strong>Q2 2026</strong></p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item planned">
+                            <div class="timeline-content">
+                                <h4>📋 Automation & Advanced Features <span class="status-badge status-planned">Planned</span></h4>
+                                <p>Automating scraper configuration, enhancing deployment automation, and adding advanced features.</p>
+                                <p><strong>Q3 2026</strong></p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item planned">
+                            <div class="timeline-content">
+                                <h4>📋 Optimization & Scaling <span class="status-badge status-planned">Planned</span></h4>
+                                <p>Performance optimization, scaling infrastructure, and advanced monitoring capabilities.</p>
+                                <p><strong>Q4 2026</strong></p>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item planned">
+                            <div class="timeline-content">
+                                <h4>📋 Enterprise Features <span class="status-badge status-future">Future</span></h4>
+                                <p>Multi-site deployment, advanced compliance features, and enterprise-grade capabilities.</p>
+                                <p><strong>2027</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="short-term" class="section">
+                    <h2>📋 Short-term Goals (Next 3 Months)</h2>
+                    <p>Immediate development priorities and objectives.</p>
+                    
+                    <div class="goal-grid">
+                        <div class="goal-card">
+                            <h4>🌐 Network Enhancements</h4>
+                            <ul>
+                                <li>→ Complete IPv6 forwarding configuration</li>
+                                <li>→ Document nixinate usage thoroughly</li>
+                                <li>→ Integrate enable-wg.nix with cortex-alpha config</li>
+                                <li>→ Standardize IP assignment patterns</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="goal-card">
+                            <h4>🔐 Security Implementation</h4>
+                            <ul>
+                                <li>→ Implement LDAP authentication system</li>
+                                <li>→ Add GPG-based SSH authentication</li>
+                                <li>→ Enhance secret rotation procedures</li>
+                                <li>→ Improve audit logging capabilities</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="goal-card">
+                            <h4>🔧 Automation Development</h4>
+                            <ul>
+                                <li>→ Automate web scraper configuration</li>
+                                <li>→ Enhance deployment automation scripts</li>
+                                <li>→ Improve testing automation</li>
+                                <li>→ Add automated rollback procedures</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="goal-card">
+                            <h4>📚 Documentation Enhancement</h4>
+                            <ul>
+                                <li>→ Complete API reference documentation</li>
+                                <li>→ Enhance troubleshooting guides</li>
+                                <li>→ Create video tutorials</li>
+                                <li>→ Improve onboarding documentation</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="checklist">
+                        <h4>✅ Q2 2026 Goals Checklist</h4>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>IPv6 forwarding configuration complete</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>LDAP authentication implemented</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Scraper automation configured</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>GPG-based SSH authentication added</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Library consolidation completed</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="long-term" class="section">
+                    <h2>🔭 Long-term Vision (1-2 Years)</h2>
+                    <p>Long-term strategic goals and vision for the infrastructure.</p>
+                    
+                    <div class="goal-grid">
+                        <div class="goal-card">
+                            <h4>🏗️ Infrastructure Evolution</h4>
+                            <ul>
+                                <li>→ Multi-architecture support expansion</li>
+                                <li>→ Advanced disaster recovery</li>
+                                <li>→ Performance optimization at scale</li>
+                                <li>→ Automated capacity planning</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="goal-card">
+                            <h4>🔐 Advanced Security</h4>
+                            <ul>
+                                <li>→ Zero-trust architecture implementation</li>
+                                <li>→ Advanced threat detection</li>
+                                <li>→ Compliance automation</li>
+                                <li>→ Security orchestration</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="goal-card">
+                            <h4>🤖 AI/ML Integration</h4>
+                            <ul>
+                                <li>→ AI-powered monitoring</li>
+                                <li>→ Predictive maintenance</li>
+                                <li>→ Automated optimization</li>
+                                <li>→ Intelligent alerting</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="goal-card">
+                            <h4>🌍 Multi-site Deployment</h4>
+                            <ul>
+                                <li>→ Geographic distribution</li>
+                                <li>→ Edge computing integration</li>
+                                <li>→ Global load balancing</li>
+                                <li>→ Cross-region replication</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="warning">
+                        <h4>⚠️ Long-term Considerations</h4>
+                        <p>Long-term goals require careful planning and resource allocation. Prioritize based on business impact and technical feasibility. Regular review and adjustment of long-term goals is essential.</p>
+                    </div>
+                </section>
+
+                <section id="technical-debt" class="section">
+                    <h2>🔧 Technical Debt</h2>
+                    <p>Identified technical debt and remediation plans.</p>
+                    
+                    <div class="goal-grid">
+                        <div class="goal-card">
+                            <h4>🔴 High Priority Debt</h4>
+                            <ul>
+                                <li>→ Hardcoded IP addresses in configurations</li>
+                                <li>→ Incomplete IPv6 implementation</li>
+                                <li>→ Missing comprehensive testing</li>
+                                <li>→ Inconsistent naming conventions</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="goal-card">
+                            <h4>🟡 Medium Priority Debt</h4>
+                            <ul>
+                                <li>→ Commented-out legacy code</li>
+                                <li>→ TODO comments scattered in codebase</li>
+                                <li>→ Incomplete documentation</li>
+                                <li>→ Missing automation scripts</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="goal-card">
+                            <h4>🟢 Low Priority Debt</h4>
+                            <ul>
+                                <li>→ Code style inconsistencies</li>
+                                <li>→ Missing unit tests</li>
+                                <li>→ Outdated dependencies</li>
+                                <li>→ Performance optimizations</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="goal-card">
+                            <h4>📊 Debt Metrics</h4>
+                            <ul>
+                                <li>→ 15+ hardcoded IP addresses</li>
+                                <li>→ 20+ TODO comments</li>
+                                <li>→ 5+ commented code blocks</li>
+                                <li>→ 10+ missing documentation items</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="checklist">
+                        <h4>✅ Technical Debt Remediation Plan</h4>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Extract network addresses to central configuration</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Complete IPv6 implementation</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Add comprehensive integration tests</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Standardize naming conventions</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Remove commented legacy code</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="metrics" class="section">
+                    <h2>📊 Success Metrics</h2>
+                    <p>Key performance indicators and success metrics for the infrastructure.</p>
+                    
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value">99.9%</div>
+                            <div class="metric-label">Uptime Target</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">< 5min</div>
+                            <div class="metric-label">Deployment Time</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">100%</div>
+                            <div class="metric-label">Declarative Config</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">0</div>
+                            <div class="metric-label">Security Incidents</div>
+                        </div>
+                    </div>
+                    
+                    <div class="goal-grid">
+                        <div class="goal-card">
+                            <h4>📈 Performance Metrics</h4>
+                            <ul>
+                                <li>→ System uptime > 99.9%</li>
+                                <li>→ Deployment time < 5 minutes</li>
+                                <li>→ Build time < 10 minutes</li>
+                                <li>→ Recovery time < 15 minutes</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="goal-card">
+                            <h4>🔐 Security Metrics</h4>
+                            <ul>
+                                <li>→ Zero security incidents</li>
+                                <li>→ 100% encrypted secrets</li>
+                                <li>→ Regular security audits</li>
+                                <li>→ Compliance adherence</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="goal-card">
+                            <h4>👥 Operational Metrics</h4>
+                            <ul>
+                                <li>→ 100% configuration coverage</li>
+                                <li>→ Automated deployment success</li>
+                                <li>→ Documentation completeness</li>
+                                <li>→ Team productivity</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="goal-card">
+                            <h4>💰 Cost Metrics</h4>
+                            <ul>
+                                <li>→ Infrastructure cost optimization</li>
+                                <li>→ Resource utilization efficiency</li>
+                                <li>→ Operational cost reduction</li>
+                                <li>→ ROI measurement</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="priorities" class="section">
+                    <h2>🎯 Development Priorities</h2>
+                    <p>Current development priorities and focus areas.</p>
+                    
+                    <div class="goal-grid">
+                        <div class="goal-card">
+                            <h4>🔴 High Priority</h4>
+                            <ul>
+                                <li>→ IPv6 implementation completion</li>
+                                <li>→ Security enhancement (LDAP, GPG)</li>
+                                <li>→ Library consolidation</li>
+                                <li>→ Deployment automation</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="goal-card">
+                            <h4>🟡 Medium Priority</h4>
+                            <ul>
+                                <li>→ Documentation expansion</li>
+                                <li>→ Testing framework enhancement</li>
+                                <li>→ Monitoring improvements</li>
+                                <li>→ Performance optimization</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="goal-card">
+                            <h4>🟢 Low Priority</h4>
+                            <ul>
+                                <li>→ Code style standardization</li>
+                                <li>→ Legacy code cleanup</li>
+                                <li>→ Advanced features</li>
+                                <li>→ Experimental technologies</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="goal-card">
+                            <h4>📋 Backlog Items</h4>
+                            <ul>
+                                <li>→ Multi-site deployment planning</li>
+                                <li>→ AI/ML integration research</li>
+                                <li>→ Advanced compliance features</li>
+                                <li>→ Enterprise feature development</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="warning">
+                        <h4>⚠️ Priority Adjustment</h4>
+                        <p>Priorities are subject to change based on business needs, security requirements, and technical feasibility. Regular review and adjustment of priorities is essential for effective development.</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="version-info">
+                    <p>Roadmap & Development Goals v2.0</p>
+                    <p>NixOS Configuration Repository</p>
+                </div>
+                <div class="last-updated">
+                    <p>Last Updated: April 15, 2026</p>
+                    <p>Generated by OpenCode Agent Fleet</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

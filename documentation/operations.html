@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operations Guide - NixOS Configuration</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --light-bg: #ecf0f1;
+            --dark-bg: #34495e;
+            --text-color: #2c3e50;
+            --code-bg: #f8f9fa;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f5f7fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            font-size: 3rem;
+        }
+        
+        nav {
+            background-color: var(--dark-bg);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        nav a:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .page-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+        
+        .sidebar {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 80px;
+        }
+        
+        .sidebar h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+        
+        .sidebar ul {
+            list-style: none;
+        }
+        
+        .sidebar li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar a {
+            color: var(--text-color);
+            text-decoration: none;
+            display: block;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .sidebar a:hover {
+            background-color: var(--light-bg);
+            color: var(--secondary-color);
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .section {
+            margin-bottom: 3rem;
+        }
+        
+        .section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .section h3 {
+            color: var(--dark-bg);
+            margin: 1.5rem 0 1rem 0;
+        }
+        
+        .command {
+            font-family: 'Courier New', monospace;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin: 0.25rem 0;
+        }
+        
+        .code-block {
+            background: var(--code-bg);
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary-color);
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .task-card {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .task-card h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .task-card ul {
+            list-style: none;
+        }
+        
+        .task-card li {
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #ddd;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .task-card li:last-child {
+            border-bottom: none;
+        }
+        
+        .monitoring-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .monitoring-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--secondary-color);
+        }
+        
+        .monitoring-card h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .monitoring-card .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .monitoring-card .metric:last-child {
+            border-bottom: none;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-ok {
+            background: var(--success-color);
+        }
+        
+        .status-warning {
+            background: var(--warning-color);
+        }
+        
+        .status-error {
+            background: var(--accent-color);
+        }
+        
+        .procedure-step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .procedure-step:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .step-number {
+            background: var(--secondary-color);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-content h4 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .step-content p {
+            color: #5d6d7e;
+            margin-bottom: 0.5rem;
+        }
+        
+        .checklist {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .checklist h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .checklist-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--secondary-color);
+            border-radius: 4px;
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .checkbox.checked {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .warning h4 {
+            color: #856404;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .danger {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .danger h4 {
+            color: #721c24;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        footer {
+            background: var(--dark-bg);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            text-align: center;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: static;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            nav ul {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">⚙️</span>
+                    <span>Operations Guide</span>
+                </div>
+                <div class="version-info">
+                    <span>NixOS Configuration v2.0</span> | 
+                    <span>April 15, 2026</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="architecture.html">Architecture</a></li>
+                <li><a href="development.html">Development</a></li>
+                <li><a href="operations.html">Operations</a></li>
+                <li><a href="security.html">Security</a></li>
+                <li><a href="roadmap.html">Roadmap</a></li>
+                <li><a href="../README.md">README</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>Operations Guide</h1>
+            <p>Comprehensive guide for day-to-day operations, monitoring, and maintenance of the NixOS infrastructure.</p>
+        </div>
+
+        <div class="content-grid">
+            <aside class="sidebar">
+                <h3>📑 Table of Contents</h3>
+                <ul>
+                    <li><a href="#deployment">Deployment Operations</a></li>
+                    <li><a href="#monitoring">Monitoring & Alerting</a></li>
+                    <li><a href="#maintenance">Maintenance Procedures</a></li>
+                    <li><a href="#backup">Backup & Recovery</a></li>
+                    <li><a href="#performance">Performance Tuning</a></li>
+                    <li><a href="#troubleshooting">Troubleshooting</a></li>
+                    <li><a href="#runbooks">Runbooks</a></li>
+                </ul>
+            </aside>
+
+            <div class="main-content">
+                <section id="deployment" class="section">
+                    <h2>🚀 Deployment Operations</h2>
+                    <p>Standard operating procedures for deploying configurations.</p>
+                    
+                    <div class="procedure-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Pre-Deployment Checks</h4>
+                            <p>Verify system readiness before deployment.</p>
+                            <div class="command">nix flake check</div>
+                            <div class="command">nixos-rebuild build --flake .#hostname</div>
+                            <p>Check system resources and connectivity.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="procedure-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Test Deployment</h4>
+                            <p>Deploy in test mode to verify functionality.</p>
+                            <div class="command">nix run .#hostname</div>
+                            <p>Monitor services and verify operation.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="procedure-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Permanent Deployment</h4>
+                            <p>Apply configuration permanently after verification.</p>
+                            <div class="command">nix run .#hostname -- switch</div>
+                            <p>Verify all services are running correctly.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="procedure-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Post-Deployment Verification</h4>
+                            <p>Verify system operation after deployment.</p>
+                            <div class="command">systemctl status</div>
+                            <div class="command">journalctl -u servicename</div>
+                            <p>Test connectivity and service functionality.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="warning">
+                        <h4>⚠️ Deployment Safety</h4>
+                        <p>Always test deployments in test mode first. Never deploy to production without verification. Keep rollback capability.</p>
+                    </div>
+                </section>
+
+                <section id="monitoring" class="section">
+                    <h2>📊 Monitoring & Alerting</h2>
+                    <p>Monitoring infrastructure and alerting procedures.</p>
+                    
+                    <div class="monitoring-grid">
+                        <div class="monitoring-card">
+                            <h4>📈 Prometheus Metrics</h4>
+                            <div class="metric">
+                                <span><span class="status-indicator status-ok"></span>Node Exporter</span>
+                                <span>Port 3100</span>
+                            </div>
+                            <div class="metric">
+                                <span><span class="status-indicator status-ok"></span>DNSMASQ Exporter</span>
+                                <span>Port 3101</span>
+                            </div>
+                            <div class="metric">
+                                <span><span class="status-indicator status-ok"></span>Grafana</span>
+                                <span>Port 3000</span>
+                            </div>
+                        </div>
+                        
+                        <div class="monitoring-card">
+                            <h4>🔍 System Metrics</h4>
+                            <div class="metric">
+                                <span><span class="status-indicator status-ok"></span>CPU Usage</span>
+                                <span>Normal</span>
+                            </div>
+                            <div class="metric">
+                                <span><span class="status-indicator status-ok"></span>Memory Usage</span>
+                                <span>Normal</span>
+                            </div>
+                            <div class="metric">
+                                <span><span class="status-indicator status-ok"></span>Disk Usage</span>
+                                <span>Normal</span>
+                            </div>
+                        </div>
+                        
+                        <div class="monitoring-card">
+                            <h4>🌐 Network Metrics</h4>
+                            <div class="metric">
+                                <span><span class="status-indicator status-ok"></span>WireGuard VPN</span>
+                                <span>Connected</span>
+                            </div>
+                            <div class="metric">
+                                <span><span class="status-indicator status-ok"></span>SSH Service</span>
+                                <span>Running</span>
+                            </div>
+                            <div class="metric">
+                                <span><span class="status-indicator status-ok"></span>Nginx Proxy</span>
+                                <span>Running</span>
+                            </div>
+                        </div>
+                        
+                        <div class="monitoring-card">
+                            <h4>💾 Storage Metrics</h4>
+                            <div class="metric">
+                                <span><span class="status-indicator status-ok"></span>ZFS Pools</span>
+                                <span>Healthy</span>
+                            </div>
+                            <div class="metric">
+                                <span><span class="status-indicator status-ok"></span>Backup Status</span>
+                                <span>Current</span>
+                            </div>
+                            <div class="metric">
+                                <span><span class="status-indicator status-ok"></span>Nix Store</span>
+                                <span>Optimized</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+# Access monitoring interfaces
+# Prometheus: http://10.88.127.3:9090
+# Grafana: http://10.88.127.3:3000
+
+# Check node exporter status
+systemctl status prometheus-node-exporter
+
+# View system metrics
+htop
+df -h
+free -m</div>
+                </section>
+
+                <section id="maintenance" class="section">
+                    <h2>🔧 Maintenance Procedures</h2>
+                    <p>Regular maintenance procedures for system health.</p>
+                    
+                    <div class="task-grid">
+                        <div class="task-card">
+                            <h4>📅 Daily Maintenance</h4>
+                            <ul>
+                                <li>→ Check system logs for errors</li>
+                                <li>→ Verify service status</li>
+                                <li>→ Monitor disk usage</li>
+                                <li>→ Check backup status</li>
+                                <li>→ Review security alerts</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>📅 Weekly Maintenance</h4>
+                            <ul>
+                                <li>→ Run Nix garbage collection</li>
+                                <li>→ Update flake inputs</li>
+                                <li>→ Review system performance</li>
+                                <li>→ Test disaster recovery</li>
+                                <li>→ Update documentation</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>📅 Monthly Maintenance</h4>
+                            <ul>
+                                <li>→ Security audit</li>
+                                <li>→ Performance optimization</li>
+                                <li>→ Backup verification</li>
+                                <li>→ System updates</li>
+                                <li>→ Capacity planning</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>📅 Quarterly Maintenance</h4>
+                            <ul>
+                                <li>→ Full system backup</li>
+                                <li>→ Hardware inspection</li>
+                                <li>→ Security review</li>
+                                <li>→ Disaster recovery test</li>
+                                <li>→ Documentation update</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+# Nix garbage collection
+nix-collect-garbage -d
+
+# Update flake inputs
+nix flake update
+
+# Check system health
+systemctl --failed
+journalctl -p err --since "1 day ago"</div>
+                </section>
+
+                <section id="backup" class="section">
+                    <h2>💾 Backup & Recovery</h2>
+                    <p>Backup strategies and recovery procedures.</p>
+                    
+                    <div class="task-grid">
+                        <div class="task-card">
+                            <h4>🔄 Backup Strategy</h4>
+                            <ul>
+                                <li>→ Daily incremental backups</li>
+                                <li>→ Weekly full backups</li>
+                                <li>→ Monthly archive backups</li>
+                                <li>→ Off-site replication</li>
+                                <li>→ Encryption for all backups</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>📦 Backup Locations</h4>
+                            <ul>
+                                <li>→ Local NAS: /bulk-storage/</li>
+                                <li>→ Remote storage: S3-compatible</li>
+                                <li>→ Git repository: configurations</li>
+                                <li>→ Encrypted: secrix secrets</li>
+                                <li>→ Off-site: Remote backup server</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>🚨 Recovery Procedures</h4>
+                            <ul>
+                                <li>→ System recovery from backup</li>
+                                <li>→ Configuration restoration</li>
+                                <li>→ Data recovery</li>
+                                <li>→ Service restoration</li>
+                                <li>→ Verification testing</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>✅ Recovery Testing</h4>
+                            <ul>
+                                <li>→ Monthly recovery tests</li>
+                                <li>→ Backup integrity checks</li>
+                                <li>→ Recovery time measurement</li>
+                                <li>→ Documentation updates</li>
+                                <li>→ Procedure refinement</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+# Backup NixOS configuration
+git add .
+git commit -m "backup: $(date)"
+git push
+
+# Backup system data
+rsync -avz /important/data/ /backup/location/
+
+# Test recovery
+nixos-rebuild switch --flake .#hostname</div>
+                </section>
+
+                <section id="performance" class="section">
+                    <h2>⚡ Performance Tuning</h2>
+                    <p>Performance optimization procedures.</p>
+                    
+                    <div class="task-grid">
+                        <div class="task-card">
+                            <h4>🔧 System Optimization</h4>
+                            <ul>
+                                <li>→ Nix store optimization</li>
+                                <li>→ Kernel parameter tuning</li>
+                                <li>→ Service optimization</li>
+                                <li>→ Network tuning</li>
+                                <li>→ Storage optimization</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>📊 Performance Monitoring</h4>
+                            <ul>
+                                <li>→ CPU usage tracking</li>
+                                <li>→ Memory utilization</li>
+                                <li>→ Disk I/O monitoring</li>
+                                <li>→ Network throughput</li>
+                                <li>→ Service response times</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>🎯 Optimization Targets</h4>
+                            <ul>
+                                <li>→ Build times</li>
+                                <li>→ Deployment speed</li>
+                                <li>→ Service startup</li>
+                                <li>→ System responsiveness</li>
+                                <li>→ Resource utilization</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>📈 Performance Metrics</h4>
+                            <ul>
+                                <li>→ Build duration</li>
+                                <li>→ Deployment time</li>
+                                <li>→ Service uptime</li>
+                                <li>→ Response latency</li>
+                                <li>→ Resource efficiency</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+# Optimize Nix store
+nix-store --optimise
+
+# Check system performance
+iostat
+vmstat
+netstat -tulpn
+
+# Optimize builds
+nix build --max-jobs 4 --cores 2</div>
+                </section>
+
+                <section id="troubleshooting" class="section">
+                    <h2>🔧 Troubleshooting</h2>
+                    <p>Troubleshooting procedures for common issues.</p>
+                    
+                    <div class="task-grid">
+                        <div class="task-card">
+                            <h4>❌ Service Failures</h4>
+                            <ul>
+                                <li>→ Check service status</li>
+                                <li>→ Review service logs</li>
+                                <li>→ Verify configuration</li>
+                                <li>→ Check dependencies</li>
+                                <li>→ Restart service</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>🌐 Network Issues</h4>
+                            <ul>
+                                <li>→ Check connectivity</li>
+                                <li>→ Verify DNS resolution</li>
+                                <li>→ Check firewall rules</li>
+                                <li>→ Verify VPN status</li>
+                                <li>→ Test port connectivity</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>💾 Storage Issues</h4>
+                            <ul>
+                                <li>→ Check disk space</li>
+                                <li>→ Verify filesystem health</li>
+                                <li>→ Check ZFS pool status</li>
+                                <li>→ Review I/O performance</li>
+                                <li>→ Clean up temporary files</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>🔐 Authentication Issues</h4>
+                            <ul>
+                                <li>→ Check SSH keys</li>
+                                <li>→ Verify user permissions</li>
+                                <li>→ Check secret decryption</li>
+                                <li>→ Review access logs</li>
+                                <li>→ Test credentials</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+# Service troubleshooting
+systemctl status servicename
+journalctl -u servicename -f
+
+# Network troubleshooting
+ping 10.88.127.1
+traceroute 10.88.127.3
+ss -tulpn
+
+# Storage troubleshooting
+df -h
+zpool status
+iostat -x 1</div>
+                </section>
+
+                <section id="runbooks" class="section">
+                    <h2>📖 Runbooks</h2>
+                    <p>Step-by-step runbooks for common operations.</p>
+                    
+                    <div class="checklist">
+                        <h4>📋 New Machine Deployment Runbook</h4>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Generate hardware configuration</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Create machine directory and default.nix</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Generate WireGuard keys</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Add to wg_peers.nix</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Add to flake.nix</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Test configuration locally</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Deploy to machine</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Verify operation</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Update documentation</span>
+                        </div>
+                    </div>
+                    
+                    <div class="checklist">
+                        <h4>📋 Service Deployment Runbook</h4>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Create service configuration file</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Configure service options</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Add secrets if required</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Import in machine config</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Test configuration</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Deploy to target</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Verify service operation</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Update monitoring</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="version-info">
+                    <p>Operations Guide v2.0</p>
+                    <p>NixOS Configuration Repository</p>
+                </div>
+                <div class="last-updated">
+                    <p>Last Updated: April 15, 2026</p>
+                    <p>Generated by OpenCode Agent Fleet</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

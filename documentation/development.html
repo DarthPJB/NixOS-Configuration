@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Development Guide - NixOS Configuration</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --light-bg: #ecf0f1;
+            --dark-bg: #34495e;
+            --text-color: #2c3e50;
+            --code-bg: #f8f9fa;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f5f7fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            font-size: 3rem;
+        }
+        
+        nav {
+            background-color: var(--dark-bg);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        nav a:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .page-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+        
+        .sidebar {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 80px;
+        }
+        
+        .sidebar h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+        
+        .sidebar ul {
+            list-style: none;
+        }
+        
+        .sidebar li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar a {
+            color: var(--text-color);
+            text-decoration: none;
+            display: block;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .sidebar a:hover {
+            background-color: var(--light-bg);
+            color: var(--secondary-color);
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .section {
+            margin-bottom: 3rem;
+        }
+        
+        .section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .section h3 {
+            color: var(--dark-bg);
+            margin: 1.5rem 0 1rem 0;
+        }
+        
+        .workflow-step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .workflow-step:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .step-number {
+            background: var(--secondary-color);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-content h4 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .step-content p {
+            color: #5d6d7e;
+            margin-bottom: 0.5rem;
+        }
+        
+        .command {
+            font-family: 'Courier New', monospace;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin: 0.25rem 0;
+        }
+        
+        .code-block {
+            background: var(--code-bg);
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary-color);
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .task-card {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .task-card h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .task-card ul {
+            list-style: none;
+        }
+        
+        .task-card li {
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #ddd;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .task-card li:last-child {
+            border-bottom: none;
+        }
+        
+        .checklist {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .checklist h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .checklist-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--secondary-color);
+            border-radius: 4px;
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .checkbox.checked {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .best-practice {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .best-practice h4 {
+            color: #155724;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .warning h4 {
+            color: #856404;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .danger {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .danger h4 {
+            color: #721c24;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        footer {
+            background: var(--dark-bg);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            text-align: center;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: static;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            nav ul {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">👨‍💻</span>
+                    <span>Development Guide</span>
+                </div>
+                <div class="version-info">
+                    <span>NixOS Configuration v2.0</span> | 
+                    <span>April 15, 2026</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="architecture.html">Architecture</a></li>
+                <li><a href="development.html">Development</a></li>
+                <li><a href="operations.html">Operations</a></li>
+                <li><a href="security.html">Security</a></li>
+                <li><a href="roadmap.html">Roadmap</a></li>
+                <li><a href="../README.md">README</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>Development Guide</h1>
+            <p>Comprehensive guide for developing, testing, and contributing to the NixOS configuration repository.</p>
+        </div>
+
+        <div class="content-grid">
+            <aside class="sidebar">
+                <h3>📑 Table of Contents</h3>
+                <ul>
+                    <li><a href="#workflow">Development Workflow</a></li>
+                    <li><a href="#setup">Development Setup</a></li>
+                    <li><a href="#testing">Testing Procedures</a></li>
+                    <li><a href="#adding">Adding Components</a></li>
+                    <li><a href="#standards">Code Standards</a></li>
+                    <li><a href="#troubleshooting">Troubleshooting</a></li>
+                    <li><a href="#best-practices">Best Practices</a></li>
+                </ul>
+            </aside>
+
+            <div class="main-content">
+                <section id="workflow" class="section">
+                    <h2>🔄 Development Workflow</h2>
+                    <p>Standard workflow for making changes to the NixOS configuration.</p>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Branch Creation</h4>
+                            <p>Create a feature branch for your changes.</p>
+                            <div class="command">git checkout -b feature/your-feature-name</div>
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Local Development</h4>
+                            <p>Make your changes to the Nix configuration files.</p>
+                            <p>Edit files in appropriate directories: machines/, environments/, services/, etc.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Validation & Formatting</h4>
+                            <p>Format and validate your changes before testing.</p>
+                            <div class="command">nix fmt</div>
+                            <div class="command">nix flake check</div>
+                            <div class="command">nix flake show</div>
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Local Testing</h4>
+                            <p>Test your changes on a specific machine configuration.</p>
+                            <div class="command">nixos-rebuild build --flake .#hostname</div>
+                            <div class="command">nixos-rebuild build-vm --flake .#hostname</div>
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <h4>Commit & Push</h4>
+                            <p>Commit your changes with descriptive messages.</p>
+                            <div class="command">git add .</div>
+                            <div class="command">git commit -m "feat: descriptive commit message"</div>
+                            <div class="command">git push origin feature/your-feature-name</div>
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">6</div>
+                        <div class="step-content">
+                            <h4>Deployment Testing</h4>
+                            <p>Test deployment to target machine.</p>
+                            <div class="command">nix run .#hostname</div>
+                            <p>Monitor services and verify functionality.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="workflow-step">
+                        <div class="step-number">7</div>
+                        <div class="step-content">
+                            <h4>Permanent Deployment</h4>
+                            <p>Apply configuration permanently after verification.</p>
+                            <div class="command">nix run .#hostname -- switch</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="setup" class="section">
+                    <h2>🛠️ Development Setup</h2>
+                    <p>Prerequisites and setup for development.</p>
+                    
+                    <div class="checklist">
+                        <h4>✅ Prerequisites Checklist</h4>
+                        <div class="checklist-item">
+                            <div class="checkbox checked">✓</div>
+                            <span>Nix package manager installed</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox checked">✓</div>
+                            <span>Flakes experimental feature enabled</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox checked">✓</div>
+                            <span>Git repository cloned</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox checked">✓</div>
+                            <span>WireGuard VPN access configured</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox checked">✓</div>
+                            <span>SSH keys configured for deploy user</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox checked">✓</div>
+                            <span>Secrets decryption keys available</span>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+# Enable flakes
+echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+
+# Clone repository
+git clone https://github.com/DarthPJB/NixOS-Configuration.git
+cd NixOS-Configuration
+
+# Test flake evaluation
+nix flake show
+
+# Format code
+nix fmt
+
+# Validate configuration
+nix flake check</div>
+                </section>
+
+                <section id="testing" class="section">
+                    <h2>🧪 Testing Procedures</h2>
+                    <p>Comprehensive testing procedures for configuration changes.</p>
+                    
+                    <div class="task-grid">
+                        <div class="task-card">
+                            <h4>🔍 Static Analysis</h4>
+                            <ul>
+                                <li>→ <span class="command">nix fmt</span> - Format code</li>
+                                <li>→ <span class="command">nix flake check</span> - Validate syntax</li>
+                                <li>→ <span class="command">nix run .#deadnix</span> - Check dead code</li>
+                                <li>→ <span class="command">nix flake show</span> - Verify evaluation</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>🏗️ Build Testing</h4>
+                            <ul>
+                                <li>→ <span class="command">nixos-rebuild build --flake .#hostname</span></li>
+                                <li>→ <span class="command">nixos-rebuild build-vm --flake .#hostname</span></li>
+                                <li>→ <span class="command">nix build .#hostname</span></li>
+                                <li>→ Check build logs for errors</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>🚀 Deployment Testing</h4>
+                            <ul>
+                                <li>→ <span class="command">nix run .#hostname</span> - Test deploy</li>
+                                <li>→ <span class="command">ssh -p 1108 deploy@10.88.127.X</span></li>
+                                <li>→ Verify services start correctly</li>
+                                <li>→ Check system logs for errors</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>📊 Integration Testing</h4>
+                            <ul>
+                                <li>→ Test VPN connectivity</li>
+                                <li>→ Verify service dependencies</li>
+                                <li>→ Check network connectivity</li>
+                                <li>→ Validate secret decryption</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="warning">
+                        <h4>⚠️ Testing Requirements</h4>
+                        <p>Always test changes locally before deploying to production machines. Use VM testing for major changes. Never skip validation steps.</p>
+                    </div>
+                </section>
+
+                <section id="adding" class="section">
+                    <h2>➕ Adding Components</h2>
+                    <p>Step-by-step guides for adding new components to the infrastructure.</p>
+                    
+                    <div class="task-grid">
+                        <div class="task-card">
+                            <h4>💻 Add New Machine</h4>
+                            <ul>
+                                <li>→ Create <span class="command">machines/hostname/default.nix</span></li>
+                                <li>→ Generate hardware config</li>
+                                <li>→ Generate & encrypt WireGuard keys</li>
+                                <li>→ Add to <span class="command">lib/wg_peers.nix</span></li>
+                                <li>→ Add to <span class="command">flake.nix</span></li>
+                                <li>→ Test: <span class="command">nix fmt; nix flake check</span></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>📦 Add Package to Environment</h4>
+                            <ul>
+                                <li>→ Edit <span class="command">environments/env-name.nix</span></li>
+                                <li>→ Add to <span class="command">environment.systemPackages</span></li>
+                                <li>→ Test: <span class="command">nixos-rebuild build --flake .#hostname</span></li>
+                                <li>→ Verify package availability</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>⚙️ Add Service</h4>
+                            <ul>
+                                <li>→ Create <span class="command">services/service-name.nix</span></li>
+                                <li>→ Import in machine or environment config</li>
+                                <li>→ Configure service options</li>
+                                <li>→ Add secrets if needed</li>
+                                <li>→ Test service functionality</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>🔧 Add System Modifier</h4>
+                            <ul>
+                                <li>→ Create <span class="command">modifier_imports/modifier.nix</span></li>
+                                <li>→ Import in machine configurations</li>
+                                <li>→ Configure modifier options</li>
+                                <li>→ Test system behavior</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="standards" class="section">
+                    <h2>📏 Code Standards</h2>
+                    <p>Coding standards and conventions for the repository.</p>
+                    
+                    <div class="best-practice">
+                        <h4>✅ Nix Coding Standards</h4>
+                        <p>Follow these standards for consistent, maintainable code:</p>
+                        <ul>
+                            <li>Use <span class="command">lib.mkIf</span> for conditional configuration</li>
+                            <li>Use <span class="command">lib.mkDefault</span> for overridable defaults</li>
+                            <li>Use <span class="command">with pkgs; [...]</span> for package lists</li>
+                            <li>Use relative imports for local modules</li>
+                            <li>Keep modules focused on single responsibilities</li>
+                            <li>Use descriptive names matching purpose</li>
+                            <li>Validate with <span class="command">nix flake check</span> before committing</li>
+                            <li>Format code with <span class="command">nix fmt</span> for consistency</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="code-block">
+# Example module structure
+{ config, lib, pkgs, ... }:
+
+{
+  options = {
+    # Define module options
+  };
+
+  config = lib.mkIf config.module.enable {
+    # Implementation here
+  };
+}</div>
+                    
+                    <div class="danger">
+                        <h4>🚫 Prohibited Practices</h4>
+                        <p>These practices are strictly prohibited in this repository:</p>
+                        <ul>
+                            <li>❌ Docker usage (antithetical to Nix purity)</li>
+                            <li>❌ Cloud provider dependencies</li>
+                            <li>❌ Imperative configurations</li>
+                            <li>❌ Unpinned flake inputs</li>
+                            <li>❌ Committing unencrypted secrets</li>
+                            <li>❌ Direct nixpkgs_unstable input access</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section id="troubleshooting" class="section">
+                    <h2>🔧 Troubleshooting</h2>
+                    <p>Common issues and their solutions.</p>
+                    
+                    <div class="task-grid">
+                        <div class="task-card">
+                            <h4>❌ Build Failures</h4>
+                            <ul>
+                                <li>→ Check syntax with <span class="command">nix flake check</span></li>
+                                <li>→ Verify file paths are correct</li>
+                                <li>→ Check for missing imports</li>
+                                <li>→ Review build logs: <span class="command">nix log &lt;derivation&gt;</span></li>
+                                <li>→ Use <span class="command">nix repl</span> for debugging</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>🔌 Deployment Issues</h4>
+                            <ul>
+                                <li>→ Test SSH: <span class="command">ssh -p 1108 deploy@10.88.127.X</span></li>
+                                <li>→ Verify VPN connectivity</li>
+                                <li>→ Check deploy user permissions</li>
+                                <li>→ Verify secrix paths</li>
+                                <li>→ Check buildOn setting</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>🔐 Secret Issues</h4>
+                            <ul>
+                                <li>→ Check secrix configuration</li>
+                                <li>→ Verify public keys exist</li>
+                                <li>→ Test secret decryption</li>
+                                <li>→ Check file permissions</li>
+                                <li>→ Verify secret paths</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="task-card">
+                            <h4>🌐 Network Issues</h4>
+                            <ul>
+                                <li>→ Check WireGuard status</li>
+                                <li>→ Verify IP assignments</li>
+                                <li>→ Test connectivity between hosts</li>
+                                <li>→ Check firewall rules</li>
+                                <li>→ Verify DNS resolution</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="best-practices" class="section">
+                    <h2>🎯 Best Practices</h2>
+                    <p>Best practices for effective development.</p>
+                    
+                    <div class="best-practice">
+                        <h4>✅ Development Best Practices</h4>
+                        <ul>
+                            <li><strong>Test Early, Test Often:</strong> Validate changes at each step</li>
+                            <li><strong>Small Changes:</strong> Make incremental, testable changes</li>
+                            <li><strong>Documentation:</strong> Document significant changes</li>
+                            <li><strong>Backup:</strong> Ensure rollback capability</li>
+                            <li><strong>Monitoring:</strong> Monitor system after deployment</li>
+                            <li><strong>Security:</strong> Follow security best practices</li>
+                            <li><strong>Collaboration:</strong> Coordinate with other developers</li>
+                            <li><strong>Learning:</strong> Learn from past issues</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="checklist">
+                        <h4>✅ Pre-Commit Checklist</h4>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Run <span class="command">nix fmt</span> to format code</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Run <span class="command">nix flake check</span> to validate</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Run <span class="command">nix flake show</span> to verify evaluation</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Test build with <span class="command">nixos-rebuild build --flake .#hostname</span></span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Write descriptive commit message</span>
+                        </div>
+                        <div class="checklist-item">
+                            <div class="checkbox">□</div>
+                            <span>Verify no secrets are committed</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="version-info">
+                    <p>Development Guide v2.0</p>
+                    <p>NixOS Configuration Repository</p>
+                </div>
+                <div class="last-updated">
+                    <p>Last Updated: April 15, 2026</p>
+                    <p>Generated by OpenCode Agent Fleet</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

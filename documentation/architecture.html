@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architecture Documentation - NixOS Configuration</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --light-bg: #ecf0f1;
+            --dark-bg: #34495e;
+            --text-color: #2c3e50;
+            --code-bg: #f8f9fa;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f5f7fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            font-size: 3rem;
+        }
+        
+        nav {
+            background-color: var(--dark-bg);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        nav a:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .page-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+        
+        .sidebar {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            height: fit-content;
+            position: sticky;
+            top: 80px;
+        }
+        
+        .sidebar h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+        
+        .sidebar ul {
+            list-style: none;
+        }
+        
+        .sidebar li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar a {
+            color: var(--text-color);
+            text-decoration: none;
+            display: block;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .sidebar a:hover {
+            background-color: var(--light-bg);
+            color: var(--secondary-color);
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .section {
+            margin-bottom: 3rem;
+        }
+        
+        .section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .section h3 {
+            color: var(--dark-bg);
+            margin: 1.5rem 0 1rem 0;
+        }
+        
+        .architecture-diagram {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            border: 1px solid #ddd;
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .component-card {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .component-card h4 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .component-card ul {
+            list-style: none;
+        }
+        
+        .component-card li {
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #ddd;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .component-card li:last-child {
+            border-bottom: none;
+        }
+        
+        .machine-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .machine-table th {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+        }
+        
+        .machine-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .machine-table tr:hover {
+            background-color: var(--light-bg);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-server {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-workstation {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+        
+        .status-arm {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .network-diagram {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            border: 1px solid #ddd;
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        
+        .deployment-flow {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .deployment-step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .deployment-step:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .step-number {
+            background: var(--secondary-color);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .step-content h4 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .step-content p {
+            color: #5d6d7e;
+            margin-bottom: 0.5rem;
+        }
+        
+        .command {
+            font-family: 'Courier New', monospace;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        footer {
+            background: var(--dark-bg);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+            text-align: center;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: static;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            nav ul {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">🏗️</span>
+                    <span>Architecture Documentation</span>
+                </div>
+                <div class="version-info">
+                    <span>NixOS Configuration v2.0</span> | 
+                    <span>April 15, 2026</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="architecture.html">Architecture</a></li>
+                <li><a href="development.html">Development</a></li>
+                <li><a href="operations.html">Operations</a></li>
+                <li><a href="security.html">Security</a></li>
+                <li><a href="roadmap.html">Roadmap</a></li>
+                <li><a href="../README.md">README</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>System Architecture</h1>
+            <p>Comprehensive overview of the NixOS configuration architecture, network topology, and deployment infrastructure.</p>
+        </div>
+
+        <div class="content-grid">
+            <aside class="sidebar">
+                <h3>📑 Table of Contents</h3>
+                <ul>
+                    <li><a href="#overview">Architecture Overview</a></li>
+                    <li><a href="#components">Core Components</a></li>
+                    <li><a href="#network">Network Topology</a></li>
+                    <li><a href="#machines">Machine Inventory</a></li>
+                    <li><a href="#deployment">Deployment Architecture</a></li>
+                    <li><a href="#dependencies">Component Dependencies</a></li>
+                    <li><a href="#data-flow">Data Flow</a></li>
+                </ul>
+            </aside>
+
+            <div class="main-content">
+                <section id="overview" class="section">
+                    <h2>🏗️ Architecture Overview</h2>
+                    <p>This repository implements a declarative infrastructure management system using NixOS flakes. The architecture follows a hub-and-spoke model with WireGuard VPN as the central communication layer.</p>
+                    
+                    <div class="architecture-diagram">
+┌─────────────────────────────────────────────────────────────┐
+│                    NixOS Configuration                       │
+│                    Flake-based Infrastructure                │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
+│  │   flake.nix │    │  machines/  │    │ environments│     │
+│  │  (Entry)    │◄──►│  (19 hosts) │◄──►│  (26 envs)  │     │
+│  └─────────────┘    └─────────────┘    └─────────────┘     │
+│         │                   │                   │           │
+│         ▼                   ▼                   ▼           │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
+│  │   lib/      │    │  services/  │    │ modifier_   │     │
+│  │  (8 utils)  │    │  (7 svcs)   │    │  imports/   │     │
+│  └─────────────┘    └─────────────┘    └─────────────┘     │
+│         │                   │                   │           │
+│         └───────────────────┼───────────────────┘           │
+│                             ▼                               │
+│                    ┌─────────────────┐                      │
+│                    │   secrets/      │                      │
+│                    │  (secrix enc)   │                      │
+│                    └─────────────────┘                      │
+└─────────────────────────────────────────────────────────────┘</div>
+                </section>
+
+                <section id="components" class="section">
+                    <h2>⚙️ Core Components</h2>
+                    
+                    <div class="component-grid">
+                        <div class="component-card">
+                            <h4>flake.nix</h4>
+                            <ul>
+                                <li>→ Main entry point</li>
+                                <li>→ Defines mkX86_64/mkAarch64 functions</li>
+                                <li>→ Machine configurations</li>
+                                <li>→ Deployment apps (nixinate)</li>
+                                <li>→ Build/deploy-all utilities</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="component-card">
+                            <h4>machines/</h4>
+                            <ul>
+                                <li>→ 19 machine configurations</li>
+                                <li>→ Each with default.nix + hw-config</li>
+                                <li>→ Imports environments & services</li>
+                                <li>→ VPN configuration via enable-wg.nix</li>
+                                <li>→ Hardware-specific settings</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="component-card">
+                            <h4>environments/</h4>
+                            <ul>
+                                <li>→ 26 environment modules</li>
+                                <li>→ Software stacks (code, browsers, etc.)</li>
+                                <li>→ Desktop environments (i3, sway, etc.)</li>
+                                <li>→ Development tools</li>
+                                <li>→ System utilities</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="component-card">
+                            <h4>modules/enable-wg.nix</h4>
+                            <ul>
+                                <li>→ Primary VPN configuration module</li>
+                                <li>→ WireGuard interface setup</li>
+                                <li>→ SSH port configuration (1108)</li>
+                                <li>→ Secret key management</li>
+                                <li>→ Peer configuration</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="component-card">
+                            <h4>lib/</h4>
+                            <ul>
+                                <li>→ 8 shared utility functions</li>
+                                <li>→ wg_peers.nix: VPN peer generator</li>
+                                <li>→ mkNftables.nix: NAT rule generator</li>
+                                <li>→ mkProxyPass.nix: Nginx config</li>
+                                <li>→ Reusable across machines</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="component-card">
+                            <h4>secrets/</h4>
+                            <ul>
+                                <li>→ Encrypted via secrix</li>
+                                <li>→ WireGuard private keys</li>
+                                <li>→ SSH host keys</li>
+                                <li>→ Service credentials</li>
+                                <li>→ Public keys (safe to commit)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="network" class="section">
+                    <h2>🌐 Network Topology</h2>
+                    <p>The infrastructure uses a WireGuard VPN network with cortex-alpha as the central gateway.</p>
+                    
+                    <div class="network-diagram">
+┌─────────────────────────────────────────────────────────────┐
+│                    WireGuard VPN Network                     │
+│                      10.88.127.0/24                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │               cortex-alpha (Gateway)                │   │
+│  │                  10.88.127.1                        │   │
+│  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐  │   │
+│  │  │  NAT    │ │  DHCP   │ │  DNS    │ │  Nginx  │  │   │
+│  │  │  Rules  │ │  Server │ │  Server │ │  Proxy  │  │   │
+│  │  └─────────┘ └─────────┘ └─────────┘ └─────────┘  │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                           │                                 │
+│                           ▼                                 │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │                 Internal Network                     │   │
+│  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐  │   │
+│  │  │ local-  │ │ terminal│ │ terminal│ │   LINDA │  │   │
+│  │  │   nas   │ │  -zero  │ │  -nx-01 │ │  (88)   │  │   │
+│  │  │   (3)   │ │  (20)   │ │  (21)   │ │         │  │   │
+│  │  └─────────┘ └─────────┘ └─────────┘ └─────────┘  │   │
+│  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐  │   │
+│  │  │ alpha-  │ │ alpha-  │ │ alpha-  │ │ gaming- │  │   │
+│  │  │  one    │ │  two    │ │  three  │ │ host-1  │  │   │
+│  │  │ (108)   │ │  (21)   │ │ (107)   │ │  (52)   │  │   │
+│  │  └─────────┘ └─────────┘ └─────────┘ └─────────┘  │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                           │                                 │
+│                           ▼                                 │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │              ARM Devices (Raspberry Pi)              │   │
+│  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐  │   │
+│  │  │ display │ │ display │ │ display │ │  print  │  │   │
+│  │  │   -0    │ │   -1    │ │   -2    │ │control- │  │   │
+│  │  │  (40)   │ │  (41)   │ │  (42)   │ │  ler    │  │   │
+│  │  └─────────┘ └─────────┘ └─────────┘ └─────────┘  │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘</div>
+                </section>
+
+                <section id="machines" class="section">
+                    <h2>💻 Machine Inventory</h2>
+                    <p>Complete list of configured machines with their roles and network addresses.</p>
+                    
+                    <table class="machine-table">
+                        <thead>
+                            <tr>
+                                <th>Hostname</th>
+                                <th>IP Address</th>
+                                <th>Type</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>cortex-alpha</td>
+                                <td>10.88.127.1</td>
+                                <td>Server</td>
+                                <td>Gateway/Router, NAT, DHCP, DNS, Nginx</td>
+                                <td><span class="status-badge status-server">Server</span></td>
+                            </tr>
+                            <tr>
+                                <td>terminal-zero</td>
+                                <td>10.88.127.20</td>
+                                <td>Workstation</td>
+                                <td>Primary workstation (ThinkPad X220)</td>
+                                <td><span class="status-badge status-workstation">Workstation</span></td>
+                            </tr>
+                            <tr>
+                                <td>terminal-nx-01</td>
+                                <td>10.88.127.21</td>
+                                <td>Workstation</td>
+                                <td>NVIDIA workstation</td>
+                                <td><span class="status-badge status-workstation">Workstation</span></td>
+                            </tr>
+                            <tr>
+                                <td>local-nas</td>
+                                <td>10.88.127.3</td>
+                                <td>Server</td>
+                                <td>Storage array, Gitolite, Prometheus, Grafana</td>
+                                <td><span class="status-badge status-server">Server</span></td>
+                            </tr>
+                            <tr>
+                                <td>LINDA</td>
+                                <td>10.88.127.88</td>
+                                <td>Server</td>
+                                <td>Gaming host, Star Citizen</td>
+                                <td><span class="status-badge status-server">Server</span></td>
+                            </tr>
+                            <tr>
+                                <td>remote-worker</td>
+                                <td>10.88.127.50</td>
+                                <td>Server</td>
+                                <td>Web server (csfinancialconsulting.com)</td>
+                                <td><span class="status-badge status-server">Server</span></td>
+                            </tr>
+                            <tr>
+                                <td>alpha-one</td>
+                                <td>10.88.127.108</td>
+                                <td>Workstation</td>
+                                <td>Gaming workstation</td>
+                                <td><span class="status-badge status-workstation">Workstation</span></td>
+                            </tr>
+                            <tr>
+                                <td>alpha-two</td>
+                                <td>10.88.127.21</td>
+                                <td>Workstation</td>
+                                <td>Gaming workstation</td>
+                                <td><span class="status-badge status-workstation">Workstation</span></td>
+                            </tr>
+                            <tr>
+                                <td>alpha-three</td>
+                                <td>10.88.127.107</td>
+                                <td>Workstation</td>
+                                <td>Development workstation</td>
+                                <td><span class="status-badge status-workstation">Workstation</span></td>
+                            </tr>
+                            <tr>
+                                <td>gaming-host-1</td>
+                                <td>10.88.127.52</td>
+                                <td>Workstation</td>
+                                <td>Gaming system</td>
+                                <td><span class="status-badge status-workstation">Workstation</span></td>
+                            </tr>
+                            <tr>
+                                <td>storage-array</td>
+                                <td>10.88.127.4</td>
+                                <td>Server</td>
+                                <td>Storage array</td>
+                                <td><span class="status-badge status-server">Server</span></td>
+                            </tr>
+                            <tr>
+                                <td>remote-builder</td>
+                                <td>10.88.127.51</td>
+                                <td>Server</td>
+                                <td>Remote build server</td>
+                                <td><span class="status-badge status-server">Server</span></td>
+                            </tr>
+                            <tr>
+                                <td>print-controller</td>
+                                <td>10.88.127.30</td>
+                                <td>ARM</td>
+                                <td>3D printing controller (Klipper)</td>
+                                <td><span class="status-badge status-arm">ARM</span></td>
+                            </tr>
+                            <tr>
+                                <td>display-0</td>
+                                <td>10.88.127.40</td>
+                                <td>ARM</td>
+                                <td>Raspberry Pi display</td>
+                                <td><span class="status-badge status-arm">ARM</span></td>
+                            </tr>
+                            <tr>
+                                <td>display-1</td>
+                                <td>10.88.127.41</td>
+                                <td>ARM</td>
+                                <td>Raspberry Pi display</td>
+                                <td><span class="status-badge status-arm">ARM</span></td>
+                            </tr>
+                            <tr>
+                                <td>display-2</td>
+                                <td>10.88.127.42</td>
+                                <td>ARM</td>
+                                <td>Raspberry Pi display</td>
+                                <td><span class="status-badge status-arm">ARM</span></td>
+                            </tr>
+                            <tr>
+                                <td>beta-one</td>
+                                <td>ARMv7</td>
+                                <td>ARM</td>
+                                <td>ARM device</td>
+                                <td><span class="status-badge status-arm">ARM</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section id="deployment" class="section">
+                    <h2>🚀 Deployment Architecture</h2>
+                    <p>The deployment system uses nixinate for remote deployment via WireGuard VPN.</p>
+                    
+                    <div class="deployment-flow">
+                        <div class="deployment-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>Local Build & Validation</h4>
+                                <p>Build and validate configuration locally before deployment.</p>
+                                <div class="command">nixos-rebuild build --flake .#hostname</div>
+                            </div>
+                        </div>
+                        
+                        <div class="deployment-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>Test Deployment</h4>
+                                <p>Deploy to target machine in test mode (non-permanent).</p>
+                                <div class="command">nix run .#hostname</div>
+                            </div>
+                        </div>
+                        
+                        <div class="deployment-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>Permanent Deployment</h4>
+                                <p>Apply configuration permanently to target machine.</p>
+                                <div class="command">nix run .#hostname -- switch</div>
+                            </div>
+                        </div>
+                        
+                        <div class="deployment-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h4>Batch Deployment</h4>
+                                <p>Deploy to all configured hosts (whitelisted).</p>
+                                <div class="command">nix run .#deploy-all</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="dependencies" class="section">
+                    <h2>🔗 Component Dependencies</h2>
+                    <p>How components interact and depend on each other.</p>
+                    
+                    <div class="component-grid">
+                        <div class="component-card">
+                            <h4>Machine Dependencies</h4>
+                            <ul>
+                                <li>→ flake.nix (entry point)</li>
+                                <li>→ configuration.nix (base)</li>
+                                <li>→ hardware-configuration.nix</li>
+                                <li>→ environments/*.nix</li>
+                                <li>→ services/*.nix</li>
+                                <li>→ modifier_imports/*.nix</li>
+                                <li>→ modules/enable-wg.nix</li>
+                                <li>→ secrets/ (secrix)</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="component-card">
+                            <h4>Service Dependencies</h4>
+                            <ul>
+                                <li>→ services/*.nix</li>
+                                <li>→ server_services/*.nix</li>
+                                <li>→ lib/*.nix (utilities)</li>
+                                <li>→ secrets/ (credentials)</li>
+                                <li>→ locale/ (network config)</li>
+                                <li>→ users/ (access control)</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="component-card">
+                            <h4>Network Dependencies</h4>
+                            <ul>
+                                <li>→ cortex-alpha (gateway)</li>
+                                <li>→ WireGuard VPN (10.88.127.0/24)</li>
+                                <li>→ SSH port 1108 (deploy user)</li>
+                                <li>→ Nginx reverse proxy</li>
+                                <li>→ DNS/DHCP services</li>
+                                <li>→ NAT/port forwarding</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="data-flow" class="section">
+                    <h2>📊 Data Flow</h2>
+                    <p>How data flows through the system during deployment and operation.</p>
+                    
+                    <div class="architecture-diagram">
+┌─────────────────────────────────────────────────────────────┐
+│                    Deployment Data Flow                      │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Developer Workstation                                      │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ 1. Edit Nix files                                   │   │
+│  │ 2. Run `nix fmt`                                    │   │
+│  │ 3. Run `nix flake check`                            │   │
+│  │ 4. Run `nixos-rebuild build --flake .#hostname`     │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                           │                                 │
+│                           ▼                                 │
+│  WireGuard VPN (10.88.127.0/24)                            │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ 5. SSH to target via port 1108                      │   │
+│  │ 6. Copy closure to target                           │   │
+│  │ 7. Activate configuration                           │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                           │                                 │
+│                           ▼                                 │
+│  Target Machine                                            │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ 8. Switch to new generation                         │   │
+│  │ 9. Restart services                                 │   │
+│  │ 10. Verify operation                                │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘</div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="version-info">
+                    <p>Architecture Documentation v2.0</p>
+                    <p>NixOS Configuration Repository</p>
+                </div>
+                <div class="last-updated">
+                    <p>Last Updated: April 15, 2026</p>
+                    <p>Generated by OpenCode Agent Fleet</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

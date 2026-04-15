@@ -2,6 +2,8 @@
 
 This document describes the directory layout of the NixOS-Configuration repository.
 
+> **Note:** For comprehensive DevOps-standard documentation with HTML formatting, see the [Documentation Hub](index.html).
+
 ## Root Level
 - `flake.nix` - Main flake definition with inputs, outputs, and system configurations
 - `configuration.nix` - Legacy NixOS configuration (may be minimal or transitional)
