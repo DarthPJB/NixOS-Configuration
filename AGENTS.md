@@ -28,6 +28,18 @@ nix run .#build-all            # Build all configurations
 nix run .#deadnix  # Check for unused code
 ```
 
+### CI/CD Pipeline
+```bash
+# Generate CI workflow (outputs YAML to stdout)
+nix run .#generate-ci-workflow > .github/workflows/ci.yml
+
+# Validate generated workflow
+nix run .#validate-ci-workflow
+
+# View CI information
+nix eval --json .#ci-info
+```
+
 ## Architecture
 
 ### Flake Structure

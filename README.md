@@ -33,6 +33,31 @@ So; here's a little summary for the TL;DR types.
 ## VPN
 simplified heavily by using the module `./modules/enable-wg.nix`
 
+## CI/CD Pipeline
+Automated CI/CD pipeline with configuration generated from Nix evaluation:
+
+### Quick Commands
+```bash
+# Generate CI workflow (outputs YAML to stdout)
+nix run .#generate-ci-workflow > .github/workflows/ci.yml
+
+# Validate generated workflow
+nix run .#validate-ci-workflow
+```
+
+### CI Features
+- **19 Machine Coverage**: All machines tested (14 x86_64, 5 ARM)
+- **Job Dependencies**: Validation → Security → Builds → Deploy
+- **Artifact Preservation**: 7-day build retention, 30-day logs
+- **Enhanced Security**: Gitleaks + pattern matching + IP validation
+- **Manual Deployment**: Single-machine builds via workflow_dispatch
+
+### CI Jobs
+1. **Validation** - Formatting, flake check, dead code detection
+2. **Security** - Gitleaks scanning, secret detection, IP validation
+3. **Build x86** - Parallel builds for 14 x86_64 machines
+4. **Build ARM** - Parallel builds for 5 ARM machines
+5. **Deploy** - Manual trigger for single machine deployment
 
 ## TODO
 - Configure IPv6 forwarding

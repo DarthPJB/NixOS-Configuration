@@ -56,28 +56,38 @@ This will output build warnings to stderr (normal for `nix run`) and the YAML wo
 - Dead code detection (`nix run .#deadnix`)
 
 ### 2. Build x86 Job
-- Builds 12 x86_64 configurations in parallel
-- Machines: terminal-zero, terminal-nx-01, cortex-alpha, local-nas, alpha-one, alpha-two, alpha-three, LINDA, gaming-host-1, remote-worker, storage-array, remote-builder
+- **Depends on**: validation, security
+- Builds 14 x86_64 configurations in parallel
+- Machines: terminal-zero, terminal-nx-01, cortex-alpha, local-nas, alpha-one, alpha-two, alpha-three, LINDA, gaming-host-1, remote-worker, storage-array, remote-builder, **local-worker**, **obs-box**
+- Artifact upload with 7-day retention
 - Uploads build artifacts
 
 ### 3. Build ARM Job
-- Builds 4 ARM configurations
-- Machines: display-0, display-1, display-2, print-controller
+- **Depends on**: validation, security
+- Builds 5 ARM configurations
+- Machines: display-0, display-1, display-2, print-controller, **beta-one**
 - Generates SD card images for Raspberry Pi
+- Artifact upload with 7-day retention
 
 ### 4. Security Job
-- Secret detection in Nix files
+- **Gitleaks integration** for comprehensive secret scanning
+- Enhanced pattern matching with exclusions
+- IP address validation (VPN range only)
 - Configuration validation
 - Security best practices check
+- Full git history scanning (`fetch-depth: 0`)
 
 ### 5. Deploy Job
+- **Depends on**: validation, security, build-x86, build-arm
 - Manual trigger only (workflow_dispatch)
-- Requires machine selection and action choice
+- Builds **only the selected machine** (not all machines)
+- Action choices: build, test, deploy
+- 30-day log retention
 - Deployment safeguards in place
 
 ## Machine Matrix
 
-### x86_64 Machines (12)
+### x86_64 Machines (14)
 - terminal-zero
 - terminal-nx-01
 - cortex-alpha
@@ -90,12 +100,17 @@ This will output build warnings to stderr (normal for `nix run`) and the YAML wo
 - remote-worker
 - storage-array
 - remote-builder
+- **local-worker** (added)
+- **obs-box** (added)
 
-### ARM Machines (4)
+### ARM Machines (5)
 - display-0
 - display-1
 - display-2
 - print-controller
+- **beta-one** (added - armv7l-linux)
+
+**Total: 19 machines**
 
 ## Workflow Triggers
 
