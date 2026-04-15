@@ -127,6 +127,12 @@
               } else null
             )
             nixosConfigs);
+            
+      # CI/CD Configuration
+      ci = import ./ci.nix { inherit self lib; pkgs = nixpkgs; };
+      
+      # CI Generator Scripts
+      ci-generator = import ./ci/generate-workflow.nix { inherit self lib; pkgs = nixpkgs; };
     in
     {
       formatter."x86_64-linux" = nixpkgs.nixpkgs-fmt;
@@ -184,6 +190,16 @@
               echo "All deployments finished."
             '';
           });
+        };
+        generate-ci-workflow = {
+          type = "app";
+          meta.description = "Generate GitHub Actions workflow from Nix evaluation";
+          program = "${ci-generator.scripts.generate-ci-workflow}/bin/generate-ci-workflow";
+        };
+        validate-ci-workflow = {
+          type = "app";
+          meta.description = "Validate GitHub Actions workflow";
+          program = "${ci-generator.scripts.validate-ci-workflow}/bin/validate-ci-workflow";
         };
       };
 
@@ -360,5 +376,11 @@
 
         nixpkgs-fmt = lint-utils.linters.x86_64-linux.nixpkgs-fmt { src = self; };
       };
+
+      # CI Information Output
+      ci-info = ci-generator.ci-info;
+      
+      # CI Configuration (for external access)
+      ci = ci;
     };
 }
