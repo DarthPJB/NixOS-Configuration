@@ -86,7 +86,7 @@
     openFirewall = true;
     capSysAdmin = true;
   };
-
+virtualisation.docker.enable = true;
   #programs.zoom-us.enable = true;
   environment.systemPackages = [
     self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.looking-glass-client
