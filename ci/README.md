@@ -23,8 +23,8 @@ The CI/CD pipeline is unique because it generates GitHub Actions workflow config
 ## Quick Start
 
 ```bash
-# Generate CI workflow
-nix run .#generate-ci-workflow
+# Generate CI workflow (outputs YAML to stdout)
+nix run .#generate-ci-workflow > .github/workflows/ci.yml
 
 # Validate workflow
 nix run .#validate-ci-workflow
@@ -34,8 +34,18 @@ cat .github/workflows/ci.yml
 
 # Commit to repository
 git add .github/workflows/ci.yml
-git commit -m "ci: update GitHub Actions workflow"
+git commit -m "ci: add GitHub Actions workflow"
 ```
+
+## Usage
+
+The primary command generates YAML directly to stdout for redirection:
+
+```bash
+nix run .#generate-ci-workflow > .github/workflows/ci.yml
+```
+
+This will output build warnings to stderr (normal for `nix run`) and the YAML workflow to stdout, which is redirected to the file.
 
 ## CI Jobs
 

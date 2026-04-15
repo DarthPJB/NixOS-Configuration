@@ -1,0 +1,171 @@
+jobs:
+  build-arm:
+    name: Build ARM Configurations
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install Nix
+      uses: DeterminateSystems/nix-installer-action@main
+    - name: Setup Magic Nix Cache
+      uses: DeterminateSystems/magic-nix-cache-action@main
+    - name: Build configuration
+      run: nixos-rebuild build --flake .#${{ matrix.machine }}
+    strategy:
+      fail-fast: false
+      matrix:
+        machine:
+        - display-0
+        - display-1
+        - display-2
+        - print-controller
+  build-x86:
+    name: Build x86_64 Configurations
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install Nix
+      uses: DeterminateSystems/nix-installer-action@main
+    - name: Setup Magic Nix Cache
+      uses: DeterminateSystems/magic-nix-cache-action@main
+    - name: Build configuration
+      run: nixos-rebuild build --flake .#${{ matrix.machine }}
+    strategy:
+      fail-fast: false
+      matrix:
+        machine:
+        - terminal-zero
+        - terminal-nx-01
+        - cortex-alpha
+        - local-nas
+        - alpha-one
+        - alpha-two
+        - alpha-three
+        - LINDA
+        - gaming-host-1
+        - remote-worker
+        - storage-array
+        - remote-builder
+  deploy-prep:
+    if: github.event_name == 'workflow_dispatch'
+    name: Deployment Preparation
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install Nix
+      uses: DeterminateSystems/nix-installer-action@main
+    - name: Setup Magic Nix Cache
+      uses: DeterminateSystems/magic-nix-cache-action@main
+    - name: Build configuration
+      run: nixos-rebuild build --flake .#${{ matrix.machine }}
+    - name: Generate deployment script
+      run: 'echo "Deployment script for ${{ matrix.machine }}"
+
+        echo "nix run .#${{ matrix.machine }} -- switch"
+
+        '
+    strategy:
+      matrix:
+        machine:
+        - terminal-zero
+        - terminal-nx-01
+        - cortex-alpha
+        - local-nas
+        - alpha-one
+        - alpha-two
+        - alpha-three
+        - LINDA
+        - gaming-host-1
+        - remote-worker
+        - storage-array
+        - remote-builder
+        - display-0
+        - display-1
+        - display-2
+        - print-controller
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install Nix
+      uses: DeterminateSystems/nix-installer-action@main
+    - name: Check for secrets
+      run: "echo \"Checking for potential secrets in code...\"\n# Check for common\
+        \ secret patterns\nif grep -r \"password\\|secret\\|key\\|token\" --include=\"\
+        *.nix\" . | grep -v \"secrix\\|public\\|pub\\|README\\|documentation\"; then\n\
+        \  echo \"\u26A0\uFE0F  Potential secrets found in Nix files\"\n  exit 1\n\
+        fi\necho \"\u2705 No secrets found in Nix files\"\n"
+    - name: Validate secrix configuration
+      run: nix run .#secrix -- --help
+  validation:
+    name: Validation & Linting
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install Nix
+      uses: DeterminateSystems/nix-installer-action@main
+    - name: Setup Magic Nix Cache
+      uses: DeterminateSystems/magic-nix-cache-action@main
+    - name: Format check
+      run: nix fmt -- --check .
+    - name: Flake check
+      run: nix flake check
+    - name: Dead code check
+      run: nix run .#deadnix
+name: NixOS CI/CD
+'on':
+  pull_request:
+    branches:
+    - main
+    paths:
+    - '**.nix'
+    - flake.lock
+  push:
+    branches:
+    - main
+    - jb/ai/overlord-8
+    paths:
+    - '**.nix'
+    - flake.lock
+    - .github/workflows/**
+  workflow_dispatch:
+    inputs:
+      action:
+        default: build
+        description: Deployment action
+        options:
+        - build
+        - test
+        - deploy
+        required: true
+        type: choice
+      machine:
+        description: Machine to deploy
+        options:
+        - terminal-zero
+        - terminal-nx-01
+        - cortex-alpha
+        - local-nas
+        - alpha-one
+        - alpha-two
+        - alpha-three
+        - LINDA
+        - gaming-host-1
+        - remote-worker
+        - storage-array
+        - remote-builder
+        - display-0
+        - display-1
+        - display-2
+        - print-controller
+        required: true
+        type: choice
+permissions:
+  contents: read
+  deployments: write
+

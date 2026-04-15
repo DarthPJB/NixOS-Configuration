@@ -11,65 +11,53 @@ let
   # Generate workflow file
   workflow = ci.ci.github-actions;
   
+  # Create Python script for JSON to YAML conversion
+  json2yaml = pkgs.writeScriptBin "json2yaml" ''
+    #!${pkgs.python3}/bin/python3
+    import sys
+    import json
+    sys.path.append("${pkgs.python3Packages.pyyaml}/${pkgs.python3.sitePackages}")
+    import yaml
+    
+    data = json.load(sys.stdin)
+    print(yaml.dump(data, default_flow_style=False, sort_keys=False))
+  '';
+  
   # Create script to generate workflow
   generateScript = pkgs.writeShellApplication {
     name = "generate-ci-workflow";
-    runtimeInputs = [ pkgs.jq pkgs.nix ];
+    runtimeInputs = [ pkgs.nix json2yaml ];
     text = ''
       set -euo pipefail
       
-      echo "Generating GitHub Actions workflow..."
-      
-      # Create .github/workflows directory if it doesn't exist
-      mkdir -p .github/workflows
-      
-      # Generate workflow from Nix evaluation
-      # Note: This creates a JSON file that can be converted to YAML manually
-      # or using online tools. For now, we'll create a formatted JSON file.
-      nix eval --json .#ci.ci.github-actions | jq . > .github/workflows/ci.json
-      
-      echo "✅ Workflow generated at .github/workflows/ci.json"
-      echo ""
-      echo "Note: Generated as JSON. To convert to YAML:"
-      echo "  - Use online JSON to YAML converter"
-      echo "  - Or install yq: nix-shell -p yq"
-      echo "  - Then run: yq -P .github/workflows/ci.json > .github/workflows/ci.yml"
-      echo ""
-      echo "Workflow includes:"
-      echo "  - Validation & Linting"
-      echo "  - Build matrix for x86_64 machines"
-      echo "  - Build matrix for ARM machines"
-      echo "  - Security scanning"
-      echo "  - Manual deployment triggers"
-      echo ""
-      echo "To commit:"
-      echo "  git add .github/workflows/ci.json"
-      echo "  git commit -m \"ci: add GitHub Actions workflow\""
+      # Generate workflow from Nix evaluation and convert to YAML
+      # Only stdout contains the JSON, stderr contains warnings (which we ignore)
+      nix eval --json .#ci.ci.github-actions 2>/dev/null | json2yaml
     '';
   };
   
   # Validate workflow script
   validateScript = pkgs.writeShellApplication {
     name = "validate-ci-workflow";
-    runtimeInputs = [ pkgs.jq ];
+    runtimeInputs = [ pkgs.yq ];
     text = ''
       set -euo pipefail
       
       echo "Validating GitHub Actions workflow..."
       
-      if [ ! -f .github/workflows/ci.json ]; then
-        echo "❌ Workflow file not found. Run generate-ci-workflow first."
+      if [ ! -f .github/workflows/ci.yml ]; then
+        echo "❌ Workflow file not found. Run: nix run .#generate-ci-workflow > .github/workflows/ci.yml"
         exit 1
       fi
       
-      # Validate JSON syntax
-      jq . .github/workflows/ci.json > /dev/null
-      echo "✅ JSON syntax valid"
+      # Validate YAML syntax
+      yq -e . .github/workflows/ci.yml > /dev/null
+      echo "✅ YAML syntax valid"
       
       # Check for required fields
-      if jq -e '.name' .github/workflows/ci.json > /dev/null && \
-         jq -e '.on' .github/workflows/ci.json > /dev/null && \
-         jq -e '.jobs' .github/workflows/ci.json > /dev/null; then
+      if yq -e '.name' .github/workflows/ci.yml > /dev/null && \
+         yq -e '.on' .github/workflows/ci.yml > /dev/null && \
+         yq -e '.jobs' .github/workflows/ci.yml > /dev/null; then
         echo "✅ Required fields present"
       else
         echo "❌ Missing required fields"
@@ -78,6 +66,10 @@ let
       
       echo ""
       echo "Workflow validation complete!"
+      echo ""
+      echo "To commit:"
+      echo "  git add .github/workflows/ci.yml"
+      echo "  git commit -m \"ci: add GitHub Actions workflow\""
     '';
   };
 
