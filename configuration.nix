@@ -119,7 +119,6 @@ in
 
   services.kmscon =
     {
-      autologinUser = "John88";
       #  Alright, I know what you are thinking; For real? All I have to do is grab a John-tech and enter tty?
       #      Alright, so what? you have the damn thing in your hand anyway; I saved you what? Six hours to DD my disk
       #        and fuck about in a terminal?
@@ -138,4 +137,5 @@ in
       '';
       fonts = [{ name = "Source Code Pro"; package = pkgs.source-code-pro; }];
     };
+  services.getty.autologinUser = "John88";
 }

@@ -2,7 +2,7 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
-    carmelsite = { url = "git+ssh://git@gitlab.platonic.systems/john.bargman/carmelsite"; flake = false; };
+    carmelsite = { url = "git+ssh://git@gitlab.platonic.systems/john.bargman/carmelsite"; };
     deadnix = { url = "github:astro/deadnix"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     hyprland.url = "github:hyprwm/Hyprland";
     lint-utils = { url = "github:homotopic/lint-utils"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
@@ -332,7 +332,7 @@
                     enableACME = true;
                     listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
                     locations."/" = {
-                      root = carmelsite;
+                      root = carmelsite.packages.x86_64-linux.default;
                       #proxywebsockets = false; # needed if you need to use websocket
                     };
                   };
@@ -341,7 +341,7 @@
                     enableACME = true;
                     listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
                     locations."/" = {
-                      root = carmelsite;
+                      root = carmelsite.packages.x86_64-linux.default;
                       #proxywebsockets = false; # needed if you need to use websocket
                     };
                   };
@@ -350,7 +350,7 @@
                     forceSSL = true;
                     listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
                     locations."/" = {
-                      root = carmelsite;
+                      root = carmelsite.packages.x86_64-linux.default;
                       #proxywebsockets = false; # needed if you need to use websocket
                     };
                   };
