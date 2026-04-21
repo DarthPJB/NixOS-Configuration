@@ -80,6 +80,7 @@ in
       (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
       ../../server_services/ldap.nix
       ../../configuration.nix
+      ../../locale/tailscale.nix
       ./hardware-configuration.nix
       ../../modifier_imports/zfs.nix
     ];
@@ -154,6 +155,7 @@ in
   time.timeZone = "Etc/UTC";
   secrix.services.wireguard-wireg0.secrets.cortex-alpha.encrypted.file = ../../secrets/private_keys/wireguard/wg_cortex-alpha;
   networking = {
+    tailscale.advertisedRoutes = [ "10.88.128.88/32" "10.88.128.248/32" ];
     nat.enable = lib.mkForce false;
     nftables =
       {
@@ -190,7 +192,7 @@ in
         "enp3s0".allowedTCPPorts = [ 443 2208 ];
         "enp3s0".allowedUDPPorts = [ 1108 2108 67 53 ];
         "enp2s0".allowedTCPPorts = [ 2208 ];
-        "enp2s0".allowedUDPPorts = [ 1108 443 2108 4549 4175 4179 4171 ];
+        "enp2s0".allowedUDPPorts = [ 1108 443 2108 4549 4175 4179 4171 41641 ];
       };
     };
   };
