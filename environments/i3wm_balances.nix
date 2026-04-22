@@ -123,11 +123,13 @@
       baseConfig = builtins.readFile (builtins.toString ./i3wm.nix + \"i3.config\");  # Pseudo; actual override
     in pkgs.writeText \"i3-balances.config\" ''
       # Full i3 config from i3wm.nix but replace line 222: status_command i3blocks
-      ${lib.strings.replaceStrings [ \"     status_command i3status\" ] [ \"status_command i3blocks\" ] (builtins.readFile ./i3wm.nix)}
+      ${lib.strings.replaceStrings [ \"       status_command i3status\" ] [ \"status_command i3blocks\" ] (builtins.readFile ./i3wm.nix)}
     '';
     extraPackages = lib.mkForce [ pkgs.i3blocks pkgs.betterlockscreen pkgs.rofi pkgs.i3lock ];
   };
 }
+
+
 
 
 
