@@ -1,5 +1,10 @@
-{ config, pkgs, self, ... }: {
-
+{
+  config,
+  pkgs,
+  self,
+  ...
+}:
+{
 
   #TODO: prometheus-klipper-exporter
   services.prometheus = {
@@ -9,8 +14,9 @@
       #extraFlags = [ "st
     };
   };
-  networking.firewall.interfaces."wireg0".allowedTCPPorts = [ config.services.prometheus.exporters.klipper.port ];
-
+  networking.firewall.interfaces."wireg0".allowedTCPPorts = [
+    config.services.prometheus.exporters.klipper.port
+  ];
 
   services.klipper = {
     enable = true;
@@ -19,15 +25,14 @@
     mutableConfig = true; # Use declarative config
     configDir = "/var/lib/moonraker/config";
 
-    firmwares =
-      {
-        "mcu" = {
-          enable = false;
-          configFile = ./klipper/skr-e3.cfg;
-          enableKlipperFlash = false;
-          serial = "/dev/serial/by-id/usb-Klipper_stm32g0b1xx_18004D000350415339373620-if00";
-        };
+    firmwares = {
+      "mcu" = {
+        enable = false;
+        configFile = ./klipper/skr-e3.cfg;
+        enableKlipperFlash = false;
+        serial = "/dev/serial/by-id/usb-Klipper_stm32g0b1xx_18004D000350415339373620-if00";
       };
+    };
     settings = {
       "mcu" = {
         serial = "/dev/serial/by-id/usb-Klipper_stm32g0b1xx_18004D000350415339373620-if00";
@@ -162,10 +167,10 @@
         max_z_accel = "100";
       };
       "board_pins" = {
-        aliases =
-          ''    # EXP1 header
-          EXP1_1=PB5,  EXP1_3=PA9,   EXP1_5=PA10, EXP1_7=PB8, EXP1_9=<GND>,
-          EXP1_2=PA15, EXP1_4=<RST>, EXP1_6=PB9,  EXP1_8=PD6, EXP1_10=<5V>'';
+        aliases = ''
+          # EXP1 header
+                EXP1_1=PB5,  EXP1_3=PA9,   EXP1_5=PA10, EXP1_7=PB8, EXP1_9=<GND>,
+                EXP1_2=PA15, EXP1_4=<RST>, EXP1_6=PB9,  EXP1_8=PD6, EXP1_10=<5V>'';
 
       }; # See the sample-lcd.cfg file for definitions of common LCD displays.
       "display" = {
@@ -187,10 +192,10 @@
       "gcode_macro CANCEL_PRINT" = {
         description = "Cancel the actual running print";
         rename_existing = "CANCEL_PRINT_BASE";
-        gcode =
-          ''TURN_OFF_HEATERS
-          CANCEL_PRINT_BASE
-          G0 X200 Y200 Z100'';
+        gcode = ''
+          TURN_OFF_HEATERS
+                    CANCEL_PRINT_BASE
+                    G0 X200 Y200 Z100'';
       };
     };
   };
@@ -211,7 +216,10 @@
         host = "print-controller.johnbargman.net";
       };
       authorization = {
-        cors_domains = [ "*.johnbargman.net" "http://10.88.127.30" ];
+        cors_domains = [
+          "*.johnbargman.net"
+          "http://10.88.127.30"
+        ];
         force_logins = false;
         trusted_clients = [
           "127.0.0.0/24"
@@ -247,10 +255,14 @@
   users.groups.moonraker = { };
 
   # Open firewall ports if needed
-  networking.firewall.allowedTCPPorts = [ 80 7125 ];
+  networking.firewall.allowedTCPPorts = [
+    80
+    7125
+  ];
 
   # Ensure nginx is enabled via Fluidd
-  secrix.services.nginx.secrets.ldap_master_password.encrypted.file = "${self}/secrets/ldap_master_password";
+  secrix.services.nginx.secrets.ldap_master_password.encrypted.file =
+    "${self}/secrets/ldap_master_password";
 
   #TODO: Nginx with LDAP via PAM
   services.nginx = {

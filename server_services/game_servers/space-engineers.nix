@@ -1,9 +1,11 @@
-{ config
-, lib
-, pkgs
-, ...
+{
+  config,
+  lib,
+  pkgs,
+  ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.services.space-engineers-docker;
 in
 {
@@ -72,8 +74,11 @@ in
     };
 
     networking.firewall = mkIf cfg.openFirewall {
-      allowedUDPPorts = [ 27016 27015 ];
-      #      allowedTCPPorts = 
+      allowedUDPPorts = [
+        27016
+        27015
+      ];
+      #      allowedTCPPorts =
     };
 
     users.users.spaceengineers = {

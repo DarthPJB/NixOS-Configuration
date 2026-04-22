@@ -20,7 +20,10 @@
           tailscale = true;
           wireguard = false;
         };
-        services = [ "gaming" "high-bandwidth" ];
+        services = [
+          "gaming"
+          "high-bandwidth"
+        ];
       };
 
       nas = {
@@ -31,7 +34,10 @@
           tailscale = false;
           wireguard = true;
         };
-        services = [ "storage" "monitoring" ];
+        services = [
+          "storage"
+          "monitoring"
+        ];
       };
 
       alpha-one = {
@@ -151,7 +157,10 @@
           tailscale = false;
           wireguard = true;
         };
-        services = [ "router" "gateway" ];
+        services = [
+          "router"
+          "gateway"
+        ];
       };
 
       display-1 = {
@@ -310,42 +319,125 @@
 
   forwarding = {
     tcp = [
-      { from = "wan"; port = 2208; to = "10.88.128.3:22"; }
-      { from = "wan"; port = 27015; to = "10.88.128.88:27015"; }
-      { from = "wan"; port = 4549; to = "10.88.128.88:4549"; }
+      {
+        from = "wan";
+        port = 2208;
+        to = "10.88.128.3:22";
+      }
+      {
+        from = "wan";
+        port = 27015;
+        to = "10.88.128.88:27015";
+      }
+      {
+        from = "wan";
+        port = 4549;
+        to = "10.88.128.88:4549";
+      }
     ];
     udp = [
-      { from = "wan"; port = 17780; to = "10.88.128.88:17780"; }
-      { from = "wan"; port = 17781; to = "10.88.128.88:17781"; }
-      { from = "wan"; port = 17782; to = "10.88.128.88:17782"; }
-      { from = "wan"; port = 17783; to = "10.88.128.88:17783"; }
-      { from = "wan"; port = 17784; to = "10.88.128.88:17784"; }
-      { from = "wan"; port = 17785; to = "10.88.128.88:17785"; }
-      { from = "wan"; port = 27015; to = "10.88.128.88:27015"; }
-      { from = "wan"; port = 2207; to = "10.88.127.88:2207"; }
-      { from = "wan"; port = 4175; to = "10.88.128.88:4175"; }
-      { from = "wan"; port = 4179; to = "10.88.128.88:4179"; }
-      { from = "wan"; port = 4171; to = "10.88.128.88:4171"; }
+      {
+        from = "wan";
+        port = 17780;
+        to = "10.88.128.88:17780";
+      }
+      {
+        from = "wan";
+        port = 17781;
+        to = "10.88.128.88:17781";
+      }
+      {
+        from = "wan";
+        port = 17782;
+        to = "10.88.128.88:17782";
+      }
+      {
+        from = "wan";
+        port = 17783;
+        to = "10.88.128.88:17783";
+      }
+      {
+        from = "wan";
+        port = 17784;
+        to = "10.88.128.88:17784";
+      }
+      {
+        from = "wan";
+        port = 17785;
+        to = "10.88.128.88:17785";
+      }
+      {
+        from = "wan";
+        port = 27015;
+        to = "10.88.128.88:27015";
+      }
+      {
+        from = "wan";
+        port = 2207;
+        to = "10.88.127.88:2207";
+      }
+      {
+        from = "wan";
+        port = 4175;
+        to = "10.88.128.88:4175";
+      }
+      {
+        from = "wan";
+        port = 4179;
+        to = "10.88.128.88:4179";
+      }
+      {
+        from = "wan";
+        port = 4171;
+        to = "10.88.128.88:4171";
+      }
     ];
   };
 
   tailscale = {
     subnetRouter = true;
     advertisedHosts = [ "lindacore-88" ];
-    advertisedRoutes = [ "10.88.128.88/32" "10.88.128.248/32" ];
+    advertisedRoutes = [
+      "10.88.128.88/32"
+      "10.88.128.248/32"
+    ];
   };
 
   dns = {
     interface = "enp3s0";
     static = [
-      { domain = "git.johnbargman.net"; ip = "10.88.128.1"; }
-      { domain = "code.johnbargman.net"; ip = "10.88.128.1"; }
-      { domain = "cortex-alpha.johnbargman.net"; ip = "10.88.128.1"; }
-      { domain = "ap.johnbargman.net"; ip = "10.88.128.1"; }
-      { domain = "prometheus.johnbargman.net"; ip = "10.88.128.1"; }
-      { domain = "grafana.johnbargman.net"; ip = "10.88.128.1"; }
-      { domain = "print-controller.johnbargman.net"; ip = "10.88.128.1"; }
-      { domain = "minio.johnbargman.net"; ip = "10.88.128.1"; }
+      {
+        domain = "git.johnbargman.net";
+        ip = "10.88.128.1";
+      }
+      {
+        domain = "code.johnbargman.net";
+        ip = "10.88.128.1";
+      }
+      {
+        domain = "cortex-alpha.johnbargman.net";
+        ip = "10.88.128.1";
+      }
+      {
+        domain = "ap.johnbargman.net";
+        ip = "10.88.128.1";
+      }
+      {
+        domain = "prometheus.johnbargman.net";
+        ip = "10.88.128.1";
+      }
+      {
+        domain = "grafana.johnbargman.net";
+        ip = "10.88.128.1";
+      }
+      {
+        domain = "print-controller.johnbargman.net";
+        ip = "10.88.128.1";
+      }
+      {
+        domain = "minio.johnbargman.net";
+        ip = "10.88.128.1";
+      }
     ];
     dhcp = {
       range = "10.88.128.128,10.88.128.254,24h";
@@ -401,7 +493,10 @@
 
   wireguard = {
     interface = "wireg0";
-    ips = [ "10.88.127.1/32" "10.88.127.0/24" ];
+    ips = [
+      "10.88.127.1/32"
+      "10.88.127.0/24"
+    ];
     listenPort = 2108;
     peers = [
       "alpha-one"
@@ -426,19 +521,42 @@
   };
 
   firewall = {
-    allowedTCPPorts = [ 22 1108 ];
+    allowedTCPPorts = [
+      22
+      1108
+    ];
     interfaces = {
       wireg0 = {
         allowedUDPPorts = [ 1108 ];
-        allowedTCPPorts = [ 443 3101 ];
+        allowedTCPPorts = [
+          443
+          3101
+        ];
       };
       enp3s0 = {
-        allowedTCPPorts = [ 443 2208 ];
-        allowedUDPPorts = [ 1108 2108 67 53 ];
+        allowedTCPPorts = [
+          443
+          2208
+        ];
+        allowedUDPPorts = [
+          1108
+          2108
+          67
+          53
+        ];
       };
       enp2s0 = {
         allowedTCPPorts = [ 2208 ];
-        allowedUDPPorts = [ 1108 443 2108 4549 4175 4179 4171 41641 ];
+        allowedUDPPorts = [
+          1108
+          443
+          2108
+          4549
+          4175
+          4179
+          4171
+          41641
+        ];
       };
     };
   };

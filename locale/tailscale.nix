@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 {
   options.networking.tailscale.advertisedRoutes = lib.mkOption {
@@ -18,7 +23,9 @@
       { enable = true; }
       (lib.mkIf (config.networking.tailscale.advertisedRoutes != [ ]) {
         useRoutingFeatures = "server";
-        extraSetFlags = [ "--advertise-routes=${lib.concatStringsSep "," config.networking.tailscale.advertisedRoutes}" ];
+        extraSetFlags = [
+          "--advertise-routes=${lib.concatStringsSep "," config.networking.tailscale.advertisedRoutes}"
+        ];
       })
     ];
   };

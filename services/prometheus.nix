@@ -1,4 +1,11 @@
-{ fqdn, listen-addr }: { pkgs, config, lib, self, ... }:
+{ fqdn, listen-addr }:
+{
+  pkgs,
+  config,
+  lib,
+  self,
+  ...
+}:
 let
   inherit fqdn listen-addr;
   inherit (builtins) toJSON;
@@ -61,7 +68,9 @@ in
         job_name = "dnsmasq";
         static_configs = [
           {
-            targets = [ "10.88.127.1:${toString self.nixosConfigurations.cortex-alpha.config.services.prometheus.exporters.dnsmasq.port}" ];
+            targets = [
+              "10.88.127.1:${toString self.nixosConfigurations.cortex-alpha.config.services.prometheus.exporters.dnsmasq.port}"
+            ];
           }
         ];
       }
@@ -108,7 +117,9 @@ in
         job_name = "nginx";
         static_configs = [
           {
-            targets = [ "10.88.127.50:${toString self.nixosConfigurations.remote-worker.config.services.prometheus.exporters.nginx.port}" ];
+            targets = [
+              "10.88.127.50:${toString self.nixosConfigurations.remote-worker.config.services.prometheus.exporters.nginx.port}"
+            ];
           }
         ];
       }
@@ -116,7 +127,9 @@ in
         job_name = "nextcloud";
         static_configs = [
           {
-            targets = [ "10.88.127.50:${toString self.nixosConfigurations.remote-worker.config.services.prometheus.exporters.nextcloud.port}" ];
+            targets = [
+              "10.88.127.50:${toString self.nixosConfigurations.remote-worker.config.services.prometheus.exporters.nextcloud.port}"
+            ];
           }
         ];
       }
@@ -127,31 +140,36 @@ in
   services.grafana = {
 
     enable = true;
-    settings =
+    settings = {
+      server = {
+        protocol = "http";
+        http_addr = "10.88.127.3";
+        http_port = 3101;
+        enable_gzip = true;
+        domain = "${graphana-dn}";
+      };
+      analytics.reporting_enabled = false;
+    };
+    provision.dashboards.settings.providers = [
       {
-        server =
-          {
-            protocol = "http";
-            http_addr = "10.88.127.3";
-            http_port = 3101;
-            enable_gzip = true;
-            domain = "${graphana-dn}";
-          };
-        analytics.reporting_enabled = false;
-      };
-    provision.dashboards.settings.providers = [{
-      updateInterfalSeconds = 5;
-      options = {
-        path = ./graphana_dashboards;
-        foldersFromFilesStructure = true;
-      };
-    }];
-    provision.datasources.settings.datasources = [{
-      name = "prometheus";
-      type = "prometheus";
-      uid = "prometheus01";
-      url = config.services.prometheus.webExternalUrl;
-    }];
+        updateInterfalSeconds = 5;
+        options = {
+          path = ./graphana_dashboards;
+          foldersFromFilesStructure = true;
+        };
+      }
+    ];
+    provision.datasources.settings.datasources = [
+      {
+        name = "prometheus";
+        type = "prometheus";
+        uid = "prometheus01";
+        url = config.services.prometheus.webExternalUrl;
+      }
+    ];
   };
-  networking.firewall.allowedTCPPorts = [ config.services.prometheus.port config.services.grafana.settings.server.http_port ];
+  networking.firewall.allowedTCPPorts = [
+    config.services.prometheus.port
+    config.services.grafana.settings.server.http_port
+  ];
 }

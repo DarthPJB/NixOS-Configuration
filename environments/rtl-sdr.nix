@@ -10,7 +10,7 @@
     rtl-sdr
     # Frequency scanners
     gqrx # older but cool
-    sdrpp # sweeter 
+    sdrpp # sweeter
     #    sdrangel # minimal  lightweight
     gnuradio # powerhouse
   ];

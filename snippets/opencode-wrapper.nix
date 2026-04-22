@@ -1,4 +1,11 @@
-{ config, lib, pkgs, unstable, agentFiles, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  unstable,
+  agentFiles,
+  ...
+}:
 
 with lib;
 
@@ -128,7 +135,15 @@ let
         --chdir /home/sandbox_user/work \
         --setenv HOME /home/sandbox_user \
         --setenv PWD /home/sandbox_user/work \
-        --setenv PATH "${lib.makeBinPath [pkgs.bash pkgs.coreutils pkgs.git pkgs.neovim unstable.opencode]}" \
+        --setenv PATH "${
+          lib.makeBinPath [
+            pkgs.bash
+            pkgs.coreutils
+            pkgs.git
+            pkgs.neovim
+            unstable.opencode
+          ]
+        }" \
         --dir /home/sandbox_user \
         -- bash -c "cd /home/sandbox_user/work && exec ${lib.getExe unstable.opencode} ''${OPCODE_DEBUG:+--log-level DEBUG --print-logs} \"\$@\"" -- "$@"
       if [ "''${OPCODE_DEBUG:-0}" = "1" ]; then echo "DEBUG: bwrap exec complete"; fi

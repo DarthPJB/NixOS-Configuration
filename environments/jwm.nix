@@ -2,24 +2,22 @@
 
 {
   programs.dconf.enable = true;
-  environment.systemPackages =
-    [
-      pkgs.neovim
-      pkgs.chromium
-      pkgs.pavucontrol
-      pkgs.alacritty
-    ];
+  environment.systemPackages = [
+    pkgs.neovim
+    pkgs.chromium
+    pkgs.pavucontrol
+    pkgs.alacritty
+  ];
   services = {
-    xserver =
-      {
-        monitorSection = ''
-          Option "PreferredMode" "1920x1080_60.00"
-        '';
+    xserver = {
+      monitorSection = ''
+        Option "PreferredMode" "1920x1080_60.00"
+      '';
+      enable = true;
+      windowManager.jwm = {
         enable = true;
-        windowManager.jwm = {
-          enable = true;
-        };
       };
+    };
     displayManager = {
       sddm.enable = true;
       autoLogin = {

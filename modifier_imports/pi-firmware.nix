@@ -1,4 +1,10 @@
-{ self, lib, config, pkgs, ... }:
+{
+  self,
+  lib,
+  config,
+  pkgs,
+  ...
+}:
 let
   inherit (builtins) map;
   inherit (lib) mkOption getExe;
@@ -21,15 +27,17 @@ in
   config = {
     hardware = {
       deviceTree = {
-        /*    enable = true;
-        filter = "*rpi-3*.dtb";
-        overlays = map (name: {
-          inherit name;
-          dtsFile = pkgs.runCommand "dtoverlay-${name}" {} ''
-            cd ${kernelSrc}/arch/arm/boot/dts/overlays
-            ${getExe ovmerge} ${name}  > $out
-          '';
-        }) cfg.dtoverlays; */
+        /*
+          enable = true;
+          filter = "*rpi-3*.dtb";
+          overlays = map (name: {
+            inherit name;
+            dtsFile = pkgs.runCommand "dtoverlay-${name}" {} ''
+              cd ${kernelSrc}/arch/arm/boot/dts/overlays
+              ${getExe ovmerge} ${name}  > $out
+            '';
+          }) cfg.dtoverlays;
+        */
       };
     };
   };

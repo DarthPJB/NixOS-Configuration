@@ -1,4 +1,11 @@
-{ pkgs, config, lib, self, hostname, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  self,
+  hostname,
+  ...
+}:
 {
 
   nixpkgs.overlays = [
@@ -26,35 +33,39 @@
     fsType = "ext4";
   };
 
-  swapDevices =
-    [{ device = "/dev/disk/by-uuid/0b69a66b-e675-45bb-becf-9eec8c29ec1f"; }];
+  swapDevices = [ { device = "/dev/disk/by-uuid/0b69a66b-e675-45bb-becf-9eec8c29ec1f"; } ];
 
   sdImage.compressImage = false;
   #secrix.services.wireguard-wireg0.secrets."${hostname}".encrypted.file = "${self}/secrets/wiregaurd/wg_${hostname}";
-  environment.vpn =
-    {
-      enable = true;
-      postfix = 42;
-      # privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
-    };
+  environment.vpn = {
+    enable = true;
+    postfix = 42;
+    # privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
+  };
 
   hardware = {
     enableRedistributableFirmware = true;
-    raspberry-pi."4" =
-      {
-        apply-overlays-dtmerge.enable = true;
-        fkms-3d.enable = true;
-      };
+    raspberry-pi."4" = {
+      apply-overlays-dtmerge.enable = true;
+      fkms-3d.enable = true;
+    };
     deviceTree = {
       enable = true;
     };
   };
   #boot.initrd.allowMissingModules = true;
   boot = {
-    initrd.kernelModules = [ "vc4" "snd_bcm2835" ];
+    initrd.kernelModules = [
+      "vc4"
+      "snd_bcm2835"
+    ];
     #  supportedFilesystems.zfs = lib.mkForce false;
     #  kernelPackages = pkgs.linuxPackages_rpi4;
-    kernelParams = [ "video=HDMI-A-1:1920x1080@60" "console=ttyS1,115200n8" "cma=128M" ];
+    kernelParams = [
+      "video=HDMI-A-1:1920x1080@60"
+      "console=ttyS1,115200n8"
+      "cma=128M"
+    ];
     extraModprobeConfig = ''
       options snd_bcm2835 enable_headphones=1 enable_hdmi=1
     '';

@@ -2,24 +2,29 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ config, lib, pkgs, self, hostname, ... }:
 {
-  imports =
-    [
-      # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-      ../../modules/enable-wg.nix
-      ../../environments/i3wm_darthpjb.nix
-      ../../environments/steam.nix
-      ../../environments/code.nix
-      ../../environments/neovim.nix
-    ];
+  config,
+  lib,
+  pkgs,
+  self,
+  hostname,
+  ...
+}:
+{
+  imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+    ../../modules/enable-wg.nix
+    ../../environments/i3wm_darthpjb.nix
+    ../../environments/steam.nix
+    ../../environments/code.nix
+    ../../environments/neovim.nix
+  ];
   # secrix.services.wireguard-wireg0.secrets."${hostname}".encrypted.file = "${self}/secrets/wiregaurd/wg_${hostname}";
-  environment.vpn =
-    {
-      enable = true;
-      postfix = 107;
-    };
+  environment.vpn = {
+    enable = true;
+    postfix = 107;
+  };
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -42,4 +47,3 @@
     };
   };
 }
-

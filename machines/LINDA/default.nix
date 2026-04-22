@@ -1,46 +1,51 @@
 # -------------------------- LINDACORE --------------------------
-{ config, pkgs, self, lib, hostname, ... }:
 {
-  imports =
-    [
-      # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-      ../../services/ollama.nix
-      ../../services/litellm.nix
-      ../../modules/enable-wg.nix
-      ../../lib/rclone-target.nix
-      ../../environments/i3wm_darthpjb.nix
-      ../../environments/steam.nix
-      ../../environments/code.nix
-      ../../environments/neovim.nix
-      ../../environments/communications.nix
-      ../../environments/emacs.nix
-      ../../environments/browsers.nix
-      ../../environments/mudd.nix
-      ../../environments/cad_and_graphics.nix
-      ../../environments/3dPrinting.nix
-      ../../environments/audio_visual_editing.nix
-      ../../environments/general_fonts.nix
-      ../../environments/video_call_streaming.nix
-      ../../environments/cloud_and_backup.nix
-      ../../locale/tailscale.nix
-      ../../environments/rtl-sdr.nix
-      ../../modifier_imports/bluetooth.nix
-      ../../modifier_imports/memtest.nix
-      ../../modifier_imports/hosts.nix
-      ../../modifier_imports/zfs.nix
-      ../../modifier_imports/virtualisation-libvirtd.nix
-      ../../modifier_imports/virtualisation-vmware.nix
-      ../../environments/sshd.nix
-      ../../modifier_imports/cuda.nix
-      ../../modifier_imports/remote-builder.nix
-    ];
+  config,
+  pkgs,
+  self,
+  lib,
+  hostname,
+  ...
+}:
+{
+  imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+    ../../services/ollama.nix
+    ../../services/litellm.nix
+    ../../modules/enable-wg.nix
+    ../../lib/rclone-target.nix
+    ../../environments/i3wm_darthpjb.nix
+    ../../environments/steam.nix
+    ../../environments/code.nix
+    ../../environments/neovim.nix
+    ../../environments/communications.nix
+    ../../environments/emacs.nix
+    ../../environments/browsers.nix
+    ../../environments/mudd.nix
+    ../../environments/cad_and_graphics.nix
+    ../../environments/3dPrinting.nix
+    ../../environments/audio_visual_editing.nix
+    ../../environments/general_fonts.nix
+    ../../environments/video_call_streaming.nix
+    ../../environments/cloud_and_backup.nix
+    ../../locale/tailscale.nix
+    ../../environments/rtl-sdr.nix
+    ../../modifier_imports/bluetooth.nix
+    ../../modifier_imports/memtest.nix
+    ../../modifier_imports/hosts.nix
+    ../../modifier_imports/zfs.nix
+    ../../modifier_imports/virtualisation-libvirtd.nix
+    ../../modifier_imports/virtualisation-vmware.nix
+    ../../environments/sshd.nix
+    ../../modifier_imports/cuda.nix
+    ../../modifier_imports/remote-builder.nix
+  ];
   environment = {
-    vpn =
-      {
-        enable = true;
-        postfix = 88;
-      };
+    vpn = {
+      enable = true;
+      postfix = 88;
+    };
     rclone-target = {
       enable = true;
       configFile = "${self}/secrets/rclone-config-file";
@@ -57,26 +62,30 @@
   networking.wireguard = {
     enable = true;
     interfaces = {
-      wiregPS0 =
-        {
-          # ensure routes exist to other clients.
-          postSetup = ''
-            ${pkgs.iproute2}/bin/ip route add 10.75.69.0/24 dev wiregPS0
-          '';
-          postShutdown = ''
-            ${pkgs.iproute2}/bin/ip route del 10.75.69.0/24 dev wiregPS0
-          '';
-          ips = [ "10.75.69.88/32" ];
-          listenPort = 2107;
-          privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
-          peers = [{
+      wiregPS0 = {
+        # ensure routes exist to other clients.
+        postSetup = ''
+          ${pkgs.iproute2}/bin/ip route add 10.75.69.0/24 dev wiregPS0
+        '';
+        postShutdown = ''
+          ${pkgs.iproute2}/bin/ip route del 10.75.69.0/24 dev wiregPS0
+        '';
+        ips = [ "10.75.69.88/32" ];
+        listenPort = 2107;
+        privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
+        peers = [
+          {
             publicKey = builtins.readFile "${self}/secrets/public_keys/wireguard/wg_acropolis_pub";
-            allowedIPs = [ "10.75.69.1/32" "10.75.69.0/24" ];
+            allowedIPs = [
+              "10.75.69.1/32"
+              "10.75.69.0/24"
+            ];
             endpoint = "143.223.151.15:2208";
             dynamicEndpointRefreshSeconds = 300;
             persistentKeepalive = 60;
-          }];
-        };
+          }
+        ];
+      };
     };
   };
   nix.gc.automatic = lib.mkForce false; # Never collect this nix-store and it's cache.
@@ -158,18 +167,40 @@
   ];
   boot = {
     tmp.useTmpfs = false;
-    supportedFilesystems = [ "zfs" "ntfs" ];
-    zfs.extraPools = [ "speed-storage" "bulk-storage" ];
+    supportedFilesystems = [
+      "zfs"
+      "ntfs"
+    ];
+    zfs.extraPools = [
+      "speed-storage"
+      "bulk-storage"
+    ];
     loader = {
       systemd-boot.enable = true;
       efi.canTouchEfiVariables = true;
     };
     initrd = {
-      availableKernelModules = [ "vfio_pci" "vfio_iommu_type1" "vfio" "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "uas" "sd_mod" ];
+      availableKernelModules = [
+        "vfio_pci"
+        "vfio_iommu_type1"
+        "vfio"
+        "nvme"
+        "xhci_pci"
+        "ahci"
+        "usb_storage"
+        "usbhid"
+        "uas"
+        "sd_mod"
+      ];
       kernelModules = [ "vfio_pci" ];
     };
     #kernelPackages= pkgs.linuxPackages_5_18;
-    kernelModules = [ "kvm-amd" "vfio_pci" "vfio_iommu_type1" "vfio" ];
+    kernelModules = [
+      "kvm-amd"
+      "vfio_pci"
+      "vfio_iommu_type1"
+      "vfio"
+    ];
     kernelParams = [
       "video=HDMI-0:1920x1080@60"
       "video=DP-1:1920x1080@60"
@@ -180,20 +211,23 @@
       "amd_pstate=active"
     ];
     extraModulePackages = [ ];
-    /*extraModprobeConfig = ''
-      options vfio-pci ids=1b21:2142,10de:1c81,10de:0fb9
-    '';*/
+    /*
+      extraModprobeConfig = ''
+        options vfio-pci ids=1b21:2142,10de:1c81,10de:0fb9
+      '';
+    */
     # ,
     # 0000:21:00.0 0000:21:00.1
     # echo ""
     /*
-      initrd.preDeviceCommands = ''
-      DEVS="0000:46:00.0 0000:4d:00.0 0000:4d:00.1"
-      for DEV in $DEVS; do
-          echo "vfio-pci" > /sys/bus/pci/devices/$DEV/driver_override
-      done
-      modprobe -i vfio-pci
-    ''; */
+        initrd.preDeviceCommands = ''
+        DEVS="0000:46:00.0 0000:4d:00.0 0000:4d:00.1"
+        for DEV in $DEVS; do
+            echo "vfio-pci" > /sys/bus/pci/devices/$DEV/driver_override
+        done
+        modprobe -i vfio-pci
+      '';
+    */
   };
 
   # Set your time zone.
@@ -211,7 +245,9 @@
               { application.process.binary = "discord"; }
               { application.process.binary = "*[Dd]iscord*"; }
             ];
-            actions = { quirks = [ "block-source-volume" ]; };
+            actions = {
+              quirks = [ "block-source-volume" ];
+            };
           }
         ];
       };
@@ -221,7 +257,9 @@
             matches = [
               { application.process.binary = "*[V]ivaldi*"; }
             ];
-            actions = { quirks = [ "block-source-volume" ]; };
+            actions = {
+              quirks = [ "block-source-volume" ];
+            };
           }
         ];
       };
@@ -256,12 +294,56 @@
       };
     };
     firewall.interfaces = {
-      "enp69s0f0".allowedTCPPorts = [ 2108 4010 1108 5201 27015 4549 24070 ];
-      "enp69s0f0".allowedTCPPortRanges = [{ from = 17780; to = 17785; } { from = 47984; to = 48010; }];
-      "wireg0".allowedTCPPorts = [ 80 1108 5201 42420 ];
+      "enp69s0f0".allowedTCPPorts = [
+        2108
+        4010
+        1108
+        5201
+        27015
+        4549
+        24070
+      ];
+      "enp69s0f0".allowedTCPPortRanges = [
+        {
+          from = 17780;
+          to = 17785;
+        }
+        {
+          from = 47984;
+          to = 48010;
+        }
+      ];
+      "wireg0".allowedTCPPorts = [
+        80
+        1108
+        5201
+        42420
+      ];
 
-      "enp69s0f0".allowedUDPPorts = [ 2108 2107 1108 4010 27015 4175 4179 4171 ];
-      "enp69s0f0".allowedUDPPortRanges = [{ from = 17780; to = 17785; } { from = 27031; to = 27036; } { from = 47984; to = 48010; }];
+      "enp69s0f0".allowedUDPPorts = [
+        2108
+        2107
+        1108
+        4010
+        27015
+        4175
+        4179
+        4171
+      ];
+      "enp69s0f0".allowedUDPPortRanges = [
+        {
+          from = 17780;
+          to = 17785;
+        }
+        {
+          from = 27031;
+          to = 27036;
+        }
+        {
+          from = 47984;
+          to = 48010;
+        }
+      ];
 
     };
     #    bonds."bond0" = {
@@ -280,14 +362,11 @@
     #      };
     #    };
     useDHCP = false;
-    wireless =
-      {
-        enable = false; # Enables wireless support via wpa_supplicant.
-        userControlled.enable = true;
-        interfaces = [ "wlp72s0" ];
-      };
+    wireless = {
+      enable = false; # Enables wireless support via wpa_supplicant.
+      userControlled.enable = true;
+      interfaces = [ "wlp72s0" ];
+    };
   };
-
-
 
 }

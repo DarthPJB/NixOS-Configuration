@@ -5,7 +5,8 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
-  outputs = { self, nixpkgs }:
+  outputs =
+    { self, nixpkgs }:
     let
       system = "x86_64-linux"; # Adjust for your system if needed
       pkgs = nixpkgs.legacyPackages.${system};
@@ -20,7 +21,8 @@
       };
 
       # Function to generate SVG derivation with customizable parameters
-      mkDottedPaperSvg = params:
+      mkDottedPaperSvg =
+        params:
         let
           mergedParams = defaultParams // params;
           # Script to generate SVG

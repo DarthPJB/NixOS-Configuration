@@ -1,15 +1,19 @@
-{ config, pkgs, hostname, ... }:
 {
-  imports =
-    [
-      ../../configuration.nix
-      ../../environments/blender.nix
-      ../../modifier_imports/cuda.nix
-      ../../environments/neovim.nix
-      ../../environments/emacs.nix
-      ../../environments/sshd.nix
-      ./hardware-configuration.nix
-    ];
+  config,
+  pkgs,
+  hostname,
+  ...
+}:
+{
+  imports = [
+    ../../configuration.nix
+    ../../environments/blender.nix
+    ../../modifier_imports/cuda.nix
+    ../../environments/neovim.nix
+    ../../environments/emacs.nix
+    ../../environments/sshd.nix
+    ./hardware-configuration.nix
+  ];
   services.pulseaudio.support32Bit = true;
   services.pulseaudio.enable = true;
   hardware = {
@@ -22,17 +26,15 @@
       powerManagement.enable = true;
     };
   };
-  services =
-    {
-      libinput.enable = true;
-      xserver =
-        {
-          videoDrivers = [ "nvidia" ];
-          deviceSection = ''
-            Option "Coolbits" "24"
-          '';
-        };
+  services = {
+    libinput.enable = true;
+    xserver = {
+      videoDrivers = [ "nvidia" ];
+      deviceSection = ''
+        Option "Coolbits" "24"
+      '';
     };
+  };
 
   boot = {
     kernelParams = [
@@ -44,48 +46,52 @@
     loader.efi.canTouchEfiVariables = true;
 
     #special filesystems
-    initrd.supportedFilesystems = [ "overlay" "virtiofs" ];
-    initrd.availableKernelModules = [ "overlay" "virtiofs" ];
+    initrd.supportedFilesystems = [
+      "overlay"
+      "virtiofs"
+    ];
+    initrd.availableKernelModules = [
+      "overlay"
+      "virtiofs"
+    ];
   };
 
   #fileSystems."/nix/.rw-store" = { fsType = "tmpfs"; options = [ "mode=0755" "size=8G" ]; neededForBoot = true; };
 
-  fileSystems =
-    {
-      "/public_share" = {
-        device = "public_share";
-        fsType = "virtiofs";
-      };
-      "/rendercache" = {
-        device = "rendercache";
-        fsType = "virtiofs";
-      };
-      "/88_FS" = {
-        device = "88_FS";
-        fsType = "virtiofs";
-      };
-      "/nix/.ro-store" = {
-        neededForBoot = true;
-        device = "nixstore";
-        fsType = "virtiofs";
-      };
-      "/nix/store" =
-        {
-          fsType = "overlay";
-          device = "overlay";
-          neededForBoot = true;
-          options = [
-            "lowerdir=/nix/.ro-store"
-            "upperdir=/nix/.rw-store/store"
-            "workdir=/nix/.rw-store/work"
-          ];
-          depends = [
-            "/nix/.ro-store"
-            "/nix/.rw-store/store"
-            "/nix/.rw-store/work"
-          ];
-        };
+  fileSystems = {
+    "/public_share" = {
+      device = "public_share";
+      fsType = "virtiofs";
     };
+    "/rendercache" = {
+      device = "rendercache";
+      fsType = "virtiofs";
+    };
+    "/88_FS" = {
+      device = "88_FS";
+      fsType = "virtiofs";
+    };
+    "/nix/.ro-store" = {
+      neededForBoot = true;
+      device = "nixstore";
+      fsType = "virtiofs";
+    };
+    "/nix/store" = {
+      fsType = "overlay";
+      device = "overlay";
+      neededForBoot = true;
+      options = [
+        "lowerdir=/nix/.ro-store"
+        "upperdir=/nix/.rw-store/store"
+        "workdir=/nix/.rw-store/work"
+      ];
+      depends = [
+        "/nix/.ro-store"
+        "/nix/.rw-store/store"
+        "/nix/.rw-store/work"
+      ];
+    };
+  };
 
   environment.systemPackages = with pkgs; [
     cudatoolkit
@@ -113,4 +119,3 @@
   services.spice-vdagentd.enable = true;
 
 }
-

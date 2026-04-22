@@ -1,7 +1,9 @@
 { config, pkgs, ... }:
 {
 
-  networking.firewall.interfaces."wireg0".allowedTCPPorts = [ config.services.prometheus.exporters.zfs.port ];
+  networking.firewall.interfaces."wireg0".allowedTCPPorts = [
+    config.services.prometheus.exporters.zfs.port
+  ];
   services.prometheus = {
     exporters.zfs = {
       enable = true;

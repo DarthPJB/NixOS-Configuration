@@ -1,4 +1,11 @@
-{ pkgs, config, lib, self, hostname, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  self,
+  hostname,
+  ...
+}:
 {
   imports = [
     #    ../../modules/enable-wg.nix
@@ -18,7 +25,10 @@
   ];
 
   boot = {
-    kernelParams = [ "console=ttyS1,115200n8" "cma=32M" ];
+    kernelParams = [
+      "console=ttyS1,115200n8"
+      "cma=32M"
+    ];
   };
   # pick the right kernel
   #boot.kernelPackages = pkgs.linuxPackages_5_0;
@@ -27,30 +37,42 @@
   # boot.kernelPackages = lib.mkForce pkgs.linuxKernel.packages.linux_rpi2;
   # set cross compiling
   #nixpkgs.crossSystem = nixpkgs.crossSystems.armv7l-hf-multiplatform;
-  /* nixpkgs.crossSystem = lib.systems.elaborate {
-    config = "armv7l-unknown-linux-gnueabihf";
-    platform = {
-      name = "raspberrypi2";
-      kernelMajor = "2.6";
-      kernelBaseConfig = "multi_v7_defconfig";
-      kernelArch = "arm";
-      kernelDTB = true;
-      kernelAutoModules = true;
-      kernelPreferBuiltin = true;
-      kernelTarget = "zImage";
-      gcc = {
-        cpu = "cortex-a7";
-        fpu = "neon-vfpv4";
+  /*
+    nixpkgs.crossSystem = lib.systems.elaborate {
+      config = "armv7l-unknown-linux-gnueabihf";
+      platform = {
+        name = "raspberrypi2";
+        kernelMajor = "2.6";
+        kernelBaseConfig = "multi_v7_defconfig";
+        kernelArch = "arm";
+        kernelDTB = true;
+        kernelAutoModules = true;
+        kernelPreferBuiltin = true;
+        kernelTarget = "zImage";
+        gcc = {
+          cpu = "cortex-a7";
+          fpu = "neon-vfpv4";
+        };
       };
-    }; 
-  }; */
+    };
+  */
   boot.loader.grub.enable = false;
   boot.loader.generic-extlinux-compatible.enable = true;
   #sdImage.bootSize = lib.mkOverride 1050 32;
-  documentation = { dev.enable = false; man.enable = false; info.enable = false; enable = false; };
+  documentation = {
+    dev.enable = false;
+    man.enable = false;
+    info.enable = false;
+    enable = false;
+  };
   disabledModules = [
     "profiles/all-hardware.nix"
     "profiles/base.nix"
   ];
-  swapDevices = [{ device = "/swapfile"; size = 1024; }];
+  swapDevices = [
+    {
+      device = "/swapfile";
+      size = 1024;
+    }
+  ];
 }

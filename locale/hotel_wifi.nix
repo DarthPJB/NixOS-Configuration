@@ -1,4 +1,10 @@
-{ config, lib, pkgs, modulesPath, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  modulesPath,
+  ...
+}:
 
 # Some of you out there might see this as a security risk
 # let me explain how wrong you are.
@@ -12,14 +18,11 @@
 # plz - internet is a human right, I'm happy to share.
 
 {
-  networking =
-    {
-      wireless =
-        {
-          networks =
-            {
-              "Imperial_Mobile".pskRaw = "f9e57e756a9c8d3866f38211dbf3be05fb090097793cd46253e69c8cc7055e09";
-            };
-        };
+  networking = {
+    wireless = {
+      networks = {
+        "Imperial_Mobile".pskRaw = "f9e57e756a9c8d3866f38211dbf3be05fb090097793cd46253e69c8cc7055e09";
+      };
     };
+  };
 }

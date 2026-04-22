@@ -26,6 +26,9 @@ in
       rootCredentialsFile = config.secrix.system.secrets.minio-rootCredentialsFile.decrypted.path;
     };
   };
-  networking.firewall.interfaces."wireg0".allowedTCPPorts = [ host-port console-port ];
+  networking.firewall.interfaces."wireg0".allowedTCPPorts = [
+    host-port
+    console-port
+  ];
   systemd.services.minio.environment.MINIO_PROMETHEUS_AUTH_TYPE = "public";
 }

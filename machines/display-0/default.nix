@@ -1,4 +1,10 @@
-{ pkgs, config, lib, hostname, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  hostname,
+  ...
+}:
 {
   nixpkgs.overlays = [
     (final: super: {
@@ -9,19 +15,21 @@
     ../../configuration.nix
     ./piscreen.nix
   ];
-  swapDevices =
-    [{ device = "/dev/disk/by-uuid/ea2a84bb-a66c-4291-ac03-597999559a5d"; }];
+  swapDevices = [ { device = "/dev/disk/by-uuid/ea2a84bb-a66c-4291-ac03-597999559a5d"; } ];
   #swapDevices = [{ device = "/swapfile"; size = 1024; }];
-  fileSystems."/home" =
-    {
-      device = "/dev/disk/by-uuid/b3c6f24a-010d-4f16-a3b6-37859054234d";
-      fsType = "ext4";
-    };
+  fileSystems."/home" = {
+    device = "/dev/disk/by-uuid/b3c6f24a-010d-4f16-a3b6-37859054234d";
+    fsType = "ext4";
+  };
   environment.systemPackages = [ pkgs.rtl-sdr ];
 
   boot = {
     supportedFilesystems.zfs = lib.mkForce false;
-    initrd.kernelModules = [ "vc4" "bcm2835_dma" "i2c_bcm2835" ];
+    initrd.kernelModules = [
+      "vc4"
+      "bcm2835_dma"
+      "i2c_bcm2835"
+    ];
     kernelParams = [
       "console=ttyS0,115200n8"
       "console=fb2"
@@ -43,30 +51,30 @@
       enable = true;
     };
   };
-  services =
-    {
-      displayManager = {
-        defaultSession = "none+i3";
-        autoLogin = {
-          enable = true;
-          user = "John88";
-        };
+  services = {
+    displayManager = {
+      defaultSession = "none+i3";
+      autoLogin = {
+        enable = true;
+        user = "John88";
       };
-      xserver =
-        {
-          videoDrivers = [ "fbdevhw" "fbdev" ]; #"modesetting"]; #
-          resolutions = [
-            {
-              x = 480;
-              y = 320;
-            }
-          ];
-
-          #fb1 if fkms present
-          deviceSection = ''
-            Option "fbdev" "/dev/fb2" 
-          '';
-        };
     };
-}
+    xserver = {
+      videoDrivers = [
+        "fbdevhw"
+        "fbdev"
+      ]; # "modesetting"]; #
+      resolutions = [
+        {
+          x = 480;
+          y = 320;
+        }
+      ];
 
+      #fb1 if fkms present
+      deviceSection = ''
+        Option "fbdev" "/dev/fb2" 
+      '';
+    };
+  };
+}

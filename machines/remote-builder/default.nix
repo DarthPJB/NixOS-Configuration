@@ -1,4 +1,11 @@
-{ config, pkgs, lib, self, hostname, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  self,
+  hostname,
+  ...
+}:
 {
   imports = [
     ./hardware-configuration.nix
@@ -14,10 +21,9 @@
   ];
   # networking.hostName = "remote-builder"; # remote-builder"; #TODO: decide between DNS and WG-IP
   # secrix.services.wireguard-wireg0.secrets.remote-builder.encrypted.file = ../../secrets/wiregaurd/wg_remote-builder;
-  environment.vpn =
-    {
-      enable = true;
-      postfix = 51;
-      #   privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.remote-builder.decrypted.path;
-    };
+  environment.vpn = {
+    enable = true;
+    postfix = 51;
+    #   privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.remote-builder.decrypted.path;
+  };
 }

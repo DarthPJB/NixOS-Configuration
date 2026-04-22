@@ -1,6 +1,11 @@
 # ----------- Remote Worker -----------------
 
-{ config, pkgs, hostname, ... }:
+{
+  config,
+  pkgs,
+  hostname,
+  ...
+}:
 {
   imports = [
     ./hardware-configuration.nix
@@ -15,12 +20,12 @@
   ];
 
   security.acme.defaults.email = "commander@johnbargman.net";
-  /* trigger the actual certificate generation for your hostname */
+  # trigger the actual certificate generation for your hostname
   security.acme.certs."johnbargman.net" = {
-    extraDomainNames = [ "*.johnbargman.net" ]; #johnbargman.com"];
+    extraDomainNames = [ "*.johnbargman.net" ]; # johnbargman.com"];
   };
   security.acme.certs."johnbargman.com" = {
-    extraDomainNames = [ "*.johnbargman.com" ]; #johnbargman.com"];
+    extraDomainNames = [ "*.johnbargman.com" ]; # johnbargman.com"];
   };
 
   services.nginx = {
@@ -57,17 +62,21 @@
     };
   };
   #secrix.services.wireguard-wireg0.secrets.remote-worker.encrypted.file = ../../secrets/wiregaurd/wg_remote-worker;
-  environment.vpn =
-    {
-      enable = true;
-      postfix = 50;
-      # privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.remote-worker.decrypted.path;
-    };
+  environment.vpn = {
+    enable = true;
+    postfix = 50;
+    # privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.remote-worker.decrypted.path;
+  };
 
   networking.hostId = "e3fabb5b";
   #networking.hostName = "remote-worker";
 
-  networking.firewall.allowedTCPPorts = [ 3105 3106 80 443 ];
+  networking.firewall.allowedTCPPorts = [
+    3105
+    3106
+    80
+    443
+  ];
 
   services.prometheus.exporters.nginx = {
     enable = true;
@@ -83,4 +92,3 @@
   };
 
 }
-

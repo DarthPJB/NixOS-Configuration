@@ -1,7 +1,8 @@
 { config, lib, ... }:
 {
   hardware.deviceTree.filter = "bcm2837-rpi-3*";
-  /*raspi.dtoverlays =
+  /*
+    raspi.dtoverlays =
       [
         "hdmi_force_hotplug=1"
         "dtparam=i2c_arm=on"
@@ -13,7 +14,8 @@
         "hdmi_mode=87"
         "hdmi_cvt 480 320 60 6 0 0 0"
         "hdmi_drive=2"
-      ];*/
+      ];
+  */
   hardware.deviceTree = {
     overlays = [
       # Equivalent to: https://github.com/raspberrypi/linux/tree/rpi-6.6.y/arch/arm/boot/dts/overlays/piscreen-overlay.dts

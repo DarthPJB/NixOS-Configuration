@@ -1,6 +1,11 @@
 # CI Configuration Module for NixOS Configuration Repository
 # Generates GitHub Actions workflow from Nix evaluation
-{ self, lib, pkgs, ... }:
+{
+  self,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   # Machine categories for CI matrix
@@ -65,7 +70,10 @@ let
 
     # Build matrix for x86_64 machines
     build-x86 = {
-      needs = [ "validation" "security" ]; # Added: enforce job hierarchy
+      needs = [
+        "validation"
+        "security"
+      ]; # Added: enforce job hierarchy
       name = "Build x86_64 Configurations";
       runs-on = "ubuntu-latest";
       strategy = {
@@ -105,7 +113,10 @@ let
 
     # Build matrix for ARM machines
     build-arm = {
-      needs = [ "validation" "security" ]; # Added: enforce job hierarchy
+      needs = [
+        "validation"
+        "security"
+      ]; # Added: enforce job hierarchy
       name = "Build ARM Configurations";
       runs-on = "ubuntu-latest";
       strategy = {
@@ -171,11 +182,11 @@ let
           name = "Check for plaintext secrets in Nix files";
           run = ''
             echo "Checking for potential secrets in Nix files..."
-            
+
             # Enhanced pattern matching
             PATTERNS="password|secret|key|token|api_key|apikey|access_key|private_key"
             EXCLUDES="secrix|public|pub|README|documentation|\.pub$|_pub$"
-            
+
             if grep -rE "$PATTERNS" --include="*.nix" . | grep -vE "$EXCLUDES"; then
               echo "⚠️  Potential secrets found in Nix files"
               echo "Review the above matches manually"
@@ -206,7 +217,12 @@ let
 
     # Deployment preparation (manual trigger)
     deploy-prep = {
-      needs = [ "validation" "security" "build-x86" "build-arm" ]; # Added: full dependency chain
+      needs = [
+        "validation"
+        "security"
+        "build-x86"
+        "build-arm"
+      ]; # Added: full dependency chain
       name = "Deploy - \${{ github.event.inputs.machine }}";
       runs-on = "ubuntu-latest";
       "if" = "github.event_name == 'workflow_dispatch'";
@@ -258,7 +274,10 @@ let
     name = "NixOS CI/CD";
     on = {
       push = {
-        branches = [ "main" "jb/ai/overlord-8" ];
+        branches = [
+          "main"
+          "jb/ai/overlord-8"
+        ];
         paths = [
           "**.nix"
           "flake.lock"
@@ -284,7 +303,11 @@ let
             description = "Deployment action";
             required = true;
             type = "choice";
-            options = [ "build" "test" "deploy" ];
+            options = [
+              "build"
+              "test"
+              "deploy"
+            ];
             default = "build";
           };
         };
@@ -322,16 +345,15 @@ in
     # Generate matrix for a specific machine type
     mkMatrix = machines: {
       inherit machines;
-      include = map
-        (machine: {
-          inherit machine;
-          system = if builtins.elem machine armMachines then "aarch64-linux" else "x86_64-linux";
-        })
-        machines;
+      include = map (machine: {
+        inherit machine;
+        system = if builtins.elem machine armMachines then "aarch64-linux" else "x86_64-linux";
+      }) machines;
     };
 
     # Generate deployment command
-    mkDeployCommand = machine: action:
+    mkDeployCommand =
+      machine: action:
       if action == "deploy" then
         "nix run .#${machine} -- switch"
       else if action == "test" then

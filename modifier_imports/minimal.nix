@@ -5,7 +5,6 @@
   boot.initrd.includeDefaultModules = false;
   #boot.initrd.kernelModules = [ "ext4" ... ];
 
-
   # disable useless software
   environment.defaultPackages = [ ];
   xdg.icons.enable = false;

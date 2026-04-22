@@ -1,4 +1,9 @@
-{ config, pkgs, self, ... }:
+{
+  config,
+  pkgs,
+  self,
+  ...
+}:
 let
   inherit (builtins) readFile;
   fqdn = "nextcloud.johnbargman.net";
@@ -8,71 +13,77 @@ in
 
   secrix.system.secrets = {
     nextcloud_password_file.encrypted.file = ../secrets/nextcloud_password_file;
-    nextcloud_password_file.decrypted =
-      {
-        user = "nextcloud";
-        group = "nextcloud";
-        mode = "770";
-      };
+    nextcloud_password_file.decrypted = {
+      user = "nextcloud";
+      group = "nextcloud";
+      mode = "770";
+    };
     nextcloud_s3_key.encrypted.file = ../secrets/nextcloud_s3_key;
-    nextcloud_s3_key.decrypted =
-      {
-        user = "nextcloud";
-        group = "nextcloud";
-        mode = "770";
-      };
+    nextcloud_s3_key.decrypted = {
+      user = "nextcloud";
+      group = "nextcloud";
+      mode = "770";
+    };
   };
 
-  networking.firewall.allowedTCPPorts = [ 80 443 ];
-  services.nextcloud =
-    {
-      configureRedis = true;
-      enable = true;
-      package = pkgs.nextcloud32;
-      hostName = "${fqdn}";
-      https = true;
-      enableImagemagick = true;
-      maxUploadSize = "50G";
-      settings.enabledPreviewProviders = [
-        "OC\\Preview\\BMP"
-        "OC\\Preview\\GIF"
-        "OC\\Preview\\JPEG"
-        "OC\\Preview\\Krita"
-        "OC\\Preview\\MarkDown"
-        "OC\\Preview\\MP3"
-        "OC\\Preview\\OpenDocument"
-        "OC\\Preview\\PNG"
-        "OC\\Preview\\TXT"
-        "OC\\Preview\\XBitmap"
-        "OC\\Preview\\HEIC"
-      ];
-      config =
-        {
-          dbtype = "sqlite";
-          adminpassFile = config.secrix.system.secrets.nextcloud_password_file.decrypted.path;
-          objectstore.s3 =
-            {
-              verify_bucket_exists = true;
-              bucket = "nextcloud-darthpjb";
-              enable = true;
-              hostname = "s3.eu-central-003.backblazeb2.com";
-              key = "003e3241026f9950000000001";
-              secretFile = config.secrix.system.secrets.nextcloud_s3_key.decrypted.path;
-            };
-        };
-
+  networking.firewall.allowedTCPPorts = [
+    80
+    443
+  ];
+  services.nextcloud = {
+    configureRedis = true;
+    enable = true;
+    package = pkgs.nextcloud32;
+    hostName = "${fqdn}";
+    https = true;
+    enableImagemagick = true;
+    maxUploadSize = "50G";
+    settings.enabledPreviewProviders = [
+      "OC\\Preview\\BMP"
+      "OC\\Preview\\GIF"
+      "OC\\Preview\\JPEG"
+      "OC\\Preview\\Krita"
+      "OC\\Preview\\MarkDown"
+      "OC\\Preview\\MP3"
+      "OC\\Preview\\OpenDocument"
+      "OC\\Preview\\PNG"
+      "OC\\Preview\\TXT"
+      "OC\\Preview\\XBitmap"
+      "OC\\Preview\\HEIC"
+    ];
+    config = {
+      dbtype = "sqlite";
+      adminpassFile = config.secrix.system.secrets.nextcloud_password_file.decrypted.path;
+      objectstore.s3 = {
+        verify_bucket_exists = true;
+        bucket = "nextcloud-darthpjb";
+        enable = true;
+        hostname = "s3.eu-central-003.backblazeb2.com";
+        key = "003e3241026f9950000000001";
+        secretFile = config.secrix.system.secrets.nextcloud_s3_key.decrypted.path;
+      };
     };
+
+  };
   services.nginx.virtualHosts.${fqdn2} = {
     forceSSL = true;
     useACMEHost = "johnbargman.com";
     globalRedirect = "nextcloud.johnbargman.net";
-    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
+    listenAddresses = [
+      "193.16.42.101"
+      "10.0.1.42"
+      "10.88.127.50"
+    ]; # todo: handle this assignment in a fixed fashion 82.5.173.252
     extraConfig = "fastcgi_read_timeout 86400;\n";
   };
   services.nginx.virtualHosts.${fqdn} = {
     forceSSL = true;
     useACMEHost = "johnbargman.net";
-    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
+    listenAddresses = [
+      "193.16.42.101"
+      "10.0.1.42"
+      "10.88.127.50"
+    ]; # todo: handle this assignment in a fixed fashion 82.5.173.252
     extraConfig = "fastcgi_read_timeout 86400;\n";
   };
   # services.phpfpm.pools.nextcloud = {

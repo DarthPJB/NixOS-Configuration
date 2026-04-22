@@ -1,6 +1,11 @@
 # GitHub Actions Workflow Generator
 # Generates .github/workflows/ci.yml from Nix evaluation
-{ self, lib, pkgs, ... }:
+{
+  self,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   ci = import ../ci.nix { inherit self lib pkgs; };
@@ -18,7 +23,7 @@ let
     import json
     sys.path.append("${pkgs.python3Packages.pyyaml}/${pkgs.python3.sitePackages}")
     import yaml
-    
+
     data = json.load(sys.stdin)
     print(yaml.dump(data, default_flow_style=False, sort_keys=False))
   '';
@@ -26,10 +31,13 @@ let
   # Create script to generate workflow
   generateScript = pkgs.writeShellApplication {
     name = "generate-ci-workflow";
-    runtimeInputs = [ pkgs.nix json2yaml ];
+    runtimeInputs = [
+      pkgs.nix
+      json2yaml
+    ];
     text = ''
       set -euo pipefail
-      
+
       # Generate workflow from Nix evaluation and convert to YAML
       # Only stdout contains the JSON, stderr contains warnings (which we ignore)
       nix eval --json .#ci.ci.github-actions 2>/dev/null | json2yaml
@@ -42,18 +50,18 @@ let
     runtimeInputs = [ pkgs.yq ];
     text = ''
       set -euo pipefail
-      
+
       echo "Validating GitHub Actions workflow..."
-      
+
       if [ ! -f .github/workflows/ci.yml ]; then
         echo "❌ Workflow file not found. Run: nix run .#generate-ci-workflow > .github/workflows/ci.yml"
         exit 1
       fi
-      
+
       # Validate YAML syntax
       yq -e . .github/workflows/ci.yml > /dev/null
       echo "✅ YAML syntax valid"
-      
+
       # Check for required fields
       if yq -e '.name' .github/workflows/ci.yml > /dev/null && \
          yq -e '.on' .github/workflows/ci.yml > /dev/null && \
@@ -63,7 +71,7 @@ let
         echo "❌ Missing required fields"
         exit 1
       fi
-      
+
       echo ""
       echo "Workflow validation complete!"
       echo ""

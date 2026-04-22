@@ -16,9 +16,7 @@ in
         locations."/socket.io/" = {
           proxyPass = "http://localhost:3333";
           proxyWebsockets = true;
-          extraConfig =
-            "proxy_ssl_server_name on;"
-          ;
+          extraConfig = "proxy_ssl_server_name on;";
         };
       };
     };

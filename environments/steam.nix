@@ -1,4 +1,9 @@
-{ config, pkgs, unstable, ... }:
+{
+  config,
+  pkgs,
+  unstable,
+  ...
+}:
 
 {
   programs.steam = {
@@ -8,5 +13,8 @@
 
   # Nice-to-have for any game (highly recommended for SE)
   programs.gamemode.enable = true; # Feral's gamemode
-  environment.systemPackages = [ unstable.prismlauncher unstable.vintagestory ];
+  environment.systemPackages = [
+    unstable.prismlauncher
+    unstable.vintagestory
+  ];
 }

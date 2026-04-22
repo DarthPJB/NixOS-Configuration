@@ -1,8 +1,11 @@
 # DEPRECATED: This file is replaced by lib/topology/mkDhcpDns.nix. Remove after all machines migrate.
-{ dhcpHosts ? { } }:
+{
+  dhcpHosts ? { },
+}:
 let
 
-  mkDhcpEntry = mac: attrs:
+  mkDhcpEntry =
+    mac: attrs:
     let
       ip = attrs.ip or (throw "Missing ip for ${mac}");
       hostname = attrs.hostname or "";

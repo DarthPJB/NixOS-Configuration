@@ -1,13 +1,19 @@
-{ fqdn }: { pkgs, config, lib, ... }:
+{ fqdn }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
 let
   inherit fqdn;
 in
 {
   users.groups.acme = { };
 
-  /* trigger the actual certificate generation for additional hostname */
+  # trigger the actual certificate generation for additional hostname
   security.acme.certs."${fqdn}" = {
-    extraDomainNames = [ ]; #"johnbargman.com"];
+    extraDomainNames = [ ]; # "johnbargman.com"];
   };
 
   secrix.system.secrets.dns01.encrypted.file = ../secrets/gandi_dns01_token;

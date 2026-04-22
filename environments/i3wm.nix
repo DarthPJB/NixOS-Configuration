@@ -27,8 +27,7 @@
       after = [ "graphical-session.target" ];
       serviceConfig = {
         Type = "simple";
-        ExecStart =
-          "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
+        ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
         Restart = "on-failure";
         RestartSec = 1;
         TimeoutStopSec = 10;
@@ -230,22 +229,20 @@
             Option "Log" "Verbose 3"
         EndSection
       '';
-      displayManager.lightdm =
-        {
-          enable = true;
-          #autoNumlock = true;
-        };
+      displayManager.lightdm = {
+        enable = true;
+        #autoNumlock = true;
+      };
       enable = true;
-      windowManager.i3 =
-        {
-          enable = true;
-          configFile = "${xConfig}";
-          extraPackages = [
-            pkgs.betterlockscreen
-            pkgs.rofi
-            pkgs.i3status
-            pkgs.i3lock
-          ];
-        };
+      windowManager.i3 = {
+        enable = true;
+        configFile = "${xConfig}";
+        extraPackages = [
+          pkgs.betterlockscreen
+          pkgs.rofi
+          pkgs.i3status
+          pkgs.i3lock
+        ];
+      };
     };
 }

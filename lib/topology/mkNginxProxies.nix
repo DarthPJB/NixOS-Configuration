@@ -5,7 +5,10 @@
 
 rec {
   # Default listen addresses for cortex-alpha
-  defaultListenAddresses = [ "10.88.128.1" "10.88.127.1" ];
+  defaultListenAddresses = [
+    "10.88.128.1"
+    "10.88.127.1"
+  ];
 
   # Generate proxy headers config
   proxyHeaders = ''
@@ -22,7 +25,12 @@ rec {
   '';
 
   # Create a single virtualHost configuration
-  mkProxyHost = { topology, hostname, proxyConfig }:
+  mkProxyHost =
+    {
+      topology,
+      hostname,
+      proxyConfig,
+    }:
     let
       # Support both old format (string = backend URL) and new format (attrset)
       isLegacyFormat = builtins.isString proxyConfig;
@@ -35,9 +43,10 @@ rec {
 
       # Listen addresses - can be overridden per-host
       listenAddrs =
-        if isLegacyFormat
-        then defaultListenAddresses
-        else (proxyConfig.listenAddresses or defaultListenAddresses);
+        if isLegacyFormat then
+          defaultListenAddresses
+        else
+          (proxyConfig.listenAddresses or defaultListenAddresses);
 
       # Build extraConfig based on features
       extraConfig = proxyHeaders + (if websockets then websocketHeaders else "");
@@ -54,11 +63,15 @@ rec {
     };
 
   # Generate all virtualHosts from topology
-  mkAllProxies = { topology, config ? { } }:
+  mkAllProxies =
+    {
+      topology,
+      config ? { },
+    }:
     let
       proxies = topology.nginx.proxies or { };
     in
-    builtins.mapAttrs
-      (hostname: proxyConfig: mkProxyHost { inherit topology hostname proxyConfig; })
-      proxies;
+    builtins.mapAttrs (
+      hostname: proxyConfig: mkProxyHost { inherit topology hostname proxyConfig; }
+    ) proxies;
 }

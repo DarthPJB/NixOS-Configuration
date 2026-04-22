@@ -1,8 +1,14 @@
-{ config, pkgs, lib, ... }:
-let inherit (builtins) readFile;
-in {
-  services.samba-wsdd.enable =
-    true; # make shares visible for windows 10 clients
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
+let
+  inherit (builtins) readFile;
+in
+{
+  services.samba-wsdd.enable = true; # make shares visible for windows 10 clients
   networking.firewall.allowedTCPPorts = [
     5357 # wsdd
   ];

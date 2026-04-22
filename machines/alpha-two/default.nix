@@ -1,5 +1,11 @@
 # -------------------------- ALPHA TWO --------------------------
-{ config, lib, pkgs, hostname, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  hostname,
+  ...
+}:
 {
   imports = [
     ./hardware-configuration.nix
@@ -28,21 +34,19 @@
     ../../modifier_imports/remote-builder.nix
     ../../configuration.nix
   ];
-  systemd.user.services.xwinwrap =
-    {
-      description = "xwinwrap-glmatrix";
-      wantedBy = [ "graphical-session.target" ];
-      serviceConfig =
-        {
-          Restart = "always";
-          ExecStart = ''
-            ${pkgs.xwinwrap}/bin/xwinwrap -ov -fs -- ${pkgs.xscreensaver}/libexec/xscreensaver/galaxy --count 5 --no-tracks --cycles 1000 --delay 20000 --no-spin -root -window-id WID
-          '';
-          PassEnvironment = "DISPLAY XAUTHORITY";
-        };
+  systemd.user.services.xwinwrap = {
+    description = "xwinwrap-glmatrix";
+    wantedBy = [ "graphical-session.target" ];
+    serviceConfig = {
+      Restart = "always";
+      ExecStart = ''
+        ${pkgs.xwinwrap}/bin/xwinwrap -ov -fs -- ${pkgs.xscreensaver}/libexec/xscreensaver/galaxy --count 5 --no-tracks --cycles 1000 --delay 20000 --no-spin -root -window-id WID
+      '';
+      PassEnvironment = "DISPLAY XAUTHORITY";
     };
+  };
 
-  #    boot.extraModulePackages = [    
+  #    boot.extraModulePackages = [
   # (config.boot.kernelPackages."rtw88".overrideAttrs (old: {
   #    prePatch = old.prePatch + ''
   #      substituteInPlace Makefile --replace "CONFIG_CONCURRENT_MODE = n" "CONFIG_CONCURRENT_MODE = y"
@@ -58,29 +62,27 @@
     "video=DP-3:1920x1080@60"
   ];
   hardware.bluetooth.enable = true; # enables support for Bluetooth
-  hardware.bluetooth.powerOnBoot = true; #
+  hardware.bluetooth.powerOnBoot = true;
 
   hardware.graphics.extraPackages = with pkgs; [
     rocmPackages.clr.icd
     #amdvlk
   ];
-  # For 32 bit applications 
+  # For 32 bit applications
   hardware.graphics.extraPackages32 = with pkgs; [
     # driversi686Linux.amdvlk
   ];
-
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
   # Pick only one of the below networking options.
-  networking.wireless =
-    {
-      enable = true; # Enables wireless support via wpa_supplicant.
-      userControlled.enable = true;
-      interfaces = [ "wlp9s0u1u4" ];
-    };
+  networking.wireless = {
+    enable = true; # Enables wireless support via wpa_supplicant.
+    userControlled.enable = true;
+    interfaces = [ "wlp9s0u1u4" ];
+  };
   # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
 
   # Set your time zone.
@@ -90,8 +92,7 @@
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Select internationalisation properties.
-  i18n.defaultLocale = lib.mkForce
-    "en_US.UTF-8";
+  i18n.defaultLocale = lib.mkForce "en_US.UTF-8";
   console = {
     font = "Lat2-Terminus16";
     keyMap = lib.mkForce "us";
@@ -105,8 +106,7 @@
   services.kmscon.enable = true;
 
   # Configure keymap in X11
-  services.xserver.xkb.layout = lib.mkForce
-    "us";
+  services.xserver.xkb.layout = lib.mkForce "us";
   # services.xserver.xkb.options = "eurosign:e,caps:escape";
 
   # Enable CUPS to print documents.
@@ -163,4 +163,3 @@
   networking.firewall.allowedUDPPorts = [ 1108 ];
 
 }
-

@@ -6,14 +6,11 @@
   # into WireGuard peers, nftables rules, Tailscale config, etc.
   mkWireguardPeers = topology: [ ];
   mkTailscaleConfig = topology: { };
-  mkNftablesConfig = topology: '''';
+  mkNftablesConfig = topology: "";
   mkDhcpConfig = topology: [ ];
 
   # Filter config tree to only networking-relevant parts
-  filterConfig = config: filterTerms:
-    lib.filterAttrsRecursive
-      (name: value:
-        lib.any (term: lib.hasPrefix term name) filterTerms
-      )
-      config;
+  filterConfig =
+    config: filterTerms:
+    lib.filterAttrsRecursive (name: value: lib.any (term: lib.hasPrefix term name) filterTerms) config;
 }

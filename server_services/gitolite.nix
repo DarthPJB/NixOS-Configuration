@@ -11,17 +11,25 @@
           PermitRootLogin no
           PasswordAuthentication no
   '';
-  networking.firewall.interfaces."wireg0".allowedTCPPorts = [ 80 22 ];
-  services.openssh.listenAddresses = [{
-    addr = "10.88.127.${builtins.toString config.environment.vpn.postfix}";
-    port = 22;
-  }];
+  networking.firewall.interfaces."wireg0".allowedTCPPorts = [
+    80
+    22
+  ];
+  services.openssh.listenAddresses = [
+    {
+      addr = "10.88.127.${builtins.toString config.environment.vpn.postfix}";
+      port = 22;
+    }
+  ];
 
   services.uwsgi = {
     enable = true;
     user = "git";
     group = "nginx";
-    plugins = [ "cgi" "python3" ];
+    plugins = [
+      "cgi"
+      "python3"
+    ];
 
     instance = {
       type = "emperor";
@@ -46,12 +54,11 @@
     openssh.authorizedKeys.keyFiles = [ ../secrets/public_keys/JOHN_BARGMAN_ED_25519.pub ];
   };
 
-  systemd.services.uwsgi =
-    {
-      serviceConfig.ReadWritePaths = [
-        "/bulk-storage/cgit"
-      ];
-    };
+  systemd.services.uwsgi = {
+    serviceConfig.ReadWritePaths = [
+      "/bulk-storage/cgit"
+    ];
+  };
 
   services.gitolite = {
     enable = true;

@@ -2,28 +2,77 @@
 # this is my router gateway everything its bad plz look
 
 # YEEEEEEEEEEE PAAAAINN :)
-{ config, lib, pkgs, self, hostname, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  self,
+  hostname,
+  ...
+}:
 let
   # Removed: proxyConfigs (now in real-topology/cortex-alpha.nix)
   # Removed: mkProxyPass (replaced by topology)
   nftableAttrs = {
     enp2s0.tcp = [
-      { port = 2208; dest = "10.88.128.3:22"; }
-      { port = 27015; dest = "10.88.128.88:27015"; }
-      { port = 4549; dest = "10.88.128.88:4549"; }
+      {
+        port = 2208;
+        dest = "10.88.128.3:22";
+      }
+      {
+        port = 27015;
+        dest = "10.88.128.88:27015";
+      }
+      {
+        port = 4549;
+        dest = "10.88.128.88:4549";
+      }
     ];
     enp2s0.udp = [
-      { port = 17780; dest = "10.88.128.88:17780"; }
-      { port = 17781; dest = "10.88.128.88:17781"; }
-      { port = 17782; dest = "10.88.128.88:17782"; }
-      { port = 17783; dest = "10.88.128.88:17783"; }
-      { port = 17784; dest = "10.88.128.88:17784"; }
-      { port = 17785; dest = "10.88.128.88:17785"; }
-      { port = 27015; dest = "10.88.128.88:27015"; }
-      { port = 2207; dest = "10.88.127.88:2207"; }
-      { port = 4175; dest = "10.88.128.88:4175"; }
-      { port = 4179; dest = "10.88.128.88:4179"; }
-      { port = 4171; dest = "10.88.128.88:4171"; }
+      {
+        port = 17780;
+        dest = "10.88.128.88:17780";
+      }
+      {
+        port = 17781;
+        dest = "10.88.128.88:17781";
+      }
+      {
+        port = 17782;
+        dest = "10.88.128.88:17782";
+      }
+      {
+        port = 17783;
+        dest = "10.88.128.88:17783";
+      }
+      {
+        port = 17784;
+        dest = "10.88.128.88:17784";
+      }
+      {
+        port = 17785;
+        dest = "10.88.128.88:17785";
+      }
+      {
+        port = 27015;
+        dest = "10.88.128.88:27015";
+      }
+      {
+        port = 2207;
+        dest = "10.88.127.88:2207";
+      }
+      {
+        port = 4175;
+        dest = "10.88.128.88:4175";
+      }
+      {
+        port = 4179;
+        dest = "10.88.128.88:4179";
+      }
+      {
+        port = 4171;
+        dest = "10.88.128.88:4171";
+      }
     ];
   };
   mkNftables = import ../../lib/mkNftables.nix { inherit lib nftableAttrs; };
@@ -34,26 +83,25 @@ let
 in
 
 {
-  imports =
-    [
-      #  ../../lib/network-interfaces.nix
-      ../../services/dynamic_domain_gandi.nix
-      (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
-      ../../server_services/ldap.nix
-      ../../configuration.nix
-      ../../locale/tailscale.nix
-      ../../modules/core-router.nix
-      ../../modules/enable-wg.nix
-      ./hardware-configuration.nix
-      ../../modifier_imports/zfs.nix
-    ];
+  imports = [
+    #  ../../lib/network-interfaces.nix
+    ../../services/dynamic_domain_gandi.nix
+    (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
+    ../../server_services/ldap.nix
+    ../../configuration.nix
+    ../../locale/tailscale.nix
+    ../../modules/core-router.nix
+    ../../modules/enable-wg.nix
+    ./hardware-configuration.nix
+    ../../modifier_imports/zfs.nix
+  ];
   boot = {
     #  zfs.extraPools = [ "external" ];
     supportedFilesystems = [ "zfs" ];
     kernel = {
       sysctl = {
         "net.ipv4.conf.all.forwarding" = true;
-        "net.ipv6.conf.all.forwarding" = false; #TODO: v6 please god
+        "net.ipv6.conf.all.forwarding" = false; # TODO: v6 please god
       };
     };
     loader.systemd-boot.enable = true;
@@ -62,7 +110,7 @@ in
   security.acme = {
     defaults.email = "commander@johnbargman.net";
     certs."johnbargman.net" = {
-      extraDomainNames = [ "*.johnbargman.net" ]; #johnbargman.com"];
+      extraDomainNames = [ "*.johnbargman.net" ]; # johnbargman.com"];
     };
   };
   # - here is my ideal senario
@@ -82,7 +130,11 @@ in
   services.nginx.virtualHosts = {
     "_" = {
       default = true;
-      listenAddresses = [ "10.88.128.1" "10.88.127.1" "82.5.173.252" ];
+      listenAddresses = [
+        "10.88.128.1"
+        "10.88.127.1"
+        "82.5.173.252"
+      ];
       locations."/" = {
         return = "444"; # Close connection without response
       };
@@ -91,7 +143,11 @@ in
       enableACME = true;
       acmeRoot = null;
       forceSSL = true;
-      listenAddresses = [ "10.88.128.1" "10.88.127.1" "82.5.173.252" ];
+      listenAddresses = [
+        "10.88.128.1"
+        "10.88.127.1"
+        "82.5.173.252"
+      ];
       locations."/" = {
         root = ../../webroot;
         proxyWebsockets = false; # needed if you need to use websocket
@@ -100,7 +156,11 @@ in
     "cortex-alpha.johnbargman.net" = {
       useACMEHost = "johnbargman.net";
       forceSSL = true;
-      listenAddresses = [ "10.88.128.1" "10.88.127.1" "82.5.173.252" ]; #TODO: handle this assignment in a fixed fashion 82.5.173.252
+      listenAddresses = [
+        "10.88.128.1"
+        "10.88.127.1"
+        "82.5.173.252"
+      ]; # TODO: handle this assignment in a fixed fashion 82.5.173.252
       locations."/" = {
         root = ../../webroot;
         #proxyWebsockets = false; # needed if you need to use websocket
@@ -110,7 +170,7 @@ in
   # so i'm thinking a 'port proxy' mother of all modules
   #  - TODO: the dream here is that i can have a list of source -> destination - type
   # - and map over that, outputting nginx proxies, port forwards, or port proxies
-  #  - The possibilitites here are truely beyond imagining. 
+  #  - The possibilitites here are truely beyond imagining.
   # > "I would just converge the config of each system and map that in the module" ~ @Chloe.kever
 
   # Set your time zone.
@@ -120,21 +180,25 @@ in
     postfix = 1;
   };
   networking = {
-    tailscale.advertisedRoutes = [ "10.88.128.88/32" "10.88.128.248/32" ];
+    tailscale.advertisedRoutes = [
+      "10.88.128.88/32"
+      "10.88.128.248/32"
+    ];
     nat.enable = lib.mkForce false;
-    nftables =
-      {
-        enable = true;
-        ruleset = mkNftables;
-      };
+    nftables = {
+      enable = true;
+      ruleset = mkNftables;
+    };
     #hostName = "cortex-alpha";
     hostId = "c043a1fa";
     interfaces.enp3s0 = {
       useDHCP = lib.mkDefault false;
-      ipv4.addresses = [{
-        address = "10.88.128.1";
-        prefixLength = 24;
-      }];
+      ipv4.addresses = [
+        {
+          address = "10.88.128.1";
+          prefixLength = 24;
+        }
+      ];
     };
 
     interfaces.enp2s0 = {

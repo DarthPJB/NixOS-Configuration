@@ -1,8 +1,7 @@
 { pkgs, ... }:
 
 {
-  environment.systemPackages =
-    [
-      pkgs.neovim
-    ];
+  environment.systemPackages = [
+    pkgs.neovim
+  ];
 }

@@ -1,4 +1,11 @@
-{ pkgs, config, lib, self, hostname, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  self,
+  hostname,
+  ...
+}:
 {
   imports = [
     ../../modifier_imports/zram.nix
@@ -15,26 +22,23 @@
   };
   sdImage.compressImage = false;
   # secrix.services.wireguard-wireg0.secrets."${hostname}".encrypted.file = "${self}/secrets/wiregaurd/wg_${hostname}";
-  environment.vpn =
-    {
-      enable = true;
-      postfix = 41;
-      #     privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
+  environment.vpn = {
+    enable = true;
+    postfix = 41;
+    #     privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
+  };
+  systemd.user.services.browser = {
+    enable = true;
+    description = "browser-autostart";
+    wantedBy = [ "graphical-session.target" ];
+    serviceConfig = {
+      Restart = "always";
+      ExecStart = ''
+        ${lib.getExe pkgs.chromium}
+      '';
+      PassEnvironment = "DISPLAY XAUTHORITY";
     };
-  systemd.user.services.browser =
-    {
-      enable = true;
-      description = "browser-autostart";
-      wantedBy = [ "graphical-session.target" ];
-      serviceConfig =
-        {
-          Restart = "always";
-          ExecStart = ''
-            ${lib.getExe pkgs.chromium}
-          '';
-          PassEnvironment = "DISPLAY XAUTHORITY";
-        };
-    };
+  };
   systemd.user.services.terminal =
     let
       config_file = pkgs.writeText "theme.toml" ''
@@ -69,22 +73,20 @@
       enable = true;
       description = "terminal-autostart";
       wantedBy = [ "graphical-session.target" ];
-      serviceConfig =
-        {
-          Restart = "always";
-          ExecStart = ''
-            ${lib.getExe pkgs.alacritty} --config-file ${config_file} -e "${lib.getExe pkgs.bottom}"
-          '';
-          PassEnvironment = "DISPLAY XAUTHORITY";
-        };
+      serviceConfig = {
+        Restart = "always";
+        ExecStart = ''
+          ${lib.getExe pkgs.alacritty} --config-file ${config_file} -e "${lib.getExe pkgs.bottom}"
+        '';
+        PassEnvironment = "DISPLAY XAUTHORITY";
+      };
     };
   hardware = {
     enableRedistributableFirmware = true;
-    raspberry-pi."4" =
-      {
-        apply-overlays-dtmerge.enable = true;
-        fkms-3d.enable = true;
-      };
+    raspberry-pi."4" = {
+      apply-overlays-dtmerge.enable = true;
+      fkms-3d.enable = true;
+    };
     deviceTree = {
       enable = true;
     };
@@ -95,10 +97,17 @@
     })
   ];
   boot = {
-    initrd.kernelModules = [ "vc4" "snd_bcm2835" ];
+    initrd.kernelModules = [
+      "vc4"
+      "snd_bcm2835"
+    ];
     #  supportedFilesystems.zfs = lib.mkForce false;
     #  kernelPackages = pkgs.linuxPackages_rpi4;
-    kernelParams = [ "video=HDMI-A-1:1920x1080@60" "console=ttyS1,115200n8" "cma=128M" ];
+    kernelParams = [
+      "video=HDMI-A-1:1920x1080@60"
+      "console=ttyS1,115200n8"
+      "cma=128M"
+    ];
     extraModprobeConfig = ''
       options snd_bcm2835 enable_headphones=1 enable_hdmi=1
     '';
@@ -115,8 +124,12 @@
     pulse.enable = true;
   };
 
-
-  swapDevices = [{ device = "/swapfile"; size = 1024; }];
+  swapDevices = [
+    {
+      device = "/swapfile";
+      size = 1024;
+    }
+  ];
   services.openssh.enable = true;
   networking = {
     interfaces."wlan0".useDHCP = true;

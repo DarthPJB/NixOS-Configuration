@@ -1,11 +1,20 @@
 # This is the general configuration for all of my systems; anything in here will be found on every possible system I have.
 
-{ config, pkgs, self, lib, ... }:
+{
+  config,
+  pkgs,
+  self,
+  lib,
+  ...
+}:
 let
   build-all-script = pkgs.writeShellApplication {
     name = "nix-build-all";
     meta.description = "like a baby CI, locally.. oh that's just a builder...";
-    runtimeInputs = [ pkgs.jq pkgs.nix ];
+    runtimeInputs = [
+      pkgs.jq
+      pkgs.nix
+    ];
     text = ''
       nix flake show --json | jq '.packages."x86_64-linux" | keys_unsorted[]' |
       while IFS= read -r pkg; do nix build .#"$pkg"; done
@@ -24,28 +33,28 @@ in
   #    '';
   #};
 
-  imports =
-    [
-      ./locale/home_networks.nix
-      ./modifier_imports/flakes.nix
-      ./users/darthpjb.nix
-      ./modifier_imports/hosts.nix
-      ./modifier_imports/energy_saving.nix
-      ./users/deployment.nix
-      ./locale/en_gb.nix
-      ./locale/home_networks.nix
-      ./environments/sshd.nix
-      ./environments/tools.nix
-    ];
-  environment.systemPackages = with pkgs;
-    [
-      build-all-script
-      pkgs.tmux
-      pkgs.progress
-      pkgs.parted
-      pkgs.bottom
-    ];
-  networking.firewall.interfaces."wireg0".allowedTCPPorts = [ config.services.prometheus.exporters.node.port ];
+  imports = [
+    ./locale/home_networks.nix
+    ./modifier_imports/flakes.nix
+    ./users/darthpjb.nix
+    ./modifier_imports/hosts.nix
+    ./modifier_imports/energy_saving.nix
+    ./users/deployment.nix
+    ./locale/en_gb.nix
+    ./locale/home_networks.nix
+    ./environments/sshd.nix
+    ./environments/tools.nix
+  ];
+  environment.systemPackages = with pkgs; [
+    build-all-script
+    pkgs.tmux
+    pkgs.progress
+    pkgs.parted
+    pkgs.bottom
+  ];
+  networking.firewall.interfaces."wireg0".allowedTCPPorts = [
+    config.services.prometheus.exporters.node.port
+  ];
   services.prometheus = {
     exporters.node = {
       enable = true;
@@ -96,7 +105,12 @@ in
       options = "--delete-older-than 7d";
     };
     settings = {
-      experimental-features = [ "nix-command" "flakes" "auto-allocate-uids" "cgroups" ];
+      experimental-features = [
+        "nix-command"
+        "flakes"
+        "auto-allocate-uids"
+        "cgroups"
+      ];
       extra-experimental-features = [ "ca-derivations" ];
       auto-allocate-uids = true;
       max-jobs = lib.mkDefault "auto";
@@ -104,9 +118,14 @@ in
       auto-optimise-store = true;
       builders-use-substitutes = true;
 
-      trusted-users = [ "root" "John88" "build" "deploy" ];
+      trusted-users = [
+        "root"
+        "John88"
+        "build"
+        "deploy"
+      ];
       trusted-substituters = [
-        "https://cache.platonic.systems" #Building things has perks, having them in prod more so. ;)
+        "https://cache.platonic.systems" # Building things has perks, having them in prod more so. ;)
         "https://cache.nixos.org"
       ];
       trusted-public-keys = [
@@ -115,27 +134,35 @@ in
       ];
     };
   };
-  services.openssh.settings.AllowUsers = [ "John88" "build" "deploy" ];
+  services.openssh.settings.AllowUsers = [
+    "John88"
+    "build"
+    "deploy"
+  ];
 
-  services.kmscon =
-    {
-      #  Alright, I know what you are thinking; For real? All I have to do is grab a John-tech and enter tty?
-      #      Alright, so what? you have the damn thing in your hand anyway; I saved you what? Six hours to DD my disk
-      #        and fuck about in a terminal?
-      #      Compared to the 30,000+ hours to brute force some key? Doesn't matter.
-      #    P.S. Thx to crash giving me wiregaurd, I look forward to your pinging my IPV4 range :)
-      enable = true;
-      hwRender = true; # Enable hardware rendering
-      extraConfig = ''
-        font-size=16
-        #xterm-resolution=1920x1080 # Set desired resolution
-        font-name=Source Code Pro # Clear, monospaced font
-        font-size=14 # Balanced size for readability
-        palette=linux # Standard Linux console colors
-        #scrollback=1000 # Scrollback buffer size
-        drm # Use DRM backend for Raspberry Pi
-      '';
-      fonts = [{ name = "Source Code Pro"; package = pkgs.source-code-pro; }];
-    };
+  services.kmscon = {
+    #  Alright, I know what you are thinking; For real? All I have to do is grab a John-tech and enter tty?
+    #      Alright, so what? you have the damn thing in your hand anyway; I saved you what? Six hours to DD my disk
+    #        and fuck about in a terminal?
+    #      Compared to the 30,000+ hours to brute force some key? Doesn't matter.
+    #    P.S. Thx to crash giving me wiregaurd, I look forward to your pinging my IPV4 range :)
+    enable = true;
+    hwRender = true; # Enable hardware rendering
+    extraConfig = ''
+      font-size=16
+      #xterm-resolution=1920x1080 # Set desired resolution
+      font-name=Source Code Pro # Clear, monospaced font
+      font-size=14 # Balanced size for readability
+      palette=linux # Standard Linux console colors
+      #scrollback=1000 # Scrollback buffer size
+      drm # Use DRM backend for Raspberry Pi
+    '';
+    fonts = [
+      {
+        name = "Source Code Pro";
+        package = pkgs.source-code-pro;
+      }
+    ];
+  };
   services.getty.autologinUser = "John88";
 }

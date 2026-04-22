@@ -1,18 +1,27 @@
-{ config, pkgs, lib, self, unstable, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  self,
+  unstable,
+  ...
+}:
 let
   stateDir = "/speed-storage/litellm";
 in
 {
   options.services.litellm.backends = lib.mkOption {
-    type = lib.types.attrsOf (lib.types.submodule {
-      options = {
-        url = lib.mkOption {
-          type = lib.types.str;
-          description = "Ollama API base URL";
-          example = "http://10.75.69.88:11434";
+    type = lib.types.attrsOf (
+      lib.types.submodule {
+        options = {
+          url = lib.mkOption {
+            type = lib.types.str;
+            description = "Ollama API base URL";
+            example = "http://10.75.69.88:11434";
+          };
         };
-      };
-    });
+      }
+    );
     default = { };
     description = "Ollama backend endpoints. If set, these backends are used instead of local Ollama.";
   };
@@ -36,30 +45,26 @@ in
       # Generate model entries: backends mode OR local mode
       modelList =
         if backends != { } then
-          lib.concatLists
-            (lib.mapAttrsToList
-              (name: cfg:
-                map
-                  (m: {
-                    model_name = "${name}/${m}";
-                    litellm_params = {
-                      model = "ollama/${m}";
-                      api_base = cfg.url;
-                    };
-                  })
-                  modelNames
-              )
-              backends)
+          lib.concatLists (
+            lib.mapAttrsToList (
+              name: cfg:
+              map (m: {
+                model_name = "${name}/${m}";
+                litellm_params = {
+                  model = "ollama/${m}";
+                  api_base = cfg.url;
+                };
+              }) modelNames
+            ) backends
+          )
         else
-          map
-            (m: {
-              model_name = m;
-              litellm_params = {
-                model = "ollama/${m}";
-                api_base = "http://127.0.0.1:${toString config.services.ollama.port}";
-              };
-            })
-            modelNames;
+          map (m: {
+            model_name = m;
+            litellm_params = {
+              model = "ollama/${m}";
+              api_base = "http://127.0.0.1:${toString config.services.ollama.port}";
+            };
+          }) modelNames;
     in
     {
       enable = true;
@@ -70,8 +75,7 @@ in
       settings = {
         environment_variables = { };
         environmentFile =
-          if backends != { } then null
-          else config.secrix.services.litellm.secrets.litellm-env.decrypted.path;
+          if backends != { } then null else config.secrix.services.litellm.secrets.litellm-env.decrypted.path;
         model_list = modelList;
       };
     };

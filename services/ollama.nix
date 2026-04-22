@@ -1,4 +1,11 @@
-{ config, lib, pkgs, unstable, self, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  unstable,
+  self,
+  ...
+}:
 {
   services.nextjs-ollama-llm-ui = {
     port = 8081;
@@ -21,7 +28,7 @@
       "qwen2.5:1.5b"
     ];
     environmentVariables = {
-      /* The fragging LLM told me to set these and I did it; I question not the machine spirits */
+      # The fragging LLM told me to set these and I did it; I question not the machine spirits
       CUDA_VISIBLE_DEVICES = "0,1"; # tells Ollama both GPUs exist (0 = RTX 3060, 1 = GTX 1050)
       OLLAMA_NUM_CTX = "16384"; # 16k context — small models lose coherence fast; 8k default is usually too tight for tool use / multi-turn
       OLLAMA_NUM_PREDICT = "4096"; # reasonable max output length — prevents endless generation while still allowing long code / explanations
