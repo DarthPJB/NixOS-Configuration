@@ -28,11 +28,10 @@
       DenyUsers *
   '';
 
-  services.openssh.listenAddresses = [{
+  services.openssh.listenAddresses = lib.mkIf (config.environment ? vpn && config.environment.vpn.enable) [{
     addr = "10.88.127.${builtins.toString config.environment.vpn.postfix}";
     port = 22;
   }];
 
   networking.firewall.interfaces.wireg0.allowedTCPPorts = [ 22 ];
 }
-

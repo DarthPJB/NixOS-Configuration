@@ -1,27 +1,64 @@
-rec {
+# lib/topology/mkNginxProxies.nix
+# Transforms topology nginx proxies into NixOS nginx virtualHosts
+# Inspired by infrastructure-2/modules/proxy-host.nix pattern
+{ lib }:
 
-  mkProxyHost = { topology, config ? {}, hostname, backendUrl }:
+rec {
+  # Default listen addresses for cortex-alpha
+  defaultListenAddresses = [ "10.88.128.1" "10.88.127.1" ];
+
+  # Generate proxy headers config
+  proxyHeaders = ''
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  '';
+
+  # Websocket upgrade headers
+  websocketHeaders = ''
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+  '';
+
+  # Create a single virtualHost configuration
+  mkProxyHost = { topology, hostname, proxyConfig }:
     let
-      acmeHost = config.acmeHost or topology.domain;
-      listenAddrs = config.listenAddresses or [ "10.88.128.1" "10.88.127.1" ];
+      # Support both old format (string = backend URL) and new format (attrset)
+      isLegacyFormat = builtins.isString proxyConfig;
+      backend = if isLegacyFormat then proxyConfig else proxyConfig.backend;
+      forceSSL' = if isLegacyFormat then true else (proxyConfig.forceSSL or true);
+      websockets = if isLegacyFormat then true else (proxyConfig.websockets or false);
+
+      # ACME host - use wildcard cert from topology
+      acmeHost = topology.nginx.acmeHost or topology.domain;
+
+      # Listen addresses - can be overridden per-host
+      listenAddrs =
+        if isLegacyFormat
+        then defaultListenAddresses
+        else (proxyConfig.listenAddresses or defaultListenAddresses);
+
+      # Build extraConfig based on features
+      extraConfig = proxyHeaders + (if websockets then websocketHeaders else "");
     in
     {
+      forceSSL = forceSSL';
       useACMEHost = acmeHost;
-      addSSL = true;
       listenAddresses = listenAddrs;
-      locations."~/" = {
-        proxyPass = backendUrl;
-        extraConfig = ''
-          proxy_set_header host $host;
-          proxy_set_header x-real-ip $remote_addr;
-          proxy_set_header x-forwarded-for $proxy_add_x_forwarded_for;
-          proxy_set_header x-forwarded-proto $scheme;
-        '';
-        proxyWebsockets = true;
+      locations."/" = {
+        proxyPass = backend;
+        inherit extraConfig;
+        proxyWebsockets = websockets;
       };
     };
 
-  mkAllProxies = { topology, config ? {} }:
-    builtins.mapAttrs (hostname: backendUrl: mkProxyHost { inherit topology config hostname backendUrl; }) topology.nginx.proxies;
-
+  # Generate all virtualHosts from topology
+  mkAllProxies = { topology, config ? { } }:
+    let
+      proxies = topology.nginx.proxies or { };
+    in
+    builtins.mapAttrs
+      (hostname: proxyConfig: mkProxyHost { inherit topology hostname proxyConfig; })
+      proxies;
 }

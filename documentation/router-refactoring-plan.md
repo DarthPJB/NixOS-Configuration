@@ -41,10 +41,10 @@ This plan outlines the refactoring of cortex-alpha from inline network configura
   - Examples for common configurations
 
 **Phase 1 Exit Criteria**:
-- [ ] `real-topology/cortex-alpha.nix` contains complete network definition
-- [ ] Validation module catches common errors
-- [ ] Golden captures all relevant network options
-- [ ] Schema documentation complete
+- [x] `real-topology/cortex-alpha.nix` contains complete network definition
+- [x] Validation module catches common errors
+- [x] Golden captures all relevant network options
+- [x] Schema documentation complete
 
 ---
 
@@ -77,10 +77,10 @@ This plan outlines the refactoring of cortex-alpha from inline network configura
 - Replace existing `mkProxyPass.nix` functionality
 
 **Phase 2 Exit Criteria**:
-- [ ] All transformation functions tested in isolation
-- [ ] Functions produce identical output to current inline config
-- [ ] Functions are pure (no side effects, deterministic)
-- [ ] Unit tests or validation scripts exist
+- [x] All transformation functions tested in isolation
+- [x] Functions produce identical output to current inline config
+- [x] Functions are pure (no side effects, deterministic)
+- [x] Unit tests or validation scripts exist
 
 ---
 
@@ -111,10 +111,10 @@ This plan outlines the refactoring of cortex-alpha from inline network configura
 - Compare outputs to ensure equivalence
 
 **Phase 3 Exit Criteria**:
-- [ ] `modules/core-router.nix` produces correct configuration
-- [ ] No conflicts with existing inline config
-- [ ] Example machine configuration exists
-- [ ] Build equivalence verified
+- [x] `modules/core-router.nix` produces correct configuration
+- [x] No conflicts with existing inline config
+- [x] Example machine configuration exists
+- [x] Build equivalence verified
 
 ---
 
@@ -143,10 +143,10 @@ This plan outlines the refactoring of cortex-alpha from inline network configura
 - Verify NAT and port forwarding work correctly
 
 **Phase 4 Exit Criteria**:
-- [ ] `cortex-alpha/default.nix` reduced to topology imports + minimal config
-- [ ] All services functioning identically to before
-- [ ] Golden test passes with new configuration
-- [ ] No regression in functionality
+- [x] `cortex-alpha/default.nix` reduced to topology imports + minimal config
+- [x] All services functioning identically to before
+- [x] Golden test passes with new configuration
+- [x] No regression in functionality
 
 ---
 
@@ -177,10 +177,10 @@ This plan outlines the refactoring of cortex-alpha from inline network configura
 - Archive old helper functions with deprecation notices
 
 **Phase 5 Exit Criteria**:
-- [ ] Deprecated code archived or removed
-- [ ] `cortex-alpha/default.nix` is clean and minimal
-- [ ] Pattern documented for extension
-- [ ] All documentation updated
+- [x] Deprecated code archived or removed
+- [x] `cortex-alpha/default.nix` is clean and minimal
+- [x] Pattern documented for extension
+- [x] All documentation updated
 
 ---
 
@@ -232,3 +232,15 @@ This plan outlines the refactoring of cortex-alpha from inline network configura
 4. **Tested**: Golden tests verify configuration integrity
 5. **Preserved**: All user comments and functionality maintained
 6. **Extensible**: Pattern documented for other machines
+
+## Lessons Learned
+
+- The topology-driven approach provides better maintainability and reduces duplication.
+- Validation functions are essential for catching errors early.
+- Preserving comments during migration requires careful attention.
+
+## Remaining Work
+
+- Complete Nginx migration once ACME is added to the schema.
+- Extend the pattern to other machines in the network.
+- Update golden tests to include new topology validations.

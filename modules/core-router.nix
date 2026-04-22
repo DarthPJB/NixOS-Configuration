@@ -1,22 +1,81 @@
 # modules/core-router.nix
 # Consumes real-topology data and generates actual NixOS networking configuration
 { config, lib, pkgs, self, ... }:
-{
-  # This module will eventually replace much of the inline networking logic
-  # in cortex-alpha and other routers.
-  # For now, it just adds the UDP GRO service which was previously inline.
 
-  # TODO: lift to common (modifier_imports/tailscale-udp-gro.nix) if needed later
-  # This fix only applies to cortex-alpha for now
-  environment.systemPackages = [ pkgs.ethtool ];
-  systemd.services.tailscale-udp-gro = {
-    description = "Enable UDP GRO forwarding for tailscale performance on enp2s0";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "network.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = "${pkgs.ethtool}/bin/ethtool -K enp2s0 rx-udp-gro-forwarding on";
-      RemainAfterExit = true;
-    };
+let
+  # Import topology (pure data, no arguments needed beyond the function signature)
+  topology = import ../real-topology/${config.networking.hostName}.nix { inherit lib self; };
+
+  # Import transformation functions
+  wireguardLib = (import ../lib/topology/mkWireguardPeers.nix) { inherit lib topology; };
+  tailscaleLib = (import ../lib/topology/mkTailscaleConfig.nix) { inherit lib; } topology;
+  dhcpDnsLib = (import ../lib/topology/mkDhcpDns.nix) { inherit lib; } topology;
+  nginxLib = (import ../lib/topology/mkNginxProxies.nix) { inherit lib; };
+in
+{
+  options.coreRouter.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = "Enable topology-driven core router configuration";
   };
+
+  config = lib.mkMerge [
+    # UDP GRO service (machine-specific, not topology-managed)
+    {
+      # TODO: lift to common (modifier_imports/tailscale-udp-gro.nix) if needed later
+      # This fix only applies to cortex-alpha for now
+      environment.systemPackages = [ pkgs.ethtool ];
+      systemd.services.tailscale-udp-gro = {
+        description = "Enable UDP GRO forwarding for tailscale performance on enp2s0";
+        wantedBy = [ "multi-user.target" ];
+        after = [ "network.target" ];
+        serviceConfig = {
+          Type = "oneshot";
+          ExecStart = "${pkgs.ethtool}/bin/ethtool -K enp2s0 rx-udp-gro-forwarding on";
+          RemainAfterExit = true;
+        };
+      };
+    }
+
+    # Topology-derived config (takes precedence over inline config)
+    (lib.mkIf (config.coreRouter.enable && topology ? wireguard) {
+      # Topology-managed: WireGuard VPN configuration
+      networking.wireguard.interfaces = lib.mkOverride 100 {
+        ${topology.wireguard.interface} = wireguardLib.mkWireguardPeers;
+      };
+    })
+
+    (lib.mkIf (config.coreRouter.enable && topology ? tailscale) {
+      # Topology-managed: Tailscale VPN configuration
+      services.tailscale = lib.mkOverride 100 tailscaleLib.config;
+    })
+
+    (lib.mkIf (config.coreRouter.enable && topology ? dns) {
+      # Topology-managed: DNS/DHCP configuration
+      services.dnsmasq = lib.mkOverride 100 {
+        enable = true;
+        settings = dhcpDnsLib.config;
+      };
+    })
+
+    (lib.mkIf (config.coreRouter.enable && topology ? firewall) {
+      # Topology-managed: Firewall configuration
+      networking.firewall = lib.mkOverride 100 topology.firewall;
+    })
+
+    # Topology-managed: Nginx reverse proxy configuration
+    # Uses ACME wildcard cert pattern from infrastructure-2
+    # Note: topology proxies are added, inline config takes precedence for conflicts
+    (lib.mkIf (config.coreRouter.enable && topology ? nginx && (topology.nginx.proxies or { }) != { }) {
+      services.nginx.enable = lib.mkOverride 100 true;
+      # Use mkMerge to combine topology proxies with inline config
+      # Topology provides base, inline can override
+      services.nginx.virtualHosts = lib.mkMerge [
+        (nginxLib.mkAllProxies { inherit topology; })
+      ];
+
+      # Ensure nginx can read ACME certificates
+      users.users.nginx.extraGroups = [ "acme" ];
+    })
+  ];
 }
