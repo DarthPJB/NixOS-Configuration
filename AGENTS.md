@@ -217,6 +217,9 @@ After intentional network configuration changes:
 2. Commit the updated golden file
 3. Verify: `nix run .#check-network -- <hostname>`
 
+### Router Refactoring
+See `documentation/router-refactoring-plan.md` for the complete five-phase refactoring plan to migrate cortex-alpha from inline configuration to topology-driven configuration.
+
 ## Troubleshooting
 
 ### Build Failures
