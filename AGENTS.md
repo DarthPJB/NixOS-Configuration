@@ -28,6 +28,15 @@ nix run .#build-all            # Build all configurations
 nix run .#deadnix  # Check for unused code
 ```
 
+### Network Topology Golden System
+```bash
+nix run .#generate-golden -- <hostname>           # Generate current network config JSON
+nix run .#generate-golden -- <hostname> > real-topology/golden/<hostname>.json  # Update golden
+nix run .#check-network -- <hostname>             # Validate config matches golden
+```
+
+See `documentation/network-topology-golden.md` for full documentation.
+
 ### CI/CD Pipeline
 ```bash
 # Generate CI workflow (outputs YAML to stdout)
@@ -202,6 +211,12 @@ imports = [
 3. Configure service options
 4. Test: `nixos-rebuild build --flake .#<hostname>`
 
+### Update Network Topology Golden
+After intentional network configuration changes:
+1. Generate new golden: `nix run .#generate-golden -- <hostname> > real-topology/golden/<hostname>.json`
+2. Commit the updated golden file
+3. Verify: `nix run .#check-network -- <hostname>`
+
 ## Troubleshooting
 
 ### Build Failures
@@ -231,23 +246,38 @@ ls secrets/public_keys/        # Verify public keys exist
 ├── services/              # 7 service configurations
 ├── server_services/       # 11 server service configs
 ├── modifier_imports/      # 19 system modifiers
-├── lib/                   # 8 shared utilities
-├── modules/enable-wg.nix  # WireGuard VPN module
+├── lib/                   # Shared utilities
+│   ├── topology/          # Network topology transformation functions
+│   ├── mkNftables.nix     # NAT rule generator
+│   └── mkProxyPass.nix    # Nginx proxy generator
+├── modules/               # System modules
+│   ├── enable-wg.nix      # WireGuard VPN module
+│   └── core-router.nix    # Core router module
+├── real-topology/         # Network topology single source of truth
+│   ├── default.nix        # Golden generation logic
+│   ├── cortex-alpha.nix   # Machine topology data
+│   └── golden/            # Golden JSON snapshots
+├── systems/               # Transition files for new architecture
 ├── users/                 # 3 user configs
 ├── secrets/               # Encrypted secrets (secrix)
-└── documentation/         # 2 documentation files
+└── documentation/         # Documentation files
 ```
 
 ## Key Files
 - **`flake.nix`**: Machine definitions and deployment apps
 - **`configuration.nix`**: Base config for all machines (imports locale, users, environments)
 - **`modules/enable-wg.nix`**: WireGuard VPN configuration (primary VPN module)
+- **`modules/core-router.nix`**: Core router module (UDP GRO service, topology integration)
 - **`lib/wg_peers.nix`**: VPN peer list generator
 - **`lib/mkNftables.nix`**: Network address translation (NAT) rule generator
 - **`lib/mkProxyPass.nix`**: Nginx reverse proxy configuration generator
+- **`lib/topology/default.nix`**: Network topology transformation functions
+- **`real-topology/default.nix`**: Golden generation logic
+- **`real-topology/golden/`**: Golden JSON snapshots for regression testing
 - **`users/deployment.nix`**: Deploy user (UID 1110) with NOPASSWD sudo for port 1108
 - **`users/darthpjb.nix`**: Primary user (UID 1108, username John88)
 - **`locale/home_networks.nix`**: WiFi network configurations (contains PSKs)
+- **`locale/tailscale.nix`**: Tailscale VPN configuration with advertisedRoutes option
 - **`secrets/public_keys/`**: Public keys (safe to commit)
 - **`secrets/private_keys/`**: Encrypted private keys
 

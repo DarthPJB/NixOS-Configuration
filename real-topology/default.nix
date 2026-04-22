@@ -2,19 +2,79 @@
 # Central hub for network reality, golden generation, and filtering
 { lib, self ? null, ... }:
 let
-  # Specific option paths that are safe to evaluate (avoiding deprecated options)
-  # These are the actual options we care about for network topology
+  # Comprehensive list of network-related options to capture in golden
+  # Each option is wrapped in tryEval to handle any evaluation errors gracefully
   safeOptions = {
+    # Basic identity
     "networking.hostName" = config: config.networking.hostName;
+    "networking.hostId" = config: config.networking.hostId;
+    
+    # NAT and firewall
+    "networking.nat.enable" = config: config.networking.nat.enable;
     "networking.nftables.enable" = config: config.networking.nftables.enable;
+    "networking.nftables.ruleset" = config: 
+      let ruleset = config.networking.nftables.ruleset;
+      in if builtins.isString ruleset then "<ruleset-string>" else ruleset;
+    "networking.firewall.allowedTCPPorts" = config: config.networking.firewall.allowedTCPPorts;
+    "networking.firewall.allowedUDPPorts" = config: config.networking.firewall.allowedUDPPorts;
+    "networking.firewall.interfaces" = config: config.networking.firewall.interfaces;
+    
+    # WireGuard
     "networking.wireguard.enable" = config: config.networking.wireguard.enable;
+    "networking.wireguard.interfaces" = config: 
+      let wg = config.networking.wireguard.interfaces;
+      in lib.mapAttrs (name: iface: {
+        inherit (iface) ips listenPort;
+        peers = map (p: { inherit (p) allowedIPs; publicKey = "<redacted>"; }) iface.peers;
+      }) wg;
+    
+    # Tailscale
     "services.tailscale.enable" = config: config.services.tailscale.enable;
     "services.tailscale.useRoutingFeatures" = config: config.services.tailscale.useRoutingFeatures;
     "services.tailscale.extraSetFlags" = config: config.services.tailscale.extraSetFlags;
+    "networking.tailscale.advertisedRoutes" = config: config.networking.tailscale.advertisedRoutes;
+    
+    # DNS/DHCP
     "services.dnsmasq.enable" = config: config.services.dnsmasq.enable;
+    "services.dnsmasq.settings" = config: config.services.dnsmasq.settings;
+    
+    # Nginx
     "services.nginx.enable" = config: config.services.nginx.enable;
+    "services.nginx.virtualHosts" = config:
+      let
+        # Normalize nix store paths to just indicate "store path"
+        normalizePath = path:
+          if path == null then null
+          else
+            let str = toString path;
+            in if lib.hasPrefix "/nix/store/" str then "<store>"
+            else str;
+      in
+      lib.mapAttrs (name: vhost: {
+        inherit (vhost) enableACME forceSSL useACMEHost;
+        listenAddresses = vhost.listenAddresses or [];
+        locations = lib.mapAttrs (loc: locConf: {
+          proxyPass = normalizePath locConf.proxyPass;
+          root = normalizePath locConf.root;
+          proxyWebsockets = locConf.proxyWebsockets or false;
+        }) (vhost.locations or {});
+      }) config.services.nginx.virtualHosts;
+    
+    # Prometheus exporters
+    "services.prometheus.exporters.node.enable" = config: config.services.prometheus.exporters.node.enable;
+    "services.prometheus.exporters.node.port" = config: config.services.prometheus.exporters.node.port;
+    "services.prometheus.exporters.dnsmasq.enable" = config: config.services.prometheus.exporters.dnsmasq.enable;
+    "services.prometheus.exporters.dnsmasq.port" = config: config.services.prometheus.exporters.dnsmasq.port;
+    
+    # System
     "boot.kernel.sysctl" = config: config.boot.kernel.sysctl;
     "time.timeZone" = config: config.time.timeZone;
+    "environment.systemPackages" = config: 
+      lib.unique (map (p: p.pname or p.name or "<unknown>") config.environment.systemPackages);
+    
+    # Services
+    "systemd.services.tailscale-udp-gro.enable" = config: 
+      config.systemd.services.tailscale-udp-gro.enable or false;
   };
 in
 {

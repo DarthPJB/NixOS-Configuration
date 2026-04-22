@@ -20,16 +20,515 @@
     "net.ipv6.conf.enp3s0.use_tempaddr": "2",
     "vm.max_map_count": 1048576
   },
+  "environment.systemPackages": [
+    "ethtool",
+    "tailscale",
+    "btop",
+    "nano",
+    "wget",
+    "git",
+    "ranger",
+    "killall-psmisc-23.7",
+    "magic-wormhole",
+    "bind",
+    "pciutils",
+    "lshw",
+    "usbutils",
+    "determinate-nixd",
+    "neovim",
+    "nix-build-all",
+    "tmux",
+    "progress",
+    "parted",
+    "bottom",
+    "nixos-version",
+    "nixos-rebuild-ng",
+    "nixos-option",
+    "nixos-install",
+    "nixos-generate-config",
+    "nixos-enter",
+    "nixos-build-vms",
+    "lvm2",
+    "zfs",
+    "zfstools",
+    "dosfstools",
+    "mtools",
+    "e2fsprogs",
+    "cpupower",
+    "bcache-tools",
+    "systemd",
+    "kmod",
+    "kexec-tools",
+    "determinate-nix",
+    "nix-info",
+    "nix-bash-completions",
+    "dbus",
+    "wireguard-tools",
+    "nftables",
+    "nixos-firewall-tool",
+    "dhcpcd",
+    "rsyslog",
+    "openldap",
+    "sudo",
+    "linux-pam",
+    "shadow",
+    "bash-interactive",
+    "less",
+    "gnupg",
+    "fuse",
+    "man-db",
+    "texinfo-interactive",
+    "nixos-configuration-reference-manpage",
+    "nixos-manual-html",
+    "nixos-help",
+    "sound-theme-freedesktop",
+    "shared-mime-info",
+    "hicolor-icon-theme",
+    "hostname-debian",
+    "iproute2",
+    "iputils",
+    "openssh",
+    "acl",
+    "attr",
+    "bzip2",
+    "coreutils-full",
+    "cpio",
+    "curl",
+    "diffutils",
+    "findutils",
+    "gawk",
+    "getent-glibc-2.40-218",
+    "getconf-glibc-2.40-218",
+    "gnugrep",
+    "patch",
+    "gnused",
+    "gnutar",
+    "gzip",
+    "xz",
+    "libcap",
+    "ncurses",
+    "libressl",
+    "mkpasswd",
+    "procps",
+    "time",
+    "util-linux",
+    "which",
+    "zstd",
+    "glibc",
+    "perl",
+    "rsync",
+    "strace",
+    "openresolv",
+    "glibc-locales",
+    "fontconfig",
+    "kbd"
+  ],
   "machine": "cortex-alpha",
+  "networking.firewall.allowedTCPPorts": [
+    22,
+    636,
+    1108
+  ],
+  "networking.firewall.allowedUDPPorts": [],
+  "networking.firewall.interfaces": {
+    "enp2s0": {
+      "allowedTCPPortRanges": [],
+      "allowedTCPPorts": [
+        2208
+      ],
+      "allowedUDPPortRanges": [],
+      "allowedUDPPorts": [
+        443,
+        1108,
+        2108,
+        4171,
+        4175,
+        4179,
+        4549,
+        41641
+      ]
+    },
+    "enp3s0": {
+      "allowedTCPPortRanges": [],
+      "allowedTCPPorts": [
+        443,
+        2208
+      ],
+      "allowedUDPPortRanges": [],
+      "allowedUDPPorts": [
+        53,
+        67,
+        1108,
+        2108
+      ]
+    },
+    "wireg0": {
+      "allowedTCPPortRanges": [],
+      "allowedTCPPorts": [
+        443,
+        3100,
+        3101,
+        3102
+      ],
+      "allowedUDPPortRanges": [],
+      "allowedUDPPorts": [
+        1108
+      ]
+    }
+  },
+  "networking.hostId": "c043a1fa",
   "networking.hostName": "cortex-alpha",
+  "networking.nat.enable": false,
   "networking.nftables.enable": true,
+  "networking.nftables.ruleset": "<ruleset-string>",
+  "networking.tailscale.advertisedRoutes": [
+    "10.88.128.88/32",
+    "10.88.128.248/32"
+  ],
   "networking.wireguard.enable": true,
+  "networking.wireguard.interfaces": {
+    "wireg0": {
+      "ips": [
+        "10.88.127.1/32",
+        "10.88.127.0/24"
+      ],
+      "listenPort": 2108,
+      "peers": [
+        {
+          "allowedIPs": [
+            "10.88.127.88/32"
+          ],
+          "publicKey": "<redacted>"
+        },
+        {
+          "allowedIPs": [
+            "10.88.127.108/32"
+          ],
+          "publicKey": "<redacted>"
+        },
+        {
+          "allowedIPs": [
+            "10.88.127.107/32"
+          ],
+          "publicKey": "<redacted>"
+        },
+        {
+          "allowedIPs": [
+            "10.88.127.211/32"
+          ],
+          "publicKey": "<redacted>"
+        },
+        {
+          "allowedIPs": [
+            "10.88.127.1/32"
+          ],
+          "publicKey": "<redacted>"
+        },
+        {
+          "allowedIPs": [
+            "10.88.127.40/32"
+          ],
+          "publicKey": "<redacted>"
+        },
+        {
+          "allowedIPs": [
+            "10.88.127.41/32"
+          ],
+          "publicKey": "<redacted>"
+        },
+        {
+          "allowedIPs": [
+            "10.88.127.42/32"
+          ],
+          "publicKey": "<redacted>"
+        },
+        {
+          "allowedIPs": [
+            "10.88.127.210/32"
+          ],
+          "publicKey": "<redacted>"
+        },
+        {
+          "allowedIPs": [
+            "10.88.127.52/32"
+          ],
+          "publicKey": "<redacted>"
+        },
+        {
+          "allowedIPs": [
+            "10.88.127.212/32"
+          ],
+          "publicKey": "<redacted>"
+        },
+        {
+          "allowedIPs": [
+            "10.88.127.3/32"
+          ],
+          "publicKey": "<redacted>"
+        },
+        {
+          "allowedIPs": [
+            "10.88.127.30/32"
+          ],
+          "publicKey": "<redacted>"
+        },
+        {
+          "allowedIPs": [
+            "10.88.127.51/32"
+          ],
+          "publicKey": "<redacted>"
+        },
+        {
+          "allowedIPs": [
+            "10.88.127.50/32"
+          ],
+          "publicKey": "<redacted>"
+        },
+        {
+          "allowedIPs": [
+            "10.88.127.4/32"
+          ],
+          "publicKey": "<redacted>"
+        },
+        {
+          "allowedIPs": [
+            "10.88.127.21/32"
+          ],
+          "publicKey": "<redacted>"
+        },
+        {
+          "allowedIPs": [
+            "10.88.127.20/32"
+          ],
+          "publicKey": "<redacted>"
+        }
+      ]
+    }
+  },
   "services.dnsmasq.enable": true,
+  "services.dnsmasq.settings": {
+    "address": [
+      "/git.johnbargman.net/10.88.128.1",
+      "/code.johnbargman.net/10.88.128.1",
+      "/cortex-alpha.johnbargman.net/10.88.128.1",
+      "/ap.johnbargman.net/10.88.128.1",
+      "/prometheus.johnbargman.net/10.88.128.1",
+      "/grafana.johnbargman.net/10.88.128.1",
+      "/print-controller.johnbargman.net/10.88.128.1",
+      "/minio.johnbargman.net/10.88.128.1"
+    ],
+    "bogus-priv": [
+      true
+    ],
+    "cache-size": [
+      1000
+    ],
+    "conf-file": [
+      "/etc/dnsmasq-conf.conf"
+    ],
+    "dhcp-host": [
+      "10:0b:a9:7e:cc:8c,10.88.128.20,terminal-zero,infinite",
+      "18:26:49:c5:48:24,10.88.128.89,LINDACORE,infinite",
+      "18:c0:4d:8d:53:6c,10.88.128.87,LINDACORE,infinite",
+      "18:c0:4d:8d:53:6d,10.88.128.88,LINDACORE,infinite",
+      "52:54:00:e9-4a:af,10.88.128.24,LINDA-WM,infinite",
+      "70:54:d2:17:d1:c4,10.88.128.23,terminal-nx-01,infinite",
+      "b8:27:eb:7f:f0:38,10.88.128.10,print-controller,infinite",
+      "dc:85:de:86:a8:77,10.88.128.22,terminal-nx-01,infinite",
+      "f0:de:f1:c7:fe:30,10.88.128.21,terminal-zero,infinite",
+      "f8:32:e4:b9:77:0b,10.88.128.3,local-nas,infinite",
+      "f8:32:e4:b9:77:0d,10.88.128.108,alpha-one,infinite"
+    ],
+    "dhcp-leasefile": [
+      "/var/lib/dnsmasq/dnsmasq.leases"
+    ],
+    "dhcp-range": [
+      "enp3s0,10.88.128.128,10.88.128.254,24h"
+    ],
+    "domain": [
+      "cortex-alpha"
+    ],
+    "domain-needed": [
+      true
+    ],
+    "interface": [
+      "enp3s0"
+    ],
+    "local": [
+      "/cortex-alpha/"
+    ],
+    "no-resolv": [
+      true
+    ],
+    "resolv-file": [
+      "/etc/dnsmasq-resolv.conf"
+    ],
+    "server": [
+      "208.67.220.220",
+      "208.67.222.222",
+      "1.0.0.1",
+      "8.8.8.8"
+    ]
+  },
   "services.nginx.enable": true,
+  "services.nginx.virtualHosts": {
+    "_": {
+      "enableACME": false,
+      "forceSSL": false,
+      "listenAddresses": [
+        "10.88.128.1",
+        "10.88.127.1",
+        "82.5.173.252"
+      ],
+      "locations": {
+        "/": {
+          "proxyPass": null,
+          "proxyWebsockets": false,
+          "root": null
+        }
+      },
+      "useACMEHost": null
+    },
+    "ap.johnbargman.net": {
+      "enableACME": false,
+      "forceSSL": false,
+      "listenAddresses": [
+        "10.88.128.1",
+        "10.88.127.1"
+      ],
+      "locations": {
+        "~/": {
+          "proxyPass": "http://10.88.128.2:80",
+          "proxyWebsockets": true,
+          "root": null
+        }
+      },
+      "useACMEHost": "johnbargman.net"
+    },
+    "code.johnbargman.net": {
+      "enableACME": false,
+      "forceSSL": false,
+      "listenAddresses": [
+        "10.88.128.1",
+        "10.88.127.1"
+      ],
+      "locations": {
+        "~/": {
+          "proxyPass": "http://10.88.127.3:80",
+          "proxyWebsockets": true,
+          "root": null
+        }
+      },
+      "useACMEHost": "johnbargman.net"
+    },
+    "cortex-alpha.johnbargman.net": {
+      "enableACME": false,
+      "forceSSL": true,
+      "listenAddresses": [
+        "10.88.128.1",
+        "10.88.127.1",
+        "82.5.173.252"
+      ],
+      "locations": {
+        "/": {
+          "proxyPass": null,
+          "proxyWebsockets": false,
+          "root": "<store>"
+        }
+      },
+      "useACMEHost": "johnbargman.net"
+    },
+    "git.johnbargman.net": {
+      "enableACME": false,
+      "forceSSL": false,
+      "listenAddresses": [
+        "10.88.128.1",
+        "10.88.127.1"
+      ],
+      "locations": {
+        "~/": {
+          "proxyPass": "http://10.88.127.3:80",
+          "proxyWebsockets": true,
+          "root": null
+        }
+      },
+      "useACMEHost": "johnbargman.net"
+    },
+    "grafana.johnbargman.net": {
+      "enableACME": false,
+      "forceSSL": false,
+      "listenAddresses": [
+        "10.88.128.1",
+        "10.88.127.1"
+      ],
+      "locations": {
+        "~/": {
+          "proxyPass": "http://10.88.127.3:3101",
+          "proxyWebsockets": true,
+          "root": null
+        }
+      },
+      "useACMEHost": "johnbargman.net"
+    },
+    "johnbargman.net": {
+      "enableACME": true,
+      "forceSSL": true,
+      "listenAddresses": [
+        "10.88.128.1",
+        "10.88.127.1",
+        "82.5.173.252"
+      ],
+      "locations": {
+        "/": {
+          "proxyPass": null,
+          "proxyWebsockets": false,
+          "root": "<store>"
+        }
+      },
+      "useACMEHost": null
+    },
+    "print-controller.johnbargman.net": {
+      "enableACME": false,
+      "forceSSL": false,
+      "listenAddresses": [
+        "10.88.128.1",
+        "10.88.127.1"
+      ],
+      "locations": {
+        "~/": {
+          "proxyPass": "http://10.88.127.30:80",
+          "proxyWebsockets": true,
+          "root": null
+        }
+      },
+      "useACMEHost": "johnbargman.net"
+    },
+    "prometheus.johnbargman.net": {
+      "enableACME": false,
+      "forceSSL": false,
+      "listenAddresses": [
+        "10.88.128.1",
+        "10.88.127.1"
+      ],
+      "locations": {
+        "~/": {
+          "proxyPass": "http://10.88.127.3:8080",
+          "proxyWebsockets": true,
+          "root": null
+        }
+      },
+      "useACMEHost": "johnbargman.net"
+    }
+  },
+  "services.prometheus.exporters.dnsmasq.enable": true,
+  "services.prometheus.exporters.dnsmasq.port": 3101,
+  "services.prometheus.exporters.node.enable": true,
+  "services.prometheus.exporters.node.port": 3100,
   "services.tailscale.enable": true,
   "services.tailscale.extraSetFlags": [
     "--advertise-routes=10.88.128.88/32,10.88.128.248/32"
   ],
   "services.tailscale.useRoutingFeatures": "server",
+  "systemd.services.tailscale-udp-gro.enable": true,
   "time.timeZone": "Etc/UTC"
 }
