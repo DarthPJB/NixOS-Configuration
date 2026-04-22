@@ -81,6 +81,7 @@ in
       ../../server_services/ldap.nix
       ../../configuration.nix
       ../../locale/tailscale.nix
+      ../../modules/core-router.nix
       ./hardware-configuration.nix
       ../../modifier_imports/zfs.nix
     ];

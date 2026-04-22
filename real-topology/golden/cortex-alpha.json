@@ -1,0 +1,35 @@
+{
+  "boot.kernel.sysctl": {
+    "fs.inotify.max_user_instances": 524288,
+    "fs.inotify.max_user_watches": 524288,
+    "kernel.kptr_restrict": 1,
+    "kernel.pid_max": 4194304,
+    "kernel.poweroff_cmd": "/nix/store/1vs3gbz4w3wrqs76z8iay5cidwrv2hy6-systemd-258.3/sbin/poweroff",
+    "kernel.printk": "7 7 7 7",
+    "net.core.rmem_max": null,
+    "net.core.wmem_max": null,
+    "net.ipv4.conf.all.forwarding": true,
+    "net.ipv4.conf.enp2s0.proxy_arp": false,
+    "net.ipv4.conf.enp3s0.proxy_arp": false,
+    "net.ipv4.ping_group_range": "0 2147483647",
+    "net.ipv6.conf.all.disable_ipv6": false,
+    "net.ipv6.conf.all.forwarding": true,
+    "net.ipv6.conf.default.disable_ipv6": false,
+    "net.ipv6.conf.default.use_tempaddr": "2",
+    "net.ipv6.conf.enp2s0.use_tempaddr": "2",
+    "net.ipv6.conf.enp3s0.use_tempaddr": "2",
+    "vm.max_map_count": 1048576
+  },
+  "machine": "cortex-alpha",
+  "networking.hostName": "cortex-alpha",
+  "networking.nftables.enable": true,
+  "networking.wireguard.enable": true,
+  "services.dnsmasq.enable": true,
+  "services.nginx.enable": true,
+  "services.tailscale.enable": true,
+  "services.tailscale.extraSetFlags": [
+    "--advertise-routes=10.88.128.88/32,10.88.128.248/32"
+  ],
+  "services.tailscale.useRoutingFeatures": "server",
+  "time.timeZone": "Etc/UTC"
+}

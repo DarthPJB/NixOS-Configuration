@@ -3,7 +3,7 @@
 {
   options.networking.tailscale.advertisedRoutes = lib.mkOption {
     type = lib.types.listOf lib.types.str;
-    default = [];
+    default = [ ];
     description = "Routes to advertise via Tailscale.";
   };
 
@@ -16,7 +16,7 @@
     # enable the tailscale service
     services.tailscale = lib.mkMerge [
       { enable = true; }
-      (lib.mkIf (config.networking.tailscale.advertisedRoutes != []) {
+      (lib.mkIf (config.networking.tailscale.advertisedRoutes != [ ]) {
         useRoutingFeatures = "server";
         extraSetFlags = [ "--advertise-routes=${lib.concatStringsSep "," config.networking.tailscale.advertisedRoutes}" ];
       })

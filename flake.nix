@@ -137,6 +137,57 @@
     {
       formatter."x86_64-linux" = nixpkgs.nixpkgs-fmt;
       apps."x86_64-linux" = { secrix = secrix.secrix self; } // (nixinate.lib.genDeploy.x86_64-linux self) // {
+        # Network Reality Golden Generation
+        generate-golden = {
+          type = "app";
+          meta.description = "Generate golden network reality JSON for a machine (outputs to stdout)";
+          program = lib.getExe (nixpkgs.writeShellApplication {
+            name = "generate-golden";
+            runtimeInputs = [ nixpkgs.jq ];
+            text = ''
+              if [ -z "$1" ]; then
+                echo "Usage: nix run .#generate-golden <machine-name>"
+                echo "Example: nix run .#generate-golden cortex-alpha > real-topology/golden/cortex-alpha.json"
+                exit 1
+              fi
+              MACHINE="$1"
+              nix eval --json --impure \
+                --expr '
+                  let
+                    flake = builtins.getFlake (builtins.toString ./.);
+                    lib = (import <nixpkgs> {}).lib;
+                    topology = import ./real-topology/default.nix { inherit lib; self = flake; };
+                  in
+                  topology.generateGolden "'"$MACHINE"'"
+                ' | jq -S .
+            '';
+          });
+        };
+
+        # Check network config against golden
+        check-network = {
+          type = "app";
+          meta.description = "Check network config against golden file";
+          program = lib.getExe (nixpkgs.writeShellApplication {
+            name = "check-network";
+            runtimeInputs = [ nixpkgs.jq ];
+            text = ''
+              MACHINE="''${1:-cortex-alpha}"
+              echo "Checking network config for $MACHINE..."
+              nix run .#generate-golden -- "$MACHINE" | jq -S . > /tmp/current-network.json
+                
+              if diff -u "${self}/real-topology/golden/$MACHINE.json" /tmp/current-network.json; then
+                echo "✓ Network config matches golden for $MACHINE"
+              else
+                echo "✗ Network configuration has changed from golden!"
+                echo "If intentional, update with:"
+                echo "  nix run .#generate-golden -- $MACHINE > real-topology/golden/$MACHINE.json"
+                exit 1
+              fi
+            '';
+          });
+        };
+
         deploy-all = {
           type = "app";
           meta.description = "itsa make the pizza delivery";
@@ -379,6 +430,27 @@
         };
 
         nixpkgs-fmt = lint-utils.linters.x86_64-linux.nixpkgs-fmt { src = self; };
+
+        # Network topology golden check for cortex-alpha (manual run)
+        network-config-cortex-alpha = nixpkgs.writeShellApplication {
+          name = "network-config-cortex-alpha";
+          meta.description = "Check network config against golden file";
+          runtimeInputs = [ nixpkgs.jq ];
+          text = ''
+            echo "Generating current network config for cortex-alpha..."
+            nix run .#generate-golden -- cortex-alpha | jq -S . > /tmp/current-network.json
+            
+            echo "Comparing with golden..."
+            if diff -u ${self}/real-topology/golden/cortex-alpha.json /tmp/current-network.json; then
+              echo "✓ Network config matches golden for cortex-alpha"
+            else
+              echo "✗ Network configuration has changed from golden!"
+              echo "If intentional, update with:"
+              echo "  nix run .#generate-golden -- cortex-alpha > real-topology/golden/cortex-alpha.json"
+              exit 1
+            fi
+          '';
+        };
       };
 
       # CI Information Output
