@@ -4,6 +4,7 @@
 { ... }:
 {
   domain = "johnbargman.net";
+  hostname = "cortex-alpha";
 
   lan = {
     subnet = "10.88.128.0/24";
@@ -30,6 +31,7 @@
         ip = "10.88.128.3";
         mac = "f8:32:e4:b9:77:0b";
         hostname = "local-nas";
+        wireguardIp = "10.88.127.3";
         routing = {
           tailscale = false;
           wireguard = true;
@@ -44,6 +46,7 @@
         ip = "10.88.128.108";
         mac = "f8:32:e4:b9:77:0d";
         hostname = "alpha-one";
+        wireguardIp = "10.88.127.108";
         routing = {
           tailscale = false;
           wireguard = true;
@@ -55,6 +58,7 @@
         ip = "10.88.128.10";
         mac = "b8:27:eb:7f:f0:38";
         hostname = "print-controller";
+        wireguardIp = "10.88.127.30";
         routing = {
           tailscale = false;
           wireguard = true;
@@ -66,6 +70,7 @@
         ip = "10.88.128.20";
         mac = "10:0b:a9:7e:cc:8c";
         hostname = "terminal-zero";
+        wireguardIp = "10.88.127.20";
         routing = {
           tailscale = false;
           wireguard = true;
@@ -77,6 +82,7 @@
         ip = "10.88.128.21";
         mac = "f0:de:f1:c7:fe:30";
         hostname = "terminal-zero";
+        wireguardIp = "10.88.127.20";
         routing = {
           tailscale = false;
           wireguard = true;
@@ -88,6 +94,7 @@
         ip = "10.88.128.22";
         mac = "dc:85:de:86:a8:77";
         hostname = "terminal-nx-01";
+        wireguardIp = "10.88.127.21";
         routing = {
           tailscale = false;
           wireguard = true;
@@ -99,6 +106,7 @@
         ip = "10.88.128.23";
         mac = "70:54:d2:17:d1:c4";
         hostname = "terminal-nx-01";
+        wireguardIp = "10.88.127.21";
         routing = {
           tailscale = false;
           wireguard = true;
@@ -460,32 +468,32 @@
     proxies = {
       "print-controller.johnbargman.net" = {
         backend = "http://10.88.127.30:80";
-        forceSSL = true;
+        forceSSL = false;
         websockets = true;
       };
       "code.johnbargman.net" = {
         backend = "http://10.88.127.3:80";
-        forceSSL = true;
+        forceSSL = false;
         websockets = true;
       };
       "git.johnbargman.net" = {
         backend = "http://10.88.127.3:80";
-        forceSSL = true;
+        forceSSL = false;
         websockets = true;
       };
       "prometheus.johnbargman.net" = {
-        backend = "http://10.88.127.3:9090";
-        forceSSL = true;
+        backend = "http://10.88.127.3:8080";
+        forceSSL = false;
         websockets = true;
       };
       "grafana.johnbargman.net" = {
-        backend = "http://10.88.127.3:3000";
-        forceSSL = true;
+        backend = "http://10.88.127.3:3101";
+        forceSSL = false;
         websockets = true;
       };
       "ap.johnbargman.net" = {
         backend = "http://10.88.128.2:80";
-        forceSSL = true;
+        forceSSL = false;
         websockets = true;
       };
     };
@@ -499,38 +507,43 @@
     ];
     listenPort = 2108;
     peers = [
+      # Order matches original peer list for golden test compatibility
+      "linda-wg"
       "alpha-one"
       "alpha-three"
-      "cortex-alpha"
+      "cluster-box"
+      "cortex-alpha-wg"
+      "display-0"
       "display-1"
       "display-2"
-      "local-nas"
+      "dlyon"
+      "gaming-host-1"
+      "grimterm"
+      "nas"
       "print-controller"
       "remote-builder"
-      "gaming-host-1"
       "remote-worker"
       "storage-array"
-      "terminal-zero"
-      "terminal-nx-01"
-      "display-0"
-      "LINDA"
-      "dlyon"
-      "grimterm"
-      "cluster-box"
+      "terminal-nx-01-1"
+      "terminal-zero-1"
     ];
   };
 
   firewall = {
     allowedTCPPorts = [
       22
+      636
       1108
     ];
+    allowedUDPPorts = [ ];
     interfaces = {
       wireg0 = {
         allowedUDPPorts = [ 1108 ];
         allowedTCPPorts = [
           443
+          3100
           3101
+          3102
         ];
       };
       enp3s0 = {

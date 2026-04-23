@@ -188,6 +188,39 @@
           });
         };
 
+        # Full config serialization for comparing between revisions
+        dump-config = {
+          type = "app";
+          meta.description = "Dump full NixOS config to JSON (for comparing between git revisions)";
+          program = lib.getExe (nixpkgs.writeShellApplication {
+            name = "dump-config";
+            runtimeInputs = [ nixpkgs.jq ];
+            text = ''
+              if [ -z "$1" ]; then
+                echo "Usage: nix run .#dump-config <machine-name>"
+                echo "Example: nix run .#dump-config cortex-alpha > /tmp/config.json"
+                echo ""
+                echo "To compare between revisions:"
+                echo "  git checkout old-rev && nix run .#dump-config cortex-alpha > /tmp/old.json"
+                echo "  git checkout new-rev && nix run .#dump-config cortex-alpha > /tmp/new.json"
+                echo "  diff /tmp/old.json /tmp/new.json"
+                exit 1
+              fi
+              MACHINE="$1"
+              nix eval --json --impure \
+                --expr '
+                  let
+                    flake = builtins.getFlake (builtins.toString ./.);
+                    lib = (import <nixpkgs> {}).lib;
+                    serializer = import ./lib/serialize-config.nix { inherit lib; };
+                    config = flake.nixosConfigurations."'"$MACHINE"'".config;
+                  in
+                  serializer.serializeConfig config
+                ' | jq -S .
+            '';
+          });
+        };
+
         deploy-all = {
           type = "app";
           meta.description = "itsa make the pizza delivery";

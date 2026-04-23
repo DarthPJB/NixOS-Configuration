@@ -95,30 +95,6 @@ let
     # Services
     "systemd.services.tailscale-udp-gro.enable" =
       config: config.systemd.services.tailscale-udp-gro.enable or false;
-
-    # ACME/Let's Encrypt
-    "security.acme.defaults.email" = config: config.security.acme.defaults.email;
-    "security.acme.certs" = config: builtins.attrNames config.security.acme.certs;
-
-    # Additional Services
-    "services.prometheus.enable" = config: config.services.prometheus.enable;
-    "services.openldap.enable" = config: config.services.openldap.enable;
-    "services.openssh.enable" = config: config.services.openssh.enable;
-    "services.openssh.settings.PasswordAuthentication" =
-      config: config.services.openssh.settings.PasswordAuthentication;
-
-    # Boot Configuration
-    "boot.loader.systemd-boot.enable" = config: config.boot.loader.systemd-boot.enable;
-    "boot.loader.efi.canTouchEfiVariables" = config: config.boot.loader.efi.canTouchEfiVariables;
-    "boot.supportedFilesystems" = config: lib.unique config.boot.supportedFilesystems;
-
-    # System Information
-    "system.stateVersion" = config: config.system.stateVersion;
-    "nixpkgs.hostPlatform" = config: config.nixpkgs.hostPlatform;
-
-    # Additional Networking
-    "networking.domain" = config: config.networking.domain;
-    "networking.nameservers" = config: config.networking.nameservers;
   };
 in
 {

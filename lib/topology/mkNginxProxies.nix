@@ -55,7 +55,7 @@ rec {
       forceSSL = forceSSL';
       useACMEHost = acmeHost;
       listenAddresses = listenAddrs;
-      locations."/" = {
+      locations."~/" = {
         proxyPass = backend;
         inherit extraConfig;
         proxyWebsockets = websockets;

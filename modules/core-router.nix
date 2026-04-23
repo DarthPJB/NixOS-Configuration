@@ -43,9 +43,10 @@ in
       };
     }
 
-    # Topology-derived config (takes precedence over inline config)
+    # Topology-derived config (takes precedence over defaults via mkOverride 100)
     (lib.mkIf (config.coreRouter.enable && topology ? wireguard) {
       # Topology-managed: WireGuard VPN configuration
+      networking.wireguard.enable = true;
       networking.wireguard.interfaces = lib.mkOverride 100 {
         ${topology.wireguard.interface} = wireguardLib.mkWireguardPeers;
       };
@@ -53,7 +54,8 @@ in
 
     (lib.mkIf (config.coreRouter.enable && topology ? tailscale) {
       # Topology-managed: Tailscale VPN configuration
-      services.tailscale = lib.mkOverride 100 tailscaleLib.config;
+      # Set advertisedRoutes for locale/tailscale.nix to process
+      networking.tailscale.advertisedRoutes = tailscaleLib.mkAdvertisedRoutes topology;
     })
 
     (lib.mkIf (config.coreRouter.enable && topology ? dns) {

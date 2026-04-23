@@ -91,7 +91,8 @@ in
     ../../configuration.nix
     ../../locale/tailscale.nix
     ../../modules/core-router.nix
-    ../../modules/enable-wg.nix
+    # NOTE: enable-wg.nix is for WireGuard CLIENTS, not the hub
+    # The hub's WireGuard config comes from core-router.nix via topology
     ./hardware-configuration.nix
     ../../modifier_imports/zfs.nix
   ];
@@ -175,15 +176,9 @@ in
 
   # Set your time zone.
   time.timeZone = "Etc/UTC";
-  environment.vpn = {
-    enable = true;
-    postfix = 1;
-  };
+  # NOTE: WireGuard config comes from core-router.nix via topology
+  # NOTE: Tailscale config comes from core-router.nix via topology
   networking = {
-    tailscale.advertisedRoutes = [
-      "10.88.128.88/32"
-      "10.88.128.248/32"
-    ];
     nat.enable = lib.mkForce false;
     nftables = {
       enable = true;

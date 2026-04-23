@@ -6,11 +6,17 @@ topology:
 
 let
   # Helper: mkDhcpHosts - Returns dhcp-host entries for hosts with MAC addresses
+  # Format: mac,ip,hostname,infinite
+  # Sorted by MAC address for deterministic ordering
   mkDhcpHosts =
     topology:
-    lib.mapAttrsToList (
-      name: host: if host ? mac then "${host.mac},${host.hostname},${host.ip},infinite" else null
-    ) topology.lan.hosts;
+    let
+      entries = lib.mapAttrsToList (
+        name: host: if host ? mac then "${host.mac},${host.ip},${host.hostname},infinite" else null
+      ) topology.lan.hosts;
+      validEntries = lib.filter (x: x != null) entries;
+    in
+    builtins.sort (a: b: a < b) validEntries;
 
   # Filter out nulls
   dhcpHostsList = lib.filter (x: x != null) (mkDhcpHosts topology);
@@ -25,6 +31,9 @@ let
     dhcp-host = dhcpHostsList;
     address = mkDnsAddresses topology;
     server = topology.dns.servers;
+    # Use the machine hostname for local domain resolution
+    domain = [ (topology.hostname or "local") ];
+    local = [ "/${topology.hostname or "local"}/" ];
     domain-needed = true;
     bogus-priv = true;
     no-resolv = true;

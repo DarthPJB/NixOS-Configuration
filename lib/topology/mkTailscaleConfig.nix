@@ -4,13 +4,10 @@ topology:
 
 let
   inherit (builtins)
-    attrNames
     attrValues
     concatStringsSep
     filter
-    listToAttrs
     map
-    sort
     ;
 
   # Routes from advertisedHosts: convert host names to /32 routes
@@ -30,20 +27,24 @@ let
   # Direct advertised routes
   directRoutes = topology.tailscale.advertisedRoutes or [ ];
 
-  # Combine all routes
+  # Combine all routes (direct routes first to preserve order)
   allRoutes = directRoutes ++ advertisedHostsRoutes ++ lanTailscaleRoutes;
 
-  # Deduplicate and sort
-  uniqueRoutes = sort builtins.lessThan (
-    attrNames (
-      listToAttrs (
-        map (r: {
-          name = r;
-          value = null;
-        }) allRoutes
-      )
-    )
-  );
+  # Deduplicate while preserving order of first occurrence
+  uniqueRoutes =
+    let
+      dedup =
+        seen: routes:
+        if routes == [ ] then
+          [ ]
+        else
+          let
+            h = builtins.head routes;
+            t = builtins.tail routes;
+          in
+          if builtins.elem h seen then dedup seen t else [ h ] ++ dedup (seen ++ [ h ]) t;
+    in
+    dedup [ ] allRoutes;
 
   # Enable Tailscale if any routing is configured
   enable = (topology.tailscale.subnetRouter or false) || (uniqueRoutes != [ ]);
