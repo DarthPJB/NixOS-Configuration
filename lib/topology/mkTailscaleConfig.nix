@@ -3,6 +3,8 @@
 topology:
 
 let
+  utils = import ./utils.nix { inherit lib; };
+
   inherit (builtins)
     attrValues
     concatStringsSep
@@ -14,37 +16,28 @@ let
   advertisedHostsRoutes = map (
     hostName:
     let
-      host = topology.lan.hosts.${hostName};
+      host = topology.lan.hosts.${hostName} or {};
+      ip = host.ip or null;
     in
-    "${host.ip}/32"
+    if ip != null then "${ip}/32" else null
   ) (topology.tailscale.advertisedHosts or [ ]);
+
+  # Filter out nulls
+  validAdvertisedHostsRoutes = filter (x: x != null) advertisedHostsRoutes;
 
   # Routes from lan.hosts where routing.tailscale = true
   lanTailscaleRoutes = map (host: "${host.ip}/32") (
-    filter (host: host.routing.tailscale or false) (attrValues topology.lan.hosts)
+    filter (host: (host.routing or {}).tailscale or false) (attrValues topology.lan.hosts)
   );
 
   # Direct advertised routes
   directRoutes = topology.tailscale.advertisedRoutes or [ ];
 
   # Combine all routes (direct routes first to preserve order)
-  allRoutes = directRoutes ++ advertisedHostsRoutes ++ lanTailscaleRoutes;
+  allRoutes = directRoutes ++ validAdvertisedHostsRoutes ++ lanTailscaleRoutes;
 
   # Deduplicate while preserving order of first occurrence
-  uniqueRoutes =
-    let
-      dedup =
-        seen: routes:
-        if routes == [ ] then
-          [ ]
-        else
-          let
-            h = builtins.head routes;
-            t = builtins.tail routes;
-          in
-          if builtins.elem h seen then dedup seen t else [ h ] ++ dedup (seen ++ [ h ]) t;
-    in
-    dedup [ ] allRoutes;
+  uniqueRoutes = utils.dedupPreserveOrder (r: r) allRoutes;
 
   # Enable Tailscale if any routing is configured
   enable = (topology.tailscale.subnetRouter or false) || (uniqueRoutes != [ ]);
@@ -62,7 +55,7 @@ let
   );
 
   # Helper function to return just the routes
-  mkAdvertisedRoutes = topology: uniqueRoutes;
+  mkAdvertisedRoutes = uniqueRoutes;
 
 in
 {
