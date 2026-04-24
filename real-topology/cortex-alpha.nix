@@ -158,7 +158,7 @@
         services = [ ];
       };
 
-      cortex-alpha-wg = {
+      cortex-alpha = {
         ip = "10.88.127.1";
         hostname = "cortex-alpha";
         routing = {
@@ -191,7 +191,7 @@
         services = [ ];
       };
 
-      local-nas-wg = {
+      local-nas = {
         ip = "10.88.127.3";
         hostname = "local-nas";
         routing = {
@@ -251,7 +251,7 @@
         services = [ ];
       };
 
-      terminal-zero-wg = {
+      terminal-zero = {
         ip = "10.88.127.20";
         hostname = "terminal-zero";
         routing = {
@@ -261,7 +261,7 @@
         services = [ ];
       };
 
-      terminal-nx-01-wg = {
+      terminal-nx-01 = {
         ip = "10.88.127.21";
         hostname = "terminal-nx-01";
         routing = {
@@ -281,7 +281,7 @@
         services = [ ];
       };
 
-      linda-wg = {
+      LINDA = {
         ip = "10.88.127.88";
         hostname = "LINDA";
         routing = {
@@ -508,24 +508,25 @@
     listenPort = 2108;
     peers = [
       # Order matches original peer list for golden test compatibility
-      "linda-wg"
+      # Names must match secrets/public_keys/wireguard/wg_<name>_pub files
+      "LINDA"
       "alpha-one"
       "alpha-three"
       "cluster-box"
-      "cortex-alpha-wg"
+      "cortex-alpha"
       "display-0"
       "display-1"
       "display-2"
       "dlyon"
       "gaming-host-1"
       "grimterm"
-      "nas"
+      "local-nas"
       "print-controller"
       "remote-builder"
       "remote-worker"
       "storage-array"
-      "terminal-nx-01-1"
-      "terminal-zero-1"
+      "terminal-nx-01"
+      "terminal-zero"
     ];
   };
 

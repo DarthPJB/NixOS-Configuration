@@ -13,7 +13,7 @@ let
   topology = import ../real-topology/${config.networking.hostName}.nix { inherit lib self; };
 
   # Import transformation functions
-  wireguardLib = (import ../lib/topology/mkWireguardPeers.nix) { inherit lib topology; };
+  wireguardLib = (import ../lib/topology/mkWireguardPeers.nix) { inherit lib topology self; };
   tailscaleLib = (import ../lib/topology/mkTailscaleConfig.nix) { inherit lib; } topology;
   dhcpDnsLib = (import ../lib/topology/mkDhcpDns.nix) { inherit lib; } topology;
   nginxLib = (import ../lib/topology/mkNginxProxies.nix) { inherit lib; };
