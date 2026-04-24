@@ -12,9 +12,35 @@ let
     # Basic identity
     "networking.hostName" = config: config.networking.hostName;
     "networking.hostId" = config: config.networking.hostId;
+    "networking.domain" = config: config.networking.domain or null;
+    "networking.nameservers" = config: config.networking.nameservers or [ ];
+
+    # Network interfaces (physical interface configuration)
+    "networking.interfaces" =
+      config:
+      let
+        ifaces = config.networking.interfaces;
+        # Extract key interface settings
+        extractIface = iface: {
+          useDHCP = iface.useDHCP or false;
+          ipv4 = {
+            addresses = map (addr: {
+              inherit (addr) address prefixLength;
+            }) (iface.ipv4.addresses or [ ]);
+          };
+          ipv6 = {
+            addresses = map (addr: {
+              inherit (addr) address prefixLength;
+            }) (iface.ipv6.addresses or [ ]);
+          };
+        };
+      in
+      lib.mapAttrs (name: extractIface) ifaces;
 
     # NAT and firewall
     "networking.nat.enable" = config: config.networking.nat.enable;
+    "networking.nat.internalInterfaces" = config: config.networking.nat.internalInterfaces or [ ];
+    "networking.nat.externalInterface" = config: config.networking.nat.externalInterface or null;
     "networking.nftables.enable" = config: config.networking.nftables.enable;
     "networking.nftables.ruleset" =
       config:
@@ -95,6 +121,10 @@ let
     # Services
     "systemd.services.tailscale-udp-gro.enable" =
       config: config.systemd.services.tailscale-udp-gro.enable or false;
+
+    # ACME/Let's Encrypt
+    "security.acme.defaults.email" = config: config.security.acme.defaults.email;
+    "security.acme.certs" = config: builtins.attrNames config.security.acme.certs;
   };
 in
 {

@@ -178,6 +178,9 @@ in
   time.timeZone = "Etc/UTC";
   # NOTE: WireGuard config comes from core-router.nix via topology
   # NOTE: Tailscale config comes from core-router.nix via topology
+  # WireGuard private key management via secrix
+  secrix.services.wireguard-wireg0.secrets.cortex-alpha.encrypted.file =
+    ../../secrets/private_keys/wireguard/wg_cortex-alpha;
   networking = {
     nat.enable = lib.mkForce false;
     nftables = {
@@ -186,6 +189,9 @@ in
     };
     #hostName = "cortex-alpha";
     hostId = "c043a1fa";
+    # WireGuard private key - topology handles peers and IPs, but we need the key
+    wireguard.interfaces.wireg0.privateKeyFile =
+      config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
     interfaces.enp3s0 = {
       useDHCP = lib.mkDefault false;
       ipv4.addresses = [

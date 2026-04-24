@@ -27,10 +27,8 @@ in
 
   config = lib.mkMerge [
     # UDP GRO service (machine-specific, not topology-managed)
-    {
-      # TODO: lift to common (modifier_imports/tailscale-udp-gro.nix) if needed later
-      # This fix only applies to cortex-alpha for now
-      environment.systemPackages = [ pkgs.ethtool ];
+    # Note: ethtool package is added by the machine config, not here
+    (lib.mkIf config.coreRouter.enable {
       systemd.services.tailscale-udp-gro = {
         description = "Enable UDP GRO forwarding for tailscale performance on enp2s0";
         wantedBy = [ "multi-user.target" ];
@@ -41,7 +39,7 @@ in
           RemainAfterExit = true;
         };
       };
-    }
+    })
 
     # Topology-derived config (takes precedence over defaults via mkOverride 100)
     (lib.mkIf (config.coreRouter.enable && topology ? wireguard) {

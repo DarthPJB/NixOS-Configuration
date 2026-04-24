@@ -21,7 +21,6 @@
     "vm.max_map_count": 1048576
   },
   "environment.systemPackages": [
-    "ethtool",
     "tailscale",
     "btop",
     "nano",
@@ -34,6 +33,7 @@
     "pciutils",
     "lshw",
     "usbutils",
+    "ethtool",
     "determinate-nixd",
     "neovim",
     "nix-build-all",
@@ -178,7 +178,36 @@
   },
   "networking.hostId": "c043a1fa",
   "networking.hostName": "cortex-alpha",
+  "networking.interfaces": {
+    "enp2s0": {
+      "ipv4": {
+        "addresses": []
+      },
+      "ipv6": {
+        "addresses": []
+      },
+      "useDHCP": true
+    },
+    "enp3s0": {
+      "ipv4": {
+        "addresses": [
+          {
+            "address": "10.88.128.1",
+            "prefixLength": 24
+          }
+        ]
+      },
+      "ipv6": {
+        "addresses": []
+      },
+      "useDHCP": false
+    }
+  },
+  "networking.nameservers": [
+    "127.0.0.1"
+  ],
   "networking.nat.enable": false,
+  "networking.nat.internalInterfaces": [],
   "networking.nftables.enable": true,
   "networking.nftables.ruleset": "<ruleset-string>",
   "networking.tailscale.advertisedRoutes": [
@@ -305,6 +334,10 @@
       ]
     }
   },
+  "security.acme.certs": [
+    "johnbargman.net"
+  ],
+  "security.acme.defaults.email": "commander@johnbargman.net",
   "services.dnsmasq.enable": true,
   "services.dnsmasq.settings": {
     "address": [
