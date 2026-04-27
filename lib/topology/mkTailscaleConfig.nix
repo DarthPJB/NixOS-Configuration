@@ -1,3 +1,13 @@
+/*
+Purpose: Transform topology tailscale config into NixOS tailscale config
+
+Inputs:
+- topology.tailscale: tailscale configuration including advertisedHosts, advertisedRoutes, subnetRouter
+- topology.lan.hosts: host definitions with IPs and routing attributes
+
+Output: NixOS services.tailscale config
+*/
+
 { lib }:
 
 topology:

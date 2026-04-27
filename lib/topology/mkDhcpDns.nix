@@ -1,3 +1,13 @@
+/*
+Purpose: Transform topology DNS and DHCP config into NixOS dnsmasq config
+
+Inputs:
+- topology.lan.hosts: host definitions with mac, ip, hostname for DHCP
+- topology.dns: DNS configuration including interface, range, static entries, servers
+
+Output: NixOS services.dnsmasq config
+*/
+
 { lib }:
 
 topology:

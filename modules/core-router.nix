@@ -12,11 +12,16 @@ let
   # Import topology (pure data, no arguments needed beyond the function signature)
   topology = import ../real-topology/${config.networking.hostName}.nix { inherit lib self; };
 
+  # Import and run validation
+  validator = import ../lib/topology/validate.nix { inherit lib; };
+  validation = validator.validateTopology topology;
+
   # Import transformation functions
-  wireguardLib = (import ../lib/topology/mkWireguardPeers.nix) { inherit lib topology self; };
+  wireguardLib = (import ../lib/topology/mkWireguardPeers.nix) { inherit lib; } topology self;
   tailscaleLib = (import ../lib/topology/mkTailscaleConfig.nix) { inherit lib; } topology;
   dhcpDnsLib = (import ../lib/topology/mkDhcpDns.nix) { inherit lib; } topology;
-  nginxLib = (import ../lib/topology/mkNginxProxies.nix) { inherit lib; };
+  nginxLib = (import ../lib/topology/mkNginxProxies.nix) { inherit lib; } topology;
+  forwardingLib = (import ../lib/topology/mkForwarding.nix) { inherit lib; } topology;
 in
 {
   options.coreRouter.enable = lib.mkOption {
@@ -26,6 +31,16 @@ in
   };
 
   config = lib.mkMerge [
+    # Validation assertions - fail fast on invalid topology
+    {
+      assertions = [
+        {
+          assertion = config.coreRouter.enable -> validation.valid;
+          message = "Invalid topology for ${config.networking.hostName}: ${builtins.concatStringsSep "; " validation.errors}";
+        }
+      ];
+    }
+
     # UDP GRO service (machine-specific, not topology-managed)
     # Note: ethtool package is added by the machine config, not here
     (lib.mkIf config.coreRouter.enable {
@@ -53,7 +68,7 @@ in
     (lib.mkIf (config.coreRouter.enable && topology ? tailscale) {
       # Topology-managed: Tailscale VPN configuration
       # Set advertisedRoutes for locale/tailscale.nix to process
-      networking.tailscale.advertisedRoutes = tailscaleLib.mkAdvertisedRoutes topology;
+      networking.tailscale.advertisedRoutes = tailscaleLib.mkAdvertisedRoutes;
     })
 
     (lib.mkIf (config.coreRouter.enable && topology ? dns) {
@@ -69,6 +84,11 @@ in
       networking.firewall = lib.mkOverride 100 topology.firewall;
     })
 
+    (lib.mkIf (config.coreRouter.enable && topology ? forwarding) {
+      # Topology-managed: Port forwarding rules
+      networking.firewall.extraCommands = forwardingLib.extraCommands;
+    })
+
     # Topology-managed: Nginx reverse proxy configuration
     # Uses ACME wildcard cert pattern from infrastructure-2
     # Note: topology proxies are added, inline config takes precedence for conflicts
@@ -77,7 +97,7 @@ in
       # Use mkMerge to combine topology proxies with inline config
       # Topology provides base, inline can override
       services.nginx.virtualHosts = lib.mkMerge [
-        (nginxLib.mkAllProxies { inherit topology; })
+        (nginxLib.mkAllProxies { })
       ];
 
       # Ensure nginx can read ACME certificates

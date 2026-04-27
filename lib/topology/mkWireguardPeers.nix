@@ -1,8 +1,25 @@
+/*
+Purpose: Transform topology wireguard config into NixOS wireguard interface config
+
+Inputs:
+- topology.wireguard.peers: list of peer names
+- topology.lan.hosts: host definitions with IPs and other attributes
+- secrets/public_keys/wireguard/wg_<name>_pub: public key files for each peer
+
+Output: NixOS networking.wireguard.interfaces config
+*/
+
 # lib/topology/mkWireguardPeers.nix
 # Transforms topology wireguard config into NixOS wireguard interface config
-{ lib, topology, self }:
+{ lib }:
+
+topology:
+
+self:
 
 let
+  utils = import ./utils.nix { inherit lib; };
+
   # Build peer list from host names in wireguard.peers
   # Each peer name is looked up in lan.hosts to get the WireGuard IP
   # Public keys are read from secrets/public_keys/wireguard/wg_<name>_pub
@@ -20,12 +37,15 @@ let
       publicKeyFile = "${self}/secrets/public_keys/wireguard/wg_${peerName}_pub";
       hasPublicKey = builtins.pathExists publicKeyFile;
     in
-    if ip == null then
-      # Skip peers without IP (shouldn't happen, but handle gracefully)
-      null
+    if host == null then
+      # TG-002: Fail loudly on missing host
+      throw "WireGuard peer '${peerName}' not found in lan.hosts. Valid hosts: ${builtins.concatStringsSep ", " (builtins.attrNames topology.lan.hosts)}"
+    else if ip == null then
+      # TG-002: Fail loudly on missing IP
+      throw "WireGuard peer '${peerName}' has no IP address (missing ip and wireguardIp fields)"
     else if !hasPublicKey then
-      # Skip peers without public key file
-      builtins.trace "WARNING: No public key found for WireGuard peer ${peerName}" null
+      # TG-002: Fail loudly on missing public key
+      throw "WireGuard peer '${peerName}' has no public key file at ${publicKeyFile}"
     else
       {
         # Server-side peer config: only allow the peer's specific IP
@@ -35,25 +55,8 @@ let
       }
   ) topology.wireguard.peers;
 
-  # Filter out null entries
-  validPeers = lib.filter (p: p != null) mkPeerList;
-
   # Deduplicate peers by first allowedIP while preserving order
-  uniquePeers =
-    let
-      dedup =
-        seen: peers:
-        if peers == [ ] then
-          [ ]
-        else
-          let
-            h = builtins.head peers;
-            t = builtins.tail peers;
-            key = builtins.head h.allowedIPs;
-          in
-          if builtins.elem key seen then dedup seen t else [ h ] ++ dedup (seen ++ [ key ]) t;
-    in
-    dedup [ ] validPeers;
+  uniquePeers = utils.dedupPreserveOrder (p: builtins.head p.allowedIPs) mkPeerList;
 
   # Main function to create WireGuard interface configuration
   mkWireguardPeers = {

@@ -1,13 +1,33 @@
+/*
+Purpose: Transform topology nginx proxies into NixOS nginx virtualHosts
+
+Inputs:
+- topology.nginx: nginx configuration including proxies, listenAddresses, acmeHost
+- topology.lan.gateway: gateway IP for default listen addresses
+- topology.hosts.cortex-alpha.ip: host IP for default listen addresses
+- topology.domain: domain for ACME host
+
+Output: NixOS services.nginx.virtualHosts config
+*/
+
+/*
 # lib/topology/mkNginxProxies.nix
 # Transforms topology nginx proxies into NixOS nginx virtualHosts
 # Inspired by infrastructure-2/modules/proxy-host.nix pattern
+*/
 { lib }:
 
+topology:
+
+let
+  utils = import ./utils.nix { inherit lib; };
+  inherit (utils) safeLookup;
+in
 rec {
   # Default listen addresses for cortex-alpha
-  defaultListenAddresses = [
-    "10.88.128.1"
-    "10.88.127.1"
+  defaultListenAddresses = topology.nginx.listenAddresses or [
+    topology.lan.gateway
+    topology.hosts.cortex-alpha.ip
   ];
 
   # Generate proxy headers config
@@ -27,7 +47,6 @@ rec {
   # Create a single virtualHost configuration
   mkProxyHost =
     {
-      topology,
       hostname,
       proxyConfig,
     }:
@@ -39,7 +58,7 @@ rec {
       websockets = if isLegacyFormat then true else (proxyConfig.websockets or false);
 
       # ACME host - use wildcard cert from topology
-      acmeHost = topology.nginx.acmeHost or topology.domain;
+      acmeHost = safeLookup (topology.nginx or {}) "acmeHost" topology.domain;
 
       # Listen addresses - can be overridden per-host
       listenAddrs =
@@ -65,13 +84,12 @@ rec {
   # Generate all virtualHosts from topology
   mkAllProxies =
     {
-      topology,
       config ? { },
     }:
     let
-      proxies = topology.nginx.proxies or { };
+      proxies = safeLookup (topology.nginx or {}) "proxies" { };
     in
     builtins.mapAttrs (
-      hostname: proxyConfig: mkProxyHost { inherit topology hostname proxyConfig; }
+      hostname: proxyConfig: mkProxyHost { inherit hostname proxyConfig; }
     ) proxies;
 }

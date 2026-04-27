@@ -5,6 +5,7 @@
 { lib }:
 
 let
+  utils = import ./utils.nix { inherit lib; };
   inherit (builtins)
     isString
     isAttrs
@@ -21,12 +22,7 @@ let
     flatten
     unique
     ;
-
-  # Helper: Check if string matches basic IP format (contains dots)
-  isIP = s: isString s && builtins.match ".*\\..*" s != null;
-
-  # Helper: Check if string matches basic CIDR (contains /)
-  isCIDR = s: isString s && builtins.match ".*/.*" s != null;
+  inherit (utils) isIP isCIDR isIPv4 isMAC isPort;
 
   # Helper: Basic check if IP is within subnet (prefix match)
   # Assumes subnet is like "192.168.1.0/24"
@@ -35,7 +31,7 @@ let
     let
       parts = builtins.split "/" subnet;
       prefix = builtins.head parts;
-      mask = builtins.toInt (builtins.elemAt parts 1);
+      mask = lib.toInt (builtins.elemAt parts 2);
       prefixParts = builtins.split "\\." prefix;
       ipParts = builtins.split "\\." ip;
     in
@@ -61,7 +57,7 @@ let
     let
       counts = builtins.foldl' (
         acc: item:
-        if hasAttr item acc then acc // { ${item} = acc.${item} + 1; } else acc // { ${item} = 1; }
+        if hasAttr item acc then acc // { ${item} = 1; } else acc // { ${item} = 1; }
       ) { } list;
     in
     filter (item: counts.${item} > 1) (attrNames counts);
@@ -106,12 +102,20 @@ let
                   hostErrors = flatten (
                     map (
                       host:
-                      if !hasAttr "ip" host || !isIP host.ip then
-                        [ "host ${host.name or "unnamed"} must have valid ip field" ]
-                      else if hasAttr "subnet" topology.lan && !ipInSubnet host.ip topology.lan.subnet then
-                        [ "host ${host.name or "unnamed"} IP ${host.ip} not within subnet ${topology.lan.subnet}" ]
-                      else
-                        [ ]
+                      let
+                        ipErrors = if !hasAttr "ip" host || !isIPv4 host.ip then
+                          [ "host ${host.name or "unnamed"} must have valid IPv4 ip field" ]
+                        else if hasAttr "subnet" topology.lan && !ipInSubnet host.ip topology.lan.subnet then
+                          [ "host ${host.name or "unnamed"} IP ${host.ip} not within subnet ${topology.lan.subnet}" ]
+                        else
+                          [ ];
+
+                        macErrors = if hasAttr "mac" host && host.mac != null && !isMAC host.mac then
+                          [ "host ${host.name or "unnamed"} must have valid MAC address" ]
+                        else
+                          [ ];
+                      in
+                      ipErrors ++ macErrors
                     ) hostList
                   );
 
@@ -140,8 +144,10 @@ let
                 flatten (
                   map (
                     rule:
-                    if !hasAttr "port" rule || !hasAttr "dest" rule then
-                      [ "forwarding.tcp rule must have port and dest fields" ]
+                    if !hasAttr "port" rule then
+                      [ "forwarding.tcp rule must have port field" ]
+                    else if !(hasAttr "dest" rule || hasAttr "to" rule) then
+                      [ "forwarding.tcp rule must have dest or to field" ]
                     else
                       [ ]
                   ) topology.forwarding.tcp
@@ -154,8 +160,10 @@ let
                 flatten (
                   map (
                     rule:
-                    if !hasAttr "port" rule || !hasAttr "dest" rule then
-                      [ "forwarding.udp rule must have port and dest fields" ]
+                    if !hasAttr "port" rule then
+                      [ "forwarding.udp rule must have port field" ]
+                    else if !(hasAttr "dest" rule || hasAttr "to" rule) then
+                      [ "forwarding.udp rule must have dest or to field" ]
                     else
                       [ ]
                   ) topology.forwarding.udp
@@ -173,20 +181,49 @@ let
           flatten (
             map (
               entry:
-              if !isString entry || builtins.match "/.*/.*" entry == null then
-                [ "dns.static entry '${entry}' must be in format '/domain/ip'" ]
-              else
+              if isAttrs entry then
+                # Handle attrset format: { domain = "..."; ip = "..."; }
+                let
+                  domainErrors = if !hasAttr "domain" entry || !isString entry.domain then [ "dns.static entry missing domain field" ] else [ ];
+                  ipErrors = if !hasAttr "ip" entry || !isIP entry.ip then [ "dns.static entry '${entry.domain or "unknown"}' has invalid ip" ] else [ ];
+                in
+                domainErrors ++ ipErrors
+              else if isString entry && builtins.match "/.*/.*" entry != null then
+                # Handle string format: /domain/ip
                 [ ]
+              else
+                [ "dns.static entry must be attrset {domain, ip} or string '/domain/ip'" ]
             ) topology.dns.static
           );
 
       # WireGuard validation
       wireguardErrors =
         if hasAttr "wireguard" topology && isAttrs topology.wireguard then
-          if hasAttr "listenPort" topology.wireguard && !isInt topology.wireguard.listenPort then
-            [ "wireguard.listenPort must be a number" ]
-          else
-            [ ]
+          let
+            portErrors =
+              if hasAttr "listenPort" topology.wireguard && !isPort topology.wireguard.listenPort then
+                [ "wireguard.listenPort must be a valid port (1-65535)" ]
+              else
+                [ ];
+
+            peersErrors =
+              if !hasAttr "peers" topology.wireguard || !isList topology.wireguard.peers then
+                [ "wireguard.peers must be a list" ]
+              else
+                let
+                  hosts = topology.lan.hosts or { };
+                  missingPeers = filter (p: !hasAttr p hosts) topology.wireguard.peers;
+                  missingErrors = map (p: "wireguard peer '${p}' not found in lan.hosts") missingPeers;
+                in
+                missingErrors;
+
+            ipsErrors =
+              if !hasAttr "ips" topology.wireguard || !isList topology.wireguard.ips then
+                [ "wireguard.ips must be a list" ]
+              else
+                [ ];
+          in
+          portErrors ++ peersErrors ++ ipsErrors
         else
           [ ];
 

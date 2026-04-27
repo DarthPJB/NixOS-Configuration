@@ -462,6 +462,10 @@
   nginx = {
     # ACME configuration - uses wildcard cert for johnbargman.net
     acmeHost = "johnbargman.net";
+    listenAddresses = [
+      "10.88.128.1"  # LAN gateway
+      "10.88.127.1"  # WireGuard IP
+    ];
 
     # Proxy definitions with full configuration
     # Pattern inspired by infrastructure-2/modules/proxy-host.nix

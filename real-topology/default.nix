@@ -6,6 +6,9 @@
   ...
 }:
 let
+  utils = import ../lib/topology/utils.nix { inherit lib; };
+  inherit (utils) normalizePath;
+
   # Comprehensive list of network-related options to capture in golden
   # Each option is wrapped in tryEval to handle any evaluation errors gracefully
   safeOptions = {
@@ -81,18 +84,6 @@ let
     "services.nginx.enable" = config: config.services.nginx.enable;
     "services.nginx.virtualHosts" =
       config:
-      let
-        # Normalize nix store paths to just indicate "store path"
-        normalizePath =
-          path:
-          if path == null then
-            null
-          else
-            let
-              str = toString path;
-            in
-            if lib.hasPrefix "/nix/store/" str then "<store>" else str;
-      in
       lib.mapAttrs (name: vhost: {
         inherit (vhost) enableACME forceSSL useACMEHost;
         listenAddresses = vhost.listenAddresses or [ ];
