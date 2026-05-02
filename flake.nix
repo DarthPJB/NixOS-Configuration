@@ -340,7 +340,7 @@
           extraModules = [
             ./modifier_imports/central-builder.nix
             nixos-hardware.nixosModules.lenovo-thinkpad-x220
-            { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; }
+         #   { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; }
           ];
         };
         terminal-nx-01 = mkX86_64 "terminal-nx-01" {

@@ -2,10 +2,10 @@
   config,
   pkgs,
   self,
+  unstable,
   ...
 }:
 {
-
   services.github-runners = {
     disgust = {
       enable = true;
