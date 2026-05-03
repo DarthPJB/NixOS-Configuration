@@ -11,75 +11,6 @@
   ...
 }:
 let
-  # Removed: proxyConfigs (now in real-topology/cortex-alpha.nix)
-  # Removed: mkProxyPass (replaced by topology)
-  nftableAttrs = {
-    enp2s0.tcp = [
-      {
-        port = 2208;
-        dest = "10.88.128.3:22";
-      }
-      {
-        port = 27015;
-        dest = "10.88.128.88:27015";
-      }
-      {
-        port = 4549;
-        dest = "10.88.128.88:4549";
-      }
-    ];
-    enp2s0.udp = [
-      {
-        port = 17780;
-        dest = "10.88.128.88:17780";
-      }
-      {
-        port = 17781;
-        dest = "10.88.128.88:17781";
-      }
-      {
-        port = 17782;
-        dest = "10.88.128.88:17782";
-      }
-      {
-        port = 17783;
-        dest = "10.88.128.88:17783";
-      }
-      {
-        port = 17784;
-        dest = "10.88.128.88:17784";
-      }
-      {
-        port = 17785;
-        dest = "10.88.128.88:17785";
-      }
-      {
-        port = 27015;
-        dest = "10.88.128.88:27015";
-      }
-      {
-        port = 2207;
-        dest = "10.88.127.88:2207";
-      }
-      {
-        port = 4175;
-        dest = "10.88.128.88:4175";
-      }
-      {
-        port = 4179;
-        dest = "10.88.128.88:4179";
-      }
-      {
-        port = 4171;
-        dest = "10.88.128.88:4171";
-      }
-    ];
-  };
-  mkNftables = import ../../lib/mkNftables.nix { inherit lib nftableAttrs; };
-  # Removed: peerList (now in real-topology/cortex-alpha.nix)
-  # Removed: dhcpHosts (now in real-topology/cortex-alpha.nix)
-  # Removed: mkDhcpReservations (replaced by topology)
-  # Removed: wgPeers (replaced by topology)
 in
 
 {
@@ -185,7 +116,6 @@ in
     nat.enable = lib.mkForce false;
     nftables = {
       enable = true;
-      ruleset = mkNftables;
     };
     #hostName = "cortex-alpha";
     hostId = "c043a1fa";

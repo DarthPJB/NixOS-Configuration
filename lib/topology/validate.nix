@@ -103,15 +103,17 @@ let
                     map (
                       host:
                       let
+                        hostLabel = host.hostname or host.name or "unnamed";
+
                         ipErrors = if !hasAttr "ip" host || !isIPv4 host.ip then
-                          [ "host ${host.name or "unnamed"} must have valid IPv4 ip field" ]
+                          [ "host ${hostLabel} must have valid IPv4 ip field" ]
                         else if hasAttr "subnet" topology.lan && !ipInSubnet host.ip topology.lan.subnet then
-                          [ "host ${host.name or "unnamed"} IP ${host.ip} not within subnet ${topology.lan.subnet}" ]
+                          [ "host ${hostLabel} IP ${host.ip} not within subnet ${topology.lan.subnet}" ]
                         else
                           [ ];
 
                         macErrors = if hasAttr "mac" host && host.mac != null && !isMAC host.mac then
-                          [ "host ${host.name or "unnamed"} must have valid MAC address" ]
+                          [ "host ${hostLabel} must have valid MAC address" ]
                         else
                           [ ];
                       in

@@ -116,7 +116,7 @@
 
       linda-wm = {
         ip = "10.88.128.24";
-        mac = "52:54:00:e9-4a:af";
+        mac = "52:54:00:e9:4a:af";
         hostname = "LINDA-WM";
         routing = {
           tailscale = false;

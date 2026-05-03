@@ -85,8 +85,9 @@ in
     })
 
     (lib.mkIf (config.coreRouter.enable && topology ? forwarding) {
-      # Topology-managed: Port forwarding rules
-      networking.firewall.extraCommands = forwardingLib.extraCommands;
+      # Topology-managed: Port forwarding rules (nftables)
+      networking.nftables.enable = lib.mkOverride 100 true;
+      networking.nftables.ruleset = lib.mkOverride 100 forwardingLib.nftablesRuleset;
     })
 
     # Topology-managed: Nginx reverse proxy configuration
