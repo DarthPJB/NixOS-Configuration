@@ -7,7 +7,7 @@
 {
   # Encrypt the ENV file with secrix
   secrix.services.zeroclaw.secrets.zeroclaw-env.encrypted.file =
-    ../secrets/zeroclaw.env;
+    ../secrets/zeroclaw-env-file;
 
   services.zeroclaw = {
     enable = true;
