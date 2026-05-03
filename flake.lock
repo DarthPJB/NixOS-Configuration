@@ -1010,17 +1010,13 @@
         ]
       },
       "locked": {
-        "lastModified": 1765412487,
-        "narHash": "sha256-nSpxVxFc9akfhKGB1G8PCa07k5k1yZehzb6q/mjI4cs=",
-        "owner": "DarthPJB",
-        "repo": "nixinate",
-        "rev": "0ce4103a3f5a0fd23cc3af60957adc00ddea06dc",
-        "type": "github"
+        "narHash": "sha256-HkcZdzZ/sYD6bL/vT1Vn3+10HR7H4Oi6zHxsKOGqyJE=",
+        "path": "/speed-storage/repo/DarthPJB/nixinate",
+        "type": "path"
       },
       "original": {
-        "owner": "DarthPJB",
-        "repo": "nixinate",
-        "type": "github"
+        "path": "/speed-storage/repo/DarthPJB/nixinate",
+        "type": "path"
       }
     },
     "nixos-hardware": {
@@ -1330,7 +1326,7 @@
     "parsecMeta": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-w4RUg+A+BfYsu2gIpSvYFdPXTGd0lWEp44X4/6jYHQE=",
+        "narHash": "sha256-HQhIa2A5e21sjVSZEk5OsPt5C6RDBxqi7NpiNP0JZIM=",
         "type": "file",
         "url": "https://builds.parsecgaming.com/channel/release/appdata/linux/latest"
       },
@@ -1346,11 +1342,11 @@
         "parsecMeta": "parsecMeta"
       },
       "locked": {
-        "lastModified": 1765065769,
-        "narHash": "sha256-IqoIeDsL+jnI57J8R+Pywu9p9Y7dfTbFPB9/dI9j7g4=",
+        "lastModified": 1777820575,
+        "narHash": "sha256-raYOwVMcpnclTfIkKJv/FcYQrakowpEu+C7m+qu4JDw=",
         "owner": "DarthPJB",
         "repo": "parsec-gaming-nix",
-        "rev": "7a0c03161c696cf101e4fd970b8acb1c99e6f639",
+        "rev": "848cd8f9576330e40d7157715cdcd05c76f95ee6",
         "type": "github"
       },
       "original": {
