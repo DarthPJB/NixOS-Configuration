@@ -1,6 +1,6 @@
 # DEPRECATED: This file is replaced by lib/topology/mkNginxProxies.nix. Remove after all machines migrate.
-{
-  proxyConfigs ? { },
+{ proxyConfigs ? { }
+,
 }:
 let
   mkProxyHost = name: proxyPass: {

@@ -1,10 +1,9 @@
 # -------------------------- ALPHA TWO --------------------------
-{
-  config,
-  lib,
-  pkgs,
-  hostname,
-  ...
+{ config
+, lib
+, pkgs
+, hostname
+, ...
 }:
 {
   imports = [

@@ -1,19 +1,19 @@
 /*
-Purpose: Transform topology nginx proxies into NixOS nginx virtualHosts
+  Purpose: Transform topology nginx proxies into NixOS nginx virtualHosts
 
-Inputs:
-- topology.nginx: nginx configuration including proxies, listenAddresses, acmeHost
-- topology.lan.gateway: gateway IP for default listen addresses
-- topology.hosts.cortex-alpha.ip: host IP for default listen addresses
-- topology.domain: domain for ACME host
+  Inputs:
+  - topology.nginx: nginx configuration including proxies, listenAddresses, acmeHost
+  - topology.lan.gateway: gateway IP for default listen addresses
+  - topology.hosts.cortex-alpha.ip: host IP for default listen addresses
+  - topology.domain: domain for ACME host
 
-Output: NixOS services.nginx.virtualHosts config
+  Output: NixOS services.nginx.virtualHosts config
 */
 
 /*
-# lib/topology/mkNginxProxies.nix
-# Transforms topology nginx proxies into NixOS nginx virtualHosts
-# Inspired by infrastructure-2/modules/proxy-host.nix pattern
+  # lib/topology/mkNginxProxies.nix
+  # Transforms topology nginx proxies into NixOS nginx virtualHosts
+  # Inspired by infrastructure-2/modules/proxy-host.nix pattern
 */
 { lib }:
 
@@ -46,9 +46,9 @@ rec {
 
   # Create a single virtualHost configuration
   mkProxyHost =
-    {
-      hostname,
-      proxyConfig,
+    { hostname
+    , proxyConfig
+    ,
     }:
     let
       # Support both old format (string = backend URL) and new format (attrset)
@@ -58,7 +58,7 @@ rec {
       websockets = if isLegacyFormat then true else (proxyConfig.websockets or false);
 
       # ACME host - use wildcard cert from topology
-      acmeHost = safeLookup (topology.nginx or {}) "acmeHost" topology.domain;
+      acmeHost = safeLookup (topology.nginx or { }) "acmeHost" topology.domain;
 
       # Listen addresses - can be overridden per-host
       listenAddrs =
@@ -83,13 +83,15 @@ rec {
 
   # Generate all virtualHosts from topology
   mkAllProxies =
-    {
-      config ? { },
+    { config ? { }
+    ,
     }:
     let
-      proxies = safeLookup (topology.nginx or {}) "proxies" { };
+      proxies = safeLookup (topology.nginx or { }) "proxies" { };
     in
-    builtins.mapAttrs (
-      hostname: proxyConfig: mkProxyHost { inherit hostname proxyConfig; }
-    ) proxies;
+    builtins.mapAttrs
+      (
+        hostname: proxyConfig: mkProxyHost { inherit hostname proxyConfig; }
+      )
+      proxies;
 }

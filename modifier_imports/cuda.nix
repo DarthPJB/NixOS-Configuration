@@ -1,9 +1,8 @@
-{
-  config,
-  pkgs,
-  unstable,
-  self,
-  ...
+{ config
+, pkgs
+, unstable
+, self
+, ...
 }:
 {
   networking.firewall.interfaces."wireg0".allowedTCPPorts = [

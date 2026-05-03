@@ -55,10 +55,13 @@ let
   getDuplicates =
     list:
     let
-      counts = builtins.foldl' (
-        acc: item:
-        if hasAttr item acc then acc // { ${item} = 1; } else acc // { ${item} = 1; }
-      ) { } list;
+      counts = builtins.foldl'
+        (
+          acc: item:
+            if hasAttr item acc then acc // { ${item} = 1; } else acc // { ${item} = 1; }
+        )
+        { }
+        list;
     in
     filter (item: counts.${item} > 1) (attrNames counts);
 
@@ -100,25 +103,29 @@ let
                 let
                   hostList = attrValues topology.lan.hosts;
                   hostErrors = flatten (
-                    map (
-                      host:
-                      let
-                        hostLabel = host.hostname or host.name or "unnamed";
+                    map
+                      (
+                        host:
+                        let
+                          hostLabel = host.hostname or host.name or "unnamed";
 
-                        ipErrors = if !hasAttr "ip" host || !isIPv4 host.ip then
-                          [ "host ${hostLabel} must have valid IPv4 ip field" ]
-                        else if hasAttr "subnet" topology.lan && !ipInSubnet host.ip topology.lan.subnet then
-                          [ "host ${hostLabel} IP ${host.ip} not within subnet ${topology.lan.subnet}" ]
-                        else
-                          [ ];
+                          ipErrors =
+                            if !hasAttr "ip" host || !isIPv4 host.ip then
+                              [ "host ${hostLabel} must have valid IPv4 ip field" ]
+                            else if hasAttr "subnet" topology.lan && !ipInSubnet host.ip topology.lan.subnet then
+                              [ "host ${hostLabel} IP ${host.ip} not within subnet ${topology.lan.subnet}" ]
+                            else
+                              [ ];
 
-                        macErrors = if hasAttr "mac" host && host.mac != null && !isMAC host.mac then
-                          [ "host ${hostLabel} must have valid MAC address" ]
-                        else
-                          [ ];
-                      in
-                      ipErrors ++ macErrors
-                    ) hostList
+                          macErrors =
+                            if hasAttr "mac" host && host.mac != null && !isMAC host.mac then
+                              [ "host ${hostLabel} must have valid MAC address" ]
+                            else
+                              [ ];
+                        in
+                        ipErrors ++ macErrors
+                      )
+                      hostList
                   );
 
                   allIPs = map (h: h.ip) hostList;
@@ -144,15 +151,17 @@ let
                 [ "forwarding.tcp must be a list" ]
               else
                 flatten (
-                  map (
-                    rule:
-                    if !hasAttr "port" rule then
-                      [ "forwarding.tcp rule must have port field" ]
-                    else if !(hasAttr "dest" rule || hasAttr "to" rule) then
-                      [ "forwarding.tcp rule must have dest or to field" ]
-                    else
-                      [ ]
-                  ) topology.forwarding.tcp
+                  map
+                    (
+                      rule:
+                      if !hasAttr "port" rule then
+                        [ "forwarding.tcp rule must have port field" ]
+                      else if !(hasAttr "dest" rule || hasAttr "to" rule) then
+                        [ "forwarding.tcp rule must have dest or to field" ]
+                      else
+                        [ ]
+                    )
+                    topology.forwarding.tcp
                 );
 
             udpErrors =
@@ -160,15 +169,17 @@ let
                 [ "forwarding.udp must be a list" ]
               else
                 flatten (
-                  map (
-                    rule:
-                    if !hasAttr "port" rule then
-                      [ "forwarding.udp rule must have port field" ]
-                    else if !(hasAttr "dest" rule || hasAttr "to" rule) then
-                      [ "forwarding.udp rule must have dest or to field" ]
-                    else
-                      [ ]
-                  ) topology.forwarding.udp
+                  map
+                    (
+                      rule:
+                      if !hasAttr "port" rule then
+                        [ "forwarding.udp rule must have port field" ]
+                      else if !(hasAttr "dest" rule || hasAttr "to" rule) then
+                        [ "forwarding.udp rule must have dest or to field" ]
+                      else
+                        [ ]
+                    )
+                    topology.forwarding.udp
                 );
           in
           tcpErrors ++ udpErrors;
@@ -181,21 +192,23 @@ let
           [ "dns.static must be a list" ]
         else
           flatten (
-            map (
-              entry:
-              if isAttrs entry then
+            map
+              (
+                entry:
+                if isAttrs entry then
                 # Handle attrset format: { domain = "..."; ip = "..."; }
-                let
-                  domainErrors = if !hasAttr "domain" entry || !isString entry.domain then [ "dns.static entry missing domain field" ] else [ ];
-                  ipErrors = if !hasAttr "ip" entry || !isIP entry.ip then [ "dns.static entry '${entry.domain or "unknown"}' has invalid ip" ] else [ ];
-                in
-                domainErrors ++ ipErrors
-              else if isString entry && builtins.match "/.*/.*" entry != null then
+                  let
+                    domainErrors = if !hasAttr "domain" entry || !isString entry.domain then [ "dns.static entry missing domain field" ] else [ ];
+                    ipErrors = if !hasAttr "ip" entry || !isIP entry.ip then [ "dns.static entry '${entry.domain or "unknown"}' has invalid ip" ] else [ ];
+                  in
+                  domainErrors ++ ipErrors
+                else if isString entry && builtins.match "/.*/.*" entry != null then
                 # Handle string format: /domain/ip
-                [ ]
-              else
-                [ "dns.static entry must be attrset {domain, ip} or string '/domain/ip'" ]
-            ) topology.dns.static
+                  [ ]
+                else
+                  [ "dns.static entry must be attrset {domain, ip} or string '/domain/ip'" ]
+              )
+              topology.dns.static
           );
 
       # WireGuard validation

@@ -2,13 +2,12 @@
 # this is my router gateway everything its bad plz look
 
 # YEEEEEEEEEEE PAAAAINN :)
-{
-  config,
-  lib,
-  pkgs,
-  self,
-  hostname,
-  ...
+{ config
+, lib
+, pkgs
+, self
+, hostname
+, ...
 }:
 let
 in

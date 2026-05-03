@@ -9,8 +9,8 @@ let
   dedupPreserveOrder = keyFn: list:
     let
       dedup = seen: remaining:
-        if remaining == [] then
-          []
+        if remaining == [ ] then
+          [ ]
         else
           let
             h = builtins.head remaining;
@@ -20,9 +20,9 @@ let
           if builtins.elem key seen then
             dedup seen t
           else
-            [h] ++ dedup (seen ++ [key]) t;
+            [ h ] ++ dedup (seen ++ [ key ]) t;
     in
-    dedup [] list;
+    dedup [ ] list;
 
   # Safe attribute lookup with default
   safeLookup = attrs: name: default: attrs.${name} or default;
@@ -49,8 +49,9 @@ let
   # Normalize Nix store paths to placeholder
   normalizePath = path:
     if path == null then null
-    else let str = toString path; in
-    if lib.hasPrefix "/nix/store/" str then "<store>" else str;
+    else
+      let str = toString path; in
+      if lib.hasPrefix "/nix/store/" str then "<store>" else str;
 in
 {
   inherit dedupPreserveOrder safeLookup isIP isCIDR isIPv4 isMAC isPort normalizePath;

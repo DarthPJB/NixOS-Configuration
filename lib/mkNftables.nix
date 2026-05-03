@@ -1,16 +1,18 @@
-{
-  lib,
-  nftableAttrs ? { },
+{ lib
+, nftableAttrs ? { }
+,
 }:
 let
   interfaces = lib.attrNames nftableAttrs;
   generateRules =
     iface: protocol: rules:
     lib.concatStringsSep "\n" (
-      lib.map (
-        rule:
-        "              iifname \"${iface}\" ${protocol} dport ${builtins.toString rule.port} dnat to ${rule.dest}"
-      ) rules
+      lib.map
+        (
+          rule:
+          "              iifname \"${iface}\" ${protocol} dport ${builtins.toString rule.port} dnat to ${rule.dest}"
+        )
+        rules
     );
   tcpRules = lib.concatStringsSep "\n" (
     lib.map (iface: generateRules iface "tcp" (nftableAttrs.${iface}.tcp or [ ])) interfaces

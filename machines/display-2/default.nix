@@ -1,10 +1,9 @@
-{
-  pkgs,
-  config,
-  lib,
-  self,
-  hostname,
-  ...
+{ pkgs
+, config
+, lib
+, self
+, hostname
+, ...
 }:
 {
 
@@ -33,7 +32,7 @@
     fsType = "ext4";
   };
 
-  swapDevices = [ { device = "/dev/disk/by-uuid/0b69a66b-e675-45bb-becf-9eec8c29ec1f"; } ];
+  swapDevices = [{ device = "/dev/disk/by-uuid/0b69a66b-e675-45bb-becf-9eec8c29ec1f"; }];
 
   sdImage.compressImage = false;
   #secrix.services.wireguard-wireg0.secrets."${hostname}".encrypted.file = "${self}/secrets/wiregaurd/wg_${hostname}";

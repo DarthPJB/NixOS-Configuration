@@ -1,11 +1,10 @@
 # -------------------------- LINDACORE --------------------------
-{
-  config,
-  pkgs,
-  self,
-  lib,
-  hostname,
-  ...
+{ config
+, pkgs
+, self
+, lib
+, hostname
+, ...
 }:
 {
   imports = [

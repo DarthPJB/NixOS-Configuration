@@ -1,9 +1,8 @@
 # real-topology/default.nix
 # Central hub for network reality, golden generation, and filtering
-{
-  lib,
-  self ? null,
-  ...
+{ lib
+, self ? null
+, ...
 }:
 let
   utils = import ../lib/topology/utils.nix { inherit lib; };
@@ -27,14 +26,18 @@ let
         extractIface = iface: {
           useDHCP = iface.useDHCP or false;
           ipv4 = {
-            addresses = map (addr: {
-              inherit (addr) address prefixLength;
-            }) (iface.ipv4.addresses or [ ]);
+            addresses = map
+              (addr: {
+                inherit (addr) address prefixLength;
+              })
+              (iface.ipv4.addresses or [ ]);
           };
           ipv6 = {
-            addresses = map (addr: {
-              inherit (addr) address prefixLength;
-            }) (iface.ipv6.addresses or [ ]);
+            addresses = map
+              (addr: {
+                inherit (addr) address prefixLength;
+              })
+              (iface.ipv6.addresses or [ ]);
           };
         };
       in
@@ -62,13 +65,17 @@ let
       let
         wg = config.networking.wireguard.interfaces;
       in
-      lib.mapAttrs (name: iface: {
-        inherit (iface) ips listenPort;
-        peers = map (p: {
-          inherit (p) allowedIPs;
-          publicKey = "<redacted>";
-        }) iface.peers;
-      }) wg;
+      lib.mapAttrs
+        (name: iface: {
+          inherit (iface) ips listenPort;
+          peers = map
+            (p: {
+              inherit (p) allowedIPs;
+              publicKey = "<redacted>";
+            })
+            iface.peers;
+        })
+        wg;
 
     # Tailscale
     "services.tailscale.enable" = config: config.services.tailscale.enable;
@@ -84,15 +91,19 @@ let
     "services.nginx.enable" = config: config.services.nginx.enable;
     "services.nginx.virtualHosts" =
       config:
-      lib.mapAttrs (name: vhost: {
-        inherit (vhost) enableACME forceSSL useACMEHost;
-        listenAddresses = vhost.listenAddresses or [ ];
-        locations = lib.mapAttrs (loc: locConf: {
-          proxyPass = normalizePath locConf.proxyPass;
-          root = normalizePath locConf.root;
-          proxyWebsockets = locConf.proxyWebsockets or false;
-        }) (vhost.locations or { });
-      }) config.services.nginx.virtualHosts;
+      lib.mapAttrs
+        (name: vhost: {
+          inherit (vhost) enableACME forceSSL useACMEHost;
+          listenAddresses = vhost.listenAddresses or [ ];
+          locations = lib.mapAttrs
+            (loc: locConf: {
+              proxyPass = normalizePath locConf.proxyPass;
+              root = normalizePath locConf.root;
+              proxyWebsockets = locConf.proxyWebsockets or false;
+            })
+            (vhost.locations or { });
+        })
+        config.services.nginx.virtualHosts;
 
     # Prometheus exporters
     "services.prometheus.exporters.node.enable" =
@@ -142,22 +153,24 @@ in
       # Get all safe options
       evaluated = lib.filterAttrs (n: v: v != null) (
         lib.listToAttrs (
-          map (
-            name:
-            let
-              result = safeEval name safeOptions.${name};
-            in
-            if result != null then
-              {
-                inherit (result) name;
-                value = result.value;
-              }
-            else
-              {
-                inherit name;
-                value = null;
-              }
-          ) (builtins.attrNames safeOptions)
+          map
+            (
+              name:
+              let
+                result = safeEval name safeOptions.${name};
+              in
+              if result != null then
+                {
+                  inherit (result) name;
+                  value = result.value;
+                }
+              else
+                {
+                  inherit name;
+                  value = null;
+                }
+            )
+            (builtins.attrNames safeOptions)
         )
       );
     in

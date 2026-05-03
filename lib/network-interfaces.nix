@@ -41,13 +41,15 @@ in
   };
   # Generate networking.interfaces from environment.interfaces
   config = mkIf (config.environment.interfaces != { }) {
-    networking.interfaces = mapAttrs (name: iface: {
-      ipv4.addresses = [
-        {
-          address = "${iface.ipv4.prefix}.${iface.ipv4.postfix}";
-          prefixLength = 32;
-        }
-      ];
-    }) config.environment.interfaces;
+    networking.interfaces = mapAttrs
+      (name: iface: {
+        ipv4.addresses = [
+          {
+            address = "${iface.ipv4.prefix}.${iface.ipv4.postfix}";
+            prefixLength = 32;
+          }
+        ];
+      })
+      config.environment.interfaces;
   };
 }

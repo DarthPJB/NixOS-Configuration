@@ -1,7 +1,7 @@
 # DEPRECATED: This file is replaced by lib/topology/mkWireguardPeers.nix. Remove after all machines migrate.
-{
-  self,
-  peerList ? { },
+{ self
+, peerList ? { }
+,
 }:
 let
   wg-peer = name: postfix: {

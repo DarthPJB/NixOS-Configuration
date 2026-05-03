@@ -1,10 +1,9 @@
 { fqdn, listen-addr }:
-{
-  pkgs,
-  config,
-  lib,
-  self,
-  ...
+{ pkgs
+, config
+, lib
+, self
+, ...
 }:
 let
   inherit fqdn listen-addr;

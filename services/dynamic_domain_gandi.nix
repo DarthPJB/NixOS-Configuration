@@ -1,8 +1,7 @@
-{
-  config,
-  pkgs,
-  self,
-  ...
+{ config
+, pkgs
+, self
+, ...
 }:
 let
   hostname = "johnbargman.net";

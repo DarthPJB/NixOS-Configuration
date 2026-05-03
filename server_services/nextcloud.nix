@@ -1,8 +1,7 @@
-{
-  config,
-  pkgs,
-  self,
-  ...
+{ config
+, pkgs
+, self
+, ...
 }:
 let
   inherit (builtins) readFile;

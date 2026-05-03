@@ -1,11 +1,11 @@
 /*
-Purpose: Transform topology DNS and DHCP config into NixOS dnsmasq config
+  Purpose: Transform topology DNS and DHCP config into NixOS dnsmasq config
 
-Inputs:
-- topology.lan.hosts: host definitions with mac, ip, hostname for DHCP
-- topology.dns: DNS configuration including interface, range, static entries, servers
+  Inputs:
+  - topology.lan.hosts: host definitions with mac, ip, hostname for DHCP
+  - topology.dns: DNS configuration including interface, range, static entries, servers
 
-Output: NixOS services.dnsmasq config
+  Output: NixOS services.dnsmasq config
 */
 
 { lib }:
@@ -16,12 +16,16 @@ let
   utils = import ./utils.nix { inherit lib; };
   inherit (utils) safeLookup;
 
-  mkDhcpHosts = let
-    entries = lib.mapAttrsToList (
-      name: host: if host ? mac && host ? ip && host ? hostname then "${host.mac},${host.ip},${host.hostname},infinite" else null
-    ) topology.lan.hosts;
-    validEntries = lib.filter (x: x != null) entries;
-  in builtins.sort (a: b: a < b) validEntries;
+  mkDhcpHosts =
+    let
+      entries = lib.mapAttrsToList
+        (
+          name: host: if host ? mac && host ? ip && host ? hostname then "${host.mac},${host.ip},${host.hostname},infinite" else null
+        )
+        topology.lan.hosts;
+      validEntries = lib.filter (x: x != null) entries;
+    in
+    builtins.sort (a: b: a < b) validEntries;
 
   mkDnsAddresses = map (entry: "/${entry.domain}/${entry.ip}") topology.dns.static;
 

@@ -1,11 +1,10 @@
 # This is the general configuration for all of my systems; anything in here will be found on every possible system I have.
 
-{
-  config,
-  pkgs,
-  self,
-  lib,
-  ...
+{ config
+, pkgs
+, self
+, lib
+, ...
 }:
 let
   build-all-script = pkgs.writeShellApplication {

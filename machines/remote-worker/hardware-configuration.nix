@@ -1,11 +1,10 @@
 # OpenStack Virtual Machine Hardware Configuration
 # Imports OpenStack module for dynamic configuration while maintaining VM harness compatibility
-{
-  config,
-  lib,
-  pkgs,
-  modulesPath,
-  ...
+{ config
+, lib
+, pkgs
+, modulesPath
+, ...
 }:
 
 {

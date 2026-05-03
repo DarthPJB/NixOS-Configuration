@@ -1,10 +1,9 @@
 # GitHub Actions Workflow Generator
 # Generates .github/workflows/ci.yml from Nix evaluation
-{
-  self,
-  lib,
-  pkgs,
-  ...
+{ self
+, lib
+, pkgs
+, ...
 }:
 
 let

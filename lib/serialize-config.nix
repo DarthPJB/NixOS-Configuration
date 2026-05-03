@@ -15,41 +15,41 @@ let
   # skip = list of attr names to skip within that section
   safeSections = [
     # Core networking
-    { path = [ "networking" "hostName" ]; skip = []; }
-    { path = [ "networking" "hostId" ]; skip = []; }
-    { path = [ "networking" "domain" ]; skip = []; }
-    { path = [ "networking" "nameservers" ]; skip = []; }
-    { path = [ "networking" "firewall" ]; skip = []; }
-    { path = [ "networking" "nat" ]; skip = []; }
+    { path = [ "networking" "hostName" ]; skip = [ ]; }
+    { path = [ "networking" "hostId" ]; skip = [ ]; }
+    { path = [ "networking" "domain" ]; skip = [ ]; }
+    { path = [ "networking" "nameservers" ]; skip = [ ]; }
+    { path = [ "networking" "firewall" ]; skip = [ ]; }
+    { path = [ "networking" "nat" ]; skip = [ ]; }
     { path = [ "networking" "nftables" ]; skip = [ "ruleset" ]; } # ruleset can be huge
-    { path = [ "networking" "interfaces" ]; skip = []; }
-    { path = [ "networking" "wireguard" ]; skip = []; }
-    { path = [ "networking" "tailscale" ]; skip = []; }
+    { path = [ "networking" "interfaces" ]; skip = [ ]; }
+    { path = [ "networking" "wireguard" ]; skip = [ ]; }
+    { path = [ "networking" "tailscale" ]; skip = [ ]; }
 
     # Services - some have problematic sub-options
-    { path = [ "services" "tailscale" ]; skip = []; }
+    { path = [ "services" "tailscale" ]; skip = [ ]; }
     { path = [ "services" "dnsmasq" ]; skip = [ "servers" ]; }
     { path = [ "services" "nginx" ]; skip = [ "proxyCache" "proxyCachePath" "statusPage" ]; }
-    { path = [ "services" "openssh" ]; skip = []; }
-    { path = [ "services" "prometheus" ]; skip = []; }
-    { path = [ "services" "openldap" ]; skip = []; }
+    { path = [ "services" "openssh" ]; skip = [ ]; }
+    { path = [ "services" "prometheus" ]; skip = [ ]; }
+    { path = [ "services" "openldap" ]; skip = [ ]; }
 
     # Boot
-    { path = [ "boot" "loader" ]; skip = []; }
-    { path = [ "boot" "kernel" "sysctl" ]; skip = []; }
-    { path = [ "boot" "supportedFilesystems" ]; skip = []; }
+    { path = [ "boot" "loader" ]; skip = [ ]; }
+    { path = [ "boot" "kernel" "sysctl" ]; skip = [ ]; }
+    { path = [ "boot" "supportedFilesystems" ]; skip = [ ]; }
 
     # Time
-    { path = [ "time" "timeZone" ]; skip = []; }
+    { path = [ "time" "timeZone" ]; skip = [ ]; }
 
     # Environment - systemPackages list can be huge
-    { path = [ "environment" "systemPackages" ]; skip = []; }
+    { path = [ "environment" "systemPackages" ]; skip = [ ]; }
 
     # Systemd services (selected)
-    { path = [ "systemd" "services" "tailscale-udp-gro" ]; skip = []; }
+    { path = [ "systemd" "services" "tailscale-udp-gro" ]; skip = [ ]; }
 
     # Security
-    { path = [ "security" "acme" ]; skip = []; }
+    { path = [ "security" "acme" ]; skip = [ ]; }
   ];
 
   # Safely get a nested attribute, returning default on error
@@ -80,34 +80,37 @@ let
         if builtins.isFunction v then
           "<function>"
         else if builtins.isAttrs v then
-          # Check for derivation
+        # Check for derivation
           if (v.type or "") == "derivation" then
             "<derivation:${v.name or "unnamed"}>"
           else
-            # Regular attrset
+          # Regular attrset
             let
               allSkip = globalSkip ++ skip;
-              names = builtins.filter (
-                n: !(builtins.elem n allSkip)
-              ) (builtins.attrNames v);
+              names = builtins.filter
+                (
+                  n: !(builtins.elem n allSkip)
+                )
+                (builtins.attrNames v);
               serializeAttr = n:
                 let
                   attrResult = builtins.tryEval v.${n};
                 in
                 {
                   name = n;
-                  value = if attrResult.success then
-                    serializeValue (depth + 1) [] attrResult.value
-                  else
-                    "<eval-error>";
+                  value =
+                    if attrResult.success then
+                      serializeValue (depth + 1) [ ] attrResult.value
+                    else
+                      "<eval-error>";
                 };
               serialized = map serializeAttr names;
             in
             builtins.listToAttrs serialized
         else if builtins.isList v then
-          map (serializeValue (depth + 1) []) v
+          map (serializeValue (depth + 1) [ ]) v
         else if builtins.isString v then
-          # Normalize store paths
+        # Normalize store paths
           if lib.hasPrefix "/nix/store/" v then
             let parts = lib.splitString "/" v; in
             "<store>/${lib.concatStringsSep "/" (lib.drop 3 parts)}"

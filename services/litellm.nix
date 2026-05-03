@@ -1,10 +1,9 @@
-{
-  config,
-  pkgs,
-  lib,
-  self,
-  unstable,
-  ...
+{ config
+, pkgs
+, lib
+, self
+, unstable
+, ...
 }:
 let
   stateDir = "/speed-storage/litellm";
@@ -45,26 +44,33 @@ in
       # Generate model entries: backends mode OR local mode
       modelList =
         if backends != { } then
-          lib.concatLists (
-            lib.mapAttrsToList (
-              name: cfg:
-              map (m: {
-                model_name = "${name}/${m}";
-                litellm_params = {
-                  model = "ollama/${m}";
-                  api_base = cfg.url;
-                };
-              }) modelNames
-            ) backends
-          )
+          lib.concatLists
+            (
+              lib.mapAttrsToList
+                (
+                  name: cfg:
+                    map
+                      (m: {
+                        model_name = "${name}/${m}";
+                        litellm_params = {
+                          model = "ollama/${m}";
+                          api_base = cfg.url;
+                        };
+                      })
+                      modelNames
+                )
+                backends
+            )
         else
-          map (m: {
-            model_name = m;
-            litellm_params = {
-              model = "ollama/${m}";
-              api_base = "http://127.0.0.1:${toString config.services.ollama.port}";
-            };
-          }) modelNames;
+          map
+            (m: {
+              model_name = m;
+              litellm_params = {
+                model = "ollama/${m}";
+                api_base = "http://127.0.0.1:${toString config.services.ollama.port}";
+              };
+            })
+            modelNames;
     in
     {
       enable = true;

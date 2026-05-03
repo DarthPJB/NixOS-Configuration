@@ -1,6 +1,6 @@
 # DEPRECATED: This file is replaced by lib/topology/mkDhcpDns.nix. Remove after all machines migrate.
-{
-  dhcpHosts ? { },
+{ dhcpHosts ? { }
+,
 }:
 let
 

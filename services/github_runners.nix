@@ -1,9 +1,8 @@
-{
-  config,
-  pkgs,
-  self,
-  unstable,
-  ...
+{ config
+, pkgs
+, self
+, unstable
+, ...
 }:
 {
   services.github-runners = {

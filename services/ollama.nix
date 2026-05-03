@@ -1,10 +1,9 @@
-{
-  config,
-  lib,
-  pkgs,
-  unstable,
-  self,
-  ...
+{ config
+, lib
+, pkgs
+, unstable
+, self
+, ...
 }:
 {
   services.nextjs-ollama-llm-ui = {

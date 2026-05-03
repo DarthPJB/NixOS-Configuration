@@ -1,10 +1,9 @@
-{
-  config,
-  lib,
-  pkgs,
-  unstable,
-  agentFiles,
-  ...
+{ config
+, lib
+, pkgs
+, unstable
+, agentFiles
+, ...
 }:
 
 with lib;

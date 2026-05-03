@@ -1,11 +1,11 @@
 /*
-Purpose: Transform topology tailscale config into NixOS tailscale config
+  Purpose: Transform topology tailscale config into NixOS tailscale config
 
-Inputs:
-- topology.tailscale: tailscale configuration including advertisedHosts, advertisedRoutes, subnetRouter
-- topology.lan.hosts: host definitions with IPs and routing attributes
+  Inputs:
+  - topology.tailscale: tailscale configuration including advertisedHosts, advertisedRoutes, subnetRouter
+  - topology.lan.hosts: host definitions with IPs and routing attributes
 
-Output: NixOS services.tailscale config
+  Output: NixOS services.tailscale config
 */
 
 { lib }:
@@ -23,21 +23,23 @@ let
     ;
 
   # Routes from advertisedHosts: convert host names to /32 routes
-  advertisedHostsRoutes = map (
-    hostName:
-    let
-      host = topology.lan.hosts.${hostName} or {};
-      ip = host.ip or null;
-    in
-    if ip != null then "${ip}/32" else null
-  ) (topology.tailscale.advertisedHosts or [ ]);
+  advertisedHostsRoutes = map
+    (
+      hostName:
+      let
+        host = topology.lan.hosts.${hostName} or { };
+        ip = host.ip or null;
+      in
+      if ip != null then "${ip}/32" else null
+    )
+    (topology.tailscale.advertisedHosts or [ ]);
 
   # Filter out nulls
   validAdvertisedHostsRoutes = filter (x: x != null) advertisedHostsRoutes;
 
   # Routes from lan.hosts where routing.tailscale = true
   lanTailscaleRoutes = map (host: "${host.ip}/32") (
-    filter (host: (host.routing or {}).tailscale or false) (attrValues topology.lan.hosts)
+    filter (host: (host.routing or { }).tailscale or false) (attrValues topology.lan.hosts)
   );
 
   # Direct advertised routes

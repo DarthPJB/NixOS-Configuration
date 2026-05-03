@@ -1,10 +1,9 @@
 # ----------- Remote Worker -----------------
 
-{
-  config,
-  pkgs,
-  hostname,
-  ...
+{ config
+, pkgs
+, hostname
+, ...
 }:
 {
   imports = [

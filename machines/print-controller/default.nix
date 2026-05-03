@@ -1,10 +1,9 @@
 # ------------------------ Print Controller ------------------------
-{
-  pkgs,
-  config,
-  lib,
-  hostname,
-  ...
+{ pkgs
+, config
+, lib
+, hostname
+, ...
 }:
 {
   imports = [

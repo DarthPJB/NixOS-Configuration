@@ -1,11 +1,10 @@
 # modules/core-router.nix
 # Consumes real-topology data and generates actual NixOS networking configuration
-{
-  config,
-  lib,
-  pkgs,
-  self,
-  ...
+{ config
+, lib
+, pkgs
+, self
+, ...
 }:
 
 let

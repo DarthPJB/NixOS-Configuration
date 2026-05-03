@@ -20,8 +20,8 @@ let
     "      iifname \"${iface}\" ${protocol} dport ${port} dnat to ${dest}";
 
   # Generate all DNAT rules
-  tcpRules = map (mkDnatRule "tcp") (topology.forwarding.tcp or []);
-  udpRules = map (mkDnatRule "udp") (topology.forwarding.udp or []);
+  tcpRules = map (mkDnatRule "tcp") (topology.forwarding.tcp or [ ]);
+  udpRules = map (mkDnatRule "udp") (topology.forwarding.udp or [ ]);
   allRules = lib.concatStringsSep "\n" (tcpRules ++ udpRules);
 in
 {

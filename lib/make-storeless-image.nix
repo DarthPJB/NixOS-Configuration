@@ -81,29 +81,23 @@
 
   To solve this, you can run `fdisk -l $image` and generate `dd if=$image of=$image-p$i.raw skip=$start count=$sectors` for each `(start, sectors)` listed in the `fdisk` output. Now, you will have each partition as a separate file and you can compare them in pairs.
 */
-{
-  pkgs,
-  lib,
-
-  # The NixOS configuration to be installed onto the disk image.
-  config,
-
-  # The size of the disk, in megabytes.
+{ pkgs
+, lib
+, # The NixOS configuration to be installed onto the disk image.
+  config
+, # The size of the disk, in megabytes.
   # if "auto" size is calculated based on the contents copied to it and
   #   additionalSpace is taken into account.
-  diskSize ? "auto",
-
-  # additional disk space to be added to the image if diskSize "auto"
+  diskSize ? "auto"
+, # additional disk space to be added to the image if diskSize "auto"
   # is used
-  additionalSpace ? "512M",
-
-  # size of the boot partition, is only used if partitionTableType is
+  additionalSpace ? "512M"
+, # size of the boot partition, is only used if partitionTableType is
   # either "efi" or "hybrid"
   # This will be undersized slightly, as this is actually the offset of
   # the end of the partition. Generally it will be 1MiB smaller.
-  bootSize ? "256M",
-
-  # The files and directories to be placed in the target file system.
+  bootSize ? "256M"
+, # The files and directories to be placed in the target file system.
   # This is a list of attribute sets {source, target, mode, user, group} where
   # `source' is the file system object (regular file or directory) to be
   # grafted in the file system at path `target', `mode' is a string containing
@@ -111,9 +105,8 @@
   # user and group name that will be set as owner of the files.
   # `mode', `user', and `group' are optional.
   # When setting one of `user' or `group', the other needs to be set too.
-  contents ? [ ],
-
-  # Type of partition table to use; either "legacy", "efi", or "none".
+  contents ? [ ]
+, # Type of partition table to use; either "legacy", "efi", or "none".
   # For "efi" images, the GPT partition table is used and a mandatory ESP
   #   partition of reasonable size is created in addition to the root partition.
   # For "legacy", the msdos partition table is used and a single large root
@@ -126,50 +119,36 @@
   #   Also a legacy MBR will be present.
   # For "none", no partition table is created. Enabling `installBootLoader`
   #   most likely fails as GRUB will probably refuse to install.
-  partitionTableType ? "legacy",
-
-  # Whether to invoke `switch-to-configuration boot` during image creation
-  installBootLoader ? true,
-
-  # Whether to output have EFIVARS available in $out/efi-vars.fd and use it during disk creation
-  touchEFIVars ? false,
-
-  # OVMF firmware derivation
-  OVMF ? pkgs.OVMF.fd,
-
-  # EFI firmware
-  efiFirmware ? OVMF.firmware,
-
-  # EFI variables
-  efiVariables ? OVMF.variables,
-
-  # The root file system type.
-  fsType ? "ext4",
-
-  # Filesystem label
-  label ? if onlyNixStore then "nix-store" else "nixos",
-
-  # The initial NixOS configuration file to be copied to
+  partitionTableType ? "legacy"
+, # Whether to invoke `switch-to-configuration boot` during image creation
+  installBootLoader ? true
+, # Whether to output have EFIVARS available in $out/efi-vars.fd and use it during disk creation
+  touchEFIVars ? false
+, # OVMF firmware derivation
+  OVMF ? pkgs.OVMF.fd
+, # EFI firmware
+  efiFirmware ? OVMF.firmware
+, # EFI variables
+  efiVariables ? OVMF.variables
+, # The root file system type.
+  fsType ? "ext4"
+, # Filesystem label
+  label ? if onlyNixStore then "nix-store" else "nixos"
+, # The initial NixOS configuration file to be copied to
   # /etc/nixos/configuration.nix.
-  configFile ? null,
-
-  # Shell code executed after the VM has finished.
-  postVM ? "",
-
-  # Guest memory size
-  memSize ? 1024,
-
-  # Copy the contents of the Nix store to the root of the image and
+  configFile ? null
+, # Shell code executed after the VM has finished.
+  postVM ? ""
+, # Guest memory size
+  memSize ? 1024
+, # Copy the contents of the Nix store to the root of the image and
   # skip further setup. Incompatible with `contents`,
   # `installBootLoader` and `configFile`.
-  onlyNixStore ? false,
-
-  name ? "nixos-disk-image",
-
-  # Disk image format, one of qcow2, qcow2-compressed, vdi, vpc, raw.
-  format ? "raw",
-
-  # Whether to fix:
+  onlyNixStore ? false
+, name ? "nixos-disk-image"
+, # Disk image format, one of qcow2, qcow2-compressed, vdi, vpc, raw.
+  format ? "raw"
+, # Whether to fix:
   #   - GPT Disk Unique Identifier (diskGUID)
   #   - GPT Partition Unique Identifier: depends on the layout, root partition UUID can be controlled through `rootGPUID` option
   #   - GPT Partition Type Identifier: fixed according to the layout, e.g. ESP partition, etc. through `parted` invocation.
@@ -177,22 +156,20 @@
   # BIOS/MBR support is "best effort" at the moment.
   # Boot partitions may not be deterministic.
   # Also, to fix last time checked of the ext4 partition if fsType = ext4.
-  deterministic ? true,
-
-  # GPT Partition Unique Identifier for root partition.
-  rootGPUID ? "F222513B-DED1-49FA-B591-20CE86A2FE7F",
-  # When fsType = ext4, this is the root Filesystem Unique Identifier.
+  deterministic ? true
+, # GPT Partition Unique Identifier for root partition.
+  rootGPUID ? "F222513B-DED1-49FA-B591-20CE86A2FE7F"
+, # When fsType = ext4, this is the root Filesystem Unique Identifier.
   # TODO: support other filesystems someday.
-  rootFSUID ? (if fsType == "ext4" then rootGPUID else null),
-
-  # Whether a nix channel based on the current source tree should be
+  rootFSUID ? (if fsType == "ext4" then rootGPUID else null)
+, # Whether a nix channel based on the current source tree should be
   # made available inside the image. Useful for interactive use of nix
   # utils, but changes the hash of the image when the sources are
   # updated.
-  copyChannel ? true,
-
-  # Additional store paths to copy to the image's store.
-  additionalPaths ? [ ],
+  copyChannel ? true
+, # Additional store paths to copy to the image's store.
+  additionalPaths ? [ ]
+,
 }:
 
 assert (
@@ -214,11 +191,12 @@ assert (
     "to produce a partition table, we need to use -E offset flag which is support only for fsType = ext4"
 );
 assert (
-  lib.assertMsg (
-    touchEFIVars
-    ->
+  lib.assertMsg
+    (
+      touchEFIVars
+        ->
       partitionTableType == "hybrid" || partitionTableType == "efi" || partitionTableType == "legacy+gpt"
-  ) "EFI variables can be used only with a partition table of type: hybrid, efi or legacy+gpt."
+    ) "EFI variables can be used only with a partition table of type: hybrid, efi or legacy+gpt."
 );
 # If only Nix store image, then: contents must be empty, configFile must be unset, and we should no install bootloader.
 assert (
@@ -227,9 +205,12 @@ assert (
 );
 # Either both or none of {user,group} need to be set
 assert (
-  lib.assertMsg (lib.all (
-    attrs: ((attrs.user or null) == null) == ((attrs.group or null) == null)
-  ) contents) "Contents of the disk image should set none of {user, group} or both at the same time."
+  lib.assertMsg
+    (lib.all
+      (
+        attrs: ((attrs.user or null) == null) == ((attrs.group or null) == null)
+      )
+      contents) "Contents of the disk image should set none of {user, group} or both at the same time."
 );
 
 with lib;
@@ -250,8 +231,7 @@ let
       vdi = "vdi";
       vpc = "vhd";
       raw = "img";
-    }
-    .${format} or format;
+    }.${format} or format;
 
   rootPartition =
     {
@@ -260,8 +240,7 @@ let
       "legacy+gpt" = "2";
       efi = "2";
       hybrid = "3";
-    }
-    .${partitionTableType};
+    }.${partitionTableType};
 
   partitionDiskScript =
     {
@@ -321,8 +300,7 @@ let
         ''}
       '';
       none = "";
-    }
-    .${partitionTableType};
+    }.${partitionTableType};
 
   useEFIBoot = touchEFIVars;
 

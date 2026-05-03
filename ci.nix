@@ -1,10 +1,9 @@
 # CI Configuration Module for NixOS Configuration Repository
 # Generates GitHub Actions workflow from Nix evaluation
-{
-  self,
-  lib,
-  pkgs,
-  ...
+{ self
+, lib
+, pkgs
+, ...
 }:
 
 let
@@ -345,10 +344,12 @@ in
     # Generate matrix for a specific machine type
     mkMatrix = machines: {
       inherit machines;
-      include = map (machine: {
-        inherit machine;
-        system = if builtins.elem machine armMachines then "aarch64-linux" else "x86_64-linux";
-      }) machines;
+      include = map
+        (machine: {
+          inherit machine;
+          system = if builtins.elem machine armMachines then "aarch64-linux" else "x86_64-linux";
+        })
+        machines;
     };
 
     # Generate deployment command
