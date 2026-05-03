@@ -411,7 +411,11 @@
         };
         alpha-three = mkX86_64 "alpha-three" {
           host = "10.88.127.107";
-          extraModules = [ ./users/build.nix ];
+          extraModules = [
+            ./users/build.nix
+            hype-train-claw.nixosModules.zeroclaw
+            ./services/zeroclaw.nix
+          ];
         };
 
         LINDA = mkX86_64 "LINDA" {

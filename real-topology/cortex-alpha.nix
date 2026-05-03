@@ -542,6 +542,7 @@
     ];
     allowedUDPPorts = [ ];
     rejectPackets = false;
+    logRefusedConnections = false;
     interfaces = {
       wireg0 = {
         allowedUDPPorts = [ 1108 ];
