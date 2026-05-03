@@ -541,6 +541,7 @@
       1108
     ];
     allowedUDPPorts = [ ];
+    rejectPackets = false;
     interfaces = {
       wireg0 = {
         allowedUDPPorts = [ 1108 ];
@@ -566,14 +567,18 @@
       enp2s0 = {
         allowedTCPPorts = [ 2208 ];
         allowedUDPPorts = [
-          1108
-          443
           2108
-          4549
+          2207
+          17780
+          17781
+          17782
+          17783
+          17784
+          17785
+          27015
           4175
           4179
           4171
-          41641
         ];
       };
     };
