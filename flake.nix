@@ -8,9 +8,7 @@
     lint-utils = { url = "github:homotopic/lint-utils"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
     secrix.url = "github:Platonic-Systems/secrix";
-    #nixinate = { url = "github:DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
-    nixinate = { url = "path:/speed-storage/repo/DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
-    #   secure_pkgs.url = "https://flakehub.com/f/DeterminateSystems/secure/0";
+    nixinate = { url = "github:DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
