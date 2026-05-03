@@ -18,8 +18,9 @@
     hype-train-claw.url = "github:marijanp/zeroclaw";
     hype-train-outlaw.url = "git+ssh://git@gitlab.com/mecha-team-zero/macha-orchestration";
     star-citizen.url = "github:LovingMelody/nix-citizen";
+    xlibre-overlay.url = "git+https://codeberg.org/takagemacoed/xlibre-overlay";
   };
-  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite }:
+  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
@@ -389,6 +390,9 @@
           buildOn = "remote";
           extraModules = [
             ./users/build.nix
+            xlibre-overlay.nixosModules.overlay-xlibre-xserver
+            xlibre-overlay.nixosModules.overlay-all-xlibre-drivers
+            xlibre-overlay.nixosModules.nvidia-ignore-ABI
             {
               environment.systemPackages = [
                 parsecgaming.packages.x86_64-linux.parsecgaming
