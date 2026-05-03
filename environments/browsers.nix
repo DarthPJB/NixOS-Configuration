@@ -8,9 +8,11 @@
   environment.systemPackages = [
     #  pkgs.firefox
     pkgs.obsidian
-    unstable.vivaldi
+    pkgs.vivaldi
     pkgs.chromium
     pkgs.brave
+    pkgs.jq
+    pkgs.ffmpeg-full
   ];
 
   services = {

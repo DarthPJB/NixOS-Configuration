@@ -33,19 +33,6 @@
     pkgs.moonlight-qt
   ];
 
-  systemd.user.services.browser = {
-    enable = true;
-    description = "browser-autostart";
-    wantedBy = [ "graphical-session.target" ];
-    serviceConfig = {
-      Restart = "always";
-      ExecStart = ''
-        ${lib.getExe pkgs.google-chrome}
-      '';
-      PassEnvironment = "DISPLAY XAUTHORITY";
-    };
-  };
-
   # Use the GRUB 2 boot loader.
   # Use the systemd-boot EFI boot loader.
   boot.loader = {
