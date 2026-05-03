@@ -286,6 +286,35 @@
           meta.description = "Validate GitHub Actions workflow";
           program = "${ci-generator.scripts.validate-ci-workflow}/bin/validate-ci-workflow";
         };
+        ci = {
+          type = "app";
+          meta.description = "Show CI configuration info (machines, jobs, workflow status)";
+          program = lib.getExe (nixpkgs.writeShellApplication {
+            name = "ci-info";
+            runtimeInputs = with nixpkgs; [ jq ];
+            text = ''
+              echo "=== NixOS CI/CD Configuration ==="
+              echo ""
+              echo "x86_64 machines (${toString (builtins.length ci.ci.machines.x86)}):"
+              printf '${lib.concatMapStrings (m: "  - ${m}\\n") ci.ci.machines.x86}'
+              echo ""
+              echo "ARM machines (${toString (builtins.length ci.ci.machines.arm)}):"
+              printf '${lib.concatMapStrings (m: "  - ${m}\\n") ci.ci.machines.arm}'
+              echo ""
+              echo "Total machines: ${toString (builtins.length ci.ci.machines.all)}"
+              echo ""
+              echo "Jobs defined: ${toString (builtins.length (builtins.attrNames ci.ci.jobs))}"
+              printf '${lib.concatMapStrings (j: "  - ${j}\\n") (builtins.attrNames ci.ci.jobs)}'
+              echo ""
+              echo "Workflow file: .github/workflows/ci.yml"
+              if [ -f .github/workflows/ci.yml ]; then
+                echo "Status: present"
+              else
+                echo "Status: MISSING (run: nix run .#generate-ci-workflow > .github/workflows/ci.yml)"
+              fi
+            '';
+          });
+        };
       };
 
       packages = {
@@ -490,10 +519,10 @@
         };
       };
 
-      # CI Information Output
-      ci-info = ci-generator.ci-info;
-
-      # CI Configuration (for external access)
-      ci = ci;
+      # CI data exposed under legacyPackages (not a standard flake output type)
+      legacyPackages."x86_64-linux" = {
+        ci-info = ci-generator.ci-info;
+        ci = ci;
+      };
     };
 }
