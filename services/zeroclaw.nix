@@ -8,12 +8,18 @@
   # Make the zeroclaw CLI available in PATH
   environment.systemPackages = [ config.services.zeroclaw.package ];
 
+  # Allow ZeroClaw gateway over WireGuard
+  networking.firewall.interfaces."wireg0".allowedTCPPorts = [
+    config.services.zeroclaw.port
+  ];
+
   # Encrypt the ENV file with secrix
   secrix.services.zeroclaw.secrets.zeroclaw-env.encrypted.file =
     ../secrets/zeroclaw-env-file;
 
   services.zeroclaw = {
     enable = true;
+    mutableConfig = false;  # Critical: always regenerate from Nix
 
     # Bind to WireGuard interface
     host = "10.88.127.107";
