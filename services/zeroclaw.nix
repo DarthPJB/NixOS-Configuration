@@ -5,6 +5,9 @@
 , ...
 }:
 {
+  # Make the zeroclaw CLI available in PATH
+  environment.systemPackages = [ config.services.zeroclaw.package ];
+
   # Encrypt the ENV file with secrix
   secrix.services.zeroclaw.secrets.zeroclaw-env.encrypted.file =
     ../secrets/zeroclaw-env-file;

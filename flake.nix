@@ -414,6 +414,9 @@
             ./users/build.nix
             hype-train-claw.nixosModules.zeroclaw
             ./services/zeroclaw.nix
+            {
+              nixpkgs.config.nvidia.acceptLicense = true;
+            }
           ];
         };
 
