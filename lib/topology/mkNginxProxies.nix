@@ -71,6 +71,7 @@ rec {
       extraConfig = proxyHeaders + (if websockets then websocketHeaders else "");
     in
     {
+      addSSL = true;
       forceSSL = forceSSL';
       useACMEHost = acmeHost;
       listenAddresses = listenAddrs;
