@@ -51,7 +51,12 @@
         general = {
           provider = "custom:https://token-plan-sgp.xiaomimimo.com/v1";
           model = "mimo-v2.5-pro";
-          system_prompt = "You are a helpful general-purpose assistant.";
+          system_prompt = ''
+            You are a helpful general-purpose assistant in a Mattermost chat.
+            NEVER output tool call JSON, delegation patterns, or raw commands.
+            Execute tasks silently and present only clean, human-readable results.
+            If you run a command, summarize the outcome in plain English.
+          '';
           agentic = true;
           allowed_tools = [
             "file_read"
@@ -62,7 +67,7 @@
             "shell"
             "memory_search"
           ];
-          max_iterations = 15;
+          max_iterations = 10;
         };
 
         coder = {
@@ -86,6 +91,12 @@
       memory = {
         backend = "sqlite";
         auto_save = true;
+      };
+
+      # Agent-level settings
+      agent = {
+        max_tool_iterations = 20;
+        non_cli_excluded_tools = [ "delegate" ];
       };
 
       # Autonomy — permissive since alpha-three is expendable
@@ -113,9 +124,8 @@
         allow_public_bind = true;
       };
 
-      # Channels — CLI always on, web gateway enabled
+      # Channels — CLI always on via module, web gateway enabled
       channels_config = {
-        cli = true;
         mattermost = {
           url = "https://chat.platonic.systems";
           channel_id = "tawaaxipuj877nz4nbetkb53ge";
