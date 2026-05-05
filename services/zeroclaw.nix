@@ -17,9 +17,16 @@
   secrix.services.zeroclaw.secrets.zeroclaw-env.encrypted.file =
     ../secrets/zeroclaw-env-file;
 
+  # Mattermost bot token secret
+  secrix.services.zeroclaw.secrets.openclaw-alpha-mattermost.encrypted.file =
+    ../secrets/openclaw-alpha-mattermost;
+
   services.zeroclaw = {
     enable = true;
     mutableConfig = false;  # Critical: always regenerate from Nix
+
+    channels.mattermost.secretFiles.bot_token =
+      config.secrix.services.zeroclaw.secrets.openclaw-alpha-mattermost.decrypted.path;
 
     # Bind to WireGuard interface
     host = "10.88.127.107";
@@ -109,6 +116,13 @@
       # Channels — CLI always on, web gateway enabled
       channels_config = {
         cli = true;
+        mattermost = {
+          url = "https://chat.platonic.systems";
+          channel_id = "tawaaxipuj877nz4nbetkb53ge";
+          allowed_users = [ "*" ];
+          thread_replies = true;
+          mention_only = true;
+        };
       };
 
       # Observability
