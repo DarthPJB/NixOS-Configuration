@@ -13,6 +13,7 @@
     ../../modules/enable-wg.nix
     ../../server_services/game_servers/space-engineers.nix
     ../../server_services/game_servers/dragonwilds.nix
+    ../../server_services/game_servers/windrose.nix
   ];
   environment.vpn = {
     enable = true;
@@ -21,6 +22,14 @@
   };
   virtualisation.docker.enable = true;
   services.dragonwilds-server.enable = true;
+  services.windrose-docker = {
+    enable = true;
+    serverName = "Fox and Wolf";
+    serverNote = "Co-op adventures await - join the pack!";
+    maxPlayers = 4;
+    openFirewall = true;
+    useDirectConnection = true;
+  };
   services.space-engineers-docker = {
     enable = true;
     instanceName = "KJTNewWorld";

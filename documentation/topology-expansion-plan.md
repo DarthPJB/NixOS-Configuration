@@ -1,45 +1,89 @@
-# NixOS Topology-Driven Configuration Expansion Plan
+# NixOS Topology-Driven Configuration: Canonical Architecture
 
-**Document Status**: Planning Phase  
+**Document Status**: Architecture Standard (Authoritative)  
 **Created**: 2026-05-06  
-**Scope**: Multi-phase rollout of topology-driven configuration across ~15 machines  
+**Revised**: 2026-05-06  
+**Scope**: Complete network topology in a single file; transformation-driven configuration  
 **Repository**: `/speed-storage/repo/DarthPJB/NixOS-Configuration`
 
 ---
 
 ## Executive Summary
 
-This document outlines a five-phase plan to achieve complete topology-driven configuration coverage across the NixOS fleet, moving from `cortex-alpha` (the proof-of-concept hub machine) to all x86_64 and ARM machines. The architecture separates **topology data** (network reality) from **transformation functions** (Nix logic) from **core modules** (NixOS configuration), enabling regression testing via golden files and reducing configuration drift.
+This document is the **authoritative specification** for topology-driven configuration in this repository. A SINGLE `topology.nix` file describes the ENTIRE network. Machines are attribute set keys with minimal essential data (WireGuard IPs, LAN mappings, peer lists, proxy declarations). Everything else — WireGuard peer configs, firewall rules, DNS entries, nginx virtualHosts, nftables forwarding — is derived through deterministic computation.
 
-**Current State**: Only `cortex-alpha` has full topology coverage with golden test. 18 x86_64 machines and 5 ARM machines use inline configuration.
-
-**Target State**: All machines with topology files and per-machine golden tests; robust validation; consistent function signatures; complete documentation.
+The architecture separates **data** (topology.nix), **transformation** (mk*Settings), and **generation** (gen*), enabling regression testing via golden files, validation of cross-service consistency, and clean separation of concerns.
 
 ---
 
-## Section 1: Architecture Standard — Two-Layer Topology Pattern (AUTHORITATIVE)
+## Section 1: Architecture Standard (AUTHORITATIVE)
 
-This section defines THE CANONICAL ARCHITECTURE for all topology-driven configuration in this repository. All subsequent phases conform to this standard. This supersedes previous design discussions and becomes the operational specification.
+### 1.1 Core Principle: One File, Minimal Data, Everything Derived
 
-### 1.1 The Two-Layer Architecture Pattern
+The entire network is declared in **one file**: `topology.nix` at the repository root.
 
-The topology system follows a mandatory two-layer architecture:
+```nix
+{...}:
+{
+  beta-one   = { wireguard = "10.88.128.53"; lan = { "192.51.31.10" = "enpf0s2"; }; };
+  beta-two   = { wireguard = "10.88.128.54"; lan = { "192.51.31.31" = "enps0"; }; };
+  cortex-beta = {
+    wireguard = "10.88.128.1";
+    lan = { "192.51.31.1" = "enps1"; };
+    uplink = { "83.12.23.44" = "enps2"; };
+    peers = [ "beta-two" "beta-one" ];
+    nginx-proxy = { "grafana.johnbargman.net" = "beta-two:3000"; };
+  };
+}
+```
+
+**Each machine is an attrset key.** Each declares ONLY what's essential:
+
+**Client Machine Fields**:
+- `wireguard` — WireGuard IP address (single string, not CIDR — /32 derived)
+- `lan` — Optional. Attrset mapping LAN IP → interface name. Only if machine has LAN presence.
+
+**Hub Machine Fields (additional)**:
+- `uplink` — Optional. Attrset mapping WAN IP → interface name
+- `peers` — List of hostnames this hub serves
+- `nginx-proxy` — Optional. Attrset mapping hostname → "backend:port"
+
+**That's it.** No firewall ports, no DNS entries, no WireGuard listen ports, no interface config beyond IP ↔ interface mapping. **ALL of that is derived.**
+
+### 1.2 What the Transformer Derives
+
+| Derived Output | Source |
+|---|---|
+| WireGuard hub config (listen port, interface, all peers) | `peers` list + all `wireguard` IPs in topology |
+| WireGuard client config (connects to hub) | Machine's `wireguard` IP + hub's `peers` containing this hostname |
+| Firewall ports | `nginx-proxy` backends + WireGuard + SSH (standard ports) |
+| nginx virtualHosts | `nginx-proxy` entries |
+| DNS entries | `nginx-proxy` hostnames → hub's LAN IP (nginx listens there) |
+| nftables forwarding | `nginx-proxy` backends (WAN → client) |
+| DHCP reservations | `lan` entries |
+| LAN interface config | `lan` IP → interface mapping |
+| NAT/masquerade | `uplink` interface + subnet |
+
+### 1.3 Two-Layer Architecture: Transformer → Generator
 
 ```
-topology.nix data → Layer 1: Transformer → Pure Data → Layer 2: Generator → NixOS config
-                    (mk*Settings)      (flat)        (gen*)
+topology.nix (single file, minimal data)
+      │
+      ▼
+  mkSettings (reads topology, derives everything, reads key files)
+      │
+      ▼
+  genConfig (settings + hostname → NixOS config for THAT machine)
 ```
 
-**Key Principle**: Hub vs client is NOT separate modules. The SAME generator, given the same data but different hostnames, produces the correct config for each role. The topology data knows who the hub is; the generator looks up the hostname and acts accordingly.
-
-### 1.2 Layer 1: Transformer (`mk*Settings`)
+#### Layer 1: Transformer (`mk*Settings`)
 
 **Responsibility**: I/O and validation
 
-**Pattern Signature**:
+**Signature**:
 ```nix
 { lib }: topology: {
-  # Pure data output (flat structure with minimal nesting)
+  # Pure data output (flat structure)
   setting1 = value;
   setting2 = value;
   peers = { name = { ... }; };  # attrset keyed by hostname
@@ -48,55 +92,74 @@ topology.nix data → Layer 1: Transformer → Pure Data → Layer 2: Generator 
 ```
 
 **Behavior**:
-- Reads topology data AND required files (WireGuard public keys, certificates, etc.)
+- Reads the SINGLE topology.nix
+- Reads WireGuard public key files by convention: `secrets/public_keys/wireguard/wg_${hostname}_pub`
 - Performs cross-section validation (forwarding targets exist, nginx backends reachable, etc.)
-- Returns a FLAT pure data structure (see Section 1.4 for rules)
+- Returns a FLAT pure data structure
 - Handles missing files gracefully: warning + skip, not hard error
-- **OWNS ALL I/O** — files are never read by generators
+- **OWNS ALL I/O** — no file reads in generators
 
 **Example: `mkWireguardSettings`**
-```nix
-# Input: topology attrset from real-topology/<hostname>.nix
-# Output: flat data structure with resolved keys
 
-mkWireguardSettings topology = {
+```nix
+{ lib }: topology:
+
+let
+  # Determine which machine we're building config for
+  # (passed via context, e.g., in core-router.nix)
+  
+  # Read all WireGuard public keys by convention
+  readPublicKey = hostname:
+    let
+      path = ../../secrets/public_keys/wireguard/wg_${hostname}_pub;
+    in
+    if builtins.pathExists path
+    then {
+      key = builtins.readFile path;
+      missing = false;
+    }
+    else {
+      key = "<missing>";
+      missing = true;
+    };
+  
+  # Collect all hostnames (both hubs and clients)
+  allHostnames = builtins.attrNames topology;
+  
+  # For each hostname, read its public key
+  peerPublicKeys = builtins.listToAttrs (map (hostname: {
+    name = hostname;
+    value = readPublicKey hostname;
+  }) allHostnames);
+  
+  # Track missing keys as warnings
+  missingKeyWarnings = lib.concatMap (hostname:
+    if peerPublicKeys.${hostname}.missing
+    then [ "Missing WireGuard public key for ${hostname} at secrets/public_keys/wireguard/wg_${hostname}_pub" ]
+    else []
+  ) allHostnames;
+  
+in
+{
   interface = "wireg0";
   listenPort = 2108;
-  hubName = "cortex-alpha";
   
-  # Hub-only config (populated if this machine IS the hub)
-  hub = {
-    ips = [ "10.88.127.1/32" "10.88.127.0/24" ];
-  };
+  # All peers with their resolved public keys
+  peers = builtins.mapAttrs (hostname: keyData: {
+    publicKey = keyData.key;
+    wireguardIp = topology.${hostname}.wireguard;
+    isHub = (topology.${hostname} ? peers);  # hub has peers field
+  }) peerPublicKeys;
   
-  # This machine's WireGuard IP (determined by hostname lookup in topology)
-  machineIp = "10.88.127.108/32";
-  
-  # All peers with RESOLVED public keys (file reading happens here)
-  peers = {
-    "cortex-alpha" = { 
-      publicKey = "abc123...";  # Read from file
-      ip = "10.88.127.1"; 
-      isHub = true; 
-    };
-    "alpha-one" = { 
-      publicKey = "def456...";  # Read from file
-      ip = "10.88.127.108"; 
-      isHub = false; 
-    };
-    # All peers with keys resolved
-  };
-  
-  # Missing keys tracked as warnings (not errors)
-  warnings = [ "Missing public key for peer 'alpha-two' at secrets/..." ];
+  warnings = missingKeyWarnings;
 }
 ```
 
-### 1.3 Layer 2: Generator (`gen*`)
+#### Layer 2: Generator (`gen*`)
 
-**Responsibility**: Pure transformation
+**Responsibility**: Pure transformation to NixOS config
 
-**Pattern Signature**:
+**Signature**:
 ```nix
 { lib }: { settings, hostname }: {
   # NixOS module config
@@ -104,82 +167,121 @@ mkWireguardSettings topology = {
 ```
 
 **Behavior**:
-- Pure function: takes transformer output + hostname
+- Takes transformer output + hostname
 - Produces NixOS module config for THAT specific machine
-- Works for both hub AND client — distinction is emergent from data
-- No file I/O, no `self` reference, no side effects
-- Can be tested in isolation with mock data
+- Works for **both hub AND client** — distinction is emergent from data
+- Pure function: no file I/O, no side effects
+- Testable in isolation with mock data
 
 **Example: `genWireguard`**
 
-For the hub (cortex-alpha):
 ```nix
-genWireguard { settings, hostname = "cortex-alpha" } = {
-  networking.wireguard.interfaces.wireg0 = {
-    ips = [ "10.88.127.1/32" "10.88.127.0/24" ];
-    listenPort = 2108;
-    privateKeyFile = <secrix path>;
-    peers = [
-      { publicKey = "def456..."; allowedIPs = [ "10.88.127.108/32" ]; }
-      # All non-hub peers
-    ];
-  };
-}
-```
+{ lib }: { settings, hostname }:
 
-For a client (alpha-one):
-```nix
-genWireguard { settings, hostname = "alpha-one" } = {
-  networking.wireguard.interfaces.wireg0 = {
-    ips = [ "10.88.127.108/32" ];
-    privateKeyFile = <secrix path>;
-    peers = [
-      { 
-        publicKey = "abc123..."; 
-        allowedIPs = [ "10.88.127.0/24" ];
-        endpoint = "cortex-alpha.johnbargman.net:2108";
-        persistentKeepalive = 25;
-      }
-    ];
-  };
-}
-```
+let
+  # Look up this machine's data
+  thisMachine = settings.peers.${hostname};
+  hubMachine = lib.findFirst (m: m.isHub) null (builtins.attrValues settings.peers);
+  
+  # Decision: are we the hub?
+  isHub = thisMachine.isHub;
+  
+in
 
-**The Generator Decision Logic**:
-```nix
-# genWireguard checks: are we the hub?
-if hostname == settings.hubName then
-  # Generate hub config: listen on all IPs, include all peers
-  generateHubConfig settings
+if isHub then
+  # HUB CONFIG: listen on all IPs, include all peers
+  {
+    networking.wireguard.interfaces.wireg0 = {
+      ips = [ 
+        "10.88.127.1/32"          # WireGuard interface IP
+        "10.88.127.0/24"          # WireGuard allocation range
+      ];
+      listenPort = settings.listenPort;
+      privateKeyFile = <secrix path for hub private key>;
+      peers = lib.mapAttrsToList (name: data:
+        # Include all non-hub peers
+        lib.optionalAttrs (!data.isHub) {
+          publicKey = data.publicKey;
+          allowedIPs = [ "${data.wireguardIp}/32" ];
+        }
+      ) settings.peers;
+    };
+  }
 else
-  # Generate client config: connect to hub, include only hub as peer
-  generateClientConfig settings hostname
+  # CLIENT CONFIG: connect to hub as endpoint
+  {
+    networking.wireguard.interfaces.wireg0 = {
+      ips = [ "${thisMachine.wireguardIp}/32" ];
+      privateKeyFile = <secrix path for client private key>;
+      peers = [
+        {
+          publicKey = hubMachine.publicKey;
+          allowedIPs = [ "10.88.127.0/24" ];
+          endpoint = "cortex-alpha.johnbargman.net:${toString settings.listenPort}";
+          persistentKeepalive = 25;
+        }
+      ];
+    };
+  }
 ```
 
-### 1.4 Data Structure Standard: Flat With Minimal Nesting
+### 1.4 Hub vs Client Emergence
+
+The SAME generator, given the same data but different hostnames, produces the correct config:
+
+- `genWireguard { settings, hostname = "cortex-alpha" }` → Hub config (has `peers` field) → listen + all peers
+- `genWireguard { settings, hostname = "beta-one" }` → Client config (no `peers` field) → connect to hub
+
+**The topology data knows who the hub is** (it has the `peers` field). The generator looks up the hostname and acts accordingly.
+
+### 1.5 Cross-Service Derivation Example
+
+When the topology declares:
+
+```nix
+cortex-alpha = {
+  wireguard = "10.88.127.1";
+  lan = { "10.88.128.1" = "enps1"; };
+  peers = [ "beta-one" "beta-two" ];
+  nginx-proxy = {
+    "grafana.johnbargman.net" = "beta-two:3000";
+  };
+};
+```
+
+The transformer derives:
+
+1. **nginx**: virtualHost for `grafana.johnbargman.net` → proxy_pass to `10.88.128.54:3000` (beta-two's WireGuard IP)
+2. **firewall**: port 3000 open on wireg0 interface
+3. **DNS**: `grafana.johnbargman.net` → hub's LAN IP (`10.88.128.1`)
+4. **nftables**: WAN:3000 → `10.88.128.54:3000` (for external access)
+5. **assertions**: Validates that beta-two exists and is reachable
+
+All from a single declaration.
+
+### 1.6 Flat Data Structure Rules
 
 The transformer output MUST be predominantly flat. Nesting is allowed ONLY when:
 1. A group of attributes forms a logical unit (e.g., `hub = { name, ips, endpoint }`)
-2. The number of attributes in the group is 3+ (otherwise flatten)
+2. The number of attributes in the group is 3+
 3. The group is referenced as a unit by the generator
 
 **Flatness Rules**:
-- Top-level keys should be simple strings: `interface`, `listenPort`, `machineIp`
-- Peer data is an attrset keyed by hostname (flat lookup structure)
-- Warnings/errors are flat lists
-- Avoid deep nesting (>2 levels) — it makes generators complex
-- Avoid single-attribute nesting (don't wrap one value in an attrset)
+- Top-level keys: simple strings (`interface`, `listenPort`, `machineIp`)
+- Peer data: attrset keyed by hostname (flat lookup structure)
+- Warnings/errors: flat lists
+- Avoid deep nesting (>2 levels)
+- Avoid single-attribute nesting
 
 **Example Structure**:
+
 ```nix
 {
-  # Simple scalar values (flat)
+  # Simple scalar values
   interface = "wireg0";
   listenPort = 2108;
-  hubName = "cortex-alpha";
-  machineIp = "10.88.127.108/32";
   
-  # Logical unit (acceptable nesting - 3+ attributes)
+  # Logical unit (3+ attributes)
   hub = {
     ips = [ "10.88.127.1/32" "10.88.127.0/24" ];
     endpoint = "cortex-alpha.johnbargman.net";
@@ -189,1892 +291,752 @@ The transformer output MUST be predominantly flat. Nesting is allowed ONLY when:
   # Attrset keyed by hostname (flat lookup)
   peers = {
     "cortex-alpha" = { publicKey = "..."; ip = "10.88.127.1"; isHub = true; };
-    "alpha-one" = { publicKey = "..."; ip = "10.88.127.108"; isHub = false; };
+    "beta-one" = { publicKey = "..."; ip = "10.88.128.53"; isHub = false; };
   };
   
   # Flat lists
   warnings = [];
-  missingKeys = ["alpha-two"];
 }
 ```
 
-### 1.5 Graceful Degradation
-
-The system must handle missing data without cryptic errors:
+### 1.7 Graceful Degradation
 
 | Condition | Behavior |
 |---|---|
-| Topology file missing for a machine | `coreRouter.enable = false;` + warning in build output |
-| Key file missing for a peer | Peer skipped in config + warning, other peers still configured |
-| Forwarding target IP not in hosts | **Assertion error** with clear message |
+| topology.nix missing | `coreRouter.enable = false;` + warning in build |
+| WireGuard key file missing for peer | Peer skipped + warning; other peers configured |
+| Forwarding target not in topology | **Assertion error** with clear message |
 | Nginx backend unreachable | **Assertion error** with clear message |
 | Cross-service validation fails | **Assertion error** listing ALL failures |
 
-**Principle**: 
+**Principle**:
 - **Warnings** for optional/missing data (graceful skip)
-- **Assertions** for broken invariants (deployment fails with clear message)
+- **Assertions** for broken invariants (deployment fails clearly)
 
-### 1.6 Cross-Service Validation (CRITICAL PATTERN)
+### 1.8 Cross-Service Validation (CRITICAL)
 
-The topology system MUST enforce consistency across services. When a service connection is declared, ALL required infrastructure is validated.
+When a service connection is declared, ALL required infrastructure is validated.
 
-**Example: Nginx Proxy from cortex-alpha to local-nas**
+**Example: Nginx proxy from cortex-alpha to beta-two**
 
-The topology declares:
+Topology declares:
 ```nix
-nginx.proxies = {
-  "code.johnbargman.net" = {
-    backend = "http://10.88.127.3:80";  # local-nas
-  };
-};
+nginx-proxy = { "grafana.johnbargman.net" = "beta-two:3000"; }
 ```
 
-The system MUST validate:
-1. `10.88.127.3` exists in `lan.hosts` (IP is assigned to a known machine)
-2. Port 80 is allowed on the firewall interface between cortex-alpha and local-nas
-3. If WireGuard is the transport, both peers have WireGuard enabled
-4. If the backend is on a client, the client's topology acknowledges the service
+System MUST validate:
+1. `beta-two` exists in topology
+2. Port 3000 is open on WireGuard interface
+3. WireGuard peer configuration enables connectivity
+4. If backend is on client, client has WireGuard enabled
 
-**Validation Rules by Service Connection**:
+**Validation Rules**:
 
 | Service Connection | Required Validation |
 |---|---|
-| **Nginx proxy → backend IP** | IP exists in hosts; port allowed on firewall; transport (WG/Tailscale/LAN) enabled on both sides |
-| **Port forwarding → target IP** | IP exists in hosts; target port matches service declaration; firewall allows |
-| **DNS static entry → IP** | IP exists in hosts; service running (if declared) |
-| **WireGuard peer → host** | Host exists; has WireGuard IP; public key file exists |
-| **Tailscale route → subnet** | Subnet matches declared LAN/WAN subnets; advertising machine is connected |
+| **Nginx proxy → backend** | Backend hostname exists; port open on transport; transport enabled on both sides |
+| **Port forwarding → target** | Target hostname exists; port matches service declaration; firewall allows |
+| **WireGuard peer → host** | Host exists; has wireguard IP; public key file exists |
+| **DNS entry → IP** | IP exists in topology; service runs (if declared) |
 
-If validation fails: **assertion error with clear message**, not a cryptic Nix evaluation failure.
-
-**Assertion Message Example**:
+**Error Output**:
 ```
+assertion error:
 Topology validation failed:
-  - Nginx proxy 'code.johnbargman.net' targets IP 10.88.127.99 (not found in lan.hosts)
-  - Nginx proxy 'code.johnbargman.net' backend port 80 not allowed between cortex-alpha and unknown-host
-  - WireGuard peer 'beta-one' not found in lan.hosts
+  - Nginx proxy 'grafana' targets unknown backend 'unknown-host'
+  - Nginx proxy 'grafana' backend port 3000 not allowed on WireGuard interface
+  - WireGuard peer 'beta-one' missing public key at secrets/...
 ```
 
-### 1.7 Golden Test Integration
+### 1.9 Golden Test Integration
 
-Every machine that uses topology-driven config MUST have a golden test:
+Every machine in nixosConfigurations MUST have a golden test:
 
-1. Create topology file for machine
+1. Topology data exists for the machine
 2. Transformer produces settings
 3. Generator produces NixOS config
-4. Capture full config as golden JSON (network-relevant sections only)
-5. Any future change that alters the config breaks the golden test
-6. Intentional changes require regenerating the golden file
+4. Capture network-relevant config as golden JSON
+5. Future changes that alter config break golden test
+6. Intentional changes require regenerating golden file
 
-**Golden Test Lifecycle**:
+**Lifecycle**:
 ```bash
 # Initial creation
-nix run .#check-network -- cortex-alpha > golden/cortex-alpha.json
+nix run .#check-network -- cortex-alpha > real-topology/golden/cortex-alpha.json
 
 # During CI/CD
 nix run .#check-network -- cortex-alpha --compare
 # Fails if current output != golden file
 
 # After intentional change
-nix run .#check-network -- cortex-alpha > golden/cortex-alpha.json
-git add golden/cortex-alpha.json
-git commit -m "topology: update golden for cortex-alpha due to firewall rule change"
+nix run .#check-network -- cortex-alpha > real-topology/golden/cortex-alpha.json
+git add real-topology/golden/cortex-alpha.json
+git commit -m "topology: update golden for cortex-alpha"
 ```
 
 **Coverage Requirement**:
-- `nix flake check` MUST include a topology completeness test
-- For every machine in `nixosConfigurations`, a topology file must exist OR have documented exemption
-- Coverage percentage reported in CI output
-- Missing topology = build warning (Phase 1), build failure (Phase 2+)
+- `nix flake check` includes topology-coverage test
+- For every machine in `nixosConfigurations`, topology data must exist
+- Missing topology = warning (Phase 1), error (Phase 2+)
 
-### 1.8 The Generative Principle
+### 1.10 Naming Conventions
 
-Given a hostname, the system can derive everything:
+All file paths are derived from hostname:
 
-| Derived From Hostname | Convention | Example |
+| Convention | Pattern | Example |
 |---|---|---|
-| Topology file | `real-topology/${hostname}.nix` | `real-topology/cortex-alpha.nix` |
+| Topology data | Single file: `topology.nix` | `topology.nix` (shared) |
 | WireGuard public key | `secrets/public_keys/wireguard/wg_${hostname}_pub` | `secrets/public_keys/wireguard/wg_cortex-alpha_pub` |
 | WireGuard private key | `secrets/private_keys/wireguard/wg_${hostname}` (via secrix) | `secrets/private_keys/wireguard/wg_cortex-alpha` |
-| SSH host public key | `secrets/public_keys/host_keys/${hostname}.pub` | `secrets/public_keys/host_keys/cortex-alpha.pub` |
+| Golden test | `real-topology/golden/${hostname}.json` | `real-topology/golden/cortex-alpha.json` |
 | NixOS configuration | `nixosConfigurations.${hostname}` | `nixosConfigurations.cortex-alpha` |
 
-**Adding a new machine `alpha-four` requires**:
-1. Topology file with its network position: `real-topology/alpha-four.nix`
-2. Key files at the conventional paths
-3. NixOS configuration in `machines/alpha-four/`
-4. Entry in `flake.nix` using `mkX86_64 "alpha-four"`
-
-The system validates all requirements exist. Missing any = clear error message.
-
 ---
 
-## Section 2: Phase Overview & Timeline
+## Section 2: Special Extensions and Exceptions
 
-### Phase Dependencies
+The minimal topology covers 90% of cases. For the remaining 10%, optional extensions:
 
-```
-Phase 1: Implement Two-Layer Architecture (Transformer + Generator pattern)
-    ↓
-Phase 2: Golden Coverage (x86_64)
-    ↓
-Phase 3: Coverage Validation
-    ↓
-Phase 4: Unified Client Generators
-    ↓
-Phase 5: Cross-Section Validation
-```
+### 2.1 Extra Firewall Ports
 
-### Phase Summary Table
-
-| Phase | Objective | Duration | Exit Criteria | Risk |
-|-------|-----------|----------|---------------|------|
-| **Phase 1** | Implement two-layer architecture; standardize mk*.nix signatures | 2-3 weeks | Transformers follow `{ lib }: topology: { }` pattern (inputs); Generators follow `{ lib }: { settings, hostname }: { }` pattern (outputs); core-router.nix refactored; cortex-alpha golden test passes | **High**: Breaking changes to existing API |
-| **Phase 2** | Golden test for all x86_64 machines | 3-4 weeks | 18 topology files + 18 golden files; visual audit complete; no golden regressions; cross-service validation catches errors | **Medium**: Large number of manual topology datapoints |
-| **Phase 3** | Meta-test: topology completeness | 1-2 weeks | `nix flake check` integration; per-machine coverage report; CI/CD pipeline integration | **Low**: New test infra, no behavioral changes |
-| **Phase 4** | Unified client generators (hub and client from same data) | 3-4 weeks | Generators work for both hub and client; hardcoded cortex-alpha reference removed from client config; 5 client machines tested | **High**: Requires unified generator pattern validation |
-| **Phase 5** | Cross-service validation enforcement | 2-3 weeks | Assertions catch invalid references; forwarding/nginx/dns refs validated; comprehensive test suite | **Medium**: Complex validation logic |
-
-**Total Estimated Effort**: 11-15 weeks. Can run phases 2 & 3 in parallel.
-
----
-
-## Section 3: Phase 1 — Implement Two-Layer Architecture
-
-### Objective
-
-Refactor all transformation functions to implement the two-layer architecture defined in Section 1. This is the **foundational phase** — all subsequent work depends on this pattern.
-
-### Key Changes
-
-1. **Separate Transformer from Generator**
-   - Current: `mkWireguardPeers` does both transformation and generation
-   - New: `mkWireguardSettings` (transformer) + `genWireguard` (generator)
-
-2. **Transformer Layer: `mk*Settings` Functions**
-   - Input: `{ lib }: topology: { ... }`
-   - Output: Flat pure data structure with all files read
-   - Owns ALL I/O (file reading, network checks, etc.)
-   - Performs cross-section validation
-
-   Example signature:
-   ```nix
-   { lib }: topology: {
-     interface = "wireg0";
-     listenPort = 2108;
-     hubName = "cortex-alpha";
-     peers = { ... };
-     warnings = [ ... ];
-   }
-   ```
-
-3. **Generator Layer: `gen*` Functions**
-   - Input: `{ lib }: { settings, hostname }: { ... }`
-   - Output: NixOS configuration for the specific hostname
-   - Pure function: no file I/O, no side effects
-   - Works for both hub and client (distinction is emergent from data)
-
-   Example signature:
-   ```nix
-   { lib }: { settings, hostname }: {
-     networking.wireguard.interfaces.wireg0 = { ... };
-   }
-   ```
-
-### Implementation Steps
-
-1. **Refactor existing mk*.nix files into transformer + generator pairs**
-   
-   For each existing function:
-   ```nix
-   # OLD: lib/topology/mkWireguardPeers.nix (does everything)
-   { lib }: topology: self: { ... }
-   
-   # NEW: lib/topology/mkWireguardSettings.nix (transformer)
-   { lib }: topology: { 
-     peers = { ... };  # with publicKey read from file
-     warnings = [ ... ];
-   }
-   
-   # NEW: lib/topology/genWireguard.nix (generator)
-   { lib }: { settings, hostname }: {
-     networking.wireguard.interfaces = { ... };
-   }
-   ```
-
-2. **Create `lib/topology/default.nix` as canonical entry point**
-   
-   ```nix
-   { lib, self, topology }:
-   {
-     # Transformers (run once per flake eval, read files)
-     settings.wireguard = (import ./mkWireguardSettings.nix) { inherit lib; } topology;
-     settings.tailscale = (import ./mkTailscaleSettings.nix) { inherit lib; } topology;
-     settings.dhcpDns = (import ./mkDhcpDnsSettings.nix) { inherit lib; } topology;
-     settings.nginx = (import ./mkNginxSettings.nix) { inherit lib; } topology;
-     settings.forwarding = (import ./mkForwardingSettings.nix) { inherit lib; } topology;
-     
-     # Generators (pure, per-machine config)
-     generators = {
-       wireguard = (import ./genWireguard.nix) { inherit lib; };
-       tailscale = (import ./genTailscale.nix) { inherit lib; };
-       dhcpDns = (import ./genDhcpDns.nix) { inherit lib; };
-       nginx = (import ./genNginx.nix) { inherit lib; };
-       forwarding = (import ./genForwarding.nix) { inherit lib; };
-     };
-     
-     # Validation
-     validate = (import ./validate.nix) { inherit lib; };
-     utils = import ./utils.nix { inherit lib; };
-   }
-   ```
-
-3. **Update `core-router.nix` to use the new structure**
-   
-   ```nix
-   { config, lib, pkgs, self, ... }:
-   let
-     topology = import ../real-topology/${config.networking.hostName}.nix { inherit lib; };
-     topologyLib = import ../lib/topology { inherit lib self topology; };
-     hostname = config.networking.hostName;
-   in
-   {
-     config = lib.mkIf config.coreRouter.enable {
-       # Validation
-       assertions = [
-         { assertion = topologyLib.validate.validateTopology topologyLib.settings.wireguard.valid; }
-       ];
-       
-       # Generate config for this hostname using settings
-       networking.wireguard.interfaces.wireg0 = lib.mkOverride 100
-         (topologyLib.generators.wireguard { inherit (topologyLib) settings; inherit hostname; });
-     };
-   }
-   ```
-
-4. **Update modules to use topology-driven config**
-   - `modules/core-router.nix`: import from `lib/topology`
-   - `modules/enable-wg-topology.nix`: new client module (Phase 4)
-
-5. **Verify golden test still passes**
-   ```bash
-   nix run .#check-network -- cortex-alpha --compare
-   ```
-
-### Graceful Degradation Implementation
-
-During Phase 1:
-- Missing key files: logged as warning, peer skipped
-- Invalid topology: logged as warning, that section disabled
-- Only hard assertions: cross-reference validation (Phase 5)
-
-### Exit Criteria for Phase 1
-
-- [ ] All mk*.nix refactored into transformer + generator pairs
-- [ ] `lib/topology/default.nix` is the canonical entry point
-- [ ] `core-router.nix` uses new architecture
-- [ ] All generators work for both hub and client (logic proves this)
-- [ ] Cortex-alpha golden test still passes
-- [ ] Documentation updated: AGENTS.md with new function signatures
-- [ ] All changes committed with clear messages about architecture change
-
----
-
-## Section 4: Phase 2 — Golden Coverage for All x86_64 Machines
-
-### Scope: x86_64 Machines Only
-
-**Why x86_64 First?**
-- Simpler to test (can build locally)
-- No cross-compilation overhead
-- All critical machines are x86_64 (routers, NAS, builders)
-
-**ARM machines defer to Phase 5** (minimal config or simpler topology).
-
-### Machine Classification
-
-Based on `/speed-storage/repo/DarthPJB/NixOS-Configuration/machines/`:
-
-| Hostname | Category | Topology Candidacy | Reasoning |
-|----------|----------|-------------------|-----------|
-| **cortex-alpha** | Hub/Router | ✅ Yes (Done) | Core router, full network scope, needs all generators |
-| **local-nas** | Storage | ✅ Yes | Simple NAS, likely single subnet membership, needs DHCP reservation |
-| **storage-array** | Storage | ✅ Yes | Storage server, may need port forwarding, Tailscale routing |
-| **terminal-zero** | Builder | ✅ Yes | Central builder, likely Tailscale/WireGuard client, needs DNS |
-| **terminal-nx-01** | Workstation | ✅ Yes | NVIDIA gaming, WireGuard client, may have special firewall rules |
-| **alpha-one** | Gaming Host | ✅ Yes | Gaming, Tailscale/WireGuard capable, may need port forwarding |
-| **alpha-two** | Gaming Host | ✅ Yes | Gaming, similar to alpha-one |
-| **alpha-three** | Gaming Host | ✅ Yes | Gaming + zeroclaw service (3D printer), needs service-specific config |
-| **LINDA** | Remote Gaming | ✅ Yes | Remote build node, WireGuard/Tailscale, remote access service |
-| **gaming-host-1** | Gaming | ✅ Yes | Gaming host, client networking |
-| **remote-worker** | Web Server | ✅ Yes | **High Priority**: Nginx service, port forwarding, SSL, complex network footprint |
-| **remote-builder** | Builder | ✅ Yes | Remote build machine, WireGuard/Tailscale access |
-| **local-worker** | Workstation | ✅ Candidate | Check inline config; may not need topology (desktop machine) |
-| **obs-box** | Media | ✅ Candidate | Check inline config; streaming/OBS setup, may need firewall |
-
-### Rollout Strategy
-
-**Tier 1 (Weeks 1-2)**: Simple clients, no hub complexity
-- `local-nas` — Simple storage client
-- `storage-array` — Storage client
-- Objective: Establish pattern for client topology files
-
-**Tier 2 (Weeks 2-3)**: Clients with special services
-- `terminal-zero` — Builder with DNS/Tailscale
-- `gaming-host-1`, `alpha-one`, `alpha-two` — Gaming clients with firewall rules
-- Objective: Expand pattern to handle service-specific configs
-
-**Tier 3 (Weeks 3-4)**: Complex clients & services
-- `remote-worker` — Web server with Nginx (largest, most complex)
-- `LINDA` — Remote gaming/builder node
-- `alpha-three` — Special service (zeroclaw)
-- Objective: Full service coverage
-
-**Tier 4 (Week 4)**: Remaining/optional
-- `terminal-nx-01`, `local-worker`, `obs-box` — Quick wins or defer if inline config is minimal
-
-### Topology Data Structure for Clients
-
-Clients differ from hub (cortex-alpha) in what they declare:
-
-#### Client Machine Topology (Minimal Example)
+Open specific ports not derived from services:
 
 ```nix
-{ ... }:
-{
-  # Clients still declare their position in the network
-  # but don't manage the entire topology
-  
-  domain = "johnbargman.net";
-  
-  # Self-declaration only
-  lan = {
-    subnet = "10.88.128.0/24";  # Which subnet I'm on
-    gateway = "10.88.128.1";    # How to reach hub
+cortex-alpha = {
+  # ... standard fields ...
+  firewall = {
+    tcp = [ 2208 ];              # SSH to NAS from WAN
+    udp = [ 17780 17781 17782 ]; # Game ports
+  };
+};
+```
+
+### 2.2 Custom Proxy Destinations
+
+Proxy to external IP not in topology:
+
+```nix
+cortex-alpha = {
+  # ... standard fields ...
+  nginx-proxy = {
+    # Standard: derives from topology
+    "grafana.johnbargman.net" = "beta-two:3000";
     
-    # Only declare myself, not all hosts
-    hosts = {
-      "gaming-host-1" = {
-        ip = "10.88.128.25";
-        mac = "aa:bb:cc:dd:ee:ff";
-        routing = {
-          tailscale = true;      # I'm Tailscale-capable
-          wireguard = true;      # I'm WireGuard-capable
-        };
-        services = [ "gaming" ];  # Services I provide
-      };
+    # Special: external destination
+    "legacy.johnbargman.net" = { 
+      backend = "192.168.1.50:8080";  # External IP
+      listenAddresses = [ "82.5.173.252" ];  # Override default listen
     };
+  };
+};
+```
+
+### 2.3 Routing Exceptions
+
+Non-standard routing rules:
+
+```nix
+cortex-alpha = {
+  # ... standard fields ...
+  routing = {
+    # Static routes to external networks
+    static = {
+      "10.0.0.0/8" = "10.88.128.254";  # Route to VPN
+    };
+    # Policy routing
+    policy = [
+      { from = "10.88.128.0/24"; to = "10.0.0.0/8"; table = 100; }
+    ];
+  };
+};
+```
+
+### 2.4 Hub-of-Hubs Topology
+
+Complex topologies with nested hubs:
+
+```nix
+{...}:
+{
+  # Top-level hub (internet-facing)
+  cortex-alpha = {
+    wireguard = "10.88.127.1";
+    lan = { "10.88.128.1" = "enps1"; };
+    uplink = { "82.5.173.252" = "enps2"; };
+    peers = [ "building-b" "building-c" ];
+    nginx-proxy = { ... };
   };
   
-  # Optional: services I expose that need inbound routes
-  # (hub's topology will reference these)
-  services = {
-    gaming = {
-      ports = [ 27015 27016 ];   # Port numbers for this service
-    };
+  # Sub-hub (serves a building)
+  building-b = {
+    wireguard = "10.88.127.100";
+    lan = { "10.89.128.1" = "enps3"; };
+    peers = [ "office-1" "office-2" ];      # Serves these
+    hub = "cortex-alpha";                   # Is client of this
+    nginx-proxy = { ... };
   };
+  
+  # Leaf machines
+  office-1 = { wireguard = "10.89.128.10"; };
+  office-2 = { wireguard = "10.89.128.11"; };
 }
 ```
 
-**Note**: Clients DON'T declare:
-- `forwarding` (hub does that)
-- `dns.static` (hub manages DNS)
-- `nginx.proxies` (hub manages reverse proxy)
-- `wireguard.peers` (hub manages peer list)
-
-Clients declare:
-- Their own IP, MAC, hostname
-- Their routing capabilities (Tailscale, WireGuard)
-- Services they provide (used by hub's topology)
-
-### Golden Test Creation Process
-
-For each machine:
-
-1. **Create topology file** from template or existing inline config
-   ```bash
-   cp real-topology/_template.nix real-topology/<hostname>.nix
-   ```
-
-2. **Populate topology** with actual network data
-   - IP addresses from `ip addr` on the machine
-   - MAC addresses from `ip link show`
-   - Subnet/gateway from network config
-   - Services from machines/<hostname>/default.nix
-
-3. **Validate topology** passes `nix flake check`
-   ```bash
-   nix flake check
-   ```
-
-4. **Generate golden file**
-   ```bash
-   nix run .#check-network -- <hostname> > real-topology/golden/<hostname>.json
-   ```
-
-5. **Visual audit** of golden output
-   - Check WireGuard peer config
-   - Verify firewall rules
-   - Validate DNS entries
-   - Spot-check nginx proxies
-
-6. **Commit**
-   ```bash
-   git add real-topology/<hostname>.nix real-topology/golden/<hostname>.json
-   git commit -m "topology: add golden test for <hostname>"
-   ```
-
-### Validation Checklist per Machine
-
-Before committing golden file:
-
-- [ ] Topology file parses (nix flake check passes)
-- [ ] No eval errors in core-router.nix
-- [ ] Golden file is non-empty JSON
-- [ ] Golden output looks sane (visual spot-check):
-  - [ ] WireGuard IPs are correct
-  - [ ] Firewall rules make sense
-  - [ ] DNS entries point to right IPs
-  - [ ] No hardcoded "TODO" values
-- [ ] Golden test passes: `nix run .#check-network -- <hostname> --compare`
-- [ ] No golden regressions on other machines
-
-### Exit Criteria for Phase 2
-
-- [ ] 18 x86_64 machines have topology files
-- [ ] 18 golden files generated and committed
-- [ ] Visual audit complete for all 18 (spot-check for sanity)
-- [ ] No golden test regressions on cortex-alpha
-- [ ] All topology files pass validation
-- [ ] Rollout documented (which machines completed, any blockers)
-- [ ] Create `documentation/phase-2-rollout-log.md` with per-machine notes
+In hub-of-hubs: `building-b` is BOTH a hub (has `peers`) AND a client (has `hub`). The generator handles this: if both exist, generate both hub and client config.
 
 ---
 
-## Section 5: Phase 3 — Topology Coverage Meta-Test
+## Section 3: Implementation Architecture
 
-### Objective
+### 3.1 Transformer Output Structure
 
-Implement a test that validates **topology completeness**: ensure every machine in `flake.nix` has a corresponding topology file.
-
-### Implementation
-
-#### 4.1 Create `topology-coverage.nix` Check
-
-Create `real-topology/coverage.nix`:
-
-```nix
-# real-topology/coverage.nix
-# Checks that all machines declared in flake have topology files
-{ nixos-machines }:  # passed from flake.nix
-let
-  lib = import <nixpkgs/lib>;
-  
-  # Extract machine names from flake config
-  machineNames = builtins.attrNames nixos-machines;
-  
-  # Check which topology files exist
-  topologyFiles = map (name: {
-    inherit name;
-    hasFile = builtins.pathExists .//${name}.nix;
-  }) machineNames;
-  
-  # Categorize by coverage
-  covered = lib.filter (x: x.hasFile) topologyFiles;
-  missing = lib.filter (x: !x.hasFile) topologyFiles;
-in
-{
-  inherit machineNames covered missing;
-  totalMachines = builtins.length machineNames;
-  coveredCount = builtins.length covered;
-  missingCount = builtins.length missing;
-  coveragePercent = (coveredCount * 100) / builtins.length machineNames;
-  
-  # Validation assertion for CI
-  isComplete = builtins.length missing == 0;
-}
-```
-
-#### 4.2 Integration with `nix flake check`
-
-Add to `flake.nix`:
+Transformers MUST produce a flat data structure with these top-level keys:
 
 ```nix
 {
-  # ... existing code ...
-  
-  checks.x86_64-linux = {
-    # Existing checks...
-    
-    topology-coverage = let
-      coverage = import ./real-topology/coverage.nix {
-        nixos-machines = self.nixosConfigurations;
-      };
-    in if !coverage.isComplete then
-      throw "Topology coverage incomplete. Missing: ${builtins.toJSON coverage.missing}"
-    else
-      pkgs.runCommand "topology-coverage-check" { } ''
-        echo "Topology coverage: ${toString coverage.coveragePercent}%"
-        echo "Machines: ${toString coverage.coveredCount}/${toString coverage.totalMachines}"
-        touch $out
-      '';
-    
-    # Per-machine golden tests
-    golden-cortex-alpha = import ./real-topology/default.nix { 
-      hostname = "cortex-alpha"; 
-      inherit pkgs;
-    };
-  };
-}
-```
-
-#### 4.3 Coverage Report Script
-
-Create `scripts/topology-report.sh`:
-
-```bash
-#!/usr/bin/env bash
-# Generate topology coverage report
-
-set -e
-
-REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-MACHINES_DIR="$REPO_ROOT/machines"
-TOPOLOGY_DIR="$REPO_ROOT/real-topology"
-GOLDEN_DIR="$TOPOLOGY_DIR/golden"
-
-echo "=== Topology Coverage Report ==="
-echo ""
-
-# Extract machine names from flake.nix (simple grep)
-MACHINES=$(grep -o 'mkX86_64 "\w\+"\|mkAarch64 "\w\+' "$REPO_ROOT/flake.nix" | sed 's/.*"\([^"]*\)".*/\1/' | sort -u)
-
-COVERED=0
-TOTAL=0
-
-echo "x86_64-linux machines:"
-for machine in $MACHINES; do
-  TOTAL=$((TOTAL + 1))
-  if [ -f "$TOPOLOGY_DIR/$machine.nix" ]; then
-    if [ -f "$GOLDEN_DIR/$machine.json" ]; then
-      echo "  ✓ $machine (topology + golden)"
-      COVERED=$((COVERED + 1))
-    else
-      echo "  ~ $machine (topology only, no golden)"
-    fi
-  else
-    echo "  ✗ $machine (missing topology)"
-  fi
-done
-
-echo ""
-echo "Coverage: $COVERED/$TOTAL machines"
-echo "Percentage: $(echo "scale=1; $COVERED * 100 / $TOTAL" | bc)%"
-```
-
-### Benefits
-
-- **CI/CD Integration**: Catch missing topology files in PR checks
-- **Progress Tracking**: Easy to see rollout progress
-- **Accountability**: Visible when machines are added to flake but not topology-driven
-- **Enforcement**: Can make it a hard failure in CI
-
-### Exit Criteria for Phase 3
-
-- [ ] `nix flake check` includes topology-coverage test
-- [ ] `topology-coverage.nix` correctly identifies missing files
-- [ ] `scripts/topology-report.sh` works and shows accurate counts
-- [ ] CI/CD pipeline runs topology-coverage check
-- [ ] Documentation updated with coverage target (e.g., "80% by end of Phase 2")
-- [ ] Warnings/errors have clear guidance for fixing (link to migration guide)
-
----
-
-## Section 6: Phase 4 — Unified Client Generators
-
-### Objective
-
-Enable client machines to use the SAME generator pattern as the hub, producing the correct config for their role based on hostname and topology data. This phase proves the architecture standard works for both hub and client.
-
-### Unified Generator Pattern
-
-Per the Two-Layer Architecture (Section 1.3), the same `genWireguard` generator works for both hub and client:
-
-```nix
-# genWireguard decision logic
-genWireguard = { lib }: { settings, hostname }:
-  if hostname == settings.hubName then
-    # Hub: listen on all IPs, include all peers
-    { 
-      networking.wireguard.interfaces.wireg0 = {
-        ips = settings.hub.ips;
-        listenPort = settings.listenPort;
-        privateKeyFile = <secrix path>;
-        peers = [ /* all non-hub peers */ ];
-      };
-    }
-  else
-    # Client: connect to hub as endpoint
-    {
-      networking.wireguard.interfaces.wireg0 = {
-        ips = [ settings.machineIp ];
-        privateKeyFile = <secrix path>;
-        peers = [
-          {
-            publicKey = settings.peers.${settings.hubName}.publicKey;
-            endpoint = "${settings.hub.endpoint}:${toString settings.listenPort}";
-            allowedIPs = [ settings.hub.allocationRange ];
-            persistentKeepalive = 25;
-          }
-        ];
-      };
-    }
-```
-
-**Key insight**: The generator doesn't need separate client/hub logic in different files. It's all in one function, with a simple conditional.
-
-### Client Topology Data
-
-Client topology files declare their position and how to reach the hub:
-
-```nix
-# real-topology/gaming-host-1.nix (client example)
-{ lib }:
-{
-  domain = "johnbargman.net";
-  
-  # Client declares its own position
-  lan = {
-    subnet = "10.88.128.0/24";
-    gateway = "10.88.128.1";
-    hosts = {
-      "gaming-host-1" = {
-        ip = "10.88.128.25";
-        mac = "aa:bb:cc:dd:ee:ff";
-        routing = {
-          tailscale = true;
-          wireguard = true;
-        };
-        services = [ "gaming" ];
-      };
-    };
-  };
-  
-  # Client declares how to reach the hub
-  hub = {
-    name = "cortex-alpha";
-    endpoint = "cortex-alpha.johnbargman.net";
-    port = 51820;
-    
-    # Client's IP on WireGuard subnet (assigned by hub)
-    wireguardIp = "10.88.127.108/32";
-    
-    # Routes to advertise via Tailscale (optional)
-    tailscaleAdvertisedRoutes = [ "10.88.128.0/24" ];
-  };
-}
-```
-
-**What clients DON'T declare**:
-- `lan.hosts` list (only themselves)
-- `forwarding`, `nginx.proxies`, `dns.static` (hub manages these)
-- `wireguard.peers` (hub manages peer list)
-
-### Transformer for Clients: `mkWireguardSettings`
-
-The transformer works on BOTH hub and client topologies, producing the right settings for each:
-
-```nix
-# lib/topology/mkWireguardSettings.nix
-{ lib }: topology:
-
-let
-  # For hub: read all peer keys
-  # For client: read only hub's key
-  isHub = topology.lan ? hosts;  # Hub declares all hosts
-  
-  peerNames = if isHub
-    then builtins.attrNames topology.lan.hosts
-    else [ topology.hub.name ];
-  
-  peers = builtins.mapAttrs (name: _:
-    let
-      keyPath = ../../secrets/public_keys/wireguard/wg_${name}_pub;
-      keyExists = builtins.pathExists keyPath;
-    in
-    {
-      publicKey = if keyExists then builtins.readFile keyPath 
-                  else "<missing>";
-      ip = if isHub then topology.lan.hosts.${name}.ip else topology.hub.wireguardIp;
-      isHub = (name == (if isHub then topology.networking.hostName else topology.hub.name));
-    }
-  ) (builtins.listToAttrs (map (n: { name = n; value = null; }) peerNames));
-  
-  warnings = lib.filter (x: x != null) (map (name:
-    let keyPath = ../../secrets/public_keys/wireguard/wg_${name}_pub;
-    in if builtins.pathExists keyPath then null
-       else "Missing WireGuard public key for ${name} at ${keyPath}"
-  ) peerNames);
-in
-
-{
+  # Metadata
   interface = "wireg0";
-  listenPort = topology.hub.port or 2108;
-  hubName = topology.hub.name;
+  listenPort = 2108;
   
-  hub = if topology.lan ? hosts then {
+  # Hub designation
+  hubName = "cortex-alpha";
+  
+  # Hub-specific (if this machine IS the hub)
+  hub = {
     ips = [ "10.88.127.1/32" "10.88.127.0/24" ];
     endpoint = "cortex-alpha.johnbargman.net";
-  } else {
-    endpoint = topology.hub.endpoint;
   };
   
-  machineIp = topology.wireguardIp or topology.hub.wireguardIp;
+  # This machine's IP
+  machineIp = "10.88.127.108/32";
   
-  peers = peers;
-  warnings = warnings;
+  # All peers with resolved keys
+  peers = {
+    "cortex-alpha" = { publicKey = "abc123..."; ip = "10.88.127.1"; isHub = true; };
+    "beta-one" = { publicKey = "def456..."; ip = "10.88.128.53"; isHub = false; };
+  };
+  
+  # Status
+  warnings = [ "Missing key for peer X" ];
 }
 ```
 
-### Generator for Clients: Use Same `genWireguard`
+### 3.2 Generator Function Signatures
 
-No separate client generator needed. The same generator handles both:
+All generators follow this signature:
 
 ```nix
-# In core-router.nix or enable-wg-topology.nix
-let
-  topologyLib = import ../lib/topology { inherit lib self topology; };
-  settings = topologyLib.settings.wireguard;
-  hostname = config.networking.hostName;
-in
-
-# Same generator for both hub and client
-{
-  networking.wireguard.interfaces.wireg0 = 
-    topologyLib.generators.wireguard { inherit settings hostname; };
+{ lib }: { settings, hostname }: {
+  # NixOS module config
 }
 ```
 
-### Client Module: `modules/enable-wg-topology.nix`
+**Parameters**:
+- `lib` — nixpkgs lib (via `{ lib }:` pattern)
+- `settings` — Transformer output (flat data structure)
+- `hostname` — This machine's hostname (string)
 
-For client machines, use the topology-driven module:
+**Return**: NixOS module config (same as any other NixOS module)
+
+### 3.3 How core-router.nix Consumes the Pattern
 
 ```nix
-# modules/enable-wg-topology.nix
-# Works for both hub and client via unified generator
-
+# modules/core-router.nix
 { config, lib, self, ... }:
 
 let
-  topology = import ../real-topology/${config.networking.hostName}.nix { inherit lib; };
-  hasWireguard = topology ? hub || (topology ? lan && topology.lan ? hosts);  # hub or client
+  # Read the shared topology file
+  topology = import ../topology.nix { inherit lib; };
   
-  privateKeyPath = 
-    if config ? secrix.services.wireguard-wireg0.secrets then
-      config.secrix.services.wireguard-wireg0.secrets.${config.networking.hostName}.decrypted.path
-    else
-      throw "No secrix WireGuard key for ${config.networking.hostName}";
+  # Transform it (once per machine)
+  mkWireguardSettings = import ../lib/topology/mkWireguardSettings.nix { inherit lib; };
+  wireguardSettings = mkWireguardSettings topology;
   
-  topologyLib = import ../lib/topology { inherit lib self topology; };
+  # Generate config for THIS machine
+  genWireguard = import ../lib/topology/genWireguard.nix { inherit lib; };
+  hostname = config.networking.hostName;
+  
 in
-
 {
-  config = lib.mkIf hasWireguard {
+  config = lib.mkIf config.coreRouter.enable {
+    # Validation assertions
     assertions = [
       {
-        assertion = topologyLib.validate.wireguard.valid;
-        message = "WireGuard topology validation failed: ${builtins.concatStringsSep ", " topologyLib.validate.wireguard.errors}";
+        assertion = wireguardSettings.warnings == [];
+        message = "WireGuard topology warnings: ${builtins.concatStringsSep ", " wireguardSettings.warnings}";
+      }
+    ];
+    
+    # Generate config for this machine
+    networking.wireguard.interfaces.wireg0 = lib.mkDefault
+      (genWireguard { settings = wireguardSettings; inherit hostname; });
+  };
+}
+```
+
+### 3.4 How enable-wg-topology.nix Replaces enable-wg.nix
+
+Unified module for hub AND client:
+
+```nix
+# modules/enable-wg-topology.nix
+{ config, lib, self, ... }:
+
+let
+  topology = import ../topology.nix { inherit lib; };
+  mkWireguardSettings = import ../lib/topology/mkWireguardSettings.nix { inherit lib; };
+  genWireguard = import ../lib/topology/genWireguard.nix { inherit lib; };
+  
+  settings = mkWireguardSettings topology;
+  hostname = config.networking.hostName;
+  
+  # Check if this machine is in the topology
+  inTopology = builtins.hasAttr hostname topology;
+  
+in
+{
+  config = lib.mkIf inTopology {
+    assertions = [
+      {
+        assertion = settings.warnings == [];
+        message = "WireGuard topology: ${builtins.concatStringsSep "\n  " settings.warnings}";
       }
     ];
     
     networking.wireguard.enable = true;
     networking.wireguard.interfaces.wireg0 = lib.mkDefault
-      (topologyLib.generators.wireguard { 
-        settings = topologyLib.settings.wireguard; 
-        hostname = config.networking.hostName;
-      });
+      (genWireguard { inherit settings hostname; });
   };
 }
 ```
 
-### Secrix Integration for Client Keys
+### 3.5 Key File Resolution by Convention
 
-Client machines manage their private keys via secrix (same as hub):
+Transformers read public keys by **strict naming convention**:
 
 ```nix
-# machines/gaming-host-1/default.nix
-
-{
-  imports = [
-    ../../modules/enable-wg-topology
-  ];
-  
-  secrix.services.wireguard-wireg0.secrets.gaming-host-1.encrypted.file =
-    ../../secrets/private_keys/wireguard/wg_gaming-host-1;
-}
+# Standard path: secrets/public_keys/wireguard/wg_${hostname}_pub
+readPublicKey = hostname:
+  let
+    path = ../../secrets/public_keys/wireguard/wg_${hostname}_pub;
+  in
+  if builtins.pathExists path
+  then builtins.readFile path
+  else "<missing>";
 ```
 
-Private key setup (same for hub and client):
+Private keys are managed by secrix:
+
+```nix
+# In machine config
+secrix.services.wireguard-wireg0.secrets.cortex-alpha.encrypted.file =
+  ../../secrets/private_keys/wireguard/wg_cortex-alpha;
+
+networking.wireguard.interfaces.wireg0.privateKeyFile =
+  config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
+```
+
+---
+
+## Section 4: Phase Overview & Timeline
+
+### 4.1 Phase Dependencies
+
+```
+Phase 1: Implement Single topology.nix + Transformer/Generator Pattern
+    ↓
+Phase 2: Golden Coverage for All Machines
+    ↓
+Phase 3: Coverage Meta-Test
+    ↓
+Phase 4: Cross-Section Validation
+    ↓
+Phase 5: Extended Network Topologies (Hub-of-Hubs, Complex Routing)
+```
+
+### 4.2 Phase Summary
+
+| Phase | Objective | Duration | Exit Criteria |
+|-------|-----------|----------|---------------|
+| **1** | Implement single `topology.nix` + mk*Settings + gen* pattern | 2-3 weeks | topology.nix exists; transformers produce flat data; generators work for hub + client; cortex-alpha golden passes |
+| **2** | Golden coverage for all x86_64 machines | 3-4 weeks | 18 topology entries + 18 golden files; all pass validation |
+| **3** | Topology coverage meta-test | 1-2 weeks | `nix flake check` includes completeness check; CI/CD integration |
+| **4** | Cross-service validation | 2-3 weeks | Assertions catch invalid references; test suite passes |
+| **5** | Extended topologies (hub-of-hubs, complex routing) | 2-3 weeks | Sub-hubs fully functional; golden tests for all patterns |
+
+**Total Estimated Effort**: 10-15 weeks. Phases 2 & 3 can run in parallel.
+
+---
+
+## Section 5: Golden Test Integration
+
+### 5.1 What Golden Tests Capture
+
+Golden tests capture the network-relevant portions of generated NixOS config:
+- `networking.wireguard`
+- `networking.firewall`
+- `services.nginx`
+- `services.dnsmasq` or `services.resolved` (DNS)
+- `services.tailscale` (if used)
+
+NOT captured (to avoid noise):
+- User accounts, permissions
+- Package selections
+- System packages
+- Other service configs unrelated to networking
+
+### 5.2 Creating Golden Tests
+
+For each machine in topology.nix:
+
 ```bash
-# Generate key pair
-wg genkey > wg_gaming-host-1
-wg pubkey < wg_gaming-host-1 > wg_gaming-host-1.pub
+# 1. Ensure topology entry exists
+# (see topology.nix, machine's attrset)
 
-# Encrypt private key with secrix
-secrix encrypt wg_gaming-host-1 \
-  secrets/private_keys/wireguard/wg_gaming-host-1
+# 2. Generate golden file
+nix run .#check-network -- cortex-alpha > real-topology/golden/cortex-alpha.json
 
-# Commit public key
-git add secrets/public_keys/wireguard/wg_gaming-host-1.pub
+# 3. Visual audit
+cat real-topology/golden/cortex-alpha.json | jq
+
+# 4. Commit
+git add real-topology/golden/cortex-alpha.json
+git commit -m "topology: add golden test for cortex-alpha"
 ```
 
-### Hub Topology Remains Hub-Only
+### 5.3 Coverage Requirements
 
-Hub topology still declares all hosts (it manages the entire network):
+- Every entry in `topology.nix` MUST have a golden test
+- `nix flake check` tests golden completeness
+- Missing golden = warning (Phase 1), error (Phase 2+)
 
-```nix
-# real-topology/cortex-alpha.nix (hub - unchanged pattern)
-{ lib }:
-{
-  domain = "johnbargman.net";
-  
-  lan = {
-    subnet = "10.88.127.0/24";
-    gateway = "10.88.127.1";
-    hosts = {
-      "cortex-alpha" = { ip = "10.88.127.1"; ... };
-      "gaming-host-1" = { ip = "10.88.128.25"; ... };
-      # All other hosts
-    };
-  };
-  
-  wireguard = {
-    interface = "wireg0";
-    peers = [ "cortex-alpha" "gaming-host-1" ... ];  # All peers
-  };
-  
-  # ... nginx, dns, forwarding, etc.
-}
+### 5.4 Updating Golden Tests
+
+When topology changes intentionally:
+
+```bash
+# Regenerate
+nix run .#check-network -- cortex-alpha > real-topology/golden/cortex-alpha.json
+
+# Review diff
+git diff real-topology/golden/cortex-alpha.json
+
+# Commit with clear message
+git commit -m "topology: update golden for cortex-alpha (nginx proxy change)"
 ```
 
-**Note**: Hub topology does NOT import client topologies. Clients are declared as data points in `lan.hosts`.
-
-### Exit Criteria for Phase 4
-
-- [ ] `genWireguard` works for both hub and client (proven by testing)
-- [ ] `mkWireguardSettings` produces correct settings for both hub and client
-- [ ] `modules/enable-wg-topology.nix` works for hub and client (same module)
-- [ ] At least 5 client machines tested: gaming-host-1, terminal-zero, alpha-one, alpha-two, alpha-three
-- [ ] No hardcoded `cortex-alpha` references in client configs
-- [ ] Secrix integration verified for all 5 clients
-- [ ] No golden test regressions on hub
-- [ ] Documentation updated: all generators work for both hub and client
-- [ ] All changes committed with unified generator pattern
+When golden test breaks unexpectedly:
+1. DO NOT regenerate without investigation
+2. Check what changed: `git diff HEAD -- real-topology/cortex-alpha.nix`
+3. Verify the change is intentional
+4. Only then regenerate
 
 ---
 
-## Section 7: Phase 5 — Validation and Cross-Section Consistency
+## Section 6: Validation Rules
 
-### Problem Statement (TG-007)
+### 6.1 Cross-Service Assertions
 
-Current validation (`validate.nix`) checks **structure** only:
-- Is `lan.hosts` an attribute set? ✓
-- Are IPs in valid CIDR format? ✓
-- Are there duplicate IPs? ✓
-
-But doesn't check **cross-section consistency**:
-- Forwarding rules target IPs that exist in `lan.hosts`? ✗
-- Nginx proxy backends point to valid host IPs? ✗
-- DNS static entries reference existing hosts? ✗
-- WireGuard peers are declared in `lan.hosts`? ✗
-
-### Implementation: Extended Validation
-
-#### 6.1 Add Cross-Reference Functions to `utils.nix`
-
-```nix
-# lib/topology/utils.nix (additions)
-
-{
-  # ... existing functions ...
-  
-  # Check if an IP is in any declared host
-  isValidIP = topology: ip:
-    lib.any (host: host.ip == ip) (builtins.attrValues topology.lan.hosts);
-  
-  # Check if a hostname is in hosts
-  hostExists = topology: hostname:
-    builtins.hasAttr hostname topology.lan.hosts;
-  
-  # Get host by name
-  getHost = topology: hostname:
-    topology.lan.hosts.${hostname} or
-      (throw "Host '${hostname}' not found in topology");
-  
-  # Extract IP from "host:port" string
-  parseHostPort = str:
-    let
-      parts = lib.strings.split ":" str;
-    in {
-      host = lib.elemAt parts 0;
-      port = if builtins.length parts > 1 
-             then lib.toInt (lib.elemAt parts 2)
-             else null;
-    };
-}
-```
-
-#### 6.2 Extend `validate.nix` with Cross-Section Checks
-
-```nix
-# lib/topology/validate.nix (additions)
-
-validateCrossReferences = topology:
-let
-  lib = import <nixpkgs/lib>;
-  
-  # Validation functions
-  checkForwardingRefs = 
-    let
-      rules = (topology.forwarding.tcp or []) ++ (topology.forwarding.udp or []);
-    in
-    builtins.map (rule:
-      let
-        hostIp = lib.head (lib.strings.split ":" rule.to);
-      in
-      if utils.isValidIP topology hostIp
-      then null
-      else "Forwarding rule targets non-existent IP: ${hostIp}"
-    ) rules;
-  
-  checkNginxRefs =
-    let
-      proxies = topology.nginx.proxies or {};
-    in
-    builtins.mapAttrs (vhost: backend:
-      let
-        hostIp = lib.head (lib.strings.split ":" backend);
-      in
-      if utils.isValidIP topology hostIp
-      then null
-      else "Nginx proxy '${vhost}' targets non-existent IP: ${hostIp}"
-    ) proxies;
-  
-  checkDnsRefs =
-    let
-      entries = topology.dns.static or [];
-    in
-    builtins.map (entry:
-      if utils.isValidIP topology entry.ip
-      then null
-      else "DNS entry '${entry.domain}' targets non-existent IP: ${entry.ip}"
-    ) entries;
-  
-  checkWireguardPeers =
-    let
-      peers = topology.wireguard.peers or [];
-    in
-    builtins.map (peer:
-      if utils.hostExists topology peer
-      then null
-      else "WireGuard peer '${peer}' not found in lan.hosts"
-    ) peers;
-  
-  # Collect all errors
-  allErrors = lib.flatten [
-    (lib.filter (x: x != null) (checkForwardingRefs))
-    (lib.filter (x: x != null) (checkNginxRefs))
-    (lib.filter (x: x != null) (checkDnsRefs))
-    (lib.filter (x: x != null) (checkWireguardPeers))
-  ];
-in
-{
-  valid = builtins.length allErrors == 0;
-  errors = allErrors;
-}
-```
-
-#### 6.3 Integration into Validation Flow
-
-Update `core-router.nix`:
-
-```nix
-let
-  # ... existing code ...
-  validator = import ../lib/topology/validate.nix { inherit lib; };
-  
-  # Structural validation
-  structuralValidation = validator.validateTopology topology;
-  
-  # Cross-reference validation
-  crossRefValidation = validator.validateCrossReferences topology;
-  
-  # Combined validation
-  allValid = structuralValidation.valid && crossRefValidation.valid;
-  allErrors = structuralValidation.errors ++ crossRefValidation.errors;
-in
-{
-  config = {
-    assertions = [
-      {
-        assertion = config.coreRouter.enable -> allValid;
-        message = "Topology validation failed: ${builtins.concatStringsSep "\n  " allErrors}";
-      }
-    ];
-  };
-}
-```
-
-### Test Suite for Validation
-
-Create `tests/topology-validation.nix`:
-
-```nix
-# tests/topology-validation.nix
-# Test suite for topology validation
-#
-# Run with: nix eval tests/topology-validation.nix
-
-{ pkgs ? import <nixpkgs> { } }:
-
-let
-  lib = pkgs.lib;
-  validate = import ../lib/topology/validate.nix { inherit lib; };
-  
-  # Test case: valid topology
-  validTopology = {
-    domain = "example.com";
-    lan = {
-      subnet = "10.0.0.0/24";
-      gateway = "10.0.0.1";
-      hosts = {
-        "host1" = { ip = "10.0.0.10"; };
-      };
-    };
-    wireguard.peers = [ "host1" ];
-    forwarding.tcp = [ { to = "10.0.0.10:80"; } ];
-  };
-  
-  # Test case: invalid forwarding reference
-  invalidForwarding = validTopology // {
-    forwarding.tcp = [ { to = "10.0.0.99:80"; } ];  # IP doesn't exist
-  };
-  
-  # Test case: invalid wireguard peer
-  invalidPeer = validTopology // {
-    wireguard.peers = [ "nonexistent" ];
-  };
-  
-  # Run tests
-  tests = {
-    valid = validate.validateCrossReferences validTopology;
-    invalidFwd = validate.validateCrossReferences invalidForwarding;
-    invalidPeer = validate.validateCrossReferences invalidPeer;
-  };
-in
-tests
-```
-
-### TG-012: Golden Test Scope Refinement (Optional Phase 5 Task)
-
-Currently golden tests capture full NixOS config (567 lines). Non-network changes break golden tests.
-
-**Option A**: Extract only network-relevant sections (WireGuard, Tailscale, DNS, firewall, nginx)
-
-```nix
-# In real-topology/default.nix
-let
-  fullConfig = ...; # existing
-  networkConfig = {
-    networking = fullConfig.networking;
-    services.dnsmasq = fullConfig.services.dnsmasq;
-    services.nginx = fullConfig.services.nginx;
-    services.tailscale = fullConfig.services.tailscale;
-  };
-in
-networkConfig
-```
-
-**Option B**: Create separate `golden.json` and `golden-network.json` targets
-
-**Recommendation**: **Option A** for simplicity. Narrowing scope reduces false positives.
-
-### Exit Criteria for Phase 5
-
-- [ ] Cross-reference validation functions added to `validate.nix`
-- [ ] `validateCrossReferences` integrated into `core-router.nix`
-- [ ] At least 5 test cases in `tests/topology-validation.nix` (valid, invalid fwd, invalid peer, invalid DNS, invalid nginx)
-- [ ] All test cases pass with expected results
-- [ ] Documentation updated with validation rules
-- [ ] TG-007 marked resolved
-- [ ] Optional: TG-012 resolved (golden scope narrowed)
-
----
-
-### 7.1 Cross-Service Validation Rules (IMPLEMENTATION GUIDE)
-
-This subsection defines the validation rules that enforce consistency across services. These rules are implemented in Phase 5 via assertions in `core-router.nix` and `enable-wg-topology.nix`.
-
-#### 7.1.1 Cross-Service Validation Pattern
-
-When a service connection is declared (e.g., nginx proxy points to backend IP), the system MUST validate that:
-1. The target IP exists in `lan.hosts`
-2. The transport layer supports the connection (WireGuard, LAN, Tailscale)
-3. Firewall rules allow the connection
-4. The target service is actually running
-
-#### 7.1.2 Validation Rules by Service Type
+When topology declares a service connection, it's validated:
 
 **WireGuard Peer Validation**:
-- [ ] Each declared peer exists in `lan.hosts` (by hostname)
-- [ ] Each peer has a WireGuard public key file at `secrets/public_keys/wireguard/wg_${hostname}_pub`
-- [ ] Peer's WireGuard IP is allocated in the correct subnet
-- [ ] Hub has WireGuard enabled and is reachable
-- **Validation Level**: ERROR (breaks network connectivity)
+- Each declared peer exists in topology
+- Each peer has public key file at standard path
+- Peer's WireGuard IP is in correct subnet
+- Hub is reachable
 
-**Nginx Reverse Proxy Validation**:
-- [ ] Backend IP exists in `lan.hosts`
-- [ ] Backend port is declared in the host's services config
-- [ ] Transport path between cortex-alpha and backend is enabled:
-  - LAN: Both on same subnet
-  - WireGuard: Backend is a WireGuard peer
-  - Tailscale: Both have Tailscale enabled
-- [ ] Firewall rules allow traffic on backend port
-- **Validation Level**: ERROR (breaks service accessibility)
+**Nginx Proxy Validation**:
+- Backend hostname exists
+- Backend port is valid
+- Transport path (WireGuard/LAN/Tailscale) is enabled
+- Firewall allows traffic
 
 **Port Forwarding Validation**:
-- [ ] Target IP exists in `lan.hosts`
-- [ ] Target port is declared in the host's services config
-- [ ] Transport path from WAN to target is enabled
-- [ ] Firewall rules allow the forward
-- **Validation Level**: ERROR (security risk if broken)
+- Target hostname exists
+- Target port is valid
+- Firewall allows forward
 
-**Static DNS Entry Validation**:
-- [ ] Target IP exists in `lan.hosts` OR is an external IP
-- [ ] If local IP: the service actually runs on that host
-- [ ] No duplicate DNS entries (different IPs for same domain)
-- **Validation Level**: WARNING (DNS misconfig is less critical than routing)
+**DNS Entry Validation**:
+- Target IP exists or is documented as external
+- No duplicate entries for same domain
 
-**Tailscale Route Validation**:
-- [ ] Advertised subnet matches declared LAN/WAN subnets
-- [ ] Advertising machine is Tailscale-enabled and hub is Tailscale-enabled
-- [ ] No conflicting routes (same subnet from different machines)
-- **Validation Level**: WARNING (advisory, not critical)
+### 6.2 Error vs Warning Policy
 
-#### 7.1.3 Concrete Example: Nginx Proxy Validation
+**Errors** (block deployment):
+- Missing peer in topology
+- Topology file invalid
+- Cross-reference validation fails
+- Critical invariants broken
 
-**Scenario**: Hub topology declares `code.johnbargman.net → 10.88.127.3:80`
+**Warnings** (log to build output):
+- Missing public key file (peer skipped)
+- Optional service not configured
+- Non-critical validation issues
 
-**Validation Checklist**:
+### 6.3 Missing File Handling
 
+**Missing public key file**:
 ```nix
-# In lib/topology/validate.nix
-
-validateNginxProxy = { lib, topology, utils }:
-  let
-    proxies = topology.nginx.proxies or {};
-  in
-  builtins.foldl' (acc: vhost:
-    let
-      backend = proxies.${vhost};
-      # Parse "10.88.127.3:80" → { ip: "10.88.127.3", port: 80 }
-      parsed = utils.parseHostPort backend;
-      targetHost = utils.getHost topology parsed.host or (throw "Invalid backend format: ${backend}");
-    in
-    acc ++ lib.optionals (!targetHost ? ip) [
-      "Nginx proxy '${vhost}' targets non-existent IP: ${parsed.host}"
-    ] ++ lib.optionals (!(targetHost.services or []) |> lib.any (s: s.port == parsed.port)) [
-      "Nginx proxy '${vhost}' backend port ${toString parsed.port} not declared for ${parsed.host}"
-    ] ++ lib.optionals (!(utils.canReach topology "cortex-alpha" targetHost)) [
-      "Nginx proxy '${vhost}' cannot reach backend (no WireGuard/LAN/Tailscale path)"
-    ]
-  ) [] (builtins.attrNames proxies);
+# Log warning, skip peer
+warnings = [ "Missing public key for beta-one at secrets/public_keys/wireguard/wg_beta-one_pub" ];
+# Peer not included in config
 ```
 
-**Output if validation fails**:
+**Missing topology.nix**:
+```nix
+# Disable topology-driven networking
+# Log error during build
+```
+
+**Missing private key (secrix)**:
+```nix
+# Deployment fails with clear message
+# User must generate key and encrypt with secrix
+```
+
+---
+
+## Section 7: Implementation Roadmap
+
+### 7.1 Week-by-Week Timeline (Phase 1)
+
+**Week 1: Foundation**
+- Consolidate all existing per-machine topology data into single `topology.nix`
+- Create template `topology.nix` with current cortex-alpha + 3 client machines
+- Create `mkWireguardSettings.nix` (transformer for WireGuard)
+- Create `genWireguard.nix` (generator for WireGuard)
+- Verify cortex-alpha golden test still passes
+
+**Week 2: Expansion**
+- Create `mkNginxSettings.nix` + `genNginx.nix`
+- Create `mkFirewallSettings.nix` + `genFirewall.nix`
+- Create `mkDnsSettings.nix` + `genDns.nix`
+- Integrate all generators into `core-router.nix`
+- Test with 5 machines (cortex-alpha + 4 clients)
+
+**Week 3: Validation & Documentation**
+- Extend `lib/topology/validate.nix` for cross-service checks
+- Create test suite: `tests/topology-validation.nix`
+- Update AGENTS.md with new architecture
+- Update this document with Phase 2 details
+- All goldens still passing
+
+### 7.2 Phase 1 Exit Checklist
+
+- [ ] `topology.nix` exists with current cortex-alpha + sample clients
+- [ ] All mk*Settings follow `{ lib }: topology: { }` signature
+- [ ] All gen* follow `{ lib }: { settings, hostname }: { }` signature
+- [ ] `core-router.nix` uses new architecture
+- [ ] `enable-wg-topology.nix` works for hub + client
+- [ ] Cortex-alpha golden test passes
+- [ ] 5 test machines verified
+- [ ] Cross-service validation catches at least 3 error types
+- [ ] AGENTS.md updated with new signatures
+- [ ] All changes committed with clear messages
+
+### 7.3 Phase 2: Golden Coverage (Weeks 4-7)
+
+**Rollout Strategy**:
+
+**Tier 1** (Weeks 4-5): Simple clients
+- `local-nas` — Storage client
+- `storage-array` — Storage client
+
+**Tier 2** (Weeks 5-6): Clients with services
+- `terminal-zero` — Builder
+- `gaming-host-1` — Gaming
+
+**Tier 3** (Week 6-7): Complex services
+- `remote-worker` — Web server
+- `alpha-three` — Special service (zeroclaw)
+
+### 7.4 Phase 3: Coverage Meta-Test (Weeks 7-8)
+
+- Create `real-topology/coverage.nix` check
+- Add to `nix flake check`
+- Create `scripts/topology-report.sh`
+
+### 7.5 Phase 4: Validation (Weeks 8-10)
+
+- Extend `validate.nix` with cross-section checks
+- Create comprehensive test suite
+- Integrate into `core-router.nix`
+
+### 7.6 Phase 5: Extended Topologies (Weeks 10-15)
+
+- Implement hub-of-hubs pattern
+- Test with real sub-hub and leaf machines
+- Document complex routing patterns
+
+---
+
+## Section 8: Success Criteria
+
+### 8.1 Completion Definition
+
+**A topology-driven network is complete when**:
+
+1. **Single Source of Truth**: All network data in `topology.nix`, no duplicates elsewhere
+2. **Minimal Declarations**: Machine entries contain ONLY `wireguard`, `lan`, `uplink`, `peers`, `nginx-proxy`
+3. **Complete Derivation**: Every NixOS network config section is derived from topology data
+4. **Golden Coverage**: Every machine has golden test; tests pass
+5. **Cross-Service Validation**: Invalid references caught with clear error messages
+6. **Hub-Client Emergence**: Same generators work for both hub and client
+7. **Graceful Degradation**: Missing files/optional data don't break builds; only missing REQUIRED data fails
+8. **Documentation**: Architecture documented; team can add machines without guidance
+
+### 8.2 Metrics
+
+- **Topology Coverage**: % of machines in nixosConfigurations that have topology entries
+- **Golden Coverage**: % of machines with passing golden tests
+- **Validation Pass Rate**: % of topology evaluations passing cross-service checks
+- **Code Reduction**: Lines of inline network config removed / lines in topology.nix
+
+### 8.3 Demonstration
+
+By end of all phases:
+- Deploy new machine `new-host`: Add 1 entry to `topology.nix`, golden test auto-generates and passes
+- Rename machine: Update key in `topology.nix`, all configs update automatically
+- Change service port: Update `nginx-proxy` entry, firewall/nginx/DNS all update, golden test catches if rules break
+- Add hub: Update `peers` list in hub topology, all clients auto-configured, golden tests pass
+
+---
+
+## Section 9: Architecture Decisions & Rationale
+
+### 9.1 Why Single topology.nix?
+
+**Single File**:
+- One source of truth (no sync issues)
+- Easier to understand network holistically
+- Smaller surface area for validation
+- Simpler to version control
+
+**Alternative Considered**: Per-machine topology files (cortex-alpha.nix, beta-one.nix, etc.)
+- **Rejected**: Creates sync problems, hubs must import client files, client data duplication
+
+### 9.2 Why Two-Layer (Transformer + Generator)?
+
+**Transformer** (I/O + validation):
+- Centralizes all file reads
+- Single place to handle missing keys/files gracefully
+- Can validate full network holistically
+
+**Generator** (pure function):
+- Testable in isolation with mock data
+- Works for both hub and client (emergent distinction)
+- No side effects, deterministic
+
+**Alternative Considered**: Single function doing both
+- **Rejected**: Mixes I/O with logic, hard to test
+
+### 9.3 Why Minimal Data Declarations?
+
+**Principle**: Declare facts, derive opinions.
+
+- `wireguard = "10.88.127.1"` is a **fact** (machine's IP)
+- `listenPort = 2108` is an **opinion** derived from "this is a WireGuard interface"
+- `firewall.tcp = [22, 80, 443]` is an **opinion** derived from "this machine has SSH, nginx, etc."
+
+**Alternative Considered**: Declare everything (per-machine topology with full config)
+- **Rejected**: Leads to inconsistency, duplication, harder to change
+
+### 9.4 Why Assertions for Validation?
+
+**Assertions block deployment with clear message**: User sees exactly what's wrong.
+
+**Alternative Considered**: Build warnings only
+- **Rejected**: Broken configs would silently deploy
+
+---
+
+## Section 10: Troubleshooting Guide
+
+### 10.1 "Missing WireGuard public key"
+
+**Error**: 
+```
+WARNING: Missing public key for beta-one at secrets/public_keys/wireguard/wg_beta-one_pub
+```
+
+**Solution**:
+1. Generate key: `wg genkey > wg_beta-one`
+2. Extract public: `wg pubkey < wg_beta-one > wg_beta-one.pub`
+3. Encrypt private: `secrix encrypt wg_beta-one secrets/private_keys/wireguard/wg_beta-one`
+4. Commit public: `git add secrets/public_keys/wireguard/wg_beta-one.pub`
+5. Re-eval: `nix flake check`
+
+### 10.2 "Nginx backend not found"
+
+**Error**:
 ```
 assertion error:
-Topology validation failed:
-  - Nginx proxy 'code.johnbargman.net' targets IP 10.88.127.99 (not found in lan.hosts)
-  - Nginx proxy 'code.johnbargman.net' backend port 80 not declared for local-nas
-  - Nginx proxy 'code.johnbargman.net' backend 'local-nas' not reachable from cortex-alpha
+Nginx proxy 'grafana.johnbargman.net' targets unknown backend 'unknown-host'
 ```
 
-#### 7.1.4 Implementation in core-router.nix
+**Solution**:
+1. Check topology.nix: Is `unknown-host` an entry? If not, add it.
+2. If backend is external, use extended syntax:
+   ```nix
+   nginx-proxy = {
+     "grafana" = { backend = "192.168.1.50:3000"; };
+   };
+   ```
 
-```nix
-# modules/core-router.nix
+### 10.3 "Golden test mismatch"
 
-let
-  topology = import ../real-topology/${config.networking.hostName}.nix { inherit lib; };
-  topologyLib = import ../lib/topology { inherit lib self topology; };
-  
-  # Validation results
-  structuralValidation = topologyLib.validate.topology topology;
-  crossServiceValidation = {
-    wireguard = topologyLib.validate.wireguardPeers topology;
-    nginx = topologyLib.validate.nginxProxies topology;
-    forwarding = topologyLib.validate.portForwarding topology;
-    dns = topologyLib.validate.dnsEntries topology;
-    tailscale = topologyLib.validate.tailscaleRoutes topology;
-  };
-  
-  # Combine results
-  criticalErrors = (structuralValidation.errors or [])
-    ++ (crossServiceValidation.wireguard.errors or [])
-    ++ (crossServiceValidation.nginx.errors or [])
-    ++ (crossServiceValidation.forwarding.errors or []);
-    
-  allWarnings = (crossServiceValidation.dns.warnings or [])
-    ++ (crossServiceValidation.tailscale.warnings or []);
-in
-{
-  config = lib.mkIf config.coreRouter.enable {
-    assertions = [
-      {
-        assertion = builtins.length criticalErrors == 0;
-        message = "Topology validation FAILED:\n  " + 
-          builtins.concatStringsSep "\n  " criticalErrors;
-      }
-    ];
-    
-    # Log warnings to build output
-    system.extraSystemBuilderCmds = lib.optionalString (builtins.length allWarnings > 0)
-      ''
-        echo "TOPOLOGY WARNINGS (non-blocking):"
-        ${lib.concatMapStrings (w: "echo '  - ${w}'") allWarnings}
-      '';
-  };
-}
+**Error**:
+```
+golden test for cortex-alpha failed: output differs from golden file
 ```
 
-#### 7.1.5 Testing Cross-Service Validation
+**Solution**:
+1. Check what changed: `git diff -- topology.nix real-topology/golden/cortex-alpha.json`
+2. Is it intentional? If yes:
+   ```bash
+   nix run .#check-network -- cortex-alpha > real-topology/golden/cortex-alpha.json
+   git add real-topology/golden/cortex-alpha.json
+   git commit -m "topology: update golden for cortex-alpha (intentional change)"
+   ```
+3. If no, revert topology change and rebuild.
 
-Create `tests/cross-service-validation.nix`:
+### 10.4 "This machine not in topology"
 
-```nix
-# tests/cross-service-validation.nix
-
-{ pkgs ? import <nixpkgs> { } }:
-
-let
-  lib = pkgs.lib;
-  
-  # Test case: valid nginx proxy
-  validNginx = {
-    nginx.proxies.code = "http://10.88.127.3:80";
-    lan.hosts = {
-      "local-nas" = { ip = "10.88.127.3"; services = [ { name = "http"; port = 80; } ]; };
-    };
-  };
-  
-  # Test case: nginx backend IP doesn't exist
-  invalidNginxIP = validNginx // {
-    nginx.proxies.code = "http://10.88.127.99:80";  # IP doesn't exist
-  };
-  
-  # Test case: nginx backend port not declared
-  invalidNginxPort = validNginx // {
-    nginx.proxies.code = "http://10.88.127.3:8080";  # Port 8080 not declared for local-nas
-  };
-  
-  # Test case: valid WireGuard peer
-  validWG = {
-    lan.hosts.peer1 = { 
-      ip = "10.88.127.10"; 
-      routing.wireguard = true; 
-    };
-    wireguard.peers = [ "peer1" ];
-  };
-  
-  # Test case: WireGuard peer doesn't exist
-  invalidWGPeer = {
-    lan.hosts.peer1 = { ip = "10.88.127.10"; };
-    wireguard.peers = [ "nonexistent" ];
-  };
-  
-  # Import validator
-  validate = import ../lib/topology/validate.nix { inherit lib; };
-  
-  # Run tests
-  tests = {
-    nginx_valid = validate.nginxProxies validNginx;
-    nginx_invalid_ip = validate.nginxProxies invalidNginxIP;
-    nginx_invalid_port = validate.nginxProxies invalidNginxPort;
-    wg_valid = validate.wireguardPeers validWG;
-    wg_invalid_peer = validate.wireguardPeers invalidWGPeer;
-  };
-in
-tests
+**Error**:
+```
+assertion error:
+networking.hostName 'new-host' not found in topology.nix
 ```
 
-Run with: `nix eval tests/cross-service-validation.nix`
-
-#### 7.1.6 Exit Criteria for Cross-Service Validation Implementation
-
-- [ ] Cross-service validation functions implemented in `validate.nix`
-- [ ] All validation rules from Section 7.2 are checked
-- [ ] ERROR-level validations block deployment with clear messages
-- [ ] WARNING-level validations log to build output
-- [ ] Test cases in `tests/cross-service-validation.nix` pass
-- [ ] Documentation updated with validation rules
-- [ ] Integration test: intentionally create broken topology, verify error message
+**Solution**:
+1. Add entry to topology.nix:
+   ```nix
+   new-host = { wireguard = "10.88.127.99"; lan = { "10.88.128.99" = "eth0"; }; };
+   ```
+2. Generate golden: `nix run .#check-network -- new-host > real-topology/golden/new-host.json`
+3. Commit: `git add topology.nix real-topology/golden/new-host.json && git commit -m "topology: add new-host"`
 
 ---
 
-## Section 8: Remaining Design Questions for Discussion
+## Appendix: File Locations Reference
 
-These design decisions should be finalized **during Phase 1** implementation.
-
-**Status**: The Two-Layer Architecture (Section 1) has RESOLVED the following previously open questions:
-- ✅ TG-003 (standardization approach): **RESOLVED** - Transformer/Generator pattern
-- ✅ Hub-Client model: **RESOLVED** - Unified generators, distinction is emergent from data
-- ✅ Client key management: **RESOLVED** - Use secrix for both hub and client
-- ✅ Standard import path: **RESOLVED** - Use `lib/topology/default.nix` (see Phase 1 implementation)
-- ✅ Cross-service validation: **RESOLVED** - See Section 7 implementation rules
-
-Remaining design questions below (non-blocking, finalize as needed):
-
-### 8.1 Cross-Service Validation: Error vs Warning by Type
-
-**Question**: Should cross-reference validation be **error** (block deployment) or **warning** (logged but allowed)? Should it vary by service type?
-
-```
-All-Error:       Any invalid reference = deployment fails (strictest)
-All-Warning:     Any invalid reference = build succeeds, logged (most permissive)
-Mixed:           Error for critical (forwarding, WG peers), Warning for optional (DNS, nginx)
-```
-
-**Critical vs Optional**:
-- **Critical** (should ERROR): Forwarding rules, WireGuard peers, core network paths
-  - Rationale: Broken routing = network outage, security risk
-- **Optional** (should WARN): DNS entries, deprecated services, nginx backends
-  - Rationale: May be intentional (e.g., DNS for decommissioned service)
-
-**Recommendation**: **Mixed approach** - Error for network infrastructure, Warning for services. Table in Section 1.6 defines rules.
-
----
-
-### 8.2 Golden Test Scope: Full Config vs Network-Only
-
-**Question**: Should golden files capture full NixOS config or only network-relevant sections?
-
-```
-Full Config:     Current behavior, catches all changes
-Network Only:    Narrow to networking/services sections
-Dual Targets:    Both `golden.json` and `golden-network.json`
-```
-
-**Trade-off**:
-- Full: Catches accidental config changes elsewhere
-- Network Only: Reduces false positives from non-network changes, clearer intent
-- Dual: More complex, harder to maintain
-
-**Recommendation**: **Network Only** (Phase 5) - Scope to networking, dnsmasq, nginx, tailscale, nftables sections to reduce false positives.
-
----
-
-### 8.3 ARM Machine Topology Coverage
-
-**Question**: Do ARM machines (Raspberry Pi displays, print-controller, beta-one) need topology files?
-
-```
-Yes (full coverage): All machines topology-driven, consistent pattern
-No (skip): Only x86_64, ARM machines stay inline
-Partial: Only ARM machines with network services (print-controller)
-```
-
-**Factors**:
-- Print-controller: Has Klipper service, likely special network config → candidate for Phase 4
-- Display-* machines: Stateless, may not benefit → defer or skip
-- Beta-one: Unknown current role → check and decide
-
-**Recommendation**: Include **print-controller** in Phase 4 (service-driven). Defer display-* and beta-one to Phase 5 or future.
-
----
-
-### 8.4 Scope: Should All Client Machines Use Topology?
-
-**Question**: Should **all** 23 machines eventually be topology-driven, or only network-critical ones?
-
-```
-Full Coverage: 23 machines (x86_64 + ARM), all topology-driven
-Partial:       Only hub + network-heavy machines (8-10 machines)
-Hub Only:      Just cortex-alpha, others inline (minimal effort)
-```
-
-**Considerations**:
-- Effort: Full = 5-6 phases; Partial = 3 phases; Hub-only = done
-- Value: Full = unified pattern, easy onboarding; Partial = best ROI; Hub-only = low ROI (only 1 machine)
-- Desktop machines (gaming workstations, obs-box): Simple config, may not benefit
-
-**Recommendation**: **Partial Coverage** (Hub + network-critical: cortex-alpha, local-nas, storage-array, terminal-zero, remote-worker, gaming hosts with ports). Approximately 8-10 machines. Defer simple machines to future if pattern proves valuable.
-
----
-
-### 8.5 lib/topology Import Path
-
-**Question**: Should canonical import be `lib/topology.nix` or `lib/topology/default.nix`?
-
-```
-lib/topology.nix:          Direct import, split directory structure
-lib/topology/default.nix:  Indirect import, contained in topology dir
-```
-
-**Nix convention**: Use `default.nix` when importing a directory. Use `lib/topology.nix` only if treating topology as a single function module.
-
-**Recommendation**: **Use `lib/topology/default.nix`**. Import as `import ../lib/topology { inherit lib self topology; }`
-
----
-
-### 8.6 Hub Topology: Should It Reference Client Topologies?
-
-**Question**: Should hub topology (`cortex-alpha.nix`) import or reference client topology files for service discovery?
-
-```
-Separate:      Each machine has independent topology. Hub declares all hosts as data.
-Hub-Centric:   Hub topology imports all client topologies for automatic discovery.
-Hybrid:        Hub imports client topologies BUT only for validation, not for primary data.
-```
-
-**Trade-offs**:
-
-| Approach | Pro | Con |
+| File | Purpose | Status |
 |---|---|---|
-| **Separate** | Decoupled, easy to add/remove clients, no circular deps | Service discovery manual, more duplication |
-| **Hub-Centric** | Single source of truth, automatic service discovery | Hub topology gets large, circular dependency risk |
-| **Hybrid** | Validation without coupling to primary data | More complex |
-
-**Recommendation**: **Separate** (Phase 4). Hub topology declares clients in `lan.hosts` data. If service discovery becomes pain point in Phase 5+, upgrade to Hybrid approach.
-
----
-
----
-
-## Section 9: Implementation Roadmap
-
-### Phased Timeline (Estimated)
-
-```
-Week 1 (Design & Prep)
-  - [ ] Resolve open questions (Section 8)
-  - [ ] Finalize standardization approach (TG-003)
-  - [ ] Create Phase 1 PR with design decisions
-  - [ ] Update AGENTS.md with final API
-
-Week 2-4 (Phase 1: Standardize Library)
-  - [ ] Refactor mkWireguardPeers.nix (keys as argument)
-  - [ ] Standardize remaining mk*.nix functions
-  - [ ] Create lib/topology/default.nix (canonical export)
-  - [ ] Update core-router.nix to use new API
-  - [ ] Verify golden test still passes (cortex-alpha)
-  - [ ] Commit Phase 1 changes
-
-Week 5-8 (Phase 2: Golden Coverage)
-  - [ ] Tier 1: local-nas, storage-array (Week 5)
-  - [ ] Tier 2: terminal-zero, gaming-hosts (Week 6)
-  - [ ] Tier 3: remote-worker, LINDA, alpha-three (Week 7)
-  - [ ] Tier 4: cleanup, remaining (Week 8)
-  - [ ] Visual audit all 18 topologies
-
-Week 9 (Phase 3: Coverage Test)
-  - [ ] Implement topology-coverage.nix
-  - [ ] Integrate with nix flake check
-  - [ ] Create scripts/topology-report.sh
-  - [ ] Add to CI/CD pipeline
-
-Week 10-12 (Phase 4: Client Generators)
-  - [ ] mkWireguardClient.nix, mkTailscaleClient.nix
-  - [ ] modules/enable-wg-topology.nix
-  - [ ] Test with 5 client machines
-  - [ ] Secrix integration for client keys
-  - [ ] Hub-client topology model design finalized
-
-Week 13-14 (Phase 5: Cross-Section Validation)
-  - [ ] Extend validate.nix with cross-references
-  - [ ] Implement tests/topology-validation.nix
-  - [ ] Integrate into core-router.nix
-  - [ ] Optional: Narrow golden scope (TG-012)
-  - [ ] Full test suite passes
-
-Week 15+ (Future)
-  - [ ] ARM machine coverage (beta-one, print-controller)
-  - [ ] Topology-driven service discovery
-  - [ ] Hub topology auto-aggregation from clients
-```
-
-### Checkpoint Decisions
-
-Before moving to next phase, confirm:
-
-**After Phase 1**:
-- [ ] All mk*.nix functions have consistent signature
-- [ ] core-router.nix uses unified API
-- [ ] cortex-alpha golden test still passes
-
-**After Phase 2**:
-- [ ] 18 x86_64 machines have topology + golden files
-- [ ] All topologies pass validation
-- [ ] No golden regressions
-
-**After Phase 3**:
-- [ ] Coverage test integrated in CI/CD
-- [ ] Progress report shows 100% x86_64 coverage (or documented reasons for exceptions)
-
-**After Phase 4**:
-- [ ] At least 5 client machines using topology-driven config
-- [ ] WireGuard client config removed hardcoded cortex-alpha references
-- [ ] secrix integration verified
-
-**After Phase 5**:
-- [ ] Cross-reference validation catches invalid references
-- [ ] Test suite comprehensive
-- [ ] Documentation complete
+| `topology.nix` | Single source of truth for entire network | Phase 1 |
+| `lib/topology/mkWireguardSettings.nix` | Transformer for WireGuard config | Phase 1 |
+| `lib/topology/genWireguard.nix` | Generator for WireGuard (hub + client) | Phase 1 |
+| `lib/topology/mkNginxSettings.nix` | Transformer for nginx proxies | Phase 2 |
+| `lib/topology/genNginx.nix` | Generator for nginx | Phase 2 |
+| `lib/topology/validate.nix` | Validation functions | Phase 4 |
+| `lib/topology/utils.nix` | Helper functions | Phase 1 |
+| `real-topology/golden/` | Golden test files (one per machine) | Phase 2+ |
+| `modules/core-router.nix` | Hub machine module (uses topology) | Phase 1 |
+| `modules/enable-wg-topology.nix` | Unified hub+client module | Phase 1 |
+| `tests/topology-validation.nix` | Validation test suite | Phase 4 |
+| `scripts/topology-report.sh` | Coverage report script | Phase 3 |
 
 ---
 
-## Section 10: Risk Mitigation
-
-### High-Risk Items
-
-| Risk | Phase | Mitigation |
-|------|-------|-----------|
-| **TG-003 breaking change** | 1 | Phased rollout; compatibility wrapper for 1 release; test heavily |
-| **Golden test regression** | 1-2 | Keep cortex-alpha as canary; run golden test on every change |
-| **Data entry errors in topology files** | 2 | Validation script; visual audit per machine; diff against existing config |
-| **Service outage during client migration** | 4 | Test on non-critical machines first; keep inline config as fallback |
-| **Circular dependencies** | 4 | Use separate client topologies, not hub-centric aggregation |
-| **Validation overly strict** | 5 | Start with warnings; escalate to errors only for critical cases |
-
-### Testing Strategy
-
-1. **Unit tests**: Validation functions, transformation functions (create `tests/` directory)
-2. **Integration tests**: Golden test per machine; comparison across revisions
-3. **Smoke tests**: Deploy to test machine; verify WireGuard, Tailscale, DNS functional
-4. **Regression tests**: Golden files catch unexpected config changes
-
-### Rollback Plan
-
-If Phase N breaks critical functionality:
-1. Revert most recent commit
-2. Debug issue in isolated branch
-3. Create test case that catches regression
-4. Fix and re-submit
-
----
-
-## Section 11: Success Criteria
-
-### Overall Success Metrics
-
-- [ ] 18 x86_64 machines have topology files (100% coverage)
-- [ ] 18 golden tests generated and pass (no regressions)
-- [ ] Cross-reference validation prevents at least 1 real bug during rollout
-- [ ] All mk*.nix functions use uniform signature
-- [ ] Documentation updated and tutorials written
-- [ ] Zero production outages caused by topology migration
-- [ ] Team can add new machine to topology in <30 minutes
-
-### Per-Phase Success
-
-**Phase 1**: API is cleaner, no golden regressions  
-**Phase 2**: 18 machines have topologies, all validated  
-**Phase 3**: Topology coverage is visible in CI/CD  
-**Phase 4**: Client machines can use topology-driven networking  
-**Phase 5**: Invalid topologies are caught at eval time  
-
----
-
-## Section 12: Documentation Requirements
-
-### Documents to Create/Update
-
-| Document | Phase | Owner |
-|----------|-------|-------|
-| AGENTS.md | 1 | Update mk*.nix API docs |
-| topology-schema.md | 2 | Expand client topology examples |
-| lib/topology/default.nix | 1 | Add docstring explaining exports |
-| documentation/phase-2-rollout-log.md | 2 | Per-machine notes, blockers |
-| documentation/client-topology-guide.md | 4 | How to create client topology file |
-| documentation/lib-topology-design.md | 7 | Design decisions from Section 8 |
-| tests/topology-validation.nix | 5 | Test suite documentation |
-| README for real-topology/ | 1-5 | Overview of topology structure |
-
-### Example Documentation: Client Topology Guide
-
-```markdown
-# Client Topology Configuration Guide
-
-## Overview
-
-Client machines (non-hub machines) declare their position in the network
-and how to reach the hub. This guide explains how to create a client topology file.
-
-## Quick Start
-
-Copy the template and customize:
-
-\`\`\`bash
-cp real-topology/_template.nix real-topology/<hostname>.nix
-\`\`\`
-
-Edit with your machine's details:
-
-\`\`\`nix
-{ lib }:
-{
-  domain = "johnbargman.net";
-  
-  lan = {
-    subnet = "10.88.128.0/24";
-    gateway = "10.88.128.1";
-    hosts.<hostname> = {
-      ip = "10.88.128.XX";
-      mac = "aa:bb:cc:dd:ee:ff";
-      routing = { tailscale = true; wireguard = true; };
-    };
-  };
-  
-  hub = {
-    name = "cortex-alpha";
-    wireguard = {
-      interface = "wireg0";
-      ip = "10.88.130.XX/24";
-      endpoint = "cortex-alpha.johnbargman.net";
-      endpointPort = 51820;
-    };
-    tailscale = {
-      enable = true;
-    };
-  };
-}
-\`\`\`
-
-## Fields Explained
-
-- **domain**: Your network domain
-- **lan.subnet**: The subnet your machine is on
-- **lan.hosts.<hostname>**: Your machine's static IP and MAC
-- **hub.wireguard**: WireGuard client config (if `routing.wireguard = true`)
-- **hub.tailscale**: Tailscale client config (if `routing.tailscale = true`)
-
-## Validation
-
-Run `nix flake check` to validate your topology.
-
-## Deployment
-
-Machine imports modules/enable-wg-topology to use the topology:
-
-\`\`\`nix
-# machines/<hostname>/default.nix
-{
-  imports = [
-    ../../modules/enable-wg-topology
-  ];
-  
-  secrix.services.wireguard-wireg0.secrets.<hostname>.encrypted.file =
-    ../../secrets/private_keys/wireguard/wg_<hostname>;
-}
-\`\`\`
-
-## WireGuard Private Key Setup
-
-The private key is encrypted and managed by secrix:
-
-\`\`\`bash
-# Generate key (one-time setup)
-wg genkey > wg_<hostname>
-wg pubkey < wg_<hostname> > wg_<hostname>.pub
-
-# Encrypt with secrix
-secrix encrypt wg_<hostname> secrets/private_keys/wireguard/wg_<hostname>
-
-# Commit public key
-git add secrets/public_keys/wireguard/wg_<hostname>.pub
-\`\`\`
-
-## Troubleshooting
-
-**Error: "Host not found in topology"**  
-→ Verify your hostname matches `networking.hostName` and is in `lan.hosts`
-
-**Error: "Hub config missing 'wireguard' section"**  
-→ Set `hub.wireguard` if `routing.wireguard = true`
-
-**WireGuard interface doesn't come up**  
-→ Check secrix is decrypting the key: `systemctl status secrix-decrypt`
-```
-
----
-
-## Appendix A: Glossary
-
-| Term | Definition |
-|------|-----------|
-| **Hub** | Central router machine managing entire network (cortex-alpha) |
-| **Client** | Non-hub machine connecting to hub via WireGuard/Tailscale |
-| **Topology** | Network reality file (real-topology/<hostname>.nix) |
-| **Golden Test** | Captured config snapshot for regression testing |
-| **Transformation Function** | mk*.nix function converting topology data to NixOS config |
-| **Validation** | Structural (schema check) and cross-reference (consistency check) |
-| **Cross-Reference** | Reference from one section to another (e.g., forwarding → IP) |
-
----
-
-## Appendix B: File Structure After All Phases
-
-```
-real-topology/
-├── _template.nix
-├── cortex-alpha.nix              (hub)
-├── local-nas.nix                 (client)
-├── storage-array.nix             (client)
-├── terminal-zero.nix             (client)
-├── terminal-nx-01.nix            (client)
-├── alpha-one.nix                 (client)
-├── alpha-two.nix                 (client)
-├── alpha-three.nix               (client)
-├── LINDA.nix                     (client)
-├── gaming-host-1.nix             (client)
-├── remote-worker.nix             (client)
-├── remote-builder.nix            (client)
-├── default.nix                   (golden test generator)
-└── golden/
-    ├── cortex-alpha.json
-    ├── local-nas.json
-    ├── storage-array.json
-    ├── terminal-zero.json
-    ├── ... (15+ total)
-
-lib/topology/
-├── default.nix                   (canonical export, Phase 1)
-├── mkWireguardPeers.nix          (refactored, Phase 1)
-├── mkTailscaleConfig.nix         (standardized, Phase 1)
-├── mkDhcpDns.nix                 (standardized, Phase 1)
-├── mkNginxProxies.nix            (standardized, Phase 1)
-├── mkForwarding.nix              (error handling, Phase 1)
-├── mkWireguardClient.nix         (new, Phase 4)
-├── mkTailscaleClient.nix         (new, Phase 4)
-├── validate.nix                  (extended, Phase 5)
-├── utils.nix                     (extended, Phase 5)
-
-modules/
-├── core-router.nix               (refactored to use lib/topology, Phase 1)
-├── enable-wg-topology.nix        (new, Phase 4)
-
-tests/
-├── topology-validation.nix       (new, Phase 5)
-├── topology-coverage.nix         (new, Phase 3)
-
-documentation/
-├── topology-expansion-plan.md    (this document)
-├── lib-topology-design.md        (design decisions, Phase 1)
-├── client-topology-guide.md      (new, Phase 4)
-├── phase-2-rollout-log.md        (new, Phase 2)
-├── topology-generator-issues.md  (updated with resolutions)
-```
-
----
-
-## Appendix C: Script Templates
-
-### Phase 2: Topology Creation Script
-
-```bash
-#!/usr/bin/env bash
-# scripts/create-topology.sh <hostname>
-# Quick topology file creation for a machine
-
-set -e
-
-HOSTNAME="${1:?Usage: create-topology.sh <hostname>}"
-REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-TOPOLOGY_FILE="$REPO_ROOT/real-topology/$HOSTNAME.nix"
-
-if [ -f "$TOPOLOGY_FILE" ]; then
-  echo "Topology file already exists: $TOPOLOGY_FILE"
-  exit 1
-fi
-
-# Get IP from machine config or prompt user
-if [ -f "$REPO_ROOT/machines/$HOSTNAME/default.nix" ]; then
-  IP=$(grep -oP 'networking\.interfaces\.[^ ]+.*ip = "\K[^"]+' "$REPO_ROOT/machines/$HOSTNAME/default.nix" 2>/dev/null | head -1)
-fi
-
-IP="${IP:-10.88.128.XXX}"
-
-# Create topology file
-cat > "$TOPOLOGY_FILE" << EOF
-{ lib }:
-{
-  domain = "johnbargman.net";
-  
-  lan = {
-    subnet = "10.88.128.0/24";
-    gateway = "10.88.128.1";
-    hosts.$HOSTNAME = {
-      ip = "$IP";
-      mac = "TODO";
-      routing = {
-        tailscale = false;
-        wireguard = false;
-      };
-    };
-  };
-}
-EOF
-
-echo "Created: $TOPOLOGY_FILE"
-echo "Edit the file and replace TODO values, then run: nix flake check"
-```
-
-### Phase 3: Coverage Report
-
-```bash
-#!/usr/bin/env bash
-# scripts/topology-report.sh
-
-REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-cd "$REPO_ROOT"
-
-echo "=== Topology Coverage Report ==="
-echo ""
-
-# Extract x86_64 machines from flake.nix
-X86_MACHINES=$(nix eval --json '.#nixosConfigurations' 2>/dev/null | jq -r 'keys[]' | sort)
-
-COVERED=0
-TOTAL=0
-
-for machine in $X86_MACHINES; do
-  TOTAL=$((TOTAL + 1))
-  
-  if [ -f "real-topology/$machine.nix" ]; then
-    if [ -f "real-topology/golden/$machine.json" ]; then
-      echo "  ✓ $machine (topology + golden)"
-      COVERED=$((COVERED + 1))
-    else
-      echo "  ~ $machine (topology, no golden)"
-    fi
-  else
-    echo "  ✗ $machine (missing topology)"
-  fi
-done
-
-echo ""
-PERCENT=$((COVERED * 100 / TOTAL))
-echo "Coverage: $COVERED/$TOTAL machines ($PERCENT%)"
-```
-
----
-
-**End of Document**
-
----
-
-**Document Control**:
-- **Status**: Planning (Pre-Implementation)
-- **Last Updated**: 2026-05-06
-- **Next Review**: After Phase 1 completion
-- **Owner**: DarthPJB NixOS Configuration Maintainers
+**Last Updated**: 2026-05-06  
+**Next Review**: After Phase 1 completion  
+**Maintainer**: Architecture Team
