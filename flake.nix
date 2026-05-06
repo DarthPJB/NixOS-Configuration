@@ -50,6 +50,7 @@
                 features.rust = false;
               };
 
+              nixpkgs.hostPlatform = "x86_64-linux";
               nix.registry.nixpkgs.flake = nixpkgs_stable;
               networking.hostName = hostname;
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;

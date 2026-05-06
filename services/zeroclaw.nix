@@ -23,7 +23,7 @@
 
   services.zeroclaw = {
     enable = true;
-    mutableConfig = false;  # Critical: always regenerate from Nix
+    mutableConfig = false; # Critical: always regenerate from Nix
 
     channels.mattermost.secretFiles.bot_token =
       config.secrix.services.zeroclaw.secrets.openclaw-alpha-mattermost.decrypted.path;

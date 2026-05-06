@@ -4,7 +4,7 @@
     "fs.inotify.max_user_watches": 524288,
     "kernel.kptr_restrict": 1,
     "kernel.pid_max": 4194304,
-    "kernel.poweroff_cmd": "/nix/store/1vs3gbz4w3wrqs76z8iay5cidwrv2hy6-systemd-258.3/sbin/poweroff",
+    "kernel.poweroff_cmd": "/nix/store/y2rzx7s3kr3v95rsrl2141s8vaa4mkjf-systemd-258.5/sbin/poweroff",
     "kernel.printk": "7 7 7 7",
     "net.core.rmem_max": null,
     "net.core.wmem_max": null,
@@ -18,7 +18,9 @@
     "net.ipv6.conf.default.use_tempaddr": "2",
     "net.ipv6.conf.enp2s0.use_tempaddr": "2",
     "net.ipv6.conf.enp3s0.use_tempaddr": "2",
-    "vm.max_map_count": 1048576
+    "vm.max_map_count": 1048576,
+    "vm.mmap_rnd_bits": 32,
+    "vm.mmap_rnd_compat_bits": 16
   },
   "environment.systemPackages": [
     "tailscale",
@@ -138,14 +140,18 @@
       ],
       "allowedUDPPortRanges": [],
       "allowedUDPPorts": [
-        443,
-        1108,
         2108,
+        2207,
         4171,
         4175,
         4179,
-        4549,
-        41641
+        17780,
+        17781,
+        17782,
+        17783,
+        17784,
+        17785,
+        27015
       ]
     },
     "enp3s0": {
@@ -212,7 +218,9 @@
   "networking.nftables.ruleset": "<ruleset-string>",
   "networking.tailscale.advertisedRoutes": [
     "10.88.128.88/32",
-    "10.88.128.248/32"
+    "10.88.127.107/32",
+    "10.88.128.248/32",
+    "10.88.128.247/32"
   ],
   "networking.wireguard.enable": true,
   "networking.wireguard.interfaces": {
@@ -364,7 +372,7 @@
       "18:26:49:c5:48:24,10.88.128.89,LINDACORE,infinite",
       "18:c0:4d:8d:53:6c,10.88.128.87,LINDACORE,infinite",
       "18:c0:4d:8d:53:6d,10.88.128.88,LINDACORE,infinite",
-      "52:54:00:e9-4a:af,10.88.128.24,LINDA-WM,infinite",
+      "52:54:00:e9:4a:af,10.88.128.24,LINDA-WM,infinite",
       "70:54:d2:17:d1:c4,10.88.128.23,terminal-nx-01,infinite",
       "b8:27:eb:7f:f0:38,10.88.128.10,print-controller,infinite",
       "dc:85:de:86:a8:77,10.88.128.22,terminal-nx-01,infinite",
@@ -559,7 +567,7 @@
   "services.prometheus.exporters.node.port": 3100,
   "services.tailscale.enable": true,
   "services.tailscale.extraSetFlags": [
-    "--advertise-routes=10.88.128.88/32,10.88.128.248/32"
+    "--advertise-routes=10.88.128.88/32,10.88.127.107/32,10.88.128.248/32,10.88.128.247/32"
   ],
   "services.tailscale.useRoutingFeatures": "server",
   "systemd.services.tailscale-udp-gro.enable": true,

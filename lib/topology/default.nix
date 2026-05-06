@@ -1,16 +1,25 @@
 # lib/topology/default.nix
-# Topology transformation library - consumes real-topology data
-{ lib, ... }:
-{
-  # Placeholder for future mk* functions that will transform real-topology
-  # into WireGuard peers, nftables rules, Tailscale config, etc.
-  mkWireguardPeers = topology: [ ];
-  mkTailscaleConfig = topology: { };
-  mkNftablesConfig = topology: "";
-  mkDhcpConfig = topology: [ ];
+# Topology transformation library entry point
+#
+# Individual transformation functions are in separate files:
+#   mkWireguardPeers.nix  - WireGuard peer configuration
+#   mkTailscaleConfig.nix - Tailscale subnet router config
+#   mkDhcpDns.nix         - DNS/DHCP (dnsmasq) configuration
+#   mkNginxProxies.nix    - Nginx reverse proxy configuration
+#   mkForwarding.nix      - nftables DNAT/masquerade rules
+#   validate.nix          - Topology structural validation
+#   utils.nix             - Shared utility functions
+#
+# These are imported directly by modules/core-router.nix.
+{ lib }:
 
-  # Filter config tree to only networking-relevant parts
-  filterConfig =
-    config: filterTerms:
-    lib.filterAttrsRecursive (name: value: lib.any (term: lib.hasPrefix term name) filterTerms) config;
+{
+  # Re-export all transformation functions for convenience
+  mkWireguardPeers = import ./mkWireguardPeers.nix { inherit lib; };
+  mkTailscaleConfig = import ./mkTailscaleConfig.nix { inherit lib; };
+  mkDhcpDns = import ./mkDhcpDns.nix { inherit lib; };
+  mkNginxProxies = import ./mkNginxProxies.nix { inherit lib; };
+  mkForwarding = import ./mkForwarding.nix { inherit lib; };
+  validate = import ./validate.nix { inherit lib; };
+  utils = import ./utils.nix { inherit lib; };
 }
