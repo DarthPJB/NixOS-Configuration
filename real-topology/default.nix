@@ -44,7 +44,7 @@ let
       lib.mapAttrs (name: extractIface) ifaces;
 
     # NAT and firewall
-    "networking.nat.enable" = config: config.networking.nat.enable;
+    "networking.nat.enable" = config: config.networking.nat.enable or false;
     "networking.nat.internalInterfaces" = config: config.networking.nat.internalInterfaces or [ ];
     "networking.nat.externalInterface" = config: config.networking.nat.externalInterface or null;
     "networking.nftables.enable" = config: config.networking.nftables.enable;
@@ -59,11 +59,11 @@ let
     "networking.firewall.interfaces" = config: config.networking.firewall.interfaces;
 
     # WireGuard
-    "networking.wireguard.enable" = config: config.networking.wireguard.enable;
+    "networking.wireguard.enable" = config: config.networking.wireguard.enable or false;
     "networking.wireguard.interfaces" =
       config:
       let
-        wg = config.networking.wireguard.interfaces;
+        wg = config.networking.wireguard.interfaces or {};
       in
       lib.mapAttrs
         (name: iface: {
@@ -73,22 +73,22 @@ let
               inherit (p) allowedIPs;
               publicKey = "<redacted>";
             })
-            iface.peers;
+            (iface.peers or []);
         })
         wg;
 
     # Tailscale
-    "services.tailscale.enable" = config: config.services.tailscale.enable;
-    "services.tailscale.useRoutingFeatures" = config: config.services.tailscale.useRoutingFeatures;
-    "services.tailscale.extraSetFlags" = config: config.services.tailscale.extraSetFlags;
-    "networking.tailscale.advertisedRoutes" = config: config.networking.tailscale.advertisedRoutes;
+    "services.tailscale.enable" = config: config.services.tailscale.enable or false;
+    "services.tailscale.useRoutingFeatures" = config: config.services.tailscale.useRoutingFeatures or null;
+    "services.tailscale.extraSetFlags" = config: config.services.tailscale.extraSetFlags or [];
+    "networking.tailscale.advertisedRoutes" = config: config.networking.tailscale.advertisedRoutes or [];
 
     # DNS/DHCP
-    "services.dnsmasq.enable" = config: config.services.dnsmasq.enable;
-    "services.dnsmasq.settings" = config: config.services.dnsmasq.settings;
+    "services.dnsmasq.enable" = config: config.services.dnsmasq.enable or false;
+    "services.dnsmasq.settings" = config: config.services.dnsmasq.settings or {};
 
     # Nginx
-    "services.nginx.enable" = config: config.services.nginx.enable;
+    "services.nginx.enable" = config: config.services.nginx.enable or false;
     "services.nginx.virtualHosts" =
       config:
       lib.mapAttrs
@@ -103,7 +103,7 @@ let
             })
             (vhost.locations or { });
         })
-        config.services.nginx.virtualHosts;
+        (config.services.nginx.virtualHosts or {});
 
     # Prometheus exporters
     "services.prometheus.exporters.node.enable" =
