@@ -26,9 +26,7 @@
     enable = true;
     serverName = "Fox and Wolf";
     serverNote = "Co-op adventures await - join the pack!";
-    maxPlayers = 4;
     openFirewall = true;
-    useDirectConnection = true;
   };
   services.space-engineers-docker = {
     enable = true;

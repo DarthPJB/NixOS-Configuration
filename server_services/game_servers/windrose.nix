@@ -95,21 +95,21 @@ in
       description = "Base directory for game data";
     };
 
-    steamHome = mkOption {
+    steamcmdDir = mkOption {
       type = types.path;
-      default = "/bulk-storage/windrose/steam-home";
-      description = "Wine prefix and SteamCMD state directory";
+      default = "/bulk-storage/windrose/steamcmd";
+      description = "Persistent SteamCMD directory mounted at /opt/steamcmd";
     };
 
     puid = mkOption {
       type = types.int;
-      default = 1000;
+      default = 29987;
       description = "Host user id for mounted files";
     };
 
     pgid = mkOption {
       type = types.int;
-      default = 1000;
+      default = 29987;
       description = "Host group id for mounted files";
     };
 
@@ -144,7 +144,6 @@ in
     virtualisation.oci-containers.containers.${cfg.containerName} = {
       autoStart = true;
       image = cfg.image;
-      hostname = "localhost";
       environment = {
         PUID = toString cfg.puid;
         PGID = toString cfg.pgid;
@@ -165,7 +164,8 @@ in
         USER_SELECTED_REGION = cfg.userSelectedRegion;
         MULTIHOME = "0.0.0.0";
         WINEARCH = "win64";
-        WINEPREFIX = "/home/steam/.wine";
+        STEAM_HOME = "/data/steam-home";
+        WINEPREFIX = "/data/steam-home/.wine";
         WINEDEBUG = "-all";
         DISPLAY = ":99";
         PORT = toString cfg.port;
@@ -173,7 +173,7 @@ in
       } // cfg.extraEnvironment;
       volumes = [
         "${cfg.dataDir}:/data"
-        "${cfg.steamHome}:/home/steam"
+        "${cfg.steamcmdDir}:/opt/steamcmd"
       ];
       extraOptions = [
         "--network=host"
@@ -188,26 +188,36 @@ in
       ];
     };
 
-    users.users.windrose = {
-      description = "Windrose server service user";
-      home = cfg.dataDir;
-      createHome = true;
-      isSystemUser = true;
-      group = "windrose";
-      uid = cfg.puid;
-    };
-    users.groups.windrose = {
-      gid = cfg.pgid;
+    systemd.services.windrose-steamcmd-bootstrap = {
+      description = "Bootstrap SteamCMD into host directory for Windrose";
+      requiredBy = [ "docker-windrose.service" ];
+      before = [ "docker-windrose.service" ];
+      serviceConfig = {
+        Type = "oneshot";
+      };
+      path = with pkgs; [ curl gnutar gzip coreutils ];
+      script = ''
+        install -d -m 0755 "${cfg.steamcmdDir}"
+
+        if [ ! -f "${cfg.steamcmdDir}/steamcmd.sh" ]; then
+          tmpdir=$(mktemp -d)
+          trap 'rm -rf "$tmpdir"' EXIT
+          curl -fsSL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" -o "$tmpdir/steamcmd_linux.tar.gz"
+          tar -xzf "$tmpdir/steamcmd_linux.tar.gz" -C "${cfg.steamcmdDir}"
+          chmod +x "${cfg.steamcmdDir}/steamcmd.sh"
+        fi
+      '';
     };
 
     systemd.tmpfiles.rules = [
-      "d ${cfg.dataDir} 0755 windrose windrose -"
-      "d ${cfg.steamHome} 0755 windrose windrose -"
-      "d ${cfg.dataDir}/data 0755 windrose windrose -"
-      "d ${cfg.dataDir}/backups 0755 windrose windrose -"
-      "d ${cfg.dataDir}/logs 0755 windrose windrose -"
-      "d ${cfg.dataDir}/state 0755 windrose windrose -"
-      "d ${cfg.dataDir}/diagnostics 0755 windrose windrose -"
+      "d ${cfg.dataDir} 0755 root root -"
+      "d ${cfg.steamcmdDir} 0755 root root -"
+      "d ${cfg.dataDir}/steam-home 0755 root root -"
+      "d ${cfg.dataDir}/data 0755 root root -"
+      "d ${cfg.dataDir}/backups 0755 root root -"
+      "d ${cfg.dataDir}/logs 0755 root root -"
+      "d ${cfg.dataDir}/state 0755 root root -"
+      "d ${cfg.dataDir}/diagnostics 0755 root root -"
     ];
   };
 }
