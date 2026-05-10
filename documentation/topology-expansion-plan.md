@@ -902,9 +902,108 @@ By end of all phases:
 
 ---
 
-## Section 9: Architecture Decisions & Rationale
+## Section 9: Delegation Patterns and Workflow
 
-### 9.1 Why Single topology.nix?
+### 9.1 Fleet of Specialized Agents
+
+The project uses a fleet of specialized agents, each with distinct responsibilities:
+
+#### Primary Implementation
+- **bellana-grok-code**: Primary engineering agent for all Nix implementation tasks (transformers, generators, module integration, code changes)
+- **bellana-codex**: Used for reviews, tests, and periodic validation of bellana-grok-code's work
+
+#### Planning and Validation
+- **tpol-minimax**: Validates RESULTS of bellana-grok-code's work at periodic review stages. Also handles research prep and synthesis.
+- **hoshi-xai**: Validates DESIGNS before implementation. Also handles research and analysis tasks.
+
+#### Documentation
+- **ezri-claude-haiku**: Makes all documentation updates. Creates and maintains planning docs, architecture docs, and session status updates.
+
+#### Analysis
+- **tuvok-deepseek**: Logical analysis, adversarial probing, edge case detection. Used for test design and validation.
+
+### 9.2 Workflow Pattern
+
+For each discrete implementation step:
+
+```
+1. hoshi-xai validates the design (if design-related)
+2. bellana-grok-code implements
+3. tpol-minimax validates results at review stage
+4. bellana-codex runs reviews/tests periodically
+5. User approves before moving to next step
+```
+
+For documentation tasks:
+```
+1. ezri-claude-haiku writes/updates documentation
+2. User reviews
+```
+
+### 9.3 Agent Responsibilities by Phase
+
+#### Phase 1: Implement Single topology.nix + Transformer/Generator
+
+| Task | Agent | Notes |
+|------|-------|-------|
+| P1.1: Consolidate topology.nix | bellana-grok-code | Read existing real-topology/cortex-alpha.nix, create new topology.nix |
+| P1.2: Create mkWireguardSettings.nix | bellana-grok-code | Transformer: reads topology, reads key files, returns flat data |
+| P1.3: Create genWireguard.nix | bellana-grok-code | Generator: settings + hostname → NixOS wireguard config |
+| P1.4: Create mkNginxSettings.nix + genNginx.nix | bellana-grok-code | Transformer + generator for nginx |
+| P1.5: Create mkFirewallSettings.nix + genFirewall.nix | bellana-grok-code | Transformer + generator for firewall |
+| P1.6: Create mkDnsSettings.nix + genDns.nix | bellana-grok-code | Transformer + generator for DNS/DHCP |
+| P1.7: Integrate into core-router.nix | bellana-grok-code | Replace current imports with new pattern |
+| P1.8: Create enable-wg-topology.nix | bellana-grok-code | Unified hub+client WireGuard module |
+| P1.9: Verify cortex-alpha golden | tpol-minimax | Validate results |
+| P1.10: Test 5 machines | bellana-codex | Review and test |
+| P1.11: Update AGENTS.md | ezri-claude-haiku | Documentation |
+
+#### Phase 2: Golden Coverage
+
+| Task | Agent | Notes |
+|------|-------|-------|
+| P2.1: Add machines to topology.nix | bellana-grok-code | Data entry |
+| P2.2: Generate golden tests | bellana-grok-code | Scripted process |
+| P2.3: Visual audit | tpol-minimax | Validate results |
+
+#### Phase 3: Coverage Meta-Test
+
+| Task | Agent | Notes |
+|------|-------|-------|
+| P3.1: Create topology-coverage.nix | bellana-grok-code | Nix implementation |
+| P3.2: Integrate into flake check | bellana-grok-code | Flake integration |
+| P3.3: Create report script | bellana-grok-code | Shell scripting |
+
+#### Phase 4: Cross-Service Validation
+
+| Task | Agent | Notes |
+|------|-------|-------|
+| P4.1: Extend validate.nix | bellana-grok-code | Nix implementation |
+| P4.2: Create test suite | tuvok-deepseek (design) + bellana-grok-code (impl) | Test design + implementation |
+| P4.3: Integrate assertions | bellana-grok-code | Code integration |
+
+#### Phase 5: Extended Topologies
+
+| Task | Agent | Notes |
+|------|-------|-------|
+| P5.1: Hub-of-hubs pattern | tpol-minimax (design) + bellana-grok-code (impl) | Design + implementation |
+| P5.2: Complex routing | tpol-minimax (design) + bellana-grok-code (impl) | Design + implementation |
+| P5.3: Golden tests | bellana-grok-code | Implementation |
+
+### 9.4 Rules
+
+1. Always provide clear and complete instructions to each agent
+2. Run to completion to halting issues
+3. tpol-minimax validates results at periodic review stages
+4. hoshi-xai validates designs before implementation
+5. bellana-codex runs reviews/tests periodically
+6. ezri-claude-haiku makes all documentation updates
+
+---
+
+## Section 10: Architecture Decisions & Rationale
+
+### 10.1 Why Single topology.nix?
 
 **Single File**:
 - One source of truth (no sync issues)
@@ -915,7 +1014,7 @@ By end of all phases:
 **Alternative Considered**: Per-machine topology files (cortex-alpha.nix, beta-one.nix, etc.)
 - **Rejected**: Creates sync problems, hubs must import client files, client data duplication
 
-### 9.2 Why Two-Layer (Transformer + Generator)?
+### 10.2 Why Two-Layer (Transformer + Generator)?
 
 **Transformer** (I/O + validation):
 - Centralizes all file reads
@@ -930,7 +1029,7 @@ By end of all phases:
 **Alternative Considered**: Single function doing both
 - **Rejected**: Mixes I/O with logic, hard to test
 
-### 9.3 Why Minimal Data Declarations?
+### 10.3 Why Minimal Data Declarations?
 
 **Principle**: Declare facts, derive opinions.
 
@@ -941,7 +1040,7 @@ By end of all phases:
 **Alternative Considered**: Declare everything (per-machine topology with full config)
 - **Rejected**: Leads to inconsistency, duplication, harder to change
 
-### 9.4 Why Assertions for Validation?
+### 10.4 Why Assertions for Validation?
 
 **Assertions block deployment with clear message**: User sees exactly what's wrong.
 
@@ -950,9 +1049,9 @@ By end of all phases:
 
 ---
 
-## Section 10: Troubleshooting Guide
+## Section 11: Troubleshooting Guide
 
-### 10.1 "Missing WireGuard public key"
+### 11.1 "Missing WireGuard public key"
 
 **Error**: 
 ```
@@ -966,7 +1065,7 @@ WARNING: Missing public key for beta-one at secrets/public_keys/wireguard/wg_bet
 4. Commit public: `git add secrets/public_keys/wireguard/wg_beta-one.pub`
 5. Re-eval: `nix flake check`
 
-### 10.2 "Nginx backend not found"
+### 11.2 "Nginx backend not found"
 
 **Error**:
 ```
@@ -983,7 +1082,7 @@ Nginx proxy 'grafana.johnbargman.net' targets unknown backend 'unknown-host'
    };
    ```
 
-### 10.3 "Golden test mismatch"
+### 11.3 "Golden test mismatch"
 
 **Error**:
 ```
@@ -1000,7 +1099,7 @@ golden test for cortex-alpha failed: output differs from golden file
    ```
 3. If no, revert topology change and rebuild.
 
-### 10.4 "This machine not in topology"
+### 11.4 "This machine not in topology"
 
 **Error**:
 ```
