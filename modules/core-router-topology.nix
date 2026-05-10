@@ -45,10 +45,12 @@ in
           assertion = config.coreRouterTopology.enable -> (builtins.elem hostname (builtins.attrNames wireguardSettings.machines));
           message = "Machine ${hostname} not found in WireGuard topology";
         }
-      ] ++ builtins.map (warning: {
-        assertion = false;
-        message = "Topology warning: ${warning}";
-      }) allWarnings;
+      ] ++ builtins.map
+        (warning: {
+          assertion = false;
+          message = "Topology warning: ${warning}";
+        })
+        allWarnings;
     }
 
     # WireGuard configuration (hub and client)
