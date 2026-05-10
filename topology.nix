@@ -1,4 +1,4 @@
-{...}:
+{ ... }:
 {
   cortex-alpha = {
     wireguard = "10.88.127.1";

@@ -11,10 +11,12 @@ in
   networking.wireguard.interfaces.${machineSettings.interface} = {
     inherit (machineSettings) listenPort;
     ips = if isHub then machineSettings.hubIps else [ machineSettings.machineIp ];
-    peers = builtins.map (peer: {
-      inherit (peer) publicKey allowedIPs;
-      endpoint = peer.endpoint or null;
-      persistentKeepalive = if peer ? endpoint then 25 else null;
-    }) machineSettings.peers;
+    peers = builtins.map
+      (peer: {
+        inherit (peer) publicKey allowedIPs;
+        endpoint = peer.endpoint or null;
+        persistentKeepalive = if peer ? endpoint then 25 else null;
+      })
+      machineSettings.peers;
   };
 }
