@@ -467,7 +467,27 @@
     listenAddresses = [
       "10.88.128.1" # LAN gateway
       "10.88.127.1" # WireGuard IP
+      "82.5.173.252" # WAN IP
     ];
+
+    # Base virtual hosts that serve static content or default responses
+    baseVhosts = {
+      "_" = {
+        default = true;
+        useACMEHost = null;
+        locations."/".return = "444";
+      };
+      "johnbargman.net" = {
+        enableACME = true;
+        forceSSL = true;
+        root = ../../webroot;
+      };
+      "cortex-alpha.johnbargman.net" = {
+        useACMEHost = "johnbargman.net";
+        forceSSL = true;
+        root = ../../webroot;
+      };
+    };
 
     # Proxy definitions with full configuration
     # Pattern inspired by infrastructure-2/modules/proxy-host.nix

@@ -24,8 +24,8 @@ let
   inherit (utils) safeLookup;
 in
 rec {
-  # Default listen addresses for the hub
-  defaultListenAddresses = topology.nginx.listenAddresses or [
+  # Default listen addresses for the hub (LAN only, WAN added per vhost)
+  defaultListenAddresses = [
     topology.lan.gateway
     topology.lan.hosts.${topology.hostname}.ip
   ];
@@ -82,6 +82,42 @@ rec {
       };
     };
 
+  # Create a base virtualHost configuration
+  mkBaseHost =
+    { hostname
+    , baseConfig
+    ,
+    }:
+    let
+      # Default settings
+      enableACME' = baseConfig.enableACME or false;
+      forceSSL' = baseConfig.forceSSL or false;
+      useACMEHost' = baseConfig.useACMEHost or (if enableACME' then null else topology.nginx.acmeHost);
+      listenAddrs = baseConfig.listenAddresses or topology.nginx.listenAddresses;
+      default' = baseConfig.default or false;
+
+      # Root handling
+      root' = if baseConfig ? root then baseConfig.root else null;
+
+      # Locations
+      locations = if baseConfig ? locations then baseConfig.locations else { "/" = {}; };
+      locationsWithDefaults = lib.mapAttrs (path: loc:
+        {
+          proxyPass = null;
+          proxyWebsockets = false;
+          root = if path == "/" then root' else null;
+        } // loc
+      ) locations;
+    in
+    {
+      enableACME = enableACME';
+      forceSSL = forceSSL';
+      useACMEHost = useACMEHost';
+      listenAddresses = listenAddrs;
+      default = default';
+      locations = locationsWithDefaults;
+    };
+
   # Generate all virtualHosts from topology
   mkAllProxies =
     { config ? { }
@@ -89,10 +125,19 @@ rec {
     }:
     let
       proxies = safeLookup (topology.nginx or { }) "proxies" { };
+      baseVhosts = safeLookup (topology.nginx or { }) "baseVhosts" { };
+
+      proxyHosts = builtins.mapAttrs
+        (
+          hostname: proxyConfig: mkProxyHost { inherit hostname proxyConfig; }
+        )
+        proxies;
+
+      baseHosts = builtins.mapAttrs
+        (
+          hostname: baseConfig: mkBaseHost { inherit hostname baseConfig; }
+        )
+        baseVhosts;
     in
-    builtins.mapAttrs
-      (
-        hostname: proxyConfig: mkProxyHost { inherit hostname proxyConfig; }
-      )
-      proxies;
+    proxyHosts // baseHosts;
 }
