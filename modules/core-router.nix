@@ -66,7 +66,7 @@ in
 
     (lib.mkIf (config.coreRouter.enable && topology ? tailscale) {
       # Topology-managed: Tailscale VPN configuration
-      # Set advertisedRoutes for locale/tailscale.nix to process
+      services.tailscale = lib.mkOverride 100 tailscaleLib.config;
       networking.tailscale.advertisedRoutes = tailscaleLib.mkAdvertisedRoutes;
     })
 
