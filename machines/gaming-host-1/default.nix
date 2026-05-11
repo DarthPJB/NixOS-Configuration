@@ -14,6 +14,7 @@
     ../../server_services/game_servers/space-engineers.nix
     ../../server_services/game_servers/dragonwilds.nix
     ../../server_services/game_servers/windrose.nix
+    ../../server_services/game_servers/terratech.nix
   ];
   environment.vpn = {
     enable = true;
@@ -28,6 +29,21 @@
     serverNote = "Co-op adventures await - join the pack!";
     openFirewall = true;
   };
+  services.terratech-worlds-server = {
+    enable = true;
+    uid = 29987;
+    gid = 29987;
+    password = "godlet";
+    openFirewall = true;
+  };
+
+  # Keep both TerraTech UDP ports open while clients transition:
+  # current intended port is 7777; 7778 remains a compatibility fallback.
+  networking.firewall.allowedUDPPorts = [
+    7777
+    7778
+  ];
+
   services.space-engineers-docker = {
     enable = true;
     instanceName = "KJTNewWorld";
