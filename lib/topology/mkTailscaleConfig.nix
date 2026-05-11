@@ -58,13 +58,7 @@ let
   config = {
     enable = enable;
   }
-  // (if topology.tailscale.subnetRouter or false then { useRoutingFeatures = "server"; } else { })
-  // (
-    if uniqueRoutes != [ ] then
-      { extraSetFlags = [ "--advertise-routes=${concatStringsSep "," uniqueRoutes}" ]; }
-    else
-      { }
-  );
+  // (if topology.tailscale.subnetRouter or false then { useRoutingFeatures = "server"; } else { });
 
   # Helper function to return just the routes
   mkAdvertisedRoutes = uniqueRoutes;

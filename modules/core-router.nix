@@ -21,6 +21,7 @@ let
   dhcpDnsLib = (import ../lib/topology/mkDhcpDns.nix) { inherit lib; } topology;
   nginxLib = (import ../lib/topology/mkNginxProxies.nix) { inherit lib; } topology;
   forwardingLib = (import ../lib/topology/mkForwarding.nix) { inherit lib; } topology;
+  monitoringLib = (import ../lib/topology/mkMonitoringSettings.nix) { inherit lib; } topology;
 in
 {
   options.coreRouter.enable = lib.mkOption {
@@ -102,6 +103,11 @@ in
 
       # Ensure nginx can read ACME certificates
       users.users.nginx.extraGroups = [ "acme" ];
+    })
+
+    # Topology-managed: Prometheus exporters configuration
+    (lib.mkIf (config.coreRouter.enable && topology ? monitoring) {
+      services.prometheus.exporters = lib.mkOverride 100 (monitoringLib.mkMonitoringConfig { });
     })
   ];
 }

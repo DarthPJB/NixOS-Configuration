@@ -586,4 +586,30 @@
       };
     };
   };
+
+  monitoring = {
+    exporters = {
+      node = {
+        enable = true;
+        port = 3100;
+        enabledCollectors = [
+          "systemd"
+          "hwmon"
+          "cpu"
+          "drm"
+          "ethtool"
+          "logind"
+          "wifi"
+        ];
+        disabledCollectors = [ "textfile" ];
+      };
+      dnsmasq = {
+        enable = true;
+        listenAddress = "10.88.127.1";
+        port = 3101;
+        leasesPath = "/dev/null";
+        dnsmasqListenAddress = "10.88.128.1:53";
+      };
+    };
+  };
 }

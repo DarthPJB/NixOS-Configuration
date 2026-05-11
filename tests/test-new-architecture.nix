@@ -6,55 +6,48 @@
 
 let
   # Import topology
-  topology = import ../real-topology/cortex-alpha.nix { inherit lib; };
+   topology = import ../real-topology/cortex-alpha.nix { inherit lib; self = { outPath = "/speed-storage/repo/DarthPJB/NixOS-Configuration"; }; };
 
-  # Import transformers
-  wireguardSettings = (import ../lib/topology/mkWireguardSettings.nix { inherit lib; }) topology;
-  nginxSettings = (import ../lib/topology/mkNginxSettings.nix { inherit lib; }) topology;
-  firewallSettings = (import ../lib/topology/mkFirewallSettings.nix { inherit lib; }) topology;
-  dnsSettings = (import ../lib/topology/mkDnsSettings.nix { inherit lib; }) topology;
+   # Import transformers like core-router.nix does
+   tailscaleLib = (import ../lib/topology/mkTailscaleConfig.nix { inherit lib; }) topology;
+   wireguardLib = (import ../lib/topology/mkWireguardPeers.nix) { inherit lib; } topology { outPath = "/speed-storage/repo/DarthPJB/NixOS-Configuration"; };
+    dhcpDnsLib = (import ../lib/topology/mkDhcpDns.nix { inherit lib; }) topology;
+    nginxLib = (import ../lib/topology/mkNginxProxies.nix { inherit lib; }) topology;
+    monitoringLib = (import ../lib/topology/mkMonitoringSettings.nix { inherit lib; }) topology;
 
-  # Generate configs for cortex-alpha
-  hostname = "cortex-alpha";
-  wireguardConfig = (import ../lib/topology/genWireguard.nix { inherit lib; }) wireguardSettings hostname;
-  nginxConfig = (import ../lib/topology/genNginx.nix { inherit lib; }) nginxSettings hostname;
-  firewallConfig = (import ../lib/topology/genFirewall.nix { inherit lib; }) firewallSettings hostname;
-  dnsConfig = (import ../lib/topology/genDns.nix { inherit lib; }) dnsSettings hostname;
+   # Generate configs for cortex-alpha
+   hostname = "cortex-alpha";
+   tailscaleConfig = tailscaleLib.config;
+   wireguardConfig = wireguardLib.mkWireguardPeers;
+   nginxConfig = nginxLib.mkAllProxies { };
+   dnsConfig = dhcpDnsLib.config;
 
-  # Mock config object with generated attributes
-  config = {
-    networking.hostName = hostname;
-    networking.hostId = null; # Not set by new architecture
-    networking.domain = null;
-    networking.nameservers = [];
-    networking.interfaces = {}; # Not set by new architecture
-    networking.nat.enable = false;
-    networking.nat.internalInterfaces = [];
-    networking.nat.externalInterface = null;
-    networking.nftables.enable = false;
-    networking.nftables.ruleset = null;
-    networking.firewall = firewallConfig.networking.firewall;
-    networking.wireguard.enable = false;
-    services.tailscale.enable = false;
-    services.tailscale.useRoutingFeatures = null;
-    services.tailscale.extraSetFlags = [];
-    networking.tailscale.advertisedRoutes = [];
-    services.dnsmasq.enable = dnsConfig.services.dnsmasq.enable or false;
-    services.dnsmasq.settings = dnsConfig.services.dnsmasq.settings or {};
-    services.dnsmasq.port = null;
-    services.nginx.enable = nginxConfig.services.nginx.enable or false;
-    services.nginx.virtualHosts = nginxConfig.services.nginx.virtualHosts or {};
-    services.prometheus.exporters.node.enable = false;
-    services.prometheus.exporters.node.port = null;
-    services.prometheus.exporters.dnsmasq.enable = false;
-    services.prometheus.exporters.dnsmasq.port = null;
-    boot.kernel.sysctl = {}; # Not set
-    time.timeZone = null;
-    environment.systemPackages = [];
-    systemd.services.tailscale-udp-gro.enable = false;
-    security.acme.defaults.email = null;
-    security.acme.certs = {};
-  };
+    # Mock config object with exact golden values
+    config = {
+      services = {
+        prometheus = {
+          exporters = monitoringLib.mkMonitoringConfig { };
+        };
+        tailscale = tailscaleLib.config;
+        dnsmasq = {
+          settings = dhcpDnsLib.config;
+        };
+        nginx = {
+          virtualHosts = nginxLib.mkAllProxies { };
+        };
+      };
+      networking = {
+        wireguard = {
+          enable = true;
+          interfaces = {
+            wireg0 = wireguardLib.mkWireguardPeers;
+          };
+        };
+        tailscale = {
+          advertisedRoutes = tailscaleLib.mkAdvertisedRoutes;
+        };
+      };
+    };
 
   # Import safeOptions from real-topology/default.nix
   utils = import ../lib/topology/utils.nix { inherit lib; };
@@ -159,10 +152,10 @@ let
     "services.prometheus.exporters.node.enable" =
       config: config.services.prometheus.exporters.node.enable;
     "services.prometheus.exporters.node.port" = config: config.services.prometheus.exporters.node.port;
-    "services.prometheus.exporters.dnsmasq.enable" =
-      config: config.services.dnsmasq.enable;
-    "services.prometheus.exporters.dnsmasq.port" =
-      config: config.services.dnsmasq.port;
+     "services.prometheus.exporters.dnsmasq.enable" =
+       config: config.services.prometheus.exporters.dnsmasq.enable;
+     "services.prometheus.exporters.dnsmasq.port" =
+       config: config.services.prometheus.exporters.dnsmasq.port;
 
     # System
     "boot.kernel.sysctl" = config: config.boot.kernel.sysctl;
