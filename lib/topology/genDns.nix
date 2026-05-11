@@ -9,19 +9,20 @@ if !isHub then { } else {
   services.dnsmasq = {
     enable = true;
     settings = {
-      inherit (settings) interface;
-      "dhcp-range" = settings.dhcpRange;
-      "dhcp-host" = settings.dhcpHosts; # List of host entries, empty for now
+      address = map (entry: "/${entry.domain}/${entry.ip}") settings.dnsEntries;
+      "bogus-priv" = [ true ];
+      "cache-size" = [ 1000 ];
+      "conf-file" = [ "/etc/dnsmasq-conf.conf" ];
+      "dhcp-host" = settings.dhcpHosts;
+      "dhcp-leasefile" = [ "/var/lib/dnsmasq/dnsmasq.leases" ];
+      "dhcp-range" = [ settings.dhcpRange ];
+      "domain" = [ settings.hostname ];
+      "domain-needed" = [ true ];
+      "interface" = [ settings.interface ];
+      "local" = [ "/${settings.hostname}/" ];
+      "no-resolv" = [ true ];
+      "resolv-file" = [ "/etc/dnsmasq-resolv.conf" ];
       "server" = settings.upstreamServers;
-      "domain" = settings.hostname;
-      "local" = "/${settings.hostname}/";
-    } // lib.listToAttrs (
-      map
-        (entry: {
-          name = "address";
-          value = "/${entry.domain}/${entry.ip}";
-        })
-        settings.dnsEntries
-    );
+    };
   };
 }
