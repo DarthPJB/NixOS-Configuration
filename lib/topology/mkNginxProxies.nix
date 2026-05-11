@@ -24,10 +24,10 @@ let
   inherit (utils) safeLookup;
 in
 rec {
-  # Default listen addresses for cortex-alpha
+  # Default listen addresses for the hub
   defaultListenAddresses = topology.nginx.listenAddresses or [
     topology.lan.gateway
-    topology.hosts.cortex-alpha.ip
+    topology.lan.hosts.${topology.hostname}.ip
   ];
 
   # Generate proxy headers config

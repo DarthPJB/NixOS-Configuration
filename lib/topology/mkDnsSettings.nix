@@ -10,7 +10,9 @@ let
   dnsEntries = topology.dns.static;
 
   # DHCP hosts from lan.hosts
-  dhcpHosts = lib.mapAttrsToList (name: host: "${host.mac},${host.ip},${host.hostname},infinite") topology.lan.hosts;
+  dhcpHosts = let
+    entries = lib.mapAttrsToList (name: host: if host ? mac && host ? ip && host ? hostname then "${host.mac},${host.ip},${host.hostname},infinite" else null) topology.lan.hosts;
+  in lib.filter (x: x != null) entries;
 
   # Other settings from topology.dns
   inherit (topology.dns) interface dhcp servers;

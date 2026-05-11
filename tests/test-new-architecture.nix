@@ -6,7 +6,7 @@
 
 let
   # Import topology
-  topology = import ../topology.nix { inherit lib; };
+  topology = import ../real-topology/cortex-alpha.nix { inherit lib; };
 
   # Import transformers
   wireguardSettings = (import ../lib/topology/mkWireguardSettings.nix { inherit lib; }) topology;
@@ -34,8 +34,7 @@ let
     networking.nftables.enable = false;
     networking.nftables.ruleset = null;
     networking.firewall = firewallConfig.networking.firewall;
-    networking.wireguard.enable = true;
-    networking.wireguard.interfaces = wireguardConfig.networking.wireguard.interfaces;
+    networking.wireguard.enable = false;
     services.tailscale.enable = false;
     services.tailscale.useRoutingFeatures = null;
     services.tailscale.extraSetFlags = [];

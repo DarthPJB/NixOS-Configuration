@@ -3,13 +3,19 @@
 # Computes firewall ports for each machine based on topology
 topology:
 let
-  # Find the hub: the machine that has peers defined
-  hubName = lib.findFirst (name: topology.${name} ? peers) null (builtins.attrNames topology);
+  hubName = topology.hostname;
+
+  # Merge machine configs: hosts + hub extras
+  machines = lib.mapAttrs (hostname: host: host // (if hostname == hubName then {
+    firewall = topology.firewall;
+    nginx = topology.nginx;
+    wireguard = topology.wireguard;
+  } else {} )) topology.lan.hosts;
 
   # Helper to extract ports from nginx-proxy backends
   extractServicePorts = nginxProxy:
     let
-      backends = builtins.attrValues nginxProxy;
+      backends = lib.mapAttrsToList (_: proxy: proxy.backend) nginxProxy;
       ports = builtins.map
         (backend:
           let
@@ -27,12 +33,21 @@ let
     (hostname: machine:
       let
         isHub = hostname == hubName;
+        firewallConfig = machine.firewall or {};
+      in
+      if machine ? firewall then {
+        inherit hostname;
+        tcpPorts = firewallConfig.allowedTCPPorts or [];
+        udpPorts = firewallConfig.allowedUDPPorts or [];
+        interfaces = firewallConfig.interfaces or {};
+      } else
+      let
         standardTcpPorts = [ 22 1108 ]; # SSH, nixinate
         standardUdpPorts = if isHub then [ 2108 ] else [ ]; # WireGuard listen port
-        nginxTcpPorts = if machine ? nginx-proxy then [ 443 ] else [ ];
-        serviceTcpPorts = if machine ? nginx-proxy then extractServicePorts machine.nginx-proxy else [ ];
-        extraTcpPorts = machine.firewall.tcp or [ ];
-        extraUdpPorts = machine.firewall.udp or [ ];
+        nginxTcpPorts = if machine ? nginx then [ 443 ] else [ ];
+        serviceTcpPorts = if machine ? nginx then extractServicePorts machine.nginx.proxies else [ ];
+        extraTcpPorts = firewallConfig.allowedTCPPorts or [ ];
+        extraUdpPorts = firewallConfig.allowedUDPPorts or [ ];
         tcpPorts = lib.unique (standardTcpPorts ++ nginxTcpPorts ++ serviceTcpPorts ++ extraTcpPorts);
         udpPorts = lib.unique (standardUdpPorts ++ extraUdpPorts);
       in
@@ -40,10 +55,10 @@ let
         inherit hostname;
         tcpPorts = tcpPorts;
         udpPorts = udpPorts;
-        interfaces = { }; # Per-interface rules, empty for now
+        interfaces = firewallConfig.interfaces or {}; # Use interfaces if defined
       }
     )
-    topology;
+    machines;
 in
 {
   inherit hubName;
