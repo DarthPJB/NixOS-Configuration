@@ -9,17 +9,17 @@ in
 if !isHub then { } else {
   services.nginx = {
     enable = true;
-    virtualHosts = lib.mapAttrs
-      (domain: proxy: {
-        addSSL = true;
-        forceSSL = true;
-        useACMEHost = settings.acmeHost;
-        listenAddresses = settings.listenAddresses;
-        locations."/" = {
-          proxyPass = "http://${proxy.backend}";
-          proxyWebsockets = true; # Common for web apps
-        };
-      })
-      settings.proxies;
+      virtualHosts = lib.mapAttrs
+        (domain: proxy: {
+          enableACME = true;
+          forceSSL = true;
+          useACMEHost = settings.acmeHost;
+          listenAddresses = settings.listenAddresses;
+          locations."/" = {
+            proxyPass = "http://${proxy.backend}";
+            proxyWebsockets = true; # Common for web apps
+          };
+        })
+        settings.proxies;
   };
 }

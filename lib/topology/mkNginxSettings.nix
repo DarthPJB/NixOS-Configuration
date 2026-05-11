@@ -14,7 +14,7 @@ let
       hostname = builtins.head parts;
       port = builtins.elemAt parts 1;
     in
-    if lib.strings.hasPrefix (lib.strings.charAt hostname 0) "0123456789"
+    if builtins.elem (builtins.substring 0 1 hostname) ["0" "1" "2" "3" "4" "5" "6" "7" "8" "9"]
     then backend  # Already an IP
     else
       let
