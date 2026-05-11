@@ -6,14 +6,18 @@ settings: hostname:
 let
   machineSettings = settings.machines.${hostname};
   isHub = hostname == settings.hubName;
+
+  # Add /32 CIDR suffix if not already present
+  addCidr = ip: if lib.hasInfix "/" ip then ip else "${ip}/32";
 in
 {
   networking.wireguard.interfaces.${machineSettings.interface} = {
     inherit (machineSettings) listenPort;
-    ips = if isHub then machineSettings.hubIps else [ machineSettings.machineIp ];
+    ips = if isHub then builtins.map addCidr machineSettings.hubIps else [ (addCidr machineSettings.machineIp) ];
     peers = builtins.map
       (peer: {
-        inherit (peer) publicKey allowedIPs;
+        inherit (peer) publicKey;
+        allowedIPs = builtins.map addCidr peer.allowedIPs;
         endpoint = peer.endpoint or null;
         persistentKeepalive = if peer ? endpoint then 25 else null;
       })
