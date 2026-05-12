@@ -39,11 +39,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1777988488,
-        "narHash": "sha256-z0mhJgA0INWUbi63ZlsL7Q8DBUGBthiaqd4RQ9U7rio=",
+        "lastModified": 1778263260,
+        "narHash": "sha256-py1jyWYbamPV2ba8c2XZxNvuGmvdWLDJkC+d2L7h8Pw=",
         "ref": "refs/heads/main",
-        "rev": "df8deaf032e3607ea8235175d1c1a0edb1309ae7",
-        "revCount": 17,
+        "rev": "1f2b521776acc1478d83f190999dd3ed7ae42b94",
+        "revCount": 20,
         "type": "git",
         "url": "ssh://git@gitlab.platonic.systems/john.bargman/carmelsite"
       },
