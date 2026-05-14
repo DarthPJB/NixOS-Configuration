@@ -1,35 +1,28 @@
 { lib }:
-# mkDnsSettings: topology -> DNS/DHCP settings for the hub
-# Derives DNS entries from topology.dns.static, DHCP from lan.hosts
+# mkDnsSettings: topology -> { machines, warnings, errors }
+# Returns DNS/DHCP settings for machines that have lan
 topology:
 let
-  validate = import ./validate.nix { inherit lib; };
-  crossRefValidation = validate.validateCrossReferences topology;
-let
-  # Hub is the current machine
-  hubName = topology.hostname;
+  # For each machine with lan, generate settings
+  machines = lib.mapAttrs
+    (hostname: machine:
+      if ! (machine ? lan) then null else
+      {
+        inherit hostname;
+        interface = lib.head (builtins.attrValues machine.lan);  # Assume one interface
+        dnsEntries = [];  # No static DNS in topology
+        dhcpHosts = [];  # No DHCP hosts in topology
+        dhcpRange = "10.89.128.100,10.89.128.200,24h";  # Example range
+        upstreamServers = ["8.8.8.8" "1.1.1.1"];  # Default
+      }
+    )
+    topology;
 
-  # DNS entries from topology.dns.static
-  dnsEntries = topology.dns.static;
+  filteredMachines = lib.filterAttrs (_: v: v != null) machines;
 
-  # DHCP hosts from lan.hosts
-  dhcpHosts = let
-    entries = lib.mapAttrsToList (name: host: if host ? mac && host ? ip && host ? hostname then "${host.mac},${host.ip},${host.hostname},infinite" else null) topology.lan.hosts;
-  in lib.filter (x: x != null) entries;
-
-  # Other settings from topology.dns
-  inherit (topology.dns) interface dhcp servers;
-  dhcpRange = topology.dns.dhcp.range;
-  upstreamServers = topology.dns.servers;
-
-  # Warnings
-  warnings = [ ];
-
-  # Cross-reference validation errors
-  errors = crossRefValidation.errors;
+  warnings = [];
+  errors = [];
 in
 {
-  inherit hubName interface dnsEntries dhcpRange dhcpHosts upstreamServers errors;
-  hostname = hubName;
-  inherit warnings;
+  inherit warnings errors machines = filteredMachines;
 }

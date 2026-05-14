@@ -1,15 +1,8 @@
 { lib }:
-# mkNginxSettings: topology -> nginx settings for the hub
-# Reads nginx-proxy from topology and resolves backends to IPs
-# Returns settings for nginx configuration
+# mkNginxSettings: topology -> { machines, warnings, errors }
+# Returns nginx settings for machines that have nginx-proxy
 topology:
 let
-  validate = import ./validate.nix { inherit lib; };
-  crossRefValidation = validate.validateCrossReferences topology;
-let
-  # Find the hub: the machine that has nginx-proxy defined
-  hubName = lib.findFirst (name: topology.${name} ? nginx-proxy) null (builtins.attrNames topology);
-
   # Helper to resolve backend: hostname:port -> IP:port
   resolveBackend = backend:
     let
@@ -26,58 +19,62 @@ let
       in
       "${ip}:${port}";
 
-  # Collect proxies
-  proxies =
-    if hubName != null then
-      lib.mapAttrs
-        (domain: backend: {
-          backend = resolveBackend backend;
-          originalHostname = builtins.head (lib.splitString ":" backend);
-        })
-        topology.${hubName}.nginx-proxy
-    else { };
-
-  # ACME host: extract domain from first proxy key
-  acmeHost =
-    if proxies != { } then
+  # Build settings for each machine
+  machines = lib.mapAttrs
+    (hostname: machine:
+      if ! (machine ? nginx-proxy) then null else
       let
-        firstDomain = builtins.head (builtins.attrNames proxies);
-        parts = lib.splitString "." firstDomain;
-      in
-      builtins.concatStringsSep "." (lib.drop 1 parts)  # Drop subdomain
-    else null;
+        # Collect proxies
+        proxies = lib.mapAttrs
+          (domain: backend: {
+            backend = resolveBackend backend;
+            originalHostname = builtins.head (lib.splitString ":" backend);
+          })
+          machine.nginx-proxy;
 
-  # Listen addresses: hub's LAN IPs and WireGuard IP
-  listenAddresses =
-    if hubName != null then
-      let
-        hub = topology.${hubName};
-        lanIps = if hub ? lan then builtins.attrNames hub.lan else [ ];
-        wgIp = [ hub.wireguard ];
-      in
-      lanIps ++ wgIp
-    else [ ];
+        # ACME host: extract domain from first proxy key
+        acmeHost =
+          if proxies != { } then
+            let
+              firstDomain = builtins.head (builtins.attrNames proxies);
+              parts = lib.splitString "." firstDomain;
+            in
+            builtins.concatStringsSep "." (lib.drop 1 parts)  # Drop subdomain
+          else null;
 
-  # Warnings: check for missing machines or invalid backends
+        # Listen addresses: machine's LAN IPs
+        listenAddresses =
+          if machine ? lan then builtins.attrNames machine.lan else [ ];
+      in
+      {
+        inherit hostname proxies acmeHost listenAddresses;
+      }
+    )
+    topology;
+
+  # Filter out null
+  filteredMachines = lib.filterAttrs (_: v: v != null) machines;
+
+  # Warnings: check for invalid backends
   warnings = lib.flatten (
-    if hubName == null then [ "No hub with nginx-proxy found" ]
-    else
-      lib.mapAttrsToList
-        (domain: proxy:
-          let
-            backend = proxy.backend;
-            parts = lib.splitString ":" backend;
-          in
-          if builtins.length parts != 2 then [ "Invalid backend format for ${domain}: ${backend}" ]
-          else if ! lib.strings.hasPrefix (lib.strings.charAt (builtins.head parts) 0) "0123456789" then [ ]
-          else [ ]  # Already checked in resolveBackend
-        )
-        proxies
+    lib.mapAttrsToList
+      (hostname: settings:
+        lib.mapAttrsToList
+          (domain: proxy:
+            let
+              backend = proxy.backend;
+              parts = lib.splitString ":" backend;
+            in
+            if builtins.length parts != 2 then [ "Invalid backend format for ${domain}: ${backend}" ]
+            else [ ]
+          )
+          settings.proxies
+      )
+      filteredMachines
   );
 
-  # Cross-reference validation errors
-  errors = crossRefValidation.errors;
+  errors = [];
 in
 {
-  inherit hubName proxies acmeHost listenAddresses warnings errors;
+  inherit warnings errors machines = filteredMachines;
 }

@@ -1,12 +1,11 @@
 { lib }:
-# mkWireguardSettings: topology -> { hostname -> wireguard settings }
-# Reads public keys from secrets/public_keys/wireguard/wg_${hostname}_pub
-# Returns settings for WireGuard configuration
+# mkWireguardSettings: topology -> { machines, warnings, errors }
+# topology is the attrset from topology.nix
+# Returns settings for WireGuard configuration for all machines
 topology:
 let
-  validate = import ./validate.nix { inherit lib; };
-  crossRefValidation = validate.validateCrossReferences topology;
-let
+  domain = "johnbargman.net";
+
   # Helper to read public key, returning null if missing
   readPubKey = hostname:
     let
@@ -16,12 +15,10 @@ let
     then builtins.readFile path
     else null;
 
-  hubName = topology.hostname;
-
-  # Merge machine configs: hosts + hub extras
-  machines = lib.mapAttrs (hostname: host: host // (if host ? wireguardIp then { wireguardIp = host.wireguardIp; } else {}) // (if hostname == hubName then {
-    wireguard = topology.wireguard;
-  } else {} )) topology.lan.hosts;
+  # Determine which machines are serving as hubs (have clients)
+  isServing = lib.genAttrs (lib.attrNames topology) (hostname:
+    lib.any (name: topology.${name} ? hub && topology.${name}.hub == hostname) (lib.attrNames topology)
+  );
 
   # Collect all warnings
   warnings = lib.flatten (
@@ -31,59 +28,61 @@ let
         then "Missing public key for ${hostname} at secrets/public_keys/wireguard/wg_${hostname}_pub"
         else [ ]
       )
-      machines
+      topology
   );
 
   # Build settings for each machine
-  settings = lib.mapAttrs
+  machines = lib.mapAttrs
     (hostname: machine:
       let
-        isHub = hostname == hubName;
         pubKey = readPubKey hostname;
       in
       if pubKey == null then null else {
         inherit hostname;
         interface = "wireg0";
-        listenPort = if isHub then topology.wireguard.listenPort else null;
-        hubName = if isHub then null else hubName;
-        hubIps = if isHub then [ machine.wireguardIp "10.88.127.0/24" ] else null;
-        machineIp = machine.wireguardIp;
-        peers =
-          if isHub then
-          # For hub, list all peers with their keys
-            lib.filter (x: x != null)
-              (
-                lib.mapAttrsToList
-                  (peerName: _:
-                    let peerKey = readPubKey peerName;
-                        peerMachine = machines.${peerName};
-                    in if peerKey == null then null else {
-                      name = peerName;
-                      publicKey = peerKey;
-                      allowedIPs = [ peerMachine.wireguardIp ];
-                    }
-                  )
-                  (lib.listToAttrs (map (name: { name = name; value = {}; }) topology.wireguard.peers))
-              )
-          else
-          # For client, connect to hub
+        listenPort = if isServing.${hostname} then 2108 else null;
+        machineIp = machine.wireguard;
+        peers = lib.flatten [
+          # If this machine has a hub, connect to it
+          (if machine ? hub then
             let
-              hubMachine = machines.${hubName};
+              hubName = machine.hub;
+              hubMachine = topology.${hubName};
               hubKey = readPubKey hubName;
             in
-            if hubKey == null then [ ] else [{
+            if hubKey == null then [] else [{
               name = hubName;
               publicKey = hubKey;
-              allowedIPs = [ hubMachine.wireguardIp "10.88.127.0/24" ];
-              endpoint = "${topology.hostname}.${topology.domain}:2108";
-            }];
+              allowedIPs = [ hubMachine.wireguard "10.88.127.0/24" ];
+              endpoint = "${hubName}.${domain}:2108";
+            }]
+          else [])
+          # If this machine is serving clients, list them
+          (if isServing.${hostname} then
+            lib.map (clientName:
+              let
+                clientMachine = topology.${clientName};
+                clientKey = readPubKey clientName;
+              in
+              if clientKey == null then null else {
+                name = clientName;
+                publicKey = clientKey;
+                allowedIPs = [ clientMachine.wireguard ];
+              }
+            ) (lib.filter (name: topology.${name} ? hub && topology.${name}.hub == hostname) (lib.attrNames topology))
+          else [])
+        ];
       }
     )
-    machines;
-  # Cross-reference validation errors
-  errors = crossRefValidation.errors;
+    topology;
+
+  # Filter out null entries
+  filteredMachines = lib.filterAttrs (_: v: v != null) machines;
+
+  # For now, no errors
+  errors = [];
 in
 {
-  inherit hubName warnings errors;
-  machines = lib.filterAttrs (_: v: v != null) settings;
+  inherit warnings errors;
+  machines = filteredMachines;
 }

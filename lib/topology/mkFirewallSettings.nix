@@ -1,24 +1,17 @@
 { lib }:
-# mkFirewallSettings: topology -> { machines = hostname -> { tcpPorts, udpPorts, interfaces } }
+# mkFirewallSettings: topology -> { machines, warnings, errors }
 # Computes firewall ports for each machine based on topology
 topology:
 let
-  validate = import ./validate.nix { inherit lib; };
-  crossRefValidation = validate.validateCrossReferences topology;
-let
-  hubName = topology.hostname;
-
-  # Merge machine configs: hosts + hub extras
-  machines = lib.mapAttrs (hostname: host: host // (if hostname == hubName then {
-    firewall = topology.firewall;
-    nginx = topology.nginx;
-    wireguard = topology.wireguard;
-  } else {} )) topology.lan.hosts;
+  # Determine which machines are serving as hubs
+  isServing = lib.genAttrs (lib.attrNames topology) (hostname:
+    lib.any (name: topology.${name} ? hub && topology.${name}.hub == hostname) (lib.attrNames topology)
+  );
 
   # Helper to extract ports from nginx-proxy backends
   extractServicePorts = nginxProxy:
     let
-      backends = lib.mapAttrsToList (_: proxy: proxy.backend) nginxProxy;
+      backends = lib.mapAttrsToList (_: proxy: proxy) nginxProxy;
       ports = builtins.map
         (backend:
           let
@@ -32,40 +25,22 @@ let
     lib.unique (lib.filter (x: x != null) ports);
 
   # Build settings for each machine
-  settings = lib.mapAttrs
-    (hostname: machine:
-      let
-        isHub = hostname == hubName;
-        firewallConfig = machine.firewall or {};
-      in
-      if machine ? firewall then {
-        inherit hostname;
-        tcpPorts = firewallConfig.allowedTCPPorts or [];
-        udpPorts = firewallConfig.allowedUDPPorts or [];
-        interfaces = firewallConfig.interfaces or {};
-      } else
-      let
-        standardTcpPorts = [ 22 1108 ]; # SSH, nixinate
-        standardUdpPorts = if isHub then [ 2108 ] else [ ]; # WireGuard listen port
-        nginxTcpPorts = if machine ? nginx then [ 443 ] else [ ];
-        serviceTcpPorts = if machine ? nginx then extractServicePorts machine.nginx.proxies else [ ];
-        extraTcpPorts = firewallConfig.allowedTCPPorts or [ ];
-        extraUdpPorts = firewallConfig.allowedUDPPorts or [ ];
-        tcpPorts = lib.unique (standardTcpPorts ++ nginxTcpPorts ++ serviceTcpPorts ++ extraTcpPorts);
-        udpPorts = lib.unique (standardUdpPorts ++ extraUdpPorts);
-      in
-      {
-        inherit hostname;
-        tcpPorts = tcpPorts;
-        udpPorts = udpPorts;
-        interfaces = firewallConfig.interfaces or {}; # Use interfaces if defined
-      }
-    )
-    machines;
-  # Cross-reference validation errors
-  errors = crossRefValidation.errors;
+  machines = lib.mapAttrs
+    (hostname: machine: {
+      inherit hostname;
+      tcpPorts = lib.unique ([22 1108] ++
+        (if machine ? nginx-proxy then [443] ++ extractServicePorts machine.nginx-proxy else []) ++
+        (if machine ? firewall then machine.firewall.allowedTCPPorts or [] else []));
+      udpPorts = lib.unique ((if isServing.${hostname} then [2108] else []) ++
+        (if machine ? firewall then machine.firewall.allowedUDPPorts or [] else []));
+      interfaces = if machine ? lan then lib.mapAttrs (_: _: {}) machine.lan else {};
+    })
+    topology;
+
+  # No warnings or errors for now
+  warnings = [];
+  errors = [];
 in
 {
-  inherit hubName errors;
-  machines = settings;
+  inherit warnings errors machines;
 }

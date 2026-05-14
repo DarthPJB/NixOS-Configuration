@@ -8,6 +8,7 @@
       "LINDA"
       "alpha-one"
       "alpha-three"
+      "building-b"
       "cluster-box"
       "cortex-alpha"
       "display-0"
@@ -24,14 +25,6 @@
       "terminal-nx-01"
       "terminal-zero"
     ];
-    nginx-proxy = {
-      "print-controller.johnbargman.net" = "print-controller:80";
-      "code.johnbargman.net" = "local-nas:80";
-      "git.johnbargman.net" = "local-nas:80";
-      "prometheus.johnbargman.net" = "local-nas:8080";
-      "grafana.johnbargman.net" = "local-nas:3101";
-      "ap.johnbargman.net" = "10.88.128.2:80";
-    };
   };
 
   local-nas = {
@@ -110,5 +103,23 @@
 
   alpha-two = {
     wireguard = "10.88.127.109";
+  };
+
+  # Hub-of-hubs example
+  building-b = {
+    wireguard = "10.88.127.100";
+    lan = { "10.89.128.1" = "enp3s0"; };
+    peers = [ "office-1" "office-2" ];
+    hub = "cortex-alpha";
+  };
+
+  office-1 = {
+    wireguard = "10.88.127.101";
+    hub = "building-b";
+  };
+
+  office-2 = {
+    wireguard = "10.88.127.102";
+    hub = "building-b";
   };
 }

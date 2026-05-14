@@ -1,25 +1,25 @@
 { lib }:
 # genNginx: settings -> hostname -> NixOS services.nginx config
 # settings is the output of mkNginxSettings
-# Only generates config if hostname matches hubName
+# Generates config if hostname has nginx settings
 settings: hostname:
 let
-  isHub = hostname == settings.hubName;
+  machineSettings = settings.machines.${hostname} or null;
 in
-if !isHub then { } else {
+if machineSettings == null then { } else {
   services.nginx = {
     enable = true;
-      virtualHosts = lib.mapAttrs
-        (domain: proxy: {
-          enableACME = true;
-          forceSSL = true;
-          useACMEHost = settings.acmeHost;
-          listenAddresses = settings.listenAddresses;
-          locations."/" = {
-            proxyPass = "http://${proxy.backend}";
-            proxyWebsockets = true; # Common for web apps
-          };
-        })
-        settings.proxies;
+    defaultRoot = "/var/empty";
+    virtualHosts = lib.mapAttrs
+      (domain: proxy: {
+        enableACME = false;
+        forceSSL = false;
+        listenAddresses = machineSettings.listenAddresses;
+        locations."/" = {
+          proxyPass = "http://${proxy.backend}";
+          proxyWebsockets = true; # Common for web apps
+        };
+      })
+      machineSettings.proxies;
   };
 }
