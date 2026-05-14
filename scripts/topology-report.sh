@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Get all machines from flake
-ALL_MACHINES=$(nix eval --json '.#nixosConfigurations | keys' | jq -r '.[]')
+ALL_MACHINES=$(nix flake show . --json | jq -r '.nixosConfigurations | keys[]')
 
 echo "Topology Coverage Report"
 echo "========================"
@@ -18,7 +18,7 @@ for machine in $ALL_MACHINES; do
   TOTAL=$((TOTAL + 1))
 
   # Check topology
-  HAS_TOPOLOGY=$(nix eval --json "import ./topology.nix | builtins.hasAttr \"$machine\"")
+  HAS_TOPOLOGY=$(nix eval --json "import ./topology.nix {} | builtins.hasAttr \"$machine\"")
   if [ "$HAS_TOPOLOGY" = "true" ]; then
     TOPOLOGY_STATUS="✓"
     WITH_TOPOLOGY=$((WITH_TOPOLOGY + 1))

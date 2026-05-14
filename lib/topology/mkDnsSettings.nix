@@ -3,6 +3,9 @@
 # Derives DNS entries from topology.dns.static, DHCP from lan.hosts
 topology:
 let
+  validate = import ./validate.nix { inherit lib; };
+  crossRefValidation = validate.validateCrossReferences topology;
+let
   # Hub is the current machine
   hubName = topology.hostname;
 
@@ -21,9 +24,12 @@ let
 
   # Warnings
   warnings = [ ];
+
+  # Cross-reference validation errors
+  errors = crossRefValidation.errors;
 in
 {
-  inherit hubName interface dnsEntries dhcpRange dhcpHosts upstreamServers;
+  inherit hubName interface dnsEntries dhcpRange dhcpHosts upstreamServers errors;
   hostname = hubName;
   inherit warnings;
 }

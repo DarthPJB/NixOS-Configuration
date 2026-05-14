@@ -4,6 +4,9 @@
 # Returns settings for nginx configuration
 topology:
 let
+  validate = import ./validate.nix { inherit lib; };
+  crossRefValidation = validate.validateCrossReferences topology;
+let
   # Find the hub: the machine that has nginx-proxy defined
   hubName = lib.findFirst (name: topology.${name} ? nginx-proxy) null (builtins.attrNames topology);
 
@@ -71,7 +74,10 @@ let
         )
         proxies
   );
+
+  # Cross-reference validation errors
+  errors = crossRefValidation.errors;
 in
 {
-  inherit hubName proxies acmeHost listenAddresses warnings;
+  inherit hubName proxies acmeHost listenAddresses warnings errors;
 }

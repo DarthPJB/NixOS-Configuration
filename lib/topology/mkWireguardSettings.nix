@@ -4,6 +4,9 @@
 # Returns settings for WireGuard configuration
 topology:
 let
+  validate = import ./validate.nix { inherit lib; };
+  crossRefValidation = validate.validateCrossReferences topology;
+let
   # Helper to read public key, returning null if missing
   readPubKey = hostname:
     let
@@ -77,8 +80,10 @@ let
       }
     )
     machines;
+  # Cross-reference validation errors
+  errors = crossRefValidation.errors;
 in
 {
-  inherit hubName warnings;
+  inherit hubName warnings errors;
   machines = lib.filterAttrs (_: v: v != null) settings;
 }

@@ -24,8 +24,9 @@ let
   firewallConfig = (import ../lib/topology/genFirewall.nix { inherit lib; }) firewallSettings hostname;
   dnsConfig = (import ../lib/topology/genDns.nix { inherit lib; }) dnsSettings hostname;
 
-  # Collect all warnings
+  # Collect all warnings and errors
   allWarnings = wireguardSettings.warnings ++ nginxSettings.warnings ++ dnsSettings.warnings;
+  allErrors = wireguardSettings.errors ++ nginxSettings.errors ++ firewallSettings.errors ++ dnsSettings.errors;
 
   # Is this machine the hub?
   isHub = hostname == wireguardSettings.hubName;
@@ -50,7 +51,12 @@ in
           assertion = false;
           message = "Topology warning: ${warning}";
         })
-        allWarnings;
+        allWarnings ++ builtins.map
+        (error: {
+          assertion = false;
+          message = "Topology validation error: ${error}";
+        })
+        allErrors;
     }
 
     # WireGuard configuration (hub and client)

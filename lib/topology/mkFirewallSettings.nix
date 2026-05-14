@@ -3,6 +3,9 @@
 # Computes firewall ports for each machine based on topology
 topology:
 let
+  validate = import ./validate.nix { inherit lib; };
+  crossRefValidation = validate.validateCrossReferences topology;
+let
   hubName = topology.hostname;
 
   # Merge machine configs: hosts + hub extras
@@ -59,8 +62,10 @@ let
       }
     )
     machines;
+  # Cross-reference validation errors
+  errors = crossRefValidation.errors;
 in
 {
-  inherit hubName;
+  inherit hubName errors;
   machines = settings;
 }

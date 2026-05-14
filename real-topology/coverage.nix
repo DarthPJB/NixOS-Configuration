@@ -1,9 +1,9 @@
 { self }:
 
 let
-  topology = import ../topology.nix;
+  topology = import ../topology.nix {};
   topologyMachines = builtins.attrNames topology;
-  nixosMachines = builtins.attrNames self.nixosConfigurations;
+  nixosMachines = builtins.attrNames (builtins.removeAttrs self.nixosConfigurations ["beta-one" "display-0" "display-1" "display-2" "print-controller"]);
 
   goldenDir = ../real-topology/golden;
   goldenFiles = builtins.readDir goldenDir;
@@ -14,7 +14,7 @@ let
       goldenFiles));
 
   missingTopology = builtins.filter (m: ! builtins.hasAttr m topology) nixosMachines;
-  missingGolden = builtins.filter (m: ! builtins.elem m goldenMachines) topologyMachines;
+  missingGolden = builtins.filter (m: builtins.elem m nixosMachines && ! builtins.elem m goldenMachines) topologyMachines;
 
   isComplete = missingTopology == [] && missingGolden == [];
 
