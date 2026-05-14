@@ -512,7 +512,7 @@
           text = ''
             echo "Generating current network config for cortex-alpha..."
             nix run .#generate-golden -- cortex-alpha | jq -S . > /tmp/current-network.json
-            
+
             echo "Comparing with golden..."
             if diff -u ${self}/real-topology/golden/cortex-alpha.json /tmp/current-network.json; then
               echo "✓ Network config matches golden for cortex-alpha"
@@ -524,6 +524,17 @@
             fi
           '';
         };
+
+        topology-coverage = let
+          coverage = import ./real-topology/coverage.nix { inherit self; };
+        in if !coverage.isComplete then
+          throw "Topology coverage incomplete. Missing: ${builtins.toJSON coverage.missing}"
+        else
+          nixpkgs.runCommand "topology-coverage-check" { } ''
+            echo "Topology coverage: ${toString coverage.coveragePercent}%"
+            echo "Machines: ${toString coverage.coveredCount}/${toString coverage.totalMachines}"
+            touch $out
+          '';
       };
 
       # CI data exposed under legacyPackages (not a standard flake output type)
