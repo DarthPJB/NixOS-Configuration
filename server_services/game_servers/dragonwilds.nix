@@ -51,7 +51,7 @@ in
     systemd.services.dragonwilds-server =
       let
         steamcmd = lib.getExe cfg.steamcmdPackage;
-        bash = lib.getExe' pkgs.bash;
+        bash = lib.getExe pkgs.bash;
         mkdir = lib.getExe' pkgs.coreutils "mkdir";
         cp = lib.getExe' pkgs.coreutils "cp";
         chmod = lib.getExe' pkgs.coreutils "chmod";

@@ -35,6 +35,7 @@
     gid = 29987;
     password = "godlet";
     openFirewall = true;
+    map = "Phaeton";
   };
 
   # Keep both TerraTech UDP ports open while clients transition:
