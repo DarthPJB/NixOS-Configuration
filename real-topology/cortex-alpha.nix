@@ -480,12 +480,12 @@
       "johnbargman.net" = {
         enableACME = true;
         forceSSL = true;
-        root = ../../webroot;
+        root = ../webroot;
       };
       "cortex-alpha.johnbargman.net" = {
         useACMEHost = "johnbargman.net";
         forceSSL = true;
-        root = ../../webroot;
+        root = ../webroot;
       };
     };
 

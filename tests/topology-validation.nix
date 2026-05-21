@@ -76,8 +76,8 @@ let
 
   invalidDnsTopology = validTopology // {
     dns.static = validTopology.dns.static ++ [
-      { domain = "bad.example.com"; ip = "192.168.1.99"; }  # Invalid IP
-      { domain = "missing.example.com"; ip = "ghost"; }     # Invalid hostname
+      { domain = "bad.example.com"; ip = "192.168.1.99"; } # Invalid IP
+      { domain = "missing.example.com"; ip = "ghost"; } # Invalid hostname
     ];
   };
 
@@ -86,7 +86,7 @@ let
     name = "valid topology";
     topology = validTopology;
     expectedValid = true;
-    expectedErrors = [];
+    expectedErrors = [ ];
   };
 
   testInvalidNginx = {
@@ -141,5 +141,5 @@ let
 in
 {
   inherit testResults passedTests failedTests;
-  allPassed = failedTests == [];
+  allPassed = failedTests == [ ];
 }

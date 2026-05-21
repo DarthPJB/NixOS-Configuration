@@ -50,27 +50,29 @@ let
               hubMachine = topology.${hubName};
               hubKey = readPubKey hubName;
             in
-            if hubKey == null then [] else [{
+            if hubKey == null then [ ] else [{
               name = hubName;
               publicKey = hubKey;
               allowedIPs = [ hubMachine.wireguard "10.88.127.0/24" ];
               endpoint = "${hubName}.${domain}:2108";
             }]
-          else [])
+          else [ ])
           # If this machine is serving clients, list them
           (if isServing.${hostname} then
-            lib.map (clientName:
-              let
-                clientMachine = topology.${clientName};
-                clientKey = readPubKey clientName;
-              in
-              if clientKey == null then null else {
-                name = clientName;
-                publicKey = clientKey;
-                allowedIPs = [ clientMachine.wireguard ];
-              }
-            ) (lib.filter (name: topology.${name} ? hub && topology.${name}.hub == hostname) (lib.attrNames topology))
-          else [])
+            lib.map
+              (clientName:
+                let
+                  clientMachine = topology.${clientName};
+                  clientKey = readPubKey clientName;
+                in
+                if clientKey == null then null else {
+                  name = clientName;
+                  publicKey = clientKey;
+                  allowedIPs = [ clientMachine.wireguard ];
+                }
+              )
+              (lib.filter (name: topology.${name} ? hub && topology.${name}.hub == hostname) (lib.attrNames topology))
+          else [ ])
         ];
       }
     )
@@ -80,7 +82,7 @@ let
   filteredMachines = lib.filterAttrs (_: v: v != null) machines;
 
   # For now, no errors
-  errors = [];
+  errors = [ ];
 in
 {
   inherit warnings errors;

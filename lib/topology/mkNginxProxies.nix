@@ -100,14 +100,16 @@ rec {
       root' = if baseConfig ? root then baseConfig.root else null;
 
       # Locations
-      locations = if baseConfig ? locations then baseConfig.locations else { "/" = {}; };
-      locationsWithDefaults = lib.mapAttrs (path: loc:
-        {
-          proxyPass = null;
-          proxyWebsockets = false;
-          root = if path == "/" then root' else null;
-        } // loc
-      ) locations;
+      locations = if baseConfig ? locations then baseConfig.locations else { "/" = { }; };
+      locationsWithDefaults = lib.mapAttrs
+        (path: loc:
+          {
+            proxyPass = null;
+            proxyWebsockets = false;
+            root = if path == "/" then root' else null;
+          } // loc
+        )
+        locations;
     in
     {
       enableACME = enableACME';

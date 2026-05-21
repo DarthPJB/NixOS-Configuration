@@ -282,11 +282,12 @@ let
     topology:
     let
       # Helper: Get all valid IPs (LAN + WireGuard)
-      allHosts = topology.lan.hosts or {};
+      allHosts = topology.lan.hosts or { };
       lanIPs = map (h: h.ip) (attrValues allHosts);
-      wgIPs = if topology ? wireguard && topology.wireguard ? peers then
-        filter (x: x != null) (map (p: if allHosts.${p} ? wireguard then allHosts.${p}.wireguard else null) topology.wireguard.peers)
-        else [];
+      wgIPs =
+        if topology ? wireguard && topology.wireguard ? peers then
+          filter (x: x != null) (map (p: if allHosts.${p} ? wireguard then allHosts.${p}.wireguard else null) topology.wireguard.peers)
+        else [ ];
       validIPs = lanIPs ++ wgIPs;
       validHostnames = attrNames allHosts;
 
@@ -298,20 +299,21 @@ let
       # Check nginx proxies (assuming topology.nginx.proxies exists)
       checkNginx =
         if topology ? nginx && topology.nginx ? proxies then
-          flatten (
-            mapAttrsToList
-              (domain: backend:
-                let
-                  parts = lib.splitString ":" backend;
-                  ref = builtins.head parts;
-                in
-                if !isValidRef ref then
-                  [ "nginx proxy '${domain}' backend '${ref}' not found in lan.hosts" ]
-                else
-                  [ ]
-              )
-              topology.nginx.proxies
-          )
+          flatten
+            (
+              mapAttrsToList
+                (domain: backend:
+                  let
+                    parts = lib.splitString ":" backend;
+                    ref = builtins.head parts;
+                  in
+                  if !isValidRef ref then
+                    [ "nginx proxy '${domain}' backend '${ref}' not found in lan.hosts" ]
+                  else
+                    [ ]
+                )
+                topology.nginx.proxies
+            )
         else
           [ ];
 
@@ -319,8 +321,8 @@ let
       checkForwarding =
         if topology ? forwarding then
           let
-            tcpRules = topology.forwarding.tcp or [];
-            udpRules = topology.forwarding.udp or [];
+            tcpRules = topology.forwarding.tcp or [ ];
+            udpRules = topology.forwarding.udp or [ ];
             allRules = tcpRules ++ udpRules;
           in
           flatten (
@@ -344,33 +346,34 @@ let
       # Check DNS static entries
       checkDns =
         if topology ? dns && topology.dns ? static then
-          flatten (
-            map
-              (entry:
-                let
-                  ip =
-                    if isAttrs entry then
-                      entry.ip
-                    else if isString entry && builtins.match ".*/.*" entry != null then
-                      let parts = lib.splitString "/" entry;
-                      in if builtins.length parts == 2 then builtins.elemAt parts 1 else null
+          flatten
+            (
+              map
+                (entry:
+                  let
+                    ip =
+                      if isAttrs entry then
+                        entry.ip
+                      else if isString entry && builtins.match ".*/.*" entry != null then
+                        let parts = lib.splitString "/" entry;
+                        in if builtins.length parts == 2 then builtins.elemAt parts 1 else null
+                      else
+                        null;
+                  in
+                  if ip == null then
+                    [ ]
+                  else if isIP ip then
+                    if elem ip validIPs then
+                      [ ]
                     else
-                      null;
-                in
-                if ip == null then
-                  [ ]
-                else if isIP ip then
-                  if elem ip validIPs then
+                      [ "dns entry ip '${ip}' not a valid IP in topology" ]
+                  else if elem ip validHostnames then
                     [ ]
                   else
-                    [ "dns entry ip '${ip}' not a valid IP in topology" ]
-                else if elem ip validHostnames then
-                  [ ]
-                else
-                  [ "dns entry hostname '${ip}' not found in lan.hosts" ]
-              )
-              topology.dns.static
-          )
+                    [ "dns entry hostname '${ip}' not found in lan.hosts" ]
+                )
+                topology.dns.static
+            )
         else
           [ ];
 

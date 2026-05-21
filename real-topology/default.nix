@@ -63,7 +63,7 @@ let
     "networking.wireguard.interfaces" =
       config:
       let
-        wg = config.networking.wireguard.interfaces or {};
+        wg = config.networking.wireguard.interfaces or { };
       in
       lib.mapAttrs
         (name: iface: {
@@ -73,19 +73,19 @@ let
               inherit (p) allowedIPs;
               publicKey = "<redacted>";
             })
-            (iface.peers or []);
+            (iface.peers or [ ]);
         })
         wg;
 
     # Tailscale
     "services.tailscale.enable" = config: config.services.tailscale.enable or false;
     "services.tailscale.useRoutingFeatures" = config: config.services.tailscale.useRoutingFeatures or null;
-    "services.tailscale.extraSetFlags" = config: config.services.tailscale.extraSetFlags or [];
-    "networking.tailscale.advertisedRoutes" = config: config.networking.tailscale.advertisedRoutes or [];
+    "services.tailscale.extraSetFlags" = config: config.services.tailscale.extraSetFlags or [ ];
+    "networking.tailscale.advertisedRoutes" = config: config.networking.tailscale.advertisedRoutes or [ ];
 
     # DNS/DHCP
     "services.dnsmasq.enable" = config: config.services.dnsmasq.enable or false;
-    "services.dnsmasq.settings" = config: config.services.dnsmasq.settings or {};
+    "services.dnsmasq.settings" = config: config.services.dnsmasq.settings or { };
 
     # Nginx
     "services.nginx.enable" = config: config.services.nginx.enable or false;
@@ -103,7 +103,7 @@ let
             })
             (vhost.locations or { });
         })
-        (config.services.nginx.virtualHosts or {});
+        (config.services.nginx.virtualHosts or { });
 
     # Prometheus exporters
     "services.prometheus.exporters.node.enable" =

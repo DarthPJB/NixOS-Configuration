@@ -160,7 +160,7 @@
                     topology = import ./real-topology/default.nix { inherit lib; self = flake; };
                   in
                   topology.generateGolden "'"$MACHINE"'"
-                ' | jq -S .
+                ' 2>/dev/null | jq -S .
             '';
           });
         };
@@ -525,16 +525,18 @@
           '';
         };
 
-        topology-coverage = let
-          coverage = import ./real-topology/coverage.nix { inherit self; };
-        in if !coverage.isComplete then
-          throw "Topology coverage incomplete. Missing: ${builtins.toJSON coverage.missing}"
-        else
-          nixpkgs.runCommand "topology-coverage-check" { } ''
-            echo "Topology coverage: ${toString coverage.coveragePercent}%"
-            echo "Machines: ${toString coverage.coveredCount}/${toString coverage.totalMachines}"
-            touch $out
-          '';
+        topology-coverage =
+          let
+            coverage = import ./real-topology/coverage.nix { inherit self; };
+          in
+          if !coverage.isComplete then
+            throw "Topology coverage incomplete. Missing: ${builtins.toJSON coverage.missing}"
+          else
+            nixpkgs.runCommand "topology-coverage-check" { } ''
+              echo "Topology coverage: ${toString coverage.coveragePercent}%"
+              echo "Machines: ${toString coverage.coveredCount}/${toString coverage.totalMachines}"
+              touch $out
+            '';
       };
 
       # CI data exposed under legacyPackages (not a standard flake output type)

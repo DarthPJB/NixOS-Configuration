@@ -10,7 +10,7 @@ let
       hostname = builtins.head parts;
       port = builtins.elemAt parts 1;
     in
-    if builtins.elem (builtins.substring 0 1 hostname) ["0" "1" "2" "3" "4" "5" "6" "7" "8" "9"]
+    if builtins.elem (builtins.substring 0 1 hostname) [ "0" "1" "2" "3" "4" "5" "6" "7" "8" "9" ]
     then backend  # Already an IP
     else
       let
@@ -73,8 +73,8 @@ let
       filteredMachines
   );
 
-  errors = [];
+  errors = [ ];
 in
 {
-  inherit warnings errors machines = filteredMachines;
+  inherit warnings errors machines= filteredMachines;
 }

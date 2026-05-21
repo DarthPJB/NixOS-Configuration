@@ -28,18 +28,18 @@ let
   machines = lib.mapAttrs
     (hostname: machine: {
       inherit hostname;
-      tcpPorts = lib.unique ([22 1108] ++
-        (if machine ? nginx-proxy then [443] ++ extractServicePorts machine.nginx-proxy else []) ++
-        (if machine ? firewall then machine.firewall.allowedTCPPorts or [] else []));
-      udpPorts = lib.unique ((if isServing.${hostname} then [2108] else []) ++
-        (if machine ? firewall then machine.firewall.allowedUDPPorts or [] else []));
-      interfaces = if machine ? lan then lib.mapAttrs (_: _: {}) machine.lan else {};
+      tcpPorts = lib.unique ([ 22 1108 ] ++
+        (if machine ? nginx-proxy then [ 443 ] ++ extractServicePorts machine.nginx-proxy else [ ]) ++
+        (if machine ? firewall then machine.firewall.allowedTCPPorts or [ ] else [ ]));
+      udpPorts = lib.unique ((if isServing.${hostname} then [ 2108 ] else [ ]) ++
+        (if machine ? firewall then machine.firewall.allowedUDPPorts or [ ] else [ ]));
+      interfaces = if machine ? lan then lib.mapAttrs (_: _: { }) machine.lan else { };
     })
     topology;
 
   # No warnings or errors for now
-  warnings = [];
-  errors = [];
+  warnings = [ ];
+  errors = [ ];
 in
 {
   inherit warnings errors machines;
