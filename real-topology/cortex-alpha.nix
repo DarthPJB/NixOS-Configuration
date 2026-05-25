@@ -53,6 +53,16 @@
         };
         services = [ ];
       };
+      
+      michel-one = {
+        ip = "10.88.128.248";
+        mac = "60:45:2e:9d:42:ac";
+      };
+
+      michel-one = {
+        ip = "10.88.128.248";
+        mac = "00:e0:4c:68:03:8f";
+      };
 
       print-controller = {
         ip = "10.88.128.10";
