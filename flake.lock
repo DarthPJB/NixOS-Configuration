@@ -1010,11 +1010,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1778010403,
-        "narHash": "sha256-LMRS7NH7IGmS1JwkGvkujmjJyXlDnM37Hzb11hrGR44=",
+        "lastModified": 1779619143,
+        "narHash": "sha256-Duj6GPg1cS0p49/xXY0+KWqlx2XgYP4WgXUSyc9faNc=",
         "owner": "DarthPJB",
         "repo": "nixinate",
-        "rev": "d1b1d4dbe27941616ab189b9e04f74ff09d72a97",
+        "rev": "02a2f1b005557966f0de6f1c9129a3456909d4aa",
         "type": "github"
       },
       "original": {
