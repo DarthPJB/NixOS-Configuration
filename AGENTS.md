@@ -7,6 +7,61 @@
 - These MUST match. Changing one without the other breaks the build.
 - Do NOT run `nix fmt` on the entire codebase without explicit permission.
 
+### CRITICAL: Git Worktree Workflow
+
+**Always use worktrees for parallel development.** Multiple agents or users working on the same repo simultaneously will cause file contention and merge conflicts without worktrees.
+
+#### Before Starting Work — Check Your Location
+```bash
+# ALWAYS check which worktree you're in before making changes:
+git worktree list
+# Output shows all active worktrees and their branches:
+#   /speed-storage/repo/DarthPJB/NixOS-Configuration  4a0ad55 [main]
+#   /tmp/nixos-agent-a                                abc1234 [feat/validation]
+#   /tmp/nixos-agent-b                                def5678 [feat/topology]
+
+# If you're in the main repo and another agent is active, CREATE A WORKTREE
+```
+
+#### Creating a Worktree for Feature Work
+```bash
+# Create a new worktree with a descriptive branch name:
+git worktree add /tmp/nixos-<descriptive-name> -b <branch-name>
+
+# Example:
+git worktree add /tmp/nixos-validation-fix -b fix/silent-dhcp-drops
+```
+
+#### Working in a Worktree
+```bash
+# Navigate to your worktree:
+cd /tmp/nixos-validation-fix
+
+# Make changes, commit as normal:
+git add <files>
+git commit -m "fix: description"
+
+# The worktree is a FULL repo — all git commands work
+```
+
+#### Merging Worktree Changes Back
+```bash
+# From the MAIN repo:
+cd /speed-storage/repo/DarthPJB/NixOS-Configuration
+git merge <branch-name>        # e.g., git merge fix/silent-dhcp-drops
+
+# Clean up the worktree:
+git worktree remove /tmp/nixos-validation-fix
+```
+
+#### Rules
+1. **NEVER work on the same branch in two worktrees** — git will refuse
+2. **Always check `git worktree list`** before starting work
+3. **Use descriptive paths**: `/tmp/nixos-<purpose>` (e.g., `/tmp/nixos-validation-fix`)
+4. **Use descriptive branch names**: `fix/...`, `feat/...`, `refactor/...`
+5. **Clean up worktrees when done** — stale worktrees waste disk space
+6. **Agents should suggest worktree creation** when parallel work is detected
+
 ### CRITICAL: Golden Test (Simulation-Driven Development)
 The golden test is our primary integrity mechanism — it captures the deterministic output of nix evaluation, simulating the actual deployment state.
 
