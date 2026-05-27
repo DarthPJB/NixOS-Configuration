@@ -73,6 +73,40 @@ let
       errors = [ ];
       warnings = [ ];
 
+      # DHCP completeness warnings
+      # Hosts with mac but missing hostname or ip will be silently dropped by mkDhcpDns.nix
+      dhcpWarnings =
+        if !hasAttr "lan" topology || !isAttrs topology.lan || !hasAttr "hosts" topology.lan then
+          [ ]
+        else
+          let
+            hosts = topology.lan.hosts;
+            hostWarnings = lib.mapAttrsToList
+              (name: host:
+                let
+                  hasMac = hasAttr "mac" host && host.mac != null;
+                  hasIp = hasAttr "ip" host;
+                  hasHostname = hasAttr "hostname" host;
+                  hostLabel = host.hostname or name;
+
+                  macNoHostname = hasMac && !hasHostname;
+                  macNoIp = hasMac && !hasIp;
+                  hostnameNoMac = hasHostname && !hasMac;
+                in
+                (if macNoHostname then
+                  [ "WARNING: host '${name}' has mac but no hostname — will be silently excluded from DHCP reservations" ]
+                else [ ])
+                ++ (if macNoIp then
+                  [ "WARNING: host '${name}' has mac but no ip — will be silently excluded from DHCP reservations" ]
+                else [ ])
+                ++ (if hostnameNoMac then
+                  [ "WARNING: host '${name}' has hostname but no mac — cannot create DHCP reservation" ]
+                else [ ])
+              )
+              hosts;
+          in
+          flatten hostWarnings;
+
       # Domain validation
       domainErrors =
         if !isString topology.domain || topology.domain == "" then
@@ -268,8 +302,8 @@ let
       allErrors =
         domainErrors ++ lanErrors ++ forwardingErrors ++ dnsErrors ++ wireguardErrors ++ firewallErrors;
 
-      # Warnings (none defined yet)
-      allWarnings = warnings;
+      # Warnings
+      allWarnings = warnings ++ dhcpWarnings;
 
     in
     {

@@ -39,6 +39,10 @@ in
           message = "Invalid topology for ${config.networking.hostName}: ${builtins.concatStringsSep "; " validation.errors}";
         }
       ];
+      # Surface topology warnings during build (non-blocking)
+      warnings = lib.optionals (config.coreRouter.enable && validation.warnings != [ ]) (
+        map (w: "topology: ${w}") validation.warnings
+      );
     }
 
     # UDP GRO service (machine-specific, not topology-managed)
