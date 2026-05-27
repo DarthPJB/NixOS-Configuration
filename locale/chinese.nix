@@ -25,7 +25,7 @@
       # Wayland/X11 settings
       settings = {
         globalOptions = {
-          "Hotkey/TriggerKeys" = "Control+space";
+          "Hotkey/TriggerKeys" = "Super+c";
           "Hotkey/AltTriggerKeys" = "";
           "Hotkey/EnumerateInputForwardKey" = "";
           "Hotkey/EnumerateInputBackwardKey" = "";
