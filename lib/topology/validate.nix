@@ -479,11 +479,20 @@ let
       checkWireguard = [ ];
 
       allErrors = checkNginx ++ checkForwarding ++ checkDns ++ checkWireguard;
+      allWarnings =
+        if topology ? tailscale && topology.tailscale ? advertisedHosts then
+          let
+            advertised = topology.tailscale.advertisedHosts;
+            missing = filter (h: !hasAttr h allHosts) advertised;
+          in
+          map (h: "tailscale advertised host '${h}' not found in lan.hosts") missing
+        else
+          [ ];
     in
     {
       valid = allErrors == [ ];
       errors = allErrors;
-      warnings = [ ];
+      warnings = allWarnings;
     };
 
 in
