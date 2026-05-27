@@ -350,14 +350,15 @@ let
   validateCrossReferences =
     topology:
     let
-      # Helper: Get all valid IPs (LAN + WireGuard)
+      # Helper: Get all valid IPs (LAN + WireGuard + Gateway)
       allHosts = topology.lan.hosts or { };
       lanIPs = map (h: h.ip) (attrValues allHosts);
       wgIPs =
         if topology ? wireguard && topology.wireguard ? peers then
           filter (x: x != null) (map (p: if allHosts.${p} ? wireguard then allHosts.${p}.wireguard else null) topology.wireguard.peers)
         else [ ];
-      validIPs = lanIPs ++ wgIPs;
+      gatewayIP = topology.lan.gateway or null;
+      validIPs = lanIPs ++ wgIPs ++ (if gatewayIP != null then [ gatewayIP ] else [ ]);
       validHostnames = attrNames allHosts;
 
       # Helper: Get hosts with routing.wireguard enabled
@@ -396,12 +397,19 @@ let
           flatten
             (
               mapAttrsToList
-                (domain: backend:
+                (domain: backendDef:
                   let
-                    parts = lib.splitString ":" backend;
+                    # Handle both string and attrset proxy definitions
+                    backend = if isString backendDef then backendDef else backendDef.backend or "";
+                    # Strip protocol prefix (http:// or https://)
+                    stripped = builtins.replaceStrings [ "http://" "https://" ] [ "" "" ] backend;
+                    # Split host:port and take host part
+                    parts = lib.splitString ":" stripped;
                     ref = builtins.head parts;
                   in
-                  if !isValidRef ref then
+                  if backend == "" then
+                    [ "nginx proxy '${domain}' has no backend defined" ]
+                  else if !isValidRef ref then
                     [ "nginx proxy '${domain}' backend '${ref}' not found in lan.hosts" ]
                   else if !isReachableTarget ref then
                     [ "nginx proxy '${domain}' backend '${ref}' not reachable — target must have routing.wireguard=true or be in LAN subnet" ]
@@ -425,12 +433,15 @@ let
             map
               (rule:
                 let
-                  dest = rule.dest or rule.to or null;
+                  destFull = rule.dest or rule.to or null;
+                  # Extract IP from "IP:port" format
+                  destParts = if destFull != null then lib.splitString ":" destFull else [ ];
+                  dest = if destParts != [ ] then builtins.head destParts else null;
                 in
                 if dest == null then
                   [ ]
                 else if !isValidRef dest then
-                  [ "forwarding rule dest '${dest}' not found in lan.hosts" ]
+                  [ "forwarding rule dest '${dest}' not found in lan.hosts (from '${destFull}')" ]
                 else if !isReachableTarget dest then
                   [ "forwarding rule dest '${dest}' not reachable — target must have routing.wireguard=true or be in LAN subnet" ]
                 else
