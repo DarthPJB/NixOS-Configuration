@@ -107,6 +107,21 @@ let
           in
           flatten hostWarnings;
 
+      # Hostname uniqueness validation
+      # Warn if duplicate hostnames found across different host keys
+      hostnameWarnings =
+        if !hasAttr "lan" topology || !isAttrs topology.lan || !hasAttr "hosts" topology.lan then
+          [ ]
+        else
+          let
+            hosts = topology.lan.hosts;
+            allHostnames = lib.mapAttrsToList (name: host: host.hostname or null) hosts;
+            validHostnames = filter (h: h != null) allHostnames;
+            duplicates = getDuplicates validHostnames;
+          in
+          if duplicates == [ ] then [ ]
+          else map (dup: "WARNING: duplicate hostname '${dup}' found across multiple hosts") duplicates;
+
       # Domain validation
       domainErrors =
         if !isString topology.domain || topology.domain == "" then
@@ -323,7 +338,7 @@ let
         domainErrors ++ lanErrors ++ forwardingErrors ++ dnsErrors ++ wireguardErrors ++ firewallErrors;
 
       # Warnings
-      allWarnings = warnings ++ dhcpWarnings ++ interfaceWarnings;
+      allWarnings = warnings ++ dhcpWarnings ++ hostnameWarnings ++ interfaceWarnings;
 
     in
     {
