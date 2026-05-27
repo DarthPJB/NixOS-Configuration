@@ -290,20 +290,40 @@ let
               else
                 [ ];
 
-            udpPortsErrors =
-              if !hasAttr "allowedUDPPorts" topology.firewall || !isList topology.firewall.allowedUDPPorts then
-                [ "firewall.allowedUDPPorts must be a list" ]
-              else
-                [ ];
+          udpPortsErrors =
+            if !hasAttr "allowedUDPPorts" topology.firewall || !isList topology.firewall.allowedUDPPorts then
+              [ "firewall.allowedUDPPorts must be a list" ]
+            else
+              [ ];
           in
           tcpPortsErrors ++ udpPortsErrors;
+
+      # Interface name validation for firewall
+      # firewall.interfaces keys must be one of: lan.interface, lan.wanInterface, wireguard.interface
+      interfaceWarnings =
+        if !hasAttr "firewall" topology || !isAttrs topology.firewall then
+          [ ]
+        else if !hasAttr "interfaces" topology.firewall || !isAttrs topology.firewall.interfaces then
+          [ ]
+        else
+          let
+            validInterfaces = [
+              topology.lan.interface or null
+              topology.lan.wanInterface or null
+              (topology.wireguard.interface or null)
+            ];
+            knownInterfaces = lib.filter (x: x != null) validInterfaces;
+            ifaceNames = attrNames topology.firewall.interfaces;
+            unknownIfaces = filter (name: !elem name knownInterfaces) ifaceNames;
+          in
+          map (name: "WARNING: unknown firewall interface '${name}' — expected one of: ${lib.concatStringsSep ", " knownInterfaces}") unknownIfaces;
 
       # Combine all errors
       allErrors =
         domainErrors ++ lanErrors ++ forwardingErrors ++ dnsErrors ++ wireguardErrors ++ firewallErrors;
 
       # Warnings
-      allWarnings = warnings ++ dhcpWarnings;
+      allWarnings = warnings ++ dhcpWarnings ++ interfaceWarnings;
 
     in
     {
