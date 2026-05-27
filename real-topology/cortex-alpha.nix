@@ -66,6 +66,11 @@
         hostname = "michel";
       };
 
+      ap = {
+        ip = "10.88.128.2";
+        hostname = "ap";
+      };
+
       print-controller = {
         ip = "10.88.128.10";
         mac = "b8:27:eb:7f:f0:38";

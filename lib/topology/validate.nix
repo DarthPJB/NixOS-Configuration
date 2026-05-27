@@ -60,7 +60,7 @@ let
       counts = builtins.foldl'
         (
           acc: item:
-            if hasAttr item acc then acc // { ${item} = 1; } else acc // { ${item} = 1; }
+            if hasAttr item acc then acc // { ${item} = acc.${item} + 1; } else acc // { ${item} = 1; }
         )
         { }
         list;
@@ -72,6 +72,55 @@ let
     let
       errors = [ ];
       warnings = [ ];
+
+      # DHCP completeness warnings
+      # Hosts with mac but missing hostname or ip will be silently dropped by mkDhcpDns.nix
+      dhcpWarnings =
+        if !hasAttr "lan" topology || !isAttrs topology.lan || !hasAttr "hosts" topology.lan then
+          [ ]
+        else
+          let
+            hosts = topology.lan.hosts;
+            hostWarnings = lib.mapAttrsToList
+              (name: host:
+                let
+                  hasMac = hasAttr "mac" host && host.mac != null;
+                  hasIp = hasAttr "ip" host;
+                  hasHostname = hasAttr "hostname" host;
+                  hostLabel = host.hostname or name;
+
+                  macNoHostname = hasMac && !hasHostname;
+                  macNoIp = hasMac && !hasIp;
+                  hostnameNoMac = hasHostname && !hasMac;
+                in
+                (if macNoHostname then
+                  [ "WARNING: host '${name}' has mac but no hostname — will be silently excluded from DHCP reservations" ]
+                else [ ])
+                ++ (if macNoIp then
+                  [ "WARNING: host '${name}' has mac but no ip — will be silently excluded from DHCP reservations" ]
+                else [ ])
+                ++ (if hostnameNoMac then
+                  [ "WARNING: host '${name}' has hostname but no mac — cannot create DHCP reservation" ]
+                else [ ])
+              )
+              hosts;
+          in
+          flatten hostWarnings;
+
+      # Hostname uniqueness validation
+      # Warn if duplicate hostnames found across different host keys
+      hostnameWarnings =
+        if !hasAttr "lan" topology || !isAttrs topology.lan || !hasAttr "hosts" topology.lan then
+          [ ]
+        else
+          let
+            hosts = topology.lan.hosts;
+            allHostnames = lib.mapAttrsToList (name: host: host.hostname or null) hosts;
+            validHostnames = filter (h: h != null) allHostnames;
+            duplicates = getDuplicates validHostnames;
+          in
+          if duplicates == [ ] then [ ]
+          else map (dup: "WARNING: duplicate hostname '${dup}' found across multiple hosts") duplicates;
 
       # Domain validation
       domainErrors =
@@ -256,20 +305,40 @@ let
               else
                 [ ];
 
-            udpPortsErrors =
-              if !hasAttr "allowedUDPPorts" topology.firewall || !isList topology.firewall.allowedUDPPorts then
-                [ "firewall.allowedUDPPorts must be a list" ]
-              else
-                [ ];
+          udpPortsErrors =
+            if !hasAttr "allowedUDPPorts" topology.firewall || !isList topology.firewall.allowedUDPPorts then
+              [ "firewall.allowedUDPPorts must be a list" ]
+            else
+              [ ];
           in
           tcpPortsErrors ++ udpPortsErrors;
+
+      # Interface name validation for firewall
+      # firewall.interfaces keys must be one of: lan.interface, lan.wanInterface, wireguard.interface
+      interfaceWarnings =
+        if !hasAttr "firewall" topology || !isAttrs topology.firewall then
+          [ ]
+        else if !hasAttr "interfaces" topology.firewall || !isAttrs topology.firewall.interfaces then
+          [ ]
+        else
+          let
+            validInterfaces = [
+              topology.lan.interface or null
+              topology.lan.wanInterface or null
+              (topology.wireguard.interface or null)
+            ];
+            knownInterfaces = lib.filter (x: x != null) validInterfaces;
+            ifaceNames = attrNames topology.firewall.interfaces;
+            unknownIfaces = filter (name: !elem name knownInterfaces) ifaceNames;
+          in
+          map (name: "WARNING: unknown firewall interface '${name}' — expected one of: ${lib.concatStringsSep ", " knownInterfaces}") unknownIfaces;
 
       # Combine all errors
       allErrors =
         domainErrors ++ lanErrors ++ forwardingErrors ++ dnsErrors ++ wireguardErrors ++ firewallErrors;
 
-      # Warnings (none defined yet)
-      allWarnings = warnings;
+      # Warnings
+      allWarnings = warnings ++ dhcpWarnings ++ hostnameWarnings ++ interfaceWarnings;
 
     in
     {
@@ -281,15 +350,41 @@ let
   validateCrossReferences =
     topology:
     let
-      # Helper: Get all valid IPs (LAN + WireGuard)
+      # Helper: Get all valid IPs (LAN + WireGuard + Gateway)
       allHosts = topology.lan.hosts or { };
       lanIPs = map (h: h.ip) (attrValues allHosts);
       wgIPs =
         if topology ? wireguard && topology.wireguard ? peers then
           filter (x: x != null) (map (p: if allHosts.${p} ? wireguard then allHosts.${p}.wireguard else null) topology.wireguard.peers)
         else [ ];
-      validIPs = lanIPs ++ wgIPs;
+      gatewayIP = topology.lan.gateway or null;
+      validIPs = lanIPs ++ wgIPs ++ (if gatewayIP != null then [ gatewayIP ] else [ ]);
       validHostnames = attrNames allHosts;
+
+      # Helper: Get hosts with routing.wireguard enabled
+      wgRoutingHosts =
+        lib.filterAttrs (n: h: h ? routing && h.routing ? wireguard && h.routing.wireguard) allHosts;
+      wgRoutingHostnames = attrNames wgRoutingHosts;
+
+      # Get LAN subnet for reachability checks
+      lanSubnet = topology.lan.subnet or null;
+
+      # Helper: Check if IP is in LAN subnet
+      isIpInLanSubnet = ip:
+        if lanSubnet == null then false
+        else ipInSubnet ip lanSubnet;
+
+      # Helper: Check if target hostname has wireguard routing or IP is in LAN subnet
+      isReachableTarget = ref:
+        if isIP ref then
+          isIpInLanSubnet ref
+        else
+          let
+            host = allHosts.${ref} or null;
+          in
+          if host == null then false
+          else host ? routing && host.routing ? wireguard && host.routing.wireguard
+          || isIpInLanSubnet host.ip;
 
       # Helper: Check if reference is valid (IP or hostname)
       isValidRef = ref:
@@ -302,13 +397,22 @@ let
           flatten
             (
               mapAttrsToList
-                (domain: backend:
+                (domain: backendDef:
                   let
-                    parts = lib.splitString ":" backend;
+                    # Handle both string and attrset proxy definitions
+                    backend = if isString backendDef then backendDef else backendDef.backend or "";
+                    # Strip protocol prefix (http:// or https://)
+                    stripped = builtins.replaceStrings [ "http://" "https://" ] [ "" "" ] backend;
+                    # Split host:port and take host part
+                    parts = lib.splitString ":" stripped;
                     ref = builtins.head parts;
                   in
-                  if !isValidRef ref then
+                  if backend == "" then
+                    [ "nginx proxy '${domain}' has no backend defined" ]
+                  else if !isValidRef ref then
                     [ "nginx proxy '${domain}' backend '${ref}' not found in lan.hosts" ]
+                  else if !isReachableTarget ref then
+                    [ "nginx proxy '${domain}' backend '${ref}' not reachable — target must have routing.wireguard=true or be in LAN subnet" ]
                   else
                     [ ]
                 )
@@ -329,12 +433,17 @@ let
             map
               (rule:
                 let
-                  dest = rule.dest or rule.to or null;
+                  destFull = rule.dest or rule.to or null;
+                  # Extract IP from "IP:port" format
+                  destParts = if destFull != null then lib.splitString ":" destFull else [ ];
+                  dest = if destParts != [ ] then builtins.head destParts else null;
                 in
                 if dest == null then
                   [ ]
                 else if !isValidRef dest then
-                  [ "forwarding rule dest '${dest}' not found in lan.hosts" ]
+                  [ "forwarding rule dest '${dest}' not found in lan.hosts (from '${destFull}')" ]
+                else if !isReachableTarget dest then
+                  [ "forwarding rule dest '${dest}' not reachable — target must have routing.wireguard=true or be in LAN subnet" ]
                 else
                   [ ]
               )
@@ -381,11 +490,20 @@ let
       checkWireguard = [ ];
 
       allErrors = checkNginx ++ checkForwarding ++ checkDns ++ checkWireguard;
+      allWarnings =
+        if topology ? tailscale && topology.tailscale ? advertisedHosts then
+          let
+            advertised = topology.tailscale.advertisedHosts;
+            missing = filter (h: !hasAttr h allHosts) advertised;
+          in
+          map (h: "tailscale advertised host '${h}' not found in lan.hosts") missing
+        else
+          [ ];
     in
     {
       valid = allErrors == [ ];
       errors = allErrors;
-      warnings = [ ];
+      warnings = allWarnings;
     };
 
 in
