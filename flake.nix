@@ -20,14 +20,19 @@
     star-citizen.url = "github:LovingMelody/nix-citizen";
     xlibre-overlay.url = "git+https://codeberg.org/takagemacoed/xlibre-overlay";
     ikbaeb-th = { url = "github:DarthPJB/IKBAEB-th"; };
+    bargman-assets = {
+      url = "git+ssh://git@gitlab.com/mecha-team-zero/bargman-assets.git?ref=main";
+      inputs.nixpkgs.follows = "nixpkgs_stable";
+    };
   };
-  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ikbaeb-th }:
+  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ikbaeb-th, bargman-assets }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
       globalArgs = {
         inherit self;
         inherit ikbaeb-th;
+        inherit bargman-assets;
         llm = import nixpkgs_llm { system = "x86_64-linux"; config.allowUnfree = true; };
       };
       commonModules = [
@@ -326,6 +331,9 @@
         #          config = self.nixosConfigurations.local-worker.config;
         #          name = "local-worker-image";
         #        };
+        "x86_64-linux" = {
+          lightdm-webkit2-greeter = nixpkgs.callPackage ./pkgs/lightdm-webkit2-greeter.nix { };
+        };
         "aarch64-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.print-controller
           self.nixosConfigurations.display-0

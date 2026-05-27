@@ -16,14 +16,14 @@
       addons = with pkgs; [
         # Rime input method for Chinese
         fcitx5-rime
-        
+
         # Chinese addons for fcitx5 (renamed in newer nixpkgs)
         qt6Packages.fcitx5-chinese-addons
-        
+
         # GTK and Qt integration
         fcitx5-gtk
         qt6Packages.fcitx5-qt
-        
+
         # Configuration GUI (renamed in newer nixpkgs)
         qt6Packages.fcitx5-configtool
       ];
@@ -133,17 +133,17 @@
   environment.systemPackages = with pkgs; [
     # Core fcitx5
     fcitx5
-    
+
     # Rime input method
     fcitx5-rime
-    
+
     # Chinese addons (renamed in newer nixpkgs)
     qt6Packages.fcitx5-chinese-addons
-    
+
     # GTK and Qt integration
     fcitx5-gtk
     qt6Packages.fcitx5-qt
-    
+
     # Configuration tool (renamed in newer nixpkgs)
     qt6Packages.fcitx5-configtool
   ];

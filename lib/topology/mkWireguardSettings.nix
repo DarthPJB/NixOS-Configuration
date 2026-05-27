@@ -38,13 +38,13 @@ let
         pubKey = readPubKey hostname;
       in
       if pubKey == null then null else
-        let
-          isHub = isServing.${hostname};
-          # Derive subnet IP from machine's wireguard IP (e.g., "10.88.127.1" -> "10.88.127.0")
-          ipParts = lib.splitString "." machine.wireguard;
-          subnetIp = "${builtins.elemAt ipParts 0}.${builtins.elemAt ipParts 1}.${builtins.elemAt ipParts 2}.0";
-        in
-        {
+      let
+        isHub = isServing.${hostname};
+        # Derive subnet IP from machine's wireguard IP (e.g., "10.88.127.1" -> "10.88.127.0")
+        ipParts = lib.splitString "." machine.wireguard;
+        subnetIp = "${builtins.elemAt ipParts 0}.${builtins.elemAt ipParts 1}.${builtins.elemAt ipParts 2}.0";
+      in
+      {
         inherit hostname;
         interface = "wireg0";
         listenPort = if isHub then 2108 else null;

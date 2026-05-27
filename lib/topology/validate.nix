@@ -305,11 +305,11 @@ let
               else
                 [ ];
 
-          udpPortsErrors =
-            if !hasAttr "allowedUDPPorts" topology.firewall || !isList topology.firewall.allowedUDPPorts then
-              [ "firewall.allowedUDPPorts must be a list" ]
-            else
-              [ ];
+            udpPortsErrors =
+              if !hasAttr "allowedUDPPorts" topology.firewall || !isList topology.firewall.allowedUDPPorts then
+                [ "firewall.allowedUDPPorts must be a list" ]
+              else
+                [ ];
           in
           tcpPortsErrors ++ udpPortsErrors;
 
@@ -384,7 +384,7 @@ let
           in
           if host == null then false
           else host ? routing && host.routing ? wireguard && host.routing.wireguard
-          || isIpInLanSubnet host.ip;
+            || isIpInLanSubnet host.ip;
 
       # Helper: Check if reference is valid (IP or hostname)
       isValidRef = ref:

@@ -7,6 +7,7 @@
 {
   imports = [
     ./i3wm.nix
+    ./bargman-greeter.nix
   ];
 
   systemd.user.services.xwinwrap = lib.mkDefault {
