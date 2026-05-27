@@ -29,6 +29,7 @@
     ../../environments/video_call_streaming.nix
     ../../environments/cloud_and_backup.nix
     ../../locale/tailscale.nix
+    ../../locale/chinese.nix
     ../../environments/rtl-sdr.nix
     ../../modifier_imports/bluetooth.nix
     ../../modifier_imports/memtest.nix
