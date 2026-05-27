@@ -7,12 +7,21 @@
 - These MUST match. Changing one without the other breaks the build.
 - Do NOT run `nix fmt` on the entire codebase without explicit permission.
 
-### CRITICAL: Golden Test
-The golden test validates topology-driven configuration against main branch:
+### CRITICAL: Golden Test (Simulation-Driven Development)
+The golden test is our primary integrity mechanism — it captures the deterministic output of nix evaluation, simulating the actual deployment state.
+
+**Philosophy:**
+- **Golden tests represent the best possible working state** — the canonical record of correct configuration output
+- **All failures are errors** — no silent failure; deployment is blocked on any mismatch
+- **No unintended side effects** — structural code changes must not alter golden output; if they do, the system is working correctly by catching the drift
+- **Intended changes require manual golden update** — the user must explicitly regenerate and validate the new state before committing
+- **Errors may be lowered to warnings by user request** — but warnings cannot be silenced
+- **Coverage grows over time** — every new machine eventually gets a golden test
+
 ```bash
 nix run .#check-network -- cortex-alpha
 ```
-**DO NOT DEPLOY** if golden test fails. The golden file was generated from main's inline configuration and must match exactly.
+**DO NOT DEPLOY** if golden test fails. The golden file captures the exact deterministic evaluation output and must match exactly.
 
 ### CRITICAL: WireGuard Public Keys
 Public keys are read from `secrets/public_keys/wireguard/wg_${name}_pub` files using `builtins.readFile`. The transformation function requires `self` (the flake) to construct paths. **DO NOT use placeholder keys** - the system was broken by this previously.

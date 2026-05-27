@@ -54,14 +54,16 @@
         services = [ ];
       };
       
-      michel-one = {
-        ip = "10.88.128.248";
+      michel-wifi-247 = {
+        ip = "10.88.128.247";
         mac = "60:45:2e:9d:42:ac";
+        hostname = "michel-wifi";
       };
 
-      michel-one = {
+      michel-248 = {
         ip = "10.88.128.248";
         mac = "00:e0:4c:68:03:8f";
+        hostname = "michel";
       };
 
       print-controller = {

@@ -348,36 +348,49 @@ Topology validation failed:
   - WireGuard peer 'beta-one' missing public key at secrets/...
 ```
 
-### 1.9 Golden Test Integration
+### 1.9 Golden Test Integration (Simulation-Driven Development)
 
-Every machine in nixosConfigurations MUST have a golden test:
+Golden tests are the **cornerstone of simulation-driven development**. We simulate the configuration in stateless evaluation to pass golden checks. This is not a testing convenience — it is our primary mechanism for ensuring configuration integrity.
 
-1. Topology data exists for the machine
-2. Transformer produces settings
-3. Generator produces NixOS config
-4. Capture network-relevant config as golden JSON
-5. Future changes that alter config break golden test
-6. Intentional changes require regenerating golden file
+**Philosophy:**
+
+1. **Golden tests represent the best possible working state.** The golden file is the canonical record of what the configuration SHOULD produce when evaluated correctly.
+
+2. **All failures are errors.** There is no allowance for silent failure. If the golden test fails, deployment is blocked. Period.
+
+3. **Golden tests capture deterministic nix evaluation.** The output reflects exactly what nix will produce — no approximation, no subset, no abstraction. This is the actual deployment state, simulated.
+
+4. **Structural changes must not have side effects.** The golden test catches unintended consequences of code changes. If you modify a transformer and the golden breaks, that is the system working correctly.
+
+5. **Intended side effects require manual golden update.** When you WANT the configuration to change, you must explicitly regenerate the golden file and validate the new state. This forces conscious acknowledgment of what changed.
+
+6. **Errors may be lowered to warnings by user request.** The user has authority to relax a failure to a warning. But warnings cannot be silenced — they persist in build output as persistent indicators.
+
+7. **Golden coverage grows over time.** Every new machine added to the topology eventually gets a golden test. Every new service gets golden coverage. We expand the simulation surface continuously.
 
 **Lifecycle**:
 ```bash
-# Initial creation
+# Initial creation — capture the working state
 nix run .#check-network -- cortex-alpha > real-topology/golden/cortex-alpha.json
 
-# During CI/CD
-nix run .#check-network -- cortex-alpha --compare
-# Fails if current output != golden file
+# During CI/CD — validate against golden
+nix run .#check-network -- cortex-alpha
+# Fails if current output != golden file → BLOCK DEPLOYMENT
 
-# After intentional change
+# After intentional change — user validates new state
 nix run .#check-network -- cortex-alpha > real-topology/golden/cortex-alpha.json
+# Review the diff carefully
+git diff real-topology/golden/cortex-alpha.json
+# Only commit after confirming the change is correct
 git add real-topology/golden/cortex-alpha.json
-git commit -m "topology: update golden for cortex-alpha"
+git commit -m "topology: update golden for cortex-alpha (intentional nginx proxy change)"
 ```
 
 **Coverage Requirement**:
 - `nix flake check` includes topology-coverage test
-- For every machine in `nixosConfigurations`, topology data must exist
-- Missing topology = warning (Phase 1), error (Phase 2+)
+- For every machine in `nixosConfigurations`, topology data MUST exist
+- Golden coverage expands as machines are added to the topology
+- Missing topology = error (no exceptions)
 
 ### 1.10 Naming Conventions
 

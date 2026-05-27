@@ -90,13 +90,16 @@
 - **Proposed Solution**: Add cross-section validation rules to `validate.nix`.
 - **Estimated Effort**: 2-3 hours
 
-### TG-012: Golden Test Scope Too Broad
-- **Severity**: Medium
-- **Status**: OPEN
-- **Description**: Golden file captures full NixOS config (567 lines) including `environment.systemPackages`, `boot.kernel.sysctl`, etc. Non-network changes break the golden test.
-- **Impact**: False positives on golden test for unrelated config changes.
-- **Proposed Solution**: Narrow golden to network-relevant sections only, or create separate network-golden and full-golden targets.
-- **Estimated Effort**: 2-3 hours
+### TG-012: Golden Test Scope — INTENTIONAL BY DESIGN
+- **Severity**: N/A — This is not an issue
+- **Status**: CLOSED (not a defect)
+- **Rationale**: The golden test intentionally captures the FULL deterministic output of nix evaluation — not just network-relevant sections. This is by design:
+  - Golden tests represent the best possible working state
+  - All failures are errors (no silent failure)
+  - The golden captures exactly what nix evaluates — no abstraction, no subset
+  - This ensures structural changes cannot have unintended side effects
+  - Intended side effects require manual golden update by the user
+- **Decision**: Golden scope is intentionally broad. Coverage grows over time as machines are added.
 
 ### TG-013: lib/topology/default.nix Dead Code
 - **Severity**: Low
@@ -122,4 +125,3 @@
 ### Following: Medium Priority
 11. TG-006: Update documentation
 12. TG-007: Add cross-section validation
-13. TG-012: Narrow golden test scope
