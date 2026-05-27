@@ -325,6 +325,31 @@ let
       validIPs = lanIPs ++ wgIPs;
       validHostnames = attrNames allHosts;
 
+      # Helper: Get hosts with routing.wireguard enabled
+      wgRoutingHosts =
+        lib.filterAttrs (n: h: h ? routing && h.routing ? wireguard && h.routing.wireguard) allHosts;
+      wgRoutingHostnames = attrNames wgRoutingHosts;
+
+      # Get LAN subnet for reachability checks
+      lanSubnet = topology.lan.subnet or null;
+
+      # Helper: Check if IP is in LAN subnet
+      isIpInLanSubnet = ip:
+        if lanSubnet == null then false
+        else ipInSubnet ip lanSubnet;
+
+      # Helper: Check if target hostname has wireguard routing or IP is in LAN subnet
+      isReachableTarget = ref:
+        if isIP ref then
+          isIpInLanSubnet ref
+        else
+          let
+            host = allHosts.${ref} or null;
+          in
+          if host == null then false
+          else host ? routing && host.routing ? wireguard && host.routing.wireguard
+          || isIpInLanSubnet host.ip;
+
       # Helper: Check if reference is valid (IP or hostname)
       isValidRef = ref:
         if isIP ref then elem ref validIPs
@@ -343,6 +368,8 @@ let
                   in
                   if !isValidRef ref then
                     [ "nginx proxy '${domain}' backend '${ref}' not found in lan.hosts" ]
+                  else if !isReachableTarget ref then
+                    [ "nginx proxy '${domain}' backend '${ref}' not reachable — target must have routing.wireguard=true or be in LAN subnet" ]
                   else
                     [ ]
                 )
@@ -369,6 +396,8 @@ let
                   [ ]
                 else if !isValidRef dest then
                   [ "forwarding rule dest '${dest}' not found in lan.hosts" ]
+                else if !isReachableTarget dest then
+                  [ "forwarding rule dest '${dest}' not reachable — target must have routing.wireguard=true or be in LAN subnet" ]
                 else
                   [ ]
               )
