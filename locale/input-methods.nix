@@ -1,6 +1,6 @@
 # Unified Input Methods Configuration
 # Supports Chinese (rime) and Thai (IKBAEB-th) input methods via fcitx5
-# Keybindings: Super+c = Chinese, Super+t = Thai
+# Keybindings: Super+Space = Toggle IME, Super+c = Chinese, Super+t = Thai
 { config, pkgs, lib, self, ... }:
 
 {
@@ -30,34 +30,43 @@
 
       settings = {
         globalOptions = {
-          # Primary trigger: Super+c for Chinese input
-          "Hotkey/TriggerKeys" = "Super+c";
+          # Toggle fcitx5 on/off (returns to English when off)
+          "Hotkey/TriggerKeys" = "Super+space";
           "Hotkey/AltTriggerKeys" = "";
-          "Hotkey/EnumerateInputForwardKey" = "";
-          "Hotkey/EnumerateInputBackwardKey" = "";
+          
+          # Cycle through input methods
+          "Hotkey/EnumerateInputForwardKey" = "Super+c";
+          "Hotkey/EnumerateInputBackwardKey" = "Super+t";
+          
+          # Page through candidates
           "Hotkey/PreviousPage" = "Page_Up";
           "Hotkey/NextPage" = "Page_Down";
         };
 
-        # Input method groups
+        # Input method group: English -> Chinese -> Thai
         inputMethod = {
-          # Default group
           "Groups/0" = {
             "Name" = "Default";
-            "Default Layout" = "ikbatha0";
-            "DefaultIM" = "rime";
+            "Default Layout" = "us";
+            "DefaultIM" = "keyboard-us";
           };
 
-          # Thai keyboard layout
+          # English keyboard (default)
           "Groups/0/Items/0" = {
             "Name" = "keyboard";
-            "Layout" = "ikbatha0";
+            "Layout" = "us";
           };
 
           # Chinese rime input
           "Groups/0/Items/1" = {
             "Name" = "rime";
             "Layout" = "";
+          };
+
+          # Thai IKBAEB-th layout
+          "Groups/0/Items/2" = {
+            "Name" = "keyboard";
+            "Layout" = "ikbatha0";
           };
         };
 
