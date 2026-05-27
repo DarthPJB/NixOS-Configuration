@@ -28,8 +28,8 @@ let
   allWarnings = wireguardSettings.warnings ++ nginxSettings.warnings ++ dnsSettings.warnings;
   allErrors = wireguardSettings.errors ++ nginxSettings.errors ++ firewallSettings.errors ++ dnsSettings.errors;
 
-  # Is this machine the hub?
-  isHub = hostname == wireguardSettings.hubName;
+  # Is this machine a hub (serving clients)?
+  isHub = wireguardSettings.machines.${hostname}.isHub or false;
 in
 {
   options.coreRouterTopology.enable = lib.mkOption {

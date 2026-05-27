@@ -4,6 +4,26 @@
 **Status**: Active
 **Priority**: High
 
+## Just Resolved (2026-05-27)
+
+### TG-014: Syntax Errors in mkWireguardSettings Consumers — RESOLVED
+- **Severity**: Critical
+- **Status**: RESOLVED
+- **Description**: Two `inherit` statements used `machines= filteredMachines` (invalid Nix syntax) instead of `machines = filteredMachines`.
+- **Files fixed**: `lib/topology/mkNginxSettings.nix:79`, `lib/topology/mkDnsSettings.nix:27`
+
+### TG-015: Missing hubName/hubIps in mkWireguardSettings — RESOLVED
+- **Severity**: Critical
+- **Status**: RESOLVED
+- **Description**: `genWireguard.nix` and `core-router-topology.nix` referenced `settings.hubName` and `machineSettings.hubIps` which were not produced by `mkWireguardSettings.nix`. Fixed by adding per-machine `isHub` and `hubIps` to the transformer, and updating consumers to use per-machine fields.
+- **Files fixed**: `lib/topology/mkWireguardSettings.nix`, `lib/topology/genWireguard.nix`, `modules/core-router-topology.nix`
+
+### TG-016: Documentation Misrepresented WIP Status — RESOLVED
+- **Severity**: Medium
+- **Status**: RESOLVED
+- **Description**: AGENTS.md presented the new two-layer architecture as active/current and the production per-machine architecture as "legacy/being phased out". Corrected to accurately reflect: production architecture uses per-machine files, new architecture is WIP and not yet used by any machine.
+- **Files fixed**: `AGENTS.md`, `documentation/topology-migration-guide.md`, `documentation/core-router-usage.md`
+
 ## Resolved Issues
 
 ### TG-001: validate.nix Not Integrated — RESOLVED (2026-05-06)

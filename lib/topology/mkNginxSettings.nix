@@ -76,5 +76,6 @@ let
   errors = [ ];
 in
 {
-  inherit warnings errors machines= filteredMachines;
+  inherit warnings errors;
+  machines = filteredMachines;
 }

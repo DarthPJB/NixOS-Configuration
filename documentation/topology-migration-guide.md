@@ -126,6 +126,8 @@ Generate and save the golden baseline:
 nix run .#generate-golden -- <machine-name> > real-topology/golden/<machine-name>.json
 ```
 
+> **CRITICAL**: Golden tests are the **ground truth** for deployment. They capture the exact deterministic evaluation output and must match before any deployment. Once a golden file is committed, it must ONLY be regenerated for **intentional configuration changes** (new ports, added hosts, changed IPs). **Never** regenerate a golden file as part of code restructuring — if `check-network` fails after refactoring, the refactoring introduced an unintended side effect. Fix the code, never the golden.
+
 ### 6. Commit Changes
 
 Add the new files to git:

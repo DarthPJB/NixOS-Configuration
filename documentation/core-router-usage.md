@@ -58,6 +58,8 @@ The core-router module is designed to work alongside existing inline configurati
 - Remove corresponding inline config
 - Regenerate golden file: `nix run .#generate-golden -- <hostname> > real-topology/golden/<hostname>.json`
 
+> **CRITICAL**: Regenerate golden only when making **intentional configuration changes** (new ports, added hosts, changed IPs). Never regenerate during code restructuring. The golden file is the ground truth — if `check-network` fails after restructuring, the restructuring introduced a bug.
+
 ### Phase 3: Validate and Commit
 - Run `nix run .#check-network -- <hostname>` to ensure topology matches golden
 - Test deployment with `nix run .#<hostname>`

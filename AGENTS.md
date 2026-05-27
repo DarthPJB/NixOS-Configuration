@@ -91,13 +91,58 @@ networking.wireguard.interfaces.wireg0.privateKeyFile =
   config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
 ```
 
-### Two-Layer Topology Architecture (Current)
+### CRITICAL: Golden Tests Must NEVER Be Changed by Restructuring
 
-The new architecture uses a **single topology source of truth** with a clear two-layer pattern: **Transformers** → **Generators**.
+Golden tests are the **ground truth**. They capture the exact deterministic evaluation output for each machine. They are NOT "legacy" or "new" — they represent correct working state. Any refactoring of transformers, generators, or modules MUST produce byte-identical golden output. If output diverges, the new code is wrong — never the golden.
 
-**Architecture Pattern:**
+**Rules:**
+- Golden regeneration is ONLY for intentional configuration changes (new ports, added hosts, changed IPs)
+- Code restructuring must NEVER require golden regeneration
+- If `check-network` fails after refactoring, the refactoring introduced a side effect — fix it
+- The user explicitly authorizes all golden updates
+
+### Active Architecture (Production)
+
+The production architecture uses per-machine topology files with direct transformation:
+
+**Data Flow:**
 ```
-topology.nix (single source of truth for entire network)
+real-topology/<machine>.nix (per-machine topology data)
+         ↓
+lib/topology/*.nix (transformation functions: mkWireguardPeers, mkNginxProxies, mkDhcpDns, etc.)
+         ↓
+modules/core-router.nix (NixOS config generation)
+```
+
+**Active Files:**
+- `real-topology/<machine>.nix` - Per-machine topology data (DNS, nginx, firewall, WG, etc.)
+- `real-topology/default.nix` - Golden test generator
+- `real-topology/golden/<machine>.json` - Golden test references (sacrosanct)
+- `lib/topology/mkWireguardPeers.nix` - WireGuard peer transformation (requires `self`)
+- `lib/topology/mkTailscaleConfig.nix` - Tailscale configuration
+- `lib/topology/mkDhcpDns.nix` - DHCP/DNS configuration
+- `lib/topology/mkNginxProxies.nix` - Nginx proxy configuration
+- `lib/topology/mkForwarding.nix` - nftables forwarding rules
+- `lib/topology/mkMonitoringSettings.nix` - Prometheus exporter config
+- `lib/topology/validate.nix` - Topology validation
+- `lib/topology/utils.nix` - Shared utilities
+- `modules/core-router.nix` - Core router module (imported by cortex-alpha)
+- `modules/enable-wg.nix` - WireGuard client module
+
+**Currently Using Production Architecture:** cortex-alpha (via `machines/cortex-alpha/default.nix`)
+
+**Known Issues (Active):**
+- Inconsistent function signatures across transformers
+- `validate.nix` cross-reference validation not fully integrated
+- Hardcoded nginx listen addresses
+
+### WIP: Two-Layer Topology Architecture (Incremental Development)
+
+The WIP architecture introduces a **single topology source of truth** with a clear two-layer pattern: **Transformers** → **Generators**. This is under active development and NOT yet used by any machine.
+
+**Architecture Pattern (WIP):**
+```
+topology.nix (incremental — only models what it currently generates, NOT a complete network description)
      ↓
 lib/topology/mk*Settings.nix (transformers: topology + files → flat pure data)
      ↓
@@ -106,87 +151,39 @@ lib/topology/gen*.nix (generators: settings + hostname → NixOS config)
 modules/core-router-topology.nix or modules/enable-wg-topology.nix
 ```
 
-**Core Concept:**
-- **One `topology.nix`** at repo root describes the entire network
-- Each machine is an attrset key with minimal data
-- Transformers read the topology and any required files, returning normalized flat data
-- Generators consume settings + hostname and produce machine-specific NixOS configuration
-- All golden tests validate against this single source
+**Key Principles:**
+- `topology.nix` is **incremental** — it only models what it generates. Per-machine files (`real-topology/*.nix`) remain the complete data source.
+- Transformers + generators must produce **identical output** to the production path when integrated. Golden tests enforce this.
+- Integration is done **one machine at a time**, not all at once.
+- Until wired into a machine's config, the WIP code is dead code. When wired, it MUST pass `check-network`.
 
-**Files:**
-- `topology.nix` - Single source of truth for entire network topology
-- `lib/topology/mkWireguardSettings.nix` - WireGuard transformer (reads topology + key files)
-- `lib/topology/genWireguard.nix` - WireGuard generator (settings + hostname → config)
+**WIP Files:**
+- `topology.nix` - Incremental network topology (WireGuard IPs, LAN IPs, peer relations only)
+- `lib/topology/mkWireguardSettings.nix` - WireGuard transformer
+- `lib/topology/genWireguard.nix` - WireGuard generator
 - `lib/topology/mkNginxSettings.nix` - Nginx transformer
 - `lib/topology/genNginx.nix` - Nginx generator
 - `lib/topology/mkFirewallSettings.nix` - Firewall transformer
 - `lib/topology/genFirewall.nix` - Firewall generator
 - `lib/topology/mkDnsSettings.nix` - DNS/DHCP transformer
 - `lib/topology/genDns.nix` - DNS/DHCP generator
-- `lib/topology/mkMonitoringSettings.nix` - Monitoring transformer
-- `lib/topology/genMonitoring.nix` - Monitoring generator
-- `real-topology/golden/<machine>.json` - Golden test reference (generated from main)
-- `modules/core-router-topology.nix` - Hub machine module (uses generators)
-- `modules/enable-wg-topology.nix` - Unified WireGuard module for all machines
+- `lib/topology/mkMonitoringSettings.nix` - Monitoring transformer (shared with production)
+- `modules/core-router-topology.nix` - Hub machine module (WIP)
+- `modules/enable-wg-topology.nix` - Unified WireGuard module (WIP)
 
-**Golden Tests:**
-- All 12 x86_64 machines have golden tests
-- `real-topology/golden/<machine>.json` for each machine
-- Validates exact configuration output against main branch
-- Must match exactly before deployment
-
-**Module Responsibilities:**
-
-**core-router-topology.nix** (hub machines):
-- Imports all gen* modules
-- WireGuard interface configuration (via genWireguard)
-- Nginx proxy configuration (via genNginx)
-- Firewall rules (via genFirewall)
-- DNS/DHCP configuration (via genDns)
-- Monitoring configuration (via genMonitoring)
-
-**enable-wg-topology.nix** (all machines):
-- Unified WireGuard client configuration
-- Connecting TO hub machines
-- Used by both hub and client machines
-
-### Legacy Topology Architecture (Being Phased Out)
-
-The previous topology-driven architecture used per-machine files:
-
-**Data Flow:**
-```
-real-topology/cortex-alpha.nix (topology data)
-         ↓
-lib/topology/*.nix (transformation functions)
-         ↓
-modules/core-router.nix (NixOS config generation)
-```
-
-**Legacy Files:**
-- `real-topology/cortex-alpha.nix` - Topology data (peers, hosts, firewall, etc.)
-- `real-topology/default.nix` - Golden test generator
-- `lib/topology/mkWireguardPeers.nix` - WireGuard peer transformation (requires `self`)
-- `lib/topology/mkTailscaleConfig.nix` - Tailscale configuration
-- `lib/topology/mkDhcpDns.nix` - DHCP/DNS configuration
-- `lib/topology/mkNginxProxies.nix` - Nginx proxy configuration
-- `modules/core-router.nix` - Core router module
-
-**Legacy Known Issues:**
-- Inconsistent function signatures across transformers
-- validate.nix not integrated
-- Silent peer/host failures possible
-- Hardcoded nginx listen addresses
+**Status:** WIP — not wired into any machine configuration. Will be integrated incrementally, one machine at a time, and MUST pass golden validation before deployment.
 
 ## Common Tasks
 
-### New Architecture Tasks
+### Active Architecture Tasks
 
 #### Validate Against Golden Test
 ```bash
 nix run .#check-network -- cortex-alpha
 ```
 Validates that the current configuration matches the golden test for cortex-alpha.
+
+**Golden tests are sacrosanct** — if this fails, the code is wrong. Never regenerate golden as part of refactoring.
 
 #### Validate All Machines
 ```bash
@@ -196,31 +193,18 @@ nix run .#check-network -- cortex-gamma
 # ... for all 12 machines
 ```
 
-#### Generate New Golden File from Current Configuration
+#### Generate New Golden File (Config Changes Only)
 ```bash
 nix run .#dump-config -- cortex-alpha | jq -S . > real-topology/golden/cortex-alpha.json
 ```
+**Only run this when making intentional configuration changes** (new ports, added hosts, changed IPs). Never run during restructuring.
 
-#### Generate Golden Files for All Machines
-```bash
-for machine in cortex-alpha cortex-beta cortex-gamma; do
-  nix run .#dump-config -- "$machine" | jq -S . > "real-topology/golden/${machine}.json"
-done
-```
-
-#### Add a New Machine to Topology
-1. Edit `topology.nix` and add your machine as an attrset key:
-   ```nix
-   my-machine = {
-     ipAddress = "10.x.x.x";
-     # ... other attributes as needed
-   };
-   ```
-2. Create WireGuard public key: `secrets/public_keys/wireguard/wg_my_machine_pub`
-3. Create WireGuard private key: `secrets/private_keys/wireguard/wg_my_machine` (via secrix)
-4. Enable the topology modules in your machine's NixOS configuration
-5. Generate golden test: `nix run .#dump-config -- my-machine | jq -S . > real-topology/golden/my_machine.json`
-6. Test: `nix run .#check-network -- my-machine`
+#### Add a New Machine to Production Topology (per-machine file)
+1. Create `real-topology/<machine-name>.nix` using `_template.nix`
+2. Create the machine's config in `flake.nix` (use `mkX86_64` or `mkAarch64`)
+3. Import `modules/core-router.nix` in the machine's config
+4. Generate golden: `nix run .#dump-config -- <machine-name> | jq -S . > real-topology/golden/<machine-name>.json`
+5. Validate: `nix run .#check-network -- <machine-name>`
 
 #### Dump Full Configuration
 ```bash
