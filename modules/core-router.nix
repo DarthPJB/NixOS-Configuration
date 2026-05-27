@@ -14,6 +14,7 @@ let
   # Import and run validation
   validator = import ../lib/topology/validate.nix { inherit lib; };
   validation = validator.validateTopology topology;
+  crossValidation = validator.validateCrossReferences topology;
 
   # Import transformation functions
   wireguardLib = (import ../lib/topology/mkWireguardPeers.nix) { inherit lib; } topology self;
@@ -38,11 +39,19 @@ in
           assertion = config.coreRouter.enable -> validation.valid;
           message = "Invalid topology for ${config.networking.hostName}: ${builtins.concatStringsSep "; " validation.errors}";
         }
+        {
+          assertion = config.coreRouter.enable -> crossValidation.valid;
+          message = "Cross-reference validation failed for ${config.networking.hostName}: ${builtins.concatStringsSep "; " crossValidation.errors}";
+        }
       ];
       # Surface topology warnings during build (non-blocking)
-      warnings = lib.optionals (config.coreRouter.enable && validation.warnings != [ ]) (
-        map (w: "topology: ${w}") validation.warnings
-      );
+      warnings =
+        (lib.optionals (config.coreRouter.enable && validation.warnings != [ ]) (
+          map (w: "topology: ${w}") validation.warnings
+        ))
+        ++ (lib.optionals (config.coreRouter.enable && crossValidation.warnings != [ ]) (
+          map (w: "cross-ref: ${w}") crossValidation.warnings
+        ));
     }
 
     # UDP GRO service (machine-specific, not topology-managed)
