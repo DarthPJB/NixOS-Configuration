@@ -70,13 +70,6 @@
             "Layout" = "ikbatha0";
           };
         };
-
-        # Rime configuration
-        rime = {
-          "rime" = {
-            "schema" = "luna_pinyin";
-          };
-        };
       };
     };
   };
