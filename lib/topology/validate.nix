@@ -60,7 +60,7 @@ let
       counts = builtins.foldl'
         (
           acc: item:
-            if hasAttr item acc then acc // { ${item} = 1; } else acc // { ${item} = 1; }
+            if hasAttr item acc then acc // { ${item} = acc.${item} + 1; } else acc // { ${item} = 1; }
         )
         { }
         list;
