@@ -11,6 +11,7 @@
     nixinate = { url = "github:DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
+    nixpkgs_llm.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nix-mcp-servers.url = "github:cameronfyfe/nix-mcp-servers";
     nixos-hardware.url = "github:nixos/nixos-hardware";
@@ -20,13 +21,14 @@
     xlibre-overlay.url = "git+https://codeberg.org/takagemacoed/xlibre-overlay";
     ikbaeb-th = { url = "github:DarthPJB/IKBAEB-th"; };
   };
-  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ikbaeb-th }:
+  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ikbaeb-th }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
       globalArgs = {
         inherit self;
         inherit ikbaeb-th;
+        llm = import nixpkgs_llm { system = "x86_64-linux"; config.allowUnfree = true; };
       };
       commonModules = [
         secrix.nixosModules.default
