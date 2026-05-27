@@ -5,7 +5,7 @@
 
 {
   # Add IKBAEB-th custom Thai keyboard layout
-  services.xserver.extraLayouts = self.inputs.ikbaeb-th.extraLayouts pkgs.system;
+  services.xserver.xkb.extraLayouts = self.inputs.ikbaeb-th.extraLayouts pkgs.system;
 
   # Configure fcitx5 with multiple input methods
   i18n.inputMethod = {
@@ -17,57 +17,54 @@
         # Rime input method for Chinese
         fcitx5-rime
         
-        # Chinese addons for fcitx5
-        fcitx5-chinese-addons
+        # Chinese addons for fcitx5 (renamed in newer nixpkgs)
+        qt6Packages.fcitx5-chinese-addons
         
         # GTK and Qt integration
         fcitx5-gtk
-        fcitx5-qt
+        qt6Packages.fcitx5-qt
         
-        # Configuration GUI
-        fcitx5-configtool
+        # Configuration GUI (renamed in newer nixpkgs)
+        qt6Packages.fcitx5-configtool
       ];
 
       settings = {
         globalOptions = {
           # Toggle fcitx5 on/off (returns to English when off)
           # Using Super+semicolon to avoid conflict with i3's Super+space (floating toggle)
-          "Hotkey/TriggerKeys" = "Super+semicolon";
-          "Hotkey/AltTriggerKeys" = "";
-          
-          # Cycle through input methods
-          "Hotkey/EnumerateInputForwardKey" = "Super+c";
-          "Hotkey/EnumerateInputBackwardKey" = "Super+t";
-          
-          # Page through candidates
-          "Hotkey/PreviousPage" = "Page_Up";
-          "Hotkey/NextPage" = "Page_Down";
+          Hotkey = {
+            TriggerKeys = "Super+semicolon";
+            EnumerateInputForwardKey = "Super+c";
+            EnumerateInputBackwardKey = "Super+t";
+            PreviousPage = "Page_Up";
+            NextPage = "Page_Down";
+          };
         };
 
         # Input method group: English -> Chinese -> Thai
         inputMethod = {
           "Groups/0" = {
-            "Name" = "Default";
+            Name = "Default";
             "Default Layout" = "us";
-            "DefaultIM" = "keyboard-us";
+            DefaultIM = "keyboard-us";
           };
 
           # English keyboard (default)
           "Groups/0/Items/0" = {
-            "Name" = "keyboard";
-            "Layout" = "us";
+            Name = "keyboard";
+            Layout = "us";
           };
 
           # Chinese rime input
           "Groups/0/Items/1" = {
-            "Name" = "rime";
-            "Layout" = "";
+            Name = "rime";
+            Layout = "";
           };
 
           # Thai IKBAEB-th layout
           "Groups/0/Items/2" = {
-            "Name" = "keyboard";
-            "Layout" = "ikbatha0";
+            Name = "keyboard";
+            Layout = "ikbatha0";
           };
         };
       };
@@ -140,14 +137,14 @@
     # Rime input method
     fcitx5-rime
     
-    # Chinese addons
-    fcitx5-chinese-addons
+    # Chinese addons (renamed in newer nixpkgs)
+    qt6Packages.fcitx5-chinese-addons
     
     # GTK and Qt integration
     fcitx5-gtk
-    fcitx5-qt
+    qt6Packages.fcitx5-qt
     
-    # Configuration tool
-    fcitx5-configtool
+    # Configuration tool (renamed in newer nixpkgs)
+    qt6Packages.fcitx5-configtool
   ];
 }
