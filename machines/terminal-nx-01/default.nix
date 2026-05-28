@@ -13,7 +13,7 @@
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
     ../../modifier_imports/cuda.nix
-    ../../modules/enable-wg.nix
+    ../../modules/enable-wg-topology.nix
     ../../locale/hotel_wifi.nix
     ../../locale/home_networks.nix
     ../../environments/browsers.nix
@@ -22,11 +22,7 @@
     ../../configuration.nix
   ];
   #secrix.services.wireguard-wireg0.secrets.nx-01.encrypted.file = ../../secrets/wiregaurd/wg_terminal-nx-01;
-  environment.vpn = {
-    enable = true;
-    postfix = 21;
-    #  privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.nx-01.decrypted.path;
-  };
+  enableWgTopology.enable = true;
   environment.systemPackages = [
     pkgs.google-chrome
     pkgs.brave

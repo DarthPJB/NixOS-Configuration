@@ -8,7 +8,7 @@
 {
   imports = [
     ../../modifier_imports/zram.nix
-    ../../modules/enable-wg.nix
+    ../../modules/enable-wg-topology.nix
     ../../configuration.nix
     #../../environments/hyperland.nix
     ../../environments/i3wm.nix
@@ -20,12 +20,7 @@
     fsType = "ext4";
   };
   sdImage.compressImage = false;
-  # secrix.services.wireguard-wireg0.secrets."${hostname}".encrypted.file = "${self}/secrets/wiregaurd/wg_${hostname}";
-  environment.vpn = {
-    enable = true;
-    postfix = 41;
-    #     privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
-  };
+  enableWgTopology.enable = true;
   systemd.user.services.browser = {
     enable = true;
     description = "browser-autostart";

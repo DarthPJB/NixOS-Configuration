@@ -12,18 +12,27 @@ let
   hostname = config.networking.hostName;
   machineExists = wireguardSettings.machines ? ${hostname};
   machineSettings = if machineExists then wireguardSettings.machines.${hostname} else null;
-  wireguardConfig = if machineExists then
-    (import ../lib/topology/genWireguard.nix { inherit lib; }) wireguardSettings hostname
-  else null;
+  wireguardConfig =
+    if machineExists then
+      (import ../lib/topology/genWireguard.nix { inherit lib; }) wireguardSettings hostname
+    else null;
 in
 {
-  options.enableWgTopology.enable = lib.mkOption {
-    type = lib.types.bool;
-    default = false;
-    description = "Enable topology-driven WireGuard configuration";
+  options.enableWgTopology = {
+    enable = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Enable topology-driven WireGuard configuration";
+    };
+    machineIp = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "WireGuard IP of this machine, set when enableWgTopology is enabled";
+    };
   };
 
   config = lib.mkIf config.enableWgTopology.enable {
+    enableWgTopology.machineIp = machineSettings.machineIp;
     assertions = [
       {
         assertion = machineExists;

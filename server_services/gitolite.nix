@@ -1,4 +1,14 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
+
+let
+  wgIp =
+    if config.enableWgTopology.machineIp or null != null then
+      config.enableWgTopology.machineIp
+    else if config.environment ? vpn && config.environment.vpn.enable then
+      "10.88.127.${builtins.toString config.environment.vpn.postfix}"
+    else
+      null;
+in
 {
 
   services.openssh.extraConfig = ''
@@ -15,9 +25,9 @@
     80
     22
   ];
-  services.openssh.listenAddresses = [
+  services.openssh.listenAddresses = lib.mkIf (wgIp != null) [
     {
-      addr = "10.88.127.${builtins.toString config.environment.vpn.postfix}";
+      addr = wgIp;
       port = 22;
     }
   ];
@@ -80,7 +90,7 @@
       "raw" = {
         listen = [
           {
-            addr = "10.88.127.${builtins.toString config.environment.vpn.postfix}";
+            addr = wgIp;
             port = 80;
           }
         ];

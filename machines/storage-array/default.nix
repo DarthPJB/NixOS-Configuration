@@ -18,17 +18,10 @@
     ../../environments/audio_visual_editing.nix
     ../../services/dynamic_domain_gandi.nix
     ./hardware-configuration.nix
-    ../../modules/enable-wg.nix
+    ../../modules/enable-wg-topology.nix
   ];
-  nix.gc.automatic = lib.mkForce false; # Never collect this nix-store and it's cache.
-  # secrix.services.wireguard-wireg0.secrets.storage-array.encrypted.file = ../../secrets/wiregaurd/wg_storage-array;
-  environment = {
-    vpn = {
-      enable = true;
-      postfix = 4;
-      #    privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.storage-array.decrypted.path;
-    };
-  };
+  enableWgTopology.enable = true;
+  nix.gc.automatic = lib.mkForce false;
   services.zfs = {
     autoScrub.enable = true;
     trim.enable = true;

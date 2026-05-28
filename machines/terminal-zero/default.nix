@@ -22,7 +22,7 @@
     ../../locale/tailscale.nix
     ./hardware-configuration.nix
     ../../environments/steam.nix
-    ../../modules/enable-wg.nix
+    ../../modules/enable-wg-topology.nix
     ../../lib/rclone-target.nix
     ../../modifier_imports/zram.nix
   ];
@@ -31,12 +31,8 @@
   ];
 
   #secrix.services.wireguard-wireg0.secrets.terminal-zero.encrypted.file = ../../secrets/wiregaurd/wg_terminal-zero;
+  enableWgTopology.enable = true;
   environment = {
-    vpn = {
-      enable = true;
-      postfix = 20;
-      #    privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.terminal-zero.decrypted.path;
-    };
     rclone-target = {
       enable = true;
       configFile = "${self}/secrets/rclone-config-file";

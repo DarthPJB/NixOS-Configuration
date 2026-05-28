@@ -10,7 +10,7 @@
     ../../configuration.nix
     ../../server_services/gitolite.nix
     ./hardware-configuration.nix
-    ../../modules/enable-wg.nix
+    ../../modules/enable-wg-topology.nix
     ../../modifier_imports/zram.nix
     ../../modifier_imports/zfs.nix
     ../../server_services/postgres.nix
@@ -24,12 +24,7 @@
     ../../environments/sshd.nix
   ];
 
-  #secrix.services.wireguard-wireg0.secrets.local_nas.encrypted.file = ../../secrets/wiregaurd/wg_local-nas;
-  environment.vpn = {
-    enable = true;
-    postfix = 3;
-    #    privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.local_nas.decrypted.path;
-  };
+  enableWgTopology.enable = true;
 
   networking.useDHCP = false;
   networking.interfaces.enp0s31f6.useDHCP = true;

@@ -9,14 +9,9 @@
   imports = [
     ../../configuration.nix
     ../../modifier_imports/zram.nix
-    ../../modules/enable-wg.nix
+    ../../modules/enable-wg-topology.nix
   ];
-  #secrix.services.wireguard-wireg0.secrets.print-controller.encrypted.file = ../../secrets/wiregaurd/wg_print-controller;
-  environment.vpn = {
-    enable = true;
-    postfix = 30;
-    #      privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.print-controller.decrypted.path;
-  };
+  enableWgTopology.enable = true;
   boot = {
     # Cleanup tmp on startup
     #tmp.cleanOnBoot = true;

@@ -12,7 +12,7 @@
     ./hardware-configuration.nix
     ../../services/ollama.nix
     ../../services/litellm.nix
-    ../../modules/enable-wg.nix
+    ../../modules/enable-wg-topology.nix
     ../../lib/rclone-target.nix
     ../../environments/i3wm_darthpjb.nix
     ../../environments/steam.nix
@@ -41,11 +41,8 @@
     ../../modifier_imports/cuda.nix
     ../../modifier_imports/remote-builder.nix
   ];
+  enableWgTopology.enable = true;
   environment = {
-    vpn = {
-      enable = true;
-      postfix = 88;
-    };
     rclone-target = {
       enable = true;
       configFile = "${self}/secrets/rclone-config-file";

@@ -15,7 +15,7 @@
 
   imports = [
     #../../modifier_imports/zram.nix
-    ../../modules/enable-wg.nix
+    ../../modules/enable-wg-topology.nix
     ../../configuration.nix
     #    ../../environments/hyperland.nix
     ../../environments/i3wm.nix
@@ -35,12 +35,7 @@
   swapDevices = [{ device = "/dev/disk/by-uuid/0b69a66b-e675-45bb-becf-9eec8c29ec1f"; }];
 
   sdImage.compressImage = false;
-  #secrix.services.wireguard-wireg0.secrets."${hostname}".encrypted.file = "${self}/secrets/wiregaurd/wg_${hostname}";
-  environment.vpn = {
-    enable = true;
-    postfix = 42;
-    # privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
-  };
+  enableWgTopology.enable = true;
 
   hardware = {
     enableRedistributableFirmware = true;

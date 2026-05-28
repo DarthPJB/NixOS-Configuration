@@ -18,7 +18,8 @@ in
         inherit (peer) publicKey;
         allowedIPs = builtins.map addCidr peer.allowedIPs;
         endpoint = peer.endpoint or null;
-        persistentKeepalive = if peer ? endpoint then 25 else null;
+        persistentKeepalive = if peer ? endpoint then 60 else null;
+        dynamicEndpointRefreshSeconds = if peer ? endpoint then 300 else null;
       })
       machineSettings.peers;
   };

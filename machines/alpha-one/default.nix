@@ -9,7 +9,7 @@
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
-    ../../modules/enable-wg.nix
+    ../../modules/enable-wg-topology.nix
     ../../environments/i3wm_darthpjb.nix
     ../../environments/steam.nix
     ../../environments/code.nix
@@ -27,15 +27,12 @@
     ../../modifier_imports/hosts.nix
     ../../modifier_imports/cuda.nix
   ];
+  enableWgTopology.enable = true;
   services.xserver.videoDrivers = [ "nvidia" ];
   services.xserver.desktopManager.cinnamon.enable = true;
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  environment.vpn = {
-    enable = true;
-    postfix = 108;
-  };
   environment.systemPackages = with pkgs; [
     pkgs.moonlight-qt
   ];

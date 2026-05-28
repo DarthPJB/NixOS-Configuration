@@ -10,17 +10,13 @@
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
     ../../services/dynamic_domain_gandi.nix
-    ../../modules/enable-wg.nix
+    ../../modules/enable-wg-topology.nix
     ../../server_services/game_servers/space-engineers.nix
     ../../server_services/game_servers/dragonwilds.nix
     ../../server_services/game_servers/windrose.nix
     ../../server_services/game_servers/terratech.nix
   ];
-  environment.vpn = {
-    enable = true;
-    postfix = 52;
-    # privateKeyFile = config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
-  };
+  enableWgTopology.enable = true;
   virtualisation.docker.enable = true;
   services.dragonwilds-server.enable = true;
   services.windrose-docker = {

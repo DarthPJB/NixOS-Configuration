@@ -13,7 +13,7 @@
     ../../server_services/nextcloud.nix
     ../../users/build.nix
     ../../services/dynamic_domain_gandi.nix
-    ../../modules/enable-wg.nix
+    ../../modules/enable-wg-topology.nix
     (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
     (import ../../services/acme_server.nix { fqdn = "johnbargman.com"; })
   ];
@@ -60,12 +60,7 @@
       };
     };
   };
-  #secrix.services.wireguard-wireg0.secrets.remote-worker.encrypted.file = ../../secrets/wiregaurd/wg_remote-worker;
-  environment.vpn = {
-    enable = true;
-    postfix = 50;
-    # privateKeyFile = config.secrix.services.wireguard-wireg0.secrets.remote-worker.decrypted.path;
-  };
+  enableWgTopology.enable = true;
 
   networking.hostId = "e3fabb5b";
   #networking.hostName = "remote-worker";
