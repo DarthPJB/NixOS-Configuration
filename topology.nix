@@ -39,6 +39,7 @@
 
   alpha-three = {
     wireguard = "10.88.127.107";
+    hub = "cortex-alpha";
   };
 
   LINDA = {

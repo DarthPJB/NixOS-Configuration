@@ -47,7 +47,7 @@ let
       {
         inherit hostname;
         interface = "wireg0";
-        listenPort = if isHub then 2108 else null;
+        listenPort = 2108;
         machineIp = machine.wireguard;
         inherit isHub;
         hubIps = if isHub then [ "${machine.wireguard}/32" "${subnetIp}/24" ] else [ ];

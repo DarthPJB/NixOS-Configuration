@@ -1,5 +1,5 @@
 # modules/enable-wg-topology.nix
-# Unified topology-driven WireGuard module for hub and client machines
+# Topology-driven WireGuard module for client machines
 { config
 , lib
 , self
@@ -7,18 +7,14 @@
 }:
 
 let
-  # Import topology
   topology = import ../topology.nix { inherit lib; };
-
-  # Compute WireGuard settings
   wireguardSettings = (import ../lib/topology/mkWireguardSettings.nix { inherit lib; }) topology;
-
-  # Generate config for current machine
   hostname = config.networking.hostName;
-  wireguardConfig = (import ../lib/topology/genWireguard.nix { inherit lib; }) wireguardSettings hostname;
-
-  # Is this machine in the topology?
   machineExists = wireguardSettings.machines ? ${hostname};
+  machineSettings = if machineExists then wireguardSettings.machines.${hostname} else null;
+  wireguardConfig = if machineExists then
+    (import ../lib/topology/genWireguard.nix { inherit lib; }) wireguardSettings hostname
+  else null;
 in
 {
   options.enableWgTopology.enable = lib.mkOption {
@@ -35,14 +31,26 @@ in
       }
     ];
 
-    # Enable WireGuard
     networking.wireguard.enable = true;
-    networking.wireguard.interfaces = lib.mkOverride 100 wireguardConfig.networking.wireguard.interfaces;
+    networking.wireguard.interfaces.wireg0 = lib.mkMerge [
+      wireguardConfig.networking.wireguard.interfaces.wireg0
+      {
+        privateKeyFile =
+          config.secrix.services.wireguard-wireg0.secrets."${hostname}".decrypted.path;
+      }
+    ];
 
-    # Set private key via secrix
-    secrix.services.wireguard-wireg0.secrets.${hostname}.encrypted.file =
-      ../../secrets/private_keys/wireguard/wg_${hostname};
-    networking.wireguard.interfaces.wireg0.privateKeyFile =
-      config.secrix.services.wireguard-wireg0.secrets.${hostname}.decrypted.path;
+    secrix.services.wireguard-wireg0.secrets."${hostname}".encrypted.file =
+      ../secrets/private_keys/wireguard/wg_${hostname};
+
+    services.openssh = lib.mkIf config.services.openssh.enable {
+      listenAddresses = [{
+        addr = machineSettings.machineIp;
+        port = 1108;
+      }];
+    };
+
+    networking.firewall.allowedTCPPorts = [ 2108 ];
+    networking.firewall.allowedUDPPorts = [ 2108 ];
   };
 }

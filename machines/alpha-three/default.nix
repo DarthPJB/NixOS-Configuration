@@ -13,18 +13,14 @@
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
-    ../../modules/enable-wg.nix
+    ../../modules/enable-wg-topology.nix
     ../../modifier_imports/cuda.nix
     ../../environments/i3wm_darthpjb.nix
     ../../environments/steam.nix
     ../../environments/code.nix
     ../../environments/neovim.nix
   ];
-  # secrix.services.wireguard-wireg0.secrets."${hostname}".encrypted.file = "${self}/secrets/wiregaurd/wg_${hostname}";
-  environment.vpn = {
-    enable = true;
-    postfix = 107;
-  };
+  enableWgTopology.enable = true;
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
