@@ -3,10 +3,9 @@
 # Mod loader: NeoForge
 # CurseForge: https://www.curseforge.com/minecraft/modpacks/all-the-mods-10-to-the-sky
 #
-# NOTE: Replace placeholder hashes with real values:
-#   1. Get the server pack download URL from CurseForge
-#   2. nix run nixpkgs#nix-prefetch-url -- <url> for src hash
-#   3. First build will fail with the correct outputHash — use its suggestion
+# TODO: Replace placeholder URL and hash with real values.
+#   nix-prefetch-url --type sha256 '<url>' → base32 hash
+#   nix hash to-sri --type sha256 <base32> → SRI hash for fetchurl
 
 { minecraft-curseforge
 , fetchurl
@@ -14,20 +13,8 @@
 
 minecraft-curseforge {
   name = "atm10-to-the-sky";
-
   src = fetchurl {
-    # TODO: Replace with real CurseForge server pack URL
-    url = "https://example.com/atm10-to-the-sky-server-pack.zip";
-    # TODO: Replace with real hash from nix-prefetch-url
-    hash = "sha256-0000000000000000000000000000000000000000000000000000";
+    url = "https://example.com/atm10-to-the-sky-server-pack.zip";  # REPLACE
+    hash = "sha256-0000000000000000000000000000000000000000000000000000";  # REPLACE
   };
-
-  # TODO: Replace with real output hash (Nix will suggest the correct value on first build)
-  outputHash = "sha256-0000000000000000000000000000000000000000000000000000";
-
-  # ATM10 Sky uses similar setup script pattern
-  setupScripts = [
-    "server-setup.sh"
-    "ServerStart.sh"
-  ];
 }
