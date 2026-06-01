@@ -59,25 +59,23 @@
   environment.systemPackages = with pkgs; [ ];
 
   # ── Minecraft CurseForge Servers ────────────────────────────────────
-  # Uncomment and configure once modpack hashes are resolved.
-  # See: pkgs/minecraft-curseforge/packs/ for modpack definitions.
-  #
-  # services.minecraft-curseforge.atm10 = {
-  #   enable = true;
-  #   pack = pkgs.minecraft-curseforge-atm10;
-  #   acceptEula = true;
-  #   maxMemory = "8G";
-  #   minMemory = "4G";
-  #   gamePort = 25565;
-  #   openFirewall = true;
-  #   serverProperties = {
-  #     "server-port" = 25565;
-  #     "motd" = "All the Mods 10";
-  #     "max-players" = 10;
-  #     "difficulty" = "normal";
-  #     "gamemode" = "survival";
-  #     "view-distance" = 12;
-  #     "simulation-distance" = 8;
-  #   };
-  # };
+  services.minecraft-curseforge.all-the-mons = {
+    enable = true;
+    pack = pkgs.minecraft-curseforge-all-the-mons;
+    acceptEula = true;
+    maxMemory = "8G";
+    minMemory = "4G";
+    gamePort = 25565;
+    openFirewall = true;
+    serverProperties = {
+      "allow-flight" = true;
+      "motd" = "All the Mons";
+      "max-tick-time" = 180000;
+      "simulation-distance" = 5;
+      "view-distance" = 8;
+      "max-players" = 10;
+      "difficulty" = "normal";
+      "gamemode" = "survival";
+    };
+  };
 }
