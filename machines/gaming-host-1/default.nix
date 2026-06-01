@@ -15,6 +15,7 @@
     ../../server_services/game_servers/dragonwilds.nix
     ../../server_services/game_servers/windrose.nix
     ../../server_services/game_servers/terratech.nix
+    ../../server_services/game_servers/minecraft-curseforge.nix
   ];
   enableWgTopology.enable = true;
   virtualisation.docker.enable = true;
@@ -56,4 +57,25 @@
   boot.loader.grub.device = "/dev/nvme0n1"; # or "nodev" for efi only
 
   environment.systemPackages = with pkgs; [ ];
+
+  # ── Minecraft CurseForge Servers ────────────────────────────────────
+  services.minecraft-curseforge.all-the-mons = {
+    enable = true;
+    pack = pkgs.minecraft-curseforge-all-the-mons;
+    acceptEula = true;
+    maxMemory = "8G";
+    minMemory = "4G";
+    gamePort = 25565;
+    openFirewall = true;
+    serverProperties = {
+      "allow-flight" = true;
+      "motd" = "All the Mons";
+      "max-tick-time" = 180000;
+      "simulation-distance" = 5;
+      "view-distance" = 8;
+      "max-players" = 10;
+      "difficulty" = "normal";
+      "gamemode" = "survival";
+    };
+  };
 }

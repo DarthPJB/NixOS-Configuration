@@ -45,6 +45,14 @@
         {
           programs.ssh.knownHosts = mkKnownHosts self.nixosConfigurations;
           nixpkgs.config.allowUnfree = true;
+          nixpkgs.overlays = [
+            (final: prev: {
+              minecraft-curseforge = self.packages.x86_64-linux.minecraft-curseforge;
+              minecraft-curseforge-atm10 = self.packages.x86_64-linux.minecraft-curseforge-atm10;
+              minecraft-curseforge-atm10-to-the-sky = self.packages.x86_64-linux.minecraft-curseforge-atm10-to-the-sky;
+              minecraft-curseforge-all-the-mons = self.packages.x86_64-linux.minecraft-curseforge-all-the-mons;
+            })
+          ];
           system.stateVersion = "25.11";
           secrix.defaultEncryptKeys.John88 = [
             (builtins.readFile ./secrets/public_keys/JOHN_BARGMAN_ED_25519.pub) # Four years ago matthew croughan said "why bother putting that there?" so... This is why.
@@ -337,6 +345,16 @@
         #        };
         "x86_64-linux" = {
           lightdm-webkit2-greeter = nixpkgs.callPackage ./pkgs/lightdm-webkit2-greeter.nix { };
+          minecraft-curseforge = nixpkgs.callPackage ./pkgs/minecraft-curseforge { };
+          minecraft-curseforge-atm10 = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/atm10.nix {
+            minecraft-curseforge = self.packages.x86_64-linux.minecraft-curseforge;
+          };
+          minecraft-curseforge-atm10-to-the-sky = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/atm10-to-the-sky.nix {
+            minecraft-curseforge = self.packages.x86_64-linux.minecraft-curseforge;
+          };
+          minecraft-curseforge-all-the-mons = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/all-the-mons.nix {
+            minecraft-curseforge = self.packages.x86_64-linux.minecraft-curseforge;
+          };
         };
         "aarch64-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.print-controller
