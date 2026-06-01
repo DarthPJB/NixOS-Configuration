@@ -126,135 +126,122 @@ let
             return None
 
 
-    class DeploymentCollector:
-        """Prometheus collector for NixOS deployment state."""
+    # Global registry — metrics registered once
+    registry = CollectorRegistry()
 
-        def __init__(self):
-            # Build-time metadata (info metrics — value always 1, labels carry data)
-            self.nixos_version = Gauge(
-                'nixos_version_info',
-                'NixOS version information',
-                ['version', 'release', 'state_version'],
-            )
-            self.flake_info = Gauge(
-                'nixos_flake_info',
-                'Flake and nixpkgs metadata from build time',
-                ['flake_revision', 'nixpkgs_revision', 'hostname'],
-            )
+    # Build-time metadata (info metrics — value always 1, labels carry data)
+    nixos_version = Gauge(
+        'nixos_version_info', 'NixOS version information',
+        ['version', 'release', 'state_version'], registry=registry,
+    )
+    flake_info = Gauge(
+        'nixos_flake_info', 'Flake and nixpkgs metadata from build time',
+        ['flake_revision', 'nixpkgs_revision', 'hostname'], registry=registry,
+    )
 
-            # Generation tracking
-            self.generation_number = Gauge(
-                'nixos_generation_number',
-                'NixOS system generation number',
-                ['type'],
-            )
-            self.generation_match = Gauge(
-                'nixos_generation_match',
-                '1 if booted generation matches current, 0 if in test mode',
-            )
+    # Generation tracking
+    generation_number = Gauge(
+        'nixos_generation_number', 'NixOS system generation number',
+        ['type'], registry=registry,
+    )
+    generation_match = Gauge(
+        'nixos_generation_match',
+        '1 if booted generation matches current, 0 if in test mode',
+        registry=registry,
+    )
 
-            # Activation timestamp
-            self.activation_timestamp = Gauge(
-                'nixos_activation_timestamp_seconds',
-                'Timestamp of last nixos-rebuild switch/test (Unix epoch)',
-            )
+    # Activation timestamp
+    activation_timestamp = Gauge(
+        'nixos_activation_timestamp_seconds',
+        'Timestamp of last nixos-rebuild switch/test (Unix epoch)',
+        registry=registry,
+    )
 
-            # Runtime
-            self.kernel_version = Gauge(
-                'nixos_kernel_version_info',
-                'Kernel version information',
-                ['version'],
-            )
-            self.uptime_seconds = Gauge(
-                'nixos_uptime_seconds',
-                'System uptime in seconds',
-            )
+    # Runtime
+    kernel_version = Gauge(
+        'nixos_kernel_version_info', 'Kernel version information',
+        ['version'], registry=registry,
+    )
+    uptime_seconds = Gauge(
+        'nixos_uptime_seconds', 'System uptime in seconds',
+        registry=registry,
+    )
 
-            # Error tracking
-            self.collect_errors = Counter(
-                'nixos_deployment_exporter_errors_total',
-                'Total errors collecting deployment metrics',
-            )
+    # Error tracking
+    collect_errors = Counter(
+        'nixos_deployment_exporter_errors_total',
+        'Total errors collecting deployment metrics', registry=registry,
+    )
 
-        def collect(self):
-            errors = 0
 
-            # Build-time metadata
-            try:
-                meta = load_json_file(BUILD_METADATA_PATH)
-                if meta:
-                    self.nixos_version.labels(
-                        version=meta.get('nixosVersion', 'unknown'),
-                        release=meta.get('nixosRelease', 'unknown'),
-                        state_version=meta.get('stateVersion', 'unknown'),
-                    ).set(1)
-                    self.flake_info.labels(
-                        flake_revision=meta.get('flakeRevision', 'unknown'),
-                        nixpkgs_revision=meta.get('nixpkgsRevision', 'unknown'),
-                        hostname=meta.get('hostname', 'unknown'),
-                    ).set(1)
-            except Exception:
-                errors += 1
+    def update_metrics():
+        """Read system state and update all metrics."""
+        errors = 0
 
-            # Generation state
-            try:
-                current_gen = get_current_generation()
-                booted_gen = get_booted_generation()
-                if current_gen is not None:
-                    self.generation_number.labels(type='current').set(current_gen)
-                if booted_gen is not None:
-                    self.generation_number.labels(type='booted').set(booted_gen)
-                if current_gen is not None and booted_gen is not None:
-                    self.generation_match.set(1 if current_gen == booted_gen else 0)
-            except Exception:
-                errors += 1
+        # Build-time metadata
+        try:
+            meta = load_json_file(BUILD_METADATA_PATH)
+            if meta:
+                nixos_version.labels(
+                    version=meta.get('nixosVersion', 'unknown'),
+                    release=meta.get('nixosRelease', 'unknown'),
+                    state_version=meta.get('stateVersion', 'unknown'),
+                ).set(1)
+                flake_info.labels(
+                    flake_revision=meta.get('flakeRevision', 'unknown'),
+                    nixpkgs_revision=meta.get('nixpkgsRevision', 'unknown'),
+                    hostname=meta.get('hostname', 'unknown'),
+                ).set(1)
+        except Exception:
+            errors += 1
 
-            # Activation timestamp
-            try:
-                state = load_json_file(STATE_FILE)
-                ts = state.get('activation_timestamp')
-                if ts is not None:
-                    self.activation_timestamp.set(ts)
-            except Exception:
-                errors += 1
+        # Generation state
+        try:
+            current_gen = get_current_generation()
+            booted_gen = get_booted_generation()
+            if current_gen is not None:
+                generation_number.labels(type='current').set(current_gen)
+            if booted_gen is not None:
+                generation_number.labels(type='booted').set(booted_gen)
+            if current_gen is not None and booted_gen is not None:
+                generation_match.set(1 if current_gen == booted_gen else 0)
+        except Exception:
+            errors += 1
 
-            # Runtime
-            try:
-                kernel = get_kernel_version()
-                if kernel:
-                    self.kernel_version.labels(version=kernel).set(1)
-            except Exception:
-                errors += 1
+        # Activation timestamp
+        try:
+            state = load_json_file(STATE_FILE)
+            ts = state.get('activation_timestamp')
+            if ts is not None:
+                activation_timestamp.set(ts)
+        except Exception:
+            errors += 1
 
-            try:
-                uptime = get_uptime()
-                if uptime is not None:
-                    self.uptime_seconds.set(uptime)
-            except Exception:
-                errors += 1
+        # Runtime
+        try:
+            kv = get_kernel_version()
+            if kv:
+                kernel_version.labels(version=kv).set(1)
+        except Exception:
+            errors += 1
 
-            if errors > 0:
-                self.collect_errors.inc(errors)
+        try:
+            up = get_uptime()
+            if up is not None:
+                uptime_seconds.set(up)
+        except Exception:
+            errors += 1
 
-            yield self.nixos_version
-            yield self.flake_info
-            yield self.generation_number
-            yield self.generation_match
-            yield self.activation_timestamp
-            yield self.kernel_version
-            yield self.uptime_seconds
-            yield self.collect_errors
+        if errors > 0:
+            collect_errors.inc(errors)
 
 
     class MetricsHandler(http.server.BaseHTTPRequestHandler):
         """HTTP handler serving Prometheus metrics."""
 
-        collector = None
-
         def do_GET(self):
             if self.path in ('/metrics', '/'):
-                registry = CollectorRegistry()
-                registry.register(self.collector)
+                update_metrics()
                 output = generate_latest(registry)
                 self.send_response(200)
                 self.send_header('Content-Type', CONTENT_TYPE_LATEST)
@@ -280,9 +267,6 @@ let
         parser.add_argument('--port', type=int, default=${toString cfg.port})
         parser.add_argument('--host', default='${cfg.listenAddress}')
         args = parser.parse_args()
-
-        collector = DeploymentCollector()
-        MetricsHandler.collector = collector
 
         socketserver.TCPServer.allow_reuse_address = True
         with socketserver.TCPServer((args.host, args.port), MetricsHandler) as httpd:
