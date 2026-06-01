@@ -141,39 +141,29 @@ in
           dataDir = config.dataDir;
 
           # ── Phase 2: Overlay derivation ────────────────────────────
-          # Pure derivation (no network) — copies builder output, overlays
-          # eula.txt and server.properties from module options.
-          finalPack = pkgs.stdenv.mkDerivation {
+          # symlinkJoin creates a directory of symlinks to the builder
+          # output, then writes real files for eula.txt and server.properties.
+          # Near-instant, no 1GB+ copy. rsync -a handles symlinks correctly
+          # on NixOS targets (builder store path is in the system closure).
+          finalPack = pkgs.symlinkJoin {
             name = "minecraft-server-final-${name}";
-            src = config.pack;
+            paths = [ config.pack ];
 
-            # JRE in buildInputs ensures closure propagation — start.sh
-            # references ${jre}/bin/java which the reference scanner finds
-            # in the copied output.
-            buildInputs = [ (config.pack.passthru.jre or pkgs.jdk21) ];
-
-            buildPhase = ''
-              runHook preBuild
-
-              # Copy everything from the builder
-              cp -ra "$src" "$out"
-
-              # Overlay eula.txt (only when accepted)
+            postBuild = ''
               ${lib.optionalString config.acceptEula ''
                 echo "eula=true" > "$out/eula.txt"
               ''}
-
-              # Overlay server.properties from module options
               printf '%s' ${
                 lib.generators.toKeyValue {
                   listsAsDuplicateKeys = true;
                 } config.serverProperties
               } > "$out/server.properties"
-
-              runHook postBuild
             '';
 
-            installPhase = "true";
+            passthru = config.pack.passthru or { } // {
+              imageId = config.pack.passthru.imageId or (builtins.baseNameOf config.pack.src);
+              jre = config.pack.passthru.jre or pkgs.jdk21;
+            };
           };
 
           # ── Phase 3: Systemd scripts ──────────────────────────────
