@@ -333,6 +333,10 @@
         #        };
         "x86_64-linux" = {
           lightdm-webkit2-greeter = nixpkgs.callPackage ./pkgs/lightdm-webkit2-greeter.nix { };
+          minecraft-curseforge = nixpkgs.callPackage ./pkgs/minecraft-curseforge { };
+          minecraft-curseforge-atm10 = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/atm10.nix {
+            minecraft-curseforge = self.packages.x86_64-linux.minecraft-curseforge;
+          };
         };
         "aarch64-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.print-controller
