@@ -55,16 +55,22 @@ let
 
     def get_current_generation():
         """Get the current (latest) generation number and build time."""
-        system_profiles = Path("/nix/var/nix/profiles/system")
-        default_link = system_profiles / "default"
+        system_link = Path("/nix/var/nix/profiles/system")
 
-        if not default_link.is_symlink():
+        if not system_link.is_symlink():
             return None, None
 
-        generation = get_generation_number(default_link)
+        # Symlink target is like "system-286-link"
+        try:
+            target = os.readlink(str(system_link))
+            match = re.search(r'system-(\d+)-link', target)
+            generation = int(match.group(1)) if match else None
+        except Exception:
+            generation = None
+
         build_time = None
         try:
-            build_time = int(default_link.stat().st_mtime)
+            build_time = int(system_link.stat().st_mtime)
         except Exception:
             pass
 
@@ -72,11 +78,34 @@ let
 
 
     def get_booted_generation():
-        """Get the currently booted generation number."""
+        """Get the currently booted generation by comparing store paths."""
+        system_link = Path("/nix/var/nix/profiles/system")
         current_system = Path("/run/current-system")
-        if not current_system.exists():
+
+        if not system_link.exists() or not current_system.exists():
             return None
-        return get_generation_number(current_system)
+
+        try:
+            # Resolve both to their store paths
+            current_path = str(system_link.resolve())
+            booted_path = str(current_system.resolve())
+
+            if current_path == booted_path:
+                # Booted into the current generation
+                target = os.readlink(str(system_link))
+                match = re.search(r'system-(\d+)-link', target)
+                return int(match.group(1)) if match else None
+            else:
+                # Booted into a different generation — find which one
+                profiles = Path("/nix/var/nix/profiles")
+                for entry in sorted(profiles.iterdir()):
+                    if entry.name.startswith("system-") and entry.name.endswith("-link"):
+                        if str(entry.resolve()) == booted_path:
+                            match = re.search(r'system-(\d+)-link', entry.name)
+                            return int(match.group(1)) if match else None
+                return None
+        except Exception:
+            return None
 
 
     def get_nixos_version():
