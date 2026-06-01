@@ -65,8 +65,8 @@ stdenv.mkDerivation {
   outputHashMode = "recursive";
   inherit outputHash;
 
-  # Expose imageId without building the derivation
-  passthru = { inherit imageId; };
+  # Expose imageId and jre without building the derivation
+  passthru = { inherit imageId jre; };
 
   # CRITICAL: Single buildPhase — patchPhase runs BEFORE buildPhase in
   # Nix's mkDerivation, so it cannot reference files that don't exist yet.
