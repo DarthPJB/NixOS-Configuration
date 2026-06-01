@@ -160,17 +160,19 @@ in
             ${optionalString instanceCfg.acceptEula ''
               echo "eula=true" > "$out/eula.txt"
             ''}
-            printf '%s' ${
-              generators.toKeyValue {
-                listsAsDuplicateKeys = true;
-              } instanceCfg.serverProperties
-            } > "$out/server.properties"
+            cp ${serverPropertiesFile} "$out/server.properties"
           '';
           passthru = instanceCfg.pack.passthru or { } // {
             imageId = instanceCfg.pack.passthru.imageId or (builtins.baseNameOf instanceCfg.pack.src);
             jre = instanceCfg.pack.passthru.jre or pkgs.jdk21;
           };
         };
+
+        serverPropertiesFile = pkgs.writeText "server.properties" (
+          generators.toKeyValue {
+            listsAsDuplicateKeys = true;
+          } instanceCfg.serverProperties
+        );
 
         execStopScript = pkgs.writeShellScript "${serviceName}-exec-stop" ''
           set -euo pipefail
