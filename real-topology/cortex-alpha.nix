@@ -16,7 +16,7 @@
       lindacore-88 = {
         ip = "10.88.128.88";
         mac = "18:c0:4d:8d:53:6d";
-        hostname = "LINDACORE";
+        hostname = "LINDACORE-88";
         routing = {
           tailscale = true;
           wireguard = false;
@@ -68,6 +68,7 @@
 
       ap = {
         ip = "10.88.128.2";
+        mac = "14:cc:20:46:f8:ab";
         hostname = "ap";
       };
 
@@ -86,7 +87,7 @@
       terminal-zero-1 = {
         ip = "10.88.128.20";
         mac = "10:0b:a9:7e:cc:8c";
-        hostname = "terminal-zero";
+        hostname = "terminal-zero-1";
         wireguardIp = "10.88.127.20";
         routing = {
           tailscale = false;
@@ -98,7 +99,7 @@
       terminal-zero-2 = {
         ip = "10.88.128.21";
         mac = "f0:de:f1:c7:fe:30";
-        hostname = "terminal-zero";
+        hostname = "terminal-zero-2";
         wireguardIp = "10.88.127.20";
         routing = {
           tailscale = false;
@@ -110,7 +111,7 @@
       terminal-nx-01-1 = {
         ip = "10.88.128.22";
         mac = "dc:85:de:86:a8:77";
-        hostname = "terminal-nx-01";
+        hostname = "terminal-nx-01-1";
         wireguardIp = "10.88.127.21";
         routing = {
           tailscale = false;
@@ -122,7 +123,7 @@
       terminal-nx-01-2 = {
         ip = "10.88.128.23";
         mac = "70:54:d2:17:d1:c4";
-        hostname = "terminal-nx-01";
+        hostname = "terminal-nx-01-2";
         wireguardIp = "10.88.127.21";
         routing = {
           tailscale = false;
@@ -145,7 +146,7 @@
       lindacore-87 = {
         ip = "10.88.128.87";
         mac = "18:c0:4d:8d:53:6c";
-        hostname = "LINDACORE";
+        hostname = "LINDACORE-87";
         routing = {
           tailscale = false;
           wireguard = false;
@@ -156,10 +157,21 @@
       lindacore-89 = {
         ip = "10.88.128.89";
         mac = "18:26:49:c5:48:24";
-        hostname = "LINDACORE";
+        hostname = "LINDACORE-89";
         routing = {
           tailscale = false;
           wireguard = false;
+        };
+        services = [ ];
+      };
+
+      linda-lan = {
+        ip = "10.88.128.151";
+        mac = "60:66:82:42:b1:c8";
+        hostname = "LINDA-lan";
+        routing = {
+          tailscale = false;
+          wireguard = true;
         };
         services = [ ];
       };
@@ -210,7 +222,7 @@
 
       local-nas = {
         ip = "10.88.127.3";
-        hostname = "local-nas";
+        hostname = "local-nas-wg";
         routing = {
           tailscale = false;
           wireguard = true;
@@ -220,7 +232,7 @@
 
       print-controller-wg = {
         ip = "10.88.127.30";
-        hostname = "print-controller";
+        hostname = "print-controller-wg";
         routing = {
           tailscale = false;
           wireguard = true;
