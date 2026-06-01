@@ -514,9 +514,6 @@
           ];
 
         };
-        storage-array = mkX86_64 "storage-array" {
-          host = topoIp "storage-array";
-        };
         remote-builder = mkX86_64 "remote-builder" {
           extraModules = [ ./users/build.nix ];
           host = topoIp "remote-builder";
@@ -530,6 +527,9 @@
         alpha-two = mkX86_64 "alpha-two" {
           host = topoIp "alpha-two";
           extraModules = [ ./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
+        };
+        storage-array = mkX86_64 "storage-array" {
+          host = topoIp "storage-array";
         };
       };
 
