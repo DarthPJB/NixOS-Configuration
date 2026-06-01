@@ -30,12 +30,13 @@
 with lib;
 
 let
+  # The full system config is needed for cross-instance assertions
   cfg = config.services.minecraft-curseforge;
 in
 {
   # ── Options ────────────────────────────────────────────────────────
   options.services.minecraft-curseforge = mkOption {
-    type = types.attrsOf (types.submodule ({ name, config: instanceCfg, ... }: {
+    type = types.attrsOf (types.submodule ({ name, config, ... }: {
       options = {
         enable = mkEnableOption "Minecraft CurseForge server instance '${name}'";
 
@@ -130,24 +131,26 @@ in
         };
       };
 
-      config = mkIf instanceCfg.enable (
+      # Inside the submodule, `config` refers to THIS instance's config.
+      # We use it to access option values (config.enable, config.pack, etc.)
+      config = mkIf config.enable (
         let
           serviceName = "minecraft-curseforge-${name}";
           user = serviceName;
           group = serviceName;
-          dataDir = instanceCfg.dataDir;
+          dataDir = config.dataDir;
 
           # ── Phase 2: Overlay derivation ────────────────────────────
           # Pure derivation (no network) — copies builder output, overlays
           # eula.txt and server.properties from module options.
           finalPack = pkgs.stdenv.mkDerivation {
             name = "minecraft-server-final-${name}";
-            src = instanceCfg.pack;
+            src = config.pack;
 
             # JRE in buildInputs ensures closure propagation — start.sh
             # references ${jre}/bin/java which the reference scanner finds
             # in the copied output.
-            buildInputs = [ (instanceCfg.pack.passthru.jre or pkgs.jdk21) ];
+            buildInputs = [ (config.pack.passthru.jre or pkgs.jdk21) ];
 
             buildPhase = ''
               runHook preBuild
@@ -156,16 +159,15 @@ in
               cp -ra "$src" "$out"
 
               # Overlay eula.txt (only when accepted)
-              ${lib.optionalString instanceCfg.acceptEula ''
+              ${lib.optionalString config.acceptEula ''
                 echo "eula=true" > "$out/eula.txt"
               ''}
 
               # Overlay server.properties from module options
-              # Use printf to avoid heredoc indentation issues
               printf '%s' ${
                 lib.generators.toKeyValue {
                   listsAsDuplicateKeys = true;
-                } instanceCfg.serverProperties
+                } config.serverProperties
               } > "$out/server.properties"
 
               runHook postBuild
@@ -226,24 +228,24 @@ in
           # ── Assertions ───────────────────────────────────────────────
           assertions = [
             {
-              assertion = instanceCfg.acceptEula;
+              assertion = config.acceptEula;
               message = ''
                 Minecraft EULA must be accepted for instance '${name}'.
                 Set services.minecraft-curseforge.${name}.acceptEula = true;
               '';
             }
           ] ++ (mapAttrsToList (otherName: otherCfg: {
-            assertion = otherName == name || instanceCfg.gamePort != otherCfg.gamePort;
+            assertion = otherName == name || config.gamePort != otherCfg.gamePort;
             message = ''
-              Port conflict: gamePort ${toString instanceCfg.gamePort} is used by
+              Port conflict: gamePort ${toString config.gamePort} is used by
               both minecraft-curseforge instances '${name}' and '${otherName}'.
             '';
           }) (filterAttrs (n: v: v.enable && n != name) cfg))
           ++ (mapAttrsToList (otherName: otherCfg: {
-            assertion = otherName == name || toString instanceCfg.dataDir != toString otherCfg.dataDir;
+            assertion = otherName == name || toString config.dataDir != toString otherCfg.dataDir;
             message = ''
               dataDir conflict: both minecraft-curseforge instances '${name}' and
-              '${otherName}' use the same data directory '${toString instanceCfg.dataDir}'.
+              '${otherName}' use the same data directory '${toString config.dataDir}'.
             '';
           }) (filterAttrs (n: v: v.enable && n != name) cfg));
 
@@ -289,10 +291,10 @@ in
 
               # Environment
               Environment = [
-                "JAVA_MAX_MEM=${instanceCfg.maxMemory}"
-                "JAVA_MIN_MEM=${instanceCfg.minMemory}"
-              ] ++ lib.optional (instanceCfg.jvmArgs != [ ])
-                "JAVA_OPTS=${lib.concatStringsSep " " instanceCfg.jvmArgs}";
+                "JAVA_MAX_MEM=${config.maxMemory}"
+                "JAVA_MIN_MEM=${config.minMemory}"
+              ] ++ lib.optional (config.jvmArgs != [ ])
+                "JAVA_OPTS=${lib.concatStringsSep " " config.jvmArgs}";
 
               # Restart policy
               Restart = "on-failure";
@@ -304,8 +306,8 @@ in
           };
 
           # ── Firewall ─────────────────────────────────────────────────
-          networking.firewall = mkIf instanceCfg.openFirewall {
-            allowedTCPPorts = [ instanceCfg.gamePort ];
+          networking.firewall = mkIf config.openFirewall {
+            allowedTCPPorts = [ config.gamePort ];
           };
 
           # ── System packages ──────────────────────────────────────────
