@@ -29,6 +29,10 @@
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
+      # Import topology to derive deployment IPs from single source of truth
+      topo = import ./topology.nix { inherit lib; };
+      # Get wireguard IP for a machine from topology
+      topoIp = machineName: topo.${machineName}.wireguard;
       globalArgs = {
         inherit self;
         inherit ikbaeb-th;
@@ -359,26 +363,26 @@
         };
 
         display-1 = mkAarch64 "display-1" {
-          host = "10.88.127.41";
+          host = topoIp "display-1";
           extraModules = [ ./users/build.nix ];
         };
         display-2 = mkAarch64 "display-2" {
-          host = "10.88.127.42";
+          host = topoIp "display-2";
           extraModules = [ ./users/build.nix ];
         };
         print-controller = mkAarch64 "print-controller" {
-          host = "10.88.127.30";
+          host = topoIp "print-controller";
           hardware = nixos-hardware.nixosModules.raspberry-pi-3;
           extraModules = [ ./server_services/klipper.nix ];
         };
         display-0 = mkAarch64 "display-0" {
-          host = "display-0.johnbargman.net";
+          host = topoIp "display-0";
           hardware = nixos-hardware.nixosModules.raspberry-pi-3;
           extraModules = [ ./modifier_imports/minimal.nix ./modifier_imports/pi-firmware.nix ];
         };
 
         terminal-zero = mkX86_64 "terminal-zero" {
-          host = "10.88.127.20";
+          host = topoIp "terminal-zero";
           extraModules = [
             ./modifier_imports/central-builder.nix
             nixos-hardware.nixosModules.lenovo-thinkpad-x220
@@ -386,7 +390,7 @@
           ];
         };
         terminal-nx-01 = mkX86_64 "terminal-nx-01" {
-          host = "10.88.127.21";
+          host = topoIp "terminal-nx-01";
           extraModules = [
             ./users/build.nix
             {
@@ -404,25 +408,21 @@
         #  };
 
         cortex-alpha = mkX86_64 "cortex-alpha" {
-          host = "10.88.127.1";
+          host = topoIp "cortex-alpha";
           extraModules = [
             ./environments/neovim.nix
             ./services/dynamic_domain_gandi.nix
           ];
         };
         local-nas = mkX86_64 "local-nas" {
-          host = "10.88.127.3";
+          host = topoIp "local-nas";
         };
         alpha-one = mkX86_64 "alpha-one" {
-          host = "10.88.127.108";
-          extraModules = [ ./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
-        };
-        alpha-two = mkX86_64 "alpha-two" {
-          host = "10.88.127.21";
+          host = topoIp "alpha-one";
           extraModules = [ ./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
         };
         alpha-three = mkX86_64 "alpha-three" {
-          host = "10.88.127.107";
+          host = topoIp "alpha-three";
           extraModules = [
             ./users/build.nix
             hype-train-claw.nixosModules.zeroclaw
@@ -434,7 +434,7 @@
         };
 
         LINDA = mkX86_64 "LINDA" {
-          host = "10.88.127.88";
+          host = topoIp "LINDA";
           buildOn = "remote";
           extraModules = [
             ./users/build.nix
@@ -450,13 +450,13 @@
           ];
         };
         gaming-host-1 = mkX86_64 "gaming-host-1" {
-          host = "10.88.127.52";
+          host = topoIp "gaming-host-1";
           #sshUser = "John88";
           #sshPort = 22;
           extraModules = [ ];
         };
         remote-worker = mkX86_64 "remote-worker" {
-          host = "10.88.127.50";
+          host = topoIp "remote-worker";
           extraModules = [
             ./users/build.nix
             {
@@ -497,11 +497,21 @@
 
         };
         storage-array = mkX86_64 "storage-array" {
-          host = "10.88.127.4";
+          host = topoIp "storage-array";
         };
         remote-builder = mkX86_64 "remote-builder" {
           extraModules = [ ./users/build.nix ];
-          host = "10.88.127.51";
+          host = topoIp "remote-builder";
+        };
+      };
+
+      # Dormant machines: configuration preserved for golden tests but excluded
+      # from nixosConfigurations to prevent accidental deployment.
+      # Move back to nixosConfigurations when reactivating in person.
+      dormantConfigurations = {
+        alpha-two = mkX86_64 "alpha-two" {
+          host = topoIp "alpha-two";
+          extraModules = [ ./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
         };
       };
 

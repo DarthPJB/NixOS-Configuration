@@ -4,7 +4,7 @@
     "fs.inotify.max_user_watches": 524288,
     "kernel.kptr_restrict": 1,
     "kernel.pid_max": 4194304,
-    "kernel.poweroff_cmd": "/nix/store/y2rzx7s3kr3v95rsrl2141s8vaa4mkjf-systemd-258.5/sbin/poweroff",
+    "kernel.poweroff_cmd": "/nix/store/d0y2xi6x65npxy2rh3jp1x7p31c9gk83-systemd-258.7/sbin/poweroff",
     "kernel.printk": "7 7 7 7",
     "net.core.rmem_max": null,
     "net.core.wmem_max": null,
@@ -139,8 +139,8 @@
     "diffutils",
     "findutils",
     "gawk",
-    "getent-glibc-2.40-218",
-    "getconf-glibc-2.40-218",
+    "getent-glibc-2.40-224",
+    "getconf-glibc-2.40-224",
     "gnugrep",
     "patch",
     "gnused",
@@ -177,7 +177,8 @@
       "allowedTCPPortRanges": [],
       "allowedTCPPorts": [
         3100,
-        3102
+        3102,
+        3111
       ],
       "allowedUDPPortRanges": [],
       "allowedUDPPorts": []

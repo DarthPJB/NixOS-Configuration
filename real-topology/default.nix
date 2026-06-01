@@ -136,7 +136,9 @@ in
   generateGolden =
     machineName:
     let
-      config = self.nixosConfigurations.${machineName}.config;
+      # Check both active and dormant configurations
+      machineConfig = self.nixosConfigurations.${machineName} or self.dormantConfigurations.${machineName};
+      config = machineConfig.config;
       # Safely evaluate each option, catching any errors
       safeEval =
         name: getter:
