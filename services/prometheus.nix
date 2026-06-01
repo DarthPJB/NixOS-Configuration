@@ -7,12 +7,19 @@
 }:
 let
   inherit fqdn listen-addr;
-  inherit (builtins) toJSON;
+  inherit (builtins) toJSON attrNames;
   inherit (pkgs) writeText;
   inherit (lib.modules) mkIf;
   inherit (lib.strings) concatStringsSep;
   prometheus-dn = "prometheus.${fqdn}";
   graphana-dn = "grafana.${fqdn}";
+
+  # Import topology to generate scrape targets
+  topology = import ../topology.nix { inherit lib; };
+  deploymentExporterPort = toString config.services.nixos-deployment-exporter.port;
+  deploymentTargets = map
+    (name: "${topology.${name}.wireguard}:${deploymentExporterPort}")
+    (attrNames topology);
 in
 {
   # TODO: with convergence style, automate scraper addition.
@@ -129,6 +136,15 @@ in
             targets = [
               "10.88.127.50:${toString self.nixosConfigurations.remote-worker.config.services.prometheus.exporters.nextcloud.port}"
             ];
+          }
+        ];
+      }
+      {
+        job_name = "nixos-deployment";
+        scrape_interval = "5m";
+        static_configs = [
+          {
+            targets = deploymentTargets;
           }
         ];
       }

@@ -43,6 +43,7 @@ in
     ./locale/home_networks.nix
     ./environments/sshd.nix
     ./environments/tools.nix
+    ./modules/nixos-deployment-exporter.nix
   ];
   environment.systemPackages = with pkgs; [
     build-all-script
@@ -53,7 +54,12 @@ in
   ];
   networking.firewall.interfaces."wireg0".allowedTCPPorts = [
     config.services.prometheus.exporters.node.port
+    config.services.nixos-deployment-exporter.port
   ];
+  services.nixos-deployment-exporter = {
+    enable = true;
+    port = 3111;
+  };
   services.prometheus = {
     exporters.node = {
       enable = true;
