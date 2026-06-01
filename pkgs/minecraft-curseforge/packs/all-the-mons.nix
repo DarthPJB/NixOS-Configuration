@@ -1,12 +1,20 @@
 # All the Mons — CurseForge Server Pack
 #
-# Mod loader: Forge/NeoForge (verify with CurseForge page)
+# Mod loader: Forge/NeoForge
 # CurseForge: https://www.curseforge.com/minecraft/modpacks/all-the-mons
 #
-# NOTE: Replace placeholder hashes with real values:
-#   1. Get the server pack download URL from CurseForge
-#   2. nix run nixpkgs#nix-prefetch-url -- <url> for src hash
-#   3. First build will fail with the correct outputHash — use its suggestion
+# CurseForge rotates download URLs — once fetched into the nix store with
+# a correct hash, the content persists regardless of URL changes.
+#
+# ── Setup workflow ───────────────────────────────────────────────────
+#
+# 1. Grab the server pack download URL from CurseForge (browser).
+# 2. nix-prefetch-url --type sha256 '<url>' → base32 hash
+#    nix hash to-sri --type sha256 <base32> → SRI hash for fetchurl
+# 3. Fill in `url` and `hash` below.
+# 4. nix build → fails with correct outputHash → plug it in.
+# 5. nix build again → success. Cached permanently.
+# ──────────────────────────────────────────────────────────────────────
 
 { minecraft-curseforge
 , fetchurl
@@ -16,16 +24,14 @@ minecraft-curseforge {
   name = "all-the-mons";
 
   src = fetchurl {
-    # TODO: Replace with real CurseForge server pack URL
-    url = "https://example.com/all-the-mons-server-pack.zip";
-    # TODO: Replace with real hash from nix-prefetch-url
-    hash = "sha256-0000000000000000000000000000000000000000000000000000";
+    url = "https://mediafilez.forgecdn.net/files/8120/605/ServerFiles-1.0.0-rc.6.zip";
+    hash = "sha256-58i7bAvr1KXFciihjA6/kFKIzZGbR5idRLkOw0zxtf0=";
   };
 
-  # TODO: Replace with real output hash (Nix will suggest the correct value on first build)
-  outputHash = "sha256-0000000000000000000000000000000000000000000000000000";
+  # Fixed-output hash of the built server directory.
+  # Nix will tell you the correct value on the first failed build.
+  outputHash = "sha256-0000000000000000000000000000000000000000000000000000";  # REPLACE on first build
 
-  # Probe for common setup scripts
   setupScripts = [
     "server-setup.sh"
     "ServerStart.sh"
