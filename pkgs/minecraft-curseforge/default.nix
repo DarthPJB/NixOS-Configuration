@@ -1,54 +1,22 @@
-# Minecraft CurseForge Server Builder — Fixed-Output Derivation
+# Minecraft CurseForge Server Builder
 #
-# This builder fetches a CurseForge server pack zip, extracts it, runs the
-# modpack's setup script (including NeoForge installer), patches the start
-# script to use a Nix-aware JRE, and produces an immutable server fabric.
+# Takes a CurseForge server pack zip, extracts it, patches the start script
+# to use a Nix JRE, and produces an immutable server fabric.
 #
-# The output is a fixed-output derivation: network access is allowed during
-# the build (for the setup script to download dependencies), but the output
-# hash must match exactly.
-#
-# CurseForge packs come in two flavors:
-#   1. Simple — config/mods only, no setup script needed
-#   2. NeoForge/Forge — has startserver.sh that installs the mod loader
-#
-# This builder handles both patterns.
-#
-# Usage:
-#   minecraft-curseforge {
-#     name = "atm10";
-#     src = fetchurl { url = "..."; hash = "sha256-..."; };
-#     outputHash = "sha256-...";
-#   }
-#
-# The `outputHash` is the hash of the FINAL output directory contents. On
-# first build, Nix will suggest the correct hash after a failed attempt.
+# This is a plain derivation — no fixed-output, no network access.
+# The src zip is already fetched and verified by fetchurl.
 
 { stdenv
 , lib
-, unzip
-, jdk21
+, pkgs
 }:
 
-# Curried: outer args are build-time deps, inner args are per-pack config
 { name
 , src
-, jre ? jdk21
-, outputHash
-, # Names of setup scripts to probe for, in priority order.
-  # The first existing script found will be executed.
-  setupScripts ? [
-    "startserver.sh"
-    "server-setup.sh"
-    "ServerStart.sh"
-    "LaunchServer.sh"
-    "start_server.sh"
-  ]
+, jre ? pkgs.jdk21
 }:
 
 let
-  # Image identity: derived from the fetchurl store path basename.
-  # This propagates through the derivation chain for update detection.
   imageId = builtins.baseNameOf src;
 in
 stdenv.mkDerivation {
@@ -56,155 +24,38 @@ stdenv.mkDerivation {
   version = "unstable";
 
   inherit src;
+  dontUnpack = true;
 
-  nativeBuildInputs = [
-    unzip
-  ];
-
-  # JRE in buildInputs (not nativeBuildInputs) — ensures it's in the
-  # runtime closure. The patched start.sh references ${jre}/bin/java,
-  # and Nix's reference scanner finds this text reference in the output.
-  buildInputs = [
-    jre
-  ];
-
-  # Fixed-output: network access allowed during build
-  outputHashMode = "recursive";
-  inherit outputHash;
-
-  # Expose imageId and jre without building the derivation
-  passthru = { inherit imageId jre; };
-
-  # CRITICAL: Single buildPhase — patchPhase runs BEFORE buildPhase in
-  # Nix's mkDerivation, so it cannot reference files that don't exist yet.
-  # All work happens here: extract, setup, strip, patch, identity.
   buildPhase = ''
     runHook preBuild
 
-    # ── Extract modpack ──────────────────────────────────────────────
-    unzip "$src" -d "$out"
-    cd "$out"
+    # Extract modpack
+    ${lib.getExe pkgs.unzip} "$src" -d "$out"
 
-    # ── Probe for setup script ───────────────────────────────────────
-    setupScript=""
-    for script in ${lib.concatStringsSep " " setupScripts}; do
-      if [ -f "$script" ]; then
-        setupScript="$script"
+    # Patch start script to use Nix JRE
+    for script in startserver.sh server-setup.sh ServerStart.sh LaunchServer.sh; do
+      if [ -f "$out/$script" ]; then
+        chmod +x "$out/$script"
+        sed -i "1s|.*|#!${stdenv.shell}|" "$out/$script"
+        sed -i "s|''${ATM10_JAVA:-java}|${lib.getExe jre}|g" "$out/$script"
+        sed -i "s|\"java\"|\"${lib.getExe jre}\"|g" "$out/$script"
         break
       fi
     done
 
-    if [ -z "$setupScript" ]; then
-      echo "ERROR: No recognized setup script found in modpack!"
-      echo "Searched for: ${lib.concatStringsSep ", " setupScripts}"
-      echo "Files in archive:"
-      ls -la "$out/"
-      exit 1
-    fi
-
-    echo "Using setup script: $setupScript"
-
-    # ── Run setup ────────────────────────────────────────────────────
-    # For NeoForge/Forge packs (startserver.sh):
-    #   - ATM10_INSTALL_ONLY=true skips the server launch loop
-    #   - The script installs NeoForge by running the included installer jar
-    #   - The installer downloads additional libraries from maven (network OK)
-    # For simple packs:
-    #   - Run the setup script directly
-    if [ "$setupScript" = "startserver.sh" ]; then
-      echo "Detected NeoForge/Forge pack — running installer..."
-      ATM10_INSTALL_ONLY=true JAVA="${jre}/bin/java" bash "$setupScript"
-    else
-      echo "Running setup script..."
-      yes | bash "$setupScript"
-    fi
-
-    # ── Strip module-owned files ─────────────────────────────────────
-    # These will be provided by the overlay derivation (Phase 2).
-    rm -f "$out/eula.txt" "$out/server.properties"
-
-    # ── Strip CurseForge metadata if present ─────────────────────────
-    rm -rf "$out/.curseforge" "$out/overrides" 2>/dev/null || true
-  '';
-
-  # postBuild runs AFTER buildPhase — safe to rewrite start.sh here.
-  # This ensures the script exists (created by setup or by us).
-  postBuild = ''
-    # ── Rewrite start script ─────────────────────────────────────────
-    # For NeoForge packs, the launcher uses @user_jvm_args.txt and
-    # @libraries/net/neoforged/neoforge/<version>/unix_args.txt.
-    # We create a wrapper that uses the Nix JRE instead of system java.
-    #
-    # For simple packs, we find the server jar and create a direct launcher.
-
-    # Check if this is a NeoForge pack (has unix_args.txt after install)
-    neoForgeArgs=$(find "$out/libraries/net/neoforged" -name "unix_args.txt" 2>/dev/null | head -1)
-
-    if [ -n "$neoForgeArgs" ]; then
-      echo "NeoForge pack detected — creating launcher wrapper"
-      cat > "$out/start.sh" << STARTSCRIPT
-#!${stdenv.shell}
-# Auto-generated by minecraft-curseforge builder — NeoForge wrapper
-# Environment variables:
-#   JAVA_MAX_MEM  - Override maximum heap size (default: from user_jvm_args.txt)
-#   JAVA_MIN_MEM  - Override minimum heap size (default: from user_jvm_args.txt)
-#   JAVA_OPTS     - Additional JVM arguments
-
-cd "\$(dirname "\$0")"
-exec ${jre}/bin/java \
-  @user_jvm_args.txt \
-  @''${neoForgeArgs} \
-  nogui
-STARTSCRIPT
-    else
-      # Simple pack — find the server jar
-      launcherJar=""
-      for jar in server.jar forge.jar neoforge.jar fabric-server-launch.jar; do
-        if [ -f "$out/$jar" ]; then
-          launcherJar="$out/$jar"
-          break
-        fi
-      done
-
-      if [ -z "$launcherJar" ]; then
-        echo "WARNING: No recognized server JAR found. Searching for any .jar..."
-        launcherJar=$(find "$out" -maxdepth 1 -name "*.jar" -type f | head -1)
-        if [ -z "$launcherJar" ]; then
-          echo "ERROR: No .jar files found in modpack output!"
-          exit 1
-        fi
-      fi
-
-      echo "Simple pack — using launcher: $launcherJar"
-      cat > "$out/start.sh" << STARTSCRIPT
-#!${stdenv.shell}
-# Auto-generated by minecraft-curseforge builder — simple launcher
-# Environment variables:
-#   JAVA_MAX_MEM  - Maximum heap size (default: 4G)
-#   JAVA_MIN_MEM  - Minimum heap size (default: 2G)
-#   JAVA_OPTS     - Additional JVM arguments
-
-exec ${jre}/bin/java \
-  -Xmx''${JAVA_MAX_MEM:-4G} \
-  -Xms''${JAVA_MIN_MEM:-2G} \
-  ''${JAVA_OPTS:-} \
-  -jar "$launcherJar" nogui
-STARTSCRIPT
-    fi
-
-    chmod +x "$out/start.sh"
-
-    # ── Write image identity ─────────────────────────────────────────
+    # Write image identity
     echo -n "${imageId}" > "$out/.image-id"
+
+    runHook postBuild
   '';
 
-  # No installPhase — the entire $out directory IS the output.
   installPhase = "true";
+
+  passthru = { inherit imageId jre; };
 
   meta = with lib; {
     description = "Builder for Minecraft CurseForge server packs";
-    license = licenses.free; # CurseForge packs have their own licenses
+    license = licenses.free;
     platforms = platforms.linux;
-    maintainers = [ ];
   };
 }
