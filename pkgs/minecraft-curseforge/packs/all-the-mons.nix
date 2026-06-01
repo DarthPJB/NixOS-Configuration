@@ -1,6 +1,6 @@
 # All the Mons — CurseForge Server Pack
 #
-# Mod loader: Forge/NeoForge
+# Mod loader: NeoForge 21.1.229
 # CurseForge: https://www.curseforge.com/minecraft/modpacks/all-the-mons
 #
 # CurseForge rotates download URLs — once fetched into the nix store with
@@ -31,10 +31,4 @@ minecraft-curseforge {
   # Fixed-output hash of the built server directory.
   # Nix will tell you the correct value on the first failed build.
   outputHash = "sha256-0000000000000000000000000000000000000000000000000000";  # REPLACE on first build
-
-  setupScripts = [
-    "server-setup.sh"
-    "ServerStart.sh"
-    "LaunchServer.sh"
-  ];
 }

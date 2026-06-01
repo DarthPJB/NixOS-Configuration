@@ -1,6 +1,6 @@
 # All the Mods 10 (ATM10) — CurseForge Server Pack
 #
-# Mod loader: NeoForge
+# Mod loader: NeoForge 21.1.228
 # CurseForge: https://www.curseforge.com/minecraft/modpacks/all-the-mods-10
 #
 # CurseForge rotates download URLs — once fetched into the nix store with
@@ -31,9 +31,4 @@ minecraft-curseforge {
   # Fixed-output hash of the built server directory.
   # Nix will tell you the correct value on the first failed build.
   outputHash = "sha256-0000000000000000000000000000000000000000000000000000";  # REPLACE on first build
-
-  setupScripts = [
-    "server-setup.sh"
-    "ServerStart.sh"
-  ];
 }
