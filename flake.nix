@@ -337,6 +337,12 @@
           minecraft-curseforge-atm10 = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/atm10.nix {
             minecraft-curseforge = self.packages.x86_64-linux.minecraft-curseforge;
           };
+          minecraft-curseforge-atm10-to-the-sky = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/atm10-to-the-sky.nix {
+            minecraft-curseforge = self.packages.x86_64-linux.minecraft-curseforge;
+          };
+          minecraft-curseforge-all-the-mons = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/all-the-mons.nix {
+            minecraft-curseforge = self.packages.x86_64-linux.minecraft-curseforge;
+          };
         };
         "aarch64-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.print-controller
