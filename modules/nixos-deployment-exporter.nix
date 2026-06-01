@@ -1,15 +1,13 @@
 # modules/nixos-deployment-exporter.nix
 # Prometheus exporter for NixOS deployment state tracking
 #
-# Exposes metrics about:
-# - NixOS generation number (booted vs current — detects test mode)
-# - NixOS version
-# - Kernel version
-# - System build timestamp
-# - System uptime
+# Two data sources:
+# 1. Build-time metadata (Nix store): flake revision, nixpkgs revision, NixOS version
+# 2. Activation timestamp (/var/lib/nixos-deployment/): written on every nixos-rebuild switch/test
 { config
 , lib
 , pkgs
+, self
 , ...
 }:
 
@@ -18,16 +16,35 @@ let
 
   python = pkgs.python3.withPackages (ps: [ ps.prometheus-client ]);
 
+  # Build-time metadata — baked into the Nix store, deterministic per generation
+  buildMetadata = pkgs.writeText "nixos-deployment-metadata.json" (builtins.toJSON {
+    nixosVersion = config.system.nixos.version;
+    nixosRelease = config.system.nixos.release;
+    nixpkgsRevision = self.inputs.nixpkgs_stable.rev or "dirty";
+    nixpkgsShortRev = self.inputs.nixpkgs_stable.shortRev or "dirty";
+    flakeRevision = self.rev or "dirty";
+    flakeShortRev = self.shortRev or "dirty";
+    hostname = config.networking.hostName;
+    stateVersion = config.system.stateVersion;
+  });
+
+  metadataPath = "/etc/nixos-deployment-metadata.json";
+  stateDir = "/var/lib/nixos-deployment";
+  stateFile = "${stateDir}/state.json";
+
   exporterScript = pkgs.writeScript "nixos-deployment-exporter.py" ''
     #!${python}/bin/python3
     """
     NixOS Deployment State Prometheus Exporter
 
-    Reads system metadata from standard NixOS paths and exposes
-    deployment state metrics for Prometheus scraping.
+    Reads:
+    - Build-time metadata from ${metadataPath} (Nix store, per-generation)
+    - Activation timestamp from ${stateFile} (written on nixos-rebuild switch)
+    - Runtime system state (generation symlinks, uptime, kernel version)
     """
 
     import http.server
+    import json
     import os
     import re
     import socketserver
@@ -42,61 +59,45 @@ let
         generate_latest,
     )
 
+    BUILD_METADATA_PATH = "${metadataPath}"
+    STATE_FILE = "${stateFile}"
 
-    def get_generation_number(path):
-        """Extract generation number from a NixOS system profile path."""
+
+    def load_json_file(path):
+        """Load a JSON file, return dict or empty dict on error."""
         try:
-            resolved = path.resolve()
-            match = re.search(r'system-(\d+)-link', str(resolved))
-            return int(match.group(1)) if match else None
+            return json.loads(Path(path).read_text())
         except Exception:
-            return None
+            return {}
 
 
     def get_current_generation():
-        """Get the current (latest) generation number and build time."""
+        """Get the current (latest) generation number."""
         system_link = Path("/nix/var/nix/profiles/system")
-
         if not system_link.is_symlink():
-            return None, None
-
-        # Symlink target is like "system-286-link"
+            return None
         try:
             target = os.readlink(str(system_link))
             match = re.search(r'system-(\d+)-link', target)
-            generation = int(match.group(1)) if match else None
+            return int(match.group(1)) if match else None
         except Exception:
-            generation = None
-
-        build_time = None
-        try:
-            build_time = int(system_link.stat().st_mtime)
-        except Exception:
-            pass
-
-        return generation, build_time
+            return None
 
 
     def get_booted_generation():
         """Get the currently booted generation by comparing store paths."""
         system_link = Path("/nix/var/nix/profiles/system")
         current_system = Path("/run/current-system")
-
         if not system_link.exists() or not current_system.exists():
             return None
-
         try:
-            # Resolve both to their store paths
             current_path = str(system_link.resolve())
             booted_path = str(current_system.resolve())
-
             if current_path == booted_path:
-                # Booted into the current generation
                 target = os.readlink(str(system_link))
                 match = re.search(r'system-(\d+)-link', target)
                 return int(match.group(1)) if match else None
             else:
-                # Booted into a different generation — find which one
                 profiles = Path("/nix/var/nix/profiles")
                 for entry in sorted(profiles.iterdir()):
                     if entry.name.startswith("system-") and entry.name.endswith("-link"):
@@ -104,16 +105,6 @@ let
                             match = re.search(r'system-(\d+)-link', entry.name)
                             return int(match.group(1)) if match else None
                 return None
-        except Exception:
-            return None
-
-
-    def get_nixos_version():
-        """Get NixOS version from /etc/os-release."""
-        try:
-            content = Path("/etc/os-release").read_text()
-            match = re.search(r'VERSION="([^"]+)"', content)
-            return match.group(1) if match else None
         except Exception:
             return None
 
@@ -139,33 +130,47 @@ let
         """Prometheus collector for NixOS deployment state."""
 
         def __init__(self):
+            # Build-time metadata (info metrics — value always 1, labels carry data)
+            self.nixos_version = Gauge(
+                'nixos_version_info',
+                'NixOS version information',
+                ['version', 'release', 'state_version'],
+            )
+            self.flake_info = Gauge(
+                'nixos_flake_info',
+                'Flake and nixpkgs metadata from build time',
+                ['flake_revision', 'nixpkgs_revision', 'hostname'],
+            )
+
+            # Generation tracking
             self.generation_number = Gauge(
                 'nixos_generation_number',
                 'NixOS system generation number',
                 ['type'],
             )
-            self.nixos_version = Gauge(
-                'nixos_version_info',
-                'NixOS version information',
-                ['version'],
+            self.generation_match = Gauge(
+                'nixos_generation_match',
+                '1 if booted generation matches current, 0 if in test mode',
             )
+
+            # Activation timestamp
+            self.activation_timestamp = Gauge(
+                'nixos_activation_timestamp_seconds',
+                'Timestamp of last nixos-rebuild switch/test (Unix epoch)',
+            )
+
+            # Runtime
             self.kernel_version = Gauge(
                 'nixos_kernel_version_info',
                 'Kernel version information',
                 ['version'],
             )
-            self.build_timestamp = Gauge(
-                'nixos_build_timestamp_seconds',
-                'System build timestamp (Unix epoch)',
-            )
             self.uptime_seconds = Gauge(
                 'nixos_uptime_seconds',
                 'System uptime in seconds',
             )
-            self.generation_match = Gauge(
-                'nixos_generation_match',
-                '1 if booted generation matches current, 0 if in test mode',
-            )
+
+            # Error tracking
             self.collect_errors = Counter(
                 'nixos_deployment_exporter_errors_total',
                 'Total errors collecting deployment metrics',
@@ -174,28 +179,46 @@ let
         def collect(self):
             errors = 0
 
+            # Build-time metadata
             try:
-                current_gen, build_time = get_current_generation()
-                booted_gen = get_booted_generation()
+                meta = load_json_file(BUILD_METADATA_PATH)
+                if meta:
+                    self.nixos_version.labels(
+                        version=meta.get('nixosVersion', 'unknown'),
+                        release=meta.get('nixosRelease', 'unknown'),
+                        state_version=meta.get('stateVersion', 'unknown'),
+                    ).set(1)
+                    self.flake_info.labels(
+                        flake_revision=meta.get('flakeRevision', 'unknown'),
+                        nixpkgs_revision=meta.get('nixpkgsRevision', 'unknown'),
+                        hostname=meta.get('hostname', 'unknown'),
+                    ).set(1)
+            except Exception:
+                errors += 1
 
+            # Generation state
+            try:
+                current_gen = get_current_generation()
+                booted_gen = get_booted_generation()
                 if current_gen is not None:
                     self.generation_number.labels(type='current').set(current_gen)
                 if booted_gen is not None:
                     self.generation_number.labels(type='booted').set(booted_gen)
-                if build_time is not None:
-                    self.build_timestamp.set(build_time)
                 if current_gen is not None and booted_gen is not None:
                     self.generation_match.set(1 if current_gen == booted_gen else 0)
             except Exception:
                 errors += 1
 
+            # Activation timestamp
             try:
-                version = get_nixos_version()
-                if version:
-                    self.nixos_version.labels(version=version).set(1)
+                state = load_json_file(STATE_FILE)
+                ts = state.get('activation_timestamp')
+                if ts is not None:
+                    self.activation_timestamp.set(ts)
             except Exception:
                 errors += 1
 
+            # Runtime
             try:
                 kernel = get_kernel_version()
                 if kernel:
@@ -213,12 +236,13 @@ let
             if errors > 0:
                 self.collect_errors.inc(errors)
 
-            yield self.generation_number
             yield self.nixos_version
-            yield self.kernel_version
-            yield self.build_timestamp
-            yield self.uptime_seconds
+            yield self.flake_info
+            yield self.generation_number
             yield self.generation_match
+            yield self.activation_timestamp
+            yield self.kernel_version
+            yield self.uptime_seconds
             yield self.collect_errors
 
 
@@ -292,6 +316,30 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    # Build-time metadata — written into the Nix store as a JSON file
+    environment.etc."nixos-deployment-metadata.json".source = buildMetadata;
+
+    # State directory for activation timestamps
+    systemd.tmpfiles.rules = [
+      "d ${stateDir} 0755 root root -"
+    ];
+
+    # Activation script — writes timestamp on every nixos-rebuild switch/test
+    system.activationScripts.nixos-deployment-state = {
+      deps = [ "etc" ];
+      text = ''
+        mkdir -p ${stateDir}
+        ${pkgs.coreutils}/bin/date +%s > ${stateDir}/activation-timestamp
+        ${pkgs.coreutils}/bin/date -Iseconds > ${stateDir}/activation-iso
+        ${pkgs.coreutils}/bin/printf '{"activation_timestamp":%d,"generation":%d,"hostname":"%s"}\n' \
+          "$(${pkgs.coreutils}/bin/date +%s)" \
+          "$(${pkgs.coreutils}/bin/readlink /nix/var/nix/profiles/system | ${pkgs.gnused}/bin/sed -n 's/.*system-\([0-9]*\)-link/\1/p')" \
+          "${config.networking.hostName}" \
+          > ${stateFile}
+      '';
+    };
+
+    # Exporter service
     systemd.services.nixos-deployment-exporter = {
       description = "NixOS Deployment State Prometheus Exporter";
       wantedBy = [ "multi-user.target" ];
@@ -302,7 +350,6 @@ in
         Restart = "on-failure";
         RestartSec = "10s";
         ExecStart = "${python}/bin/python3 ${exporterScript}";
-        # Only needs to read system metadata
         ProtectSystem = "strict";
         ProtectHome = true;
         PrivateTmp = true;
@@ -312,6 +359,8 @@ in
           "/run/current-system"
           "/proc/uptime"
           "/etc/os-release"
+          "/etc/nixos-deployment-metadata.json"
+          stateDir
         ];
       };
     };
