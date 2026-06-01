@@ -102,7 +102,8 @@
         bindsym XF86AudioMute exec --no-startup-id wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle && $refresh_i3status
 
         # Use Mouse+$mod to drag floating windows to their wanted position
-        floating_modifier $mod
+        # Disabled: conflicts with fcitx5 Super+key input method hotkeys
+        #floating_modifier $mod
 
         # start a terminal
         bindsym $mod+Return exec terminology

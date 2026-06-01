@@ -1,6 +1,6 @@
 # Unified Input Methods Configuration
 # Supports Chinese (rime) and Thai (IKBAEB-th) input methods via fcitx5
-# Keybindings: Super+; = Toggle IME, Super+c = Cycle forward, Super+t = Cycle backward
+# Keybindings: Super+; or Super+e = Toggle IME, Super+c = Cycle forward, Super+t = Cycle backward
 { config, pkgs, lib, self, ... }:
 
 {
@@ -33,7 +33,7 @@
           # Toggle fcitx5 on/off (returns to English when off)
           # Using Super+semicolon to avoid conflict with i3's Super+space (floating toggle)
           Hotkey = {
-            TriggerKeys = "Super+semicolon";
+            TriggerKeys = "Super+semicolon,Super+e";
             EnumerateInputForwardKey = "Super+c";
             EnumerateInputBackwardKey = "Super+t";
             PreviousPage = "Page_Up";
