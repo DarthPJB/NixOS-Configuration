@@ -178,9 +178,6 @@
     };
     initrd = {
       availableKernelModules = [
-        "vfio_pci"
-        "vfio_iommu_type1"
-        "vfio"
         "nvme"
         "xhci_pci"
         "ahci"
@@ -189,41 +186,25 @@
         "uas"
         "sd_mod"
       ];
-      kernelModules = [ "vfio_pci" ];
+      kernelModules = [
+        "nvidia"
+        "nvidia_modeset"
+        "nvidia_drm"
+      ];
     };
     #kernelPackages= pkgs.linuxPackages_5_18;
     kernelModules = [
       "kvm-amd"
-      "vfio_pci"
-      "vfio_iommu_type1"
-      "vfio"
     ];
     kernelParams = [
-      "video=HDMI-0:1920x1080@60"
-      "video=HDMI-1:3840x2160@60"
-      "video=DP-3:1920x1080@60"
+      "video=HDMI-A-1:1920x1080@60"
+      "video=HDMI-A-2:3840x2160@60"
+      "video=DP-2:1920x1080@60"
       "acpi_enforce_resources=lax"
       "amd_iommu=on"
       "amd_pstate=active"
     ];
     extraModulePackages = [ ];
-    /*
-      extraModprobeConfig = ''
-        options vfio-pci ids=1b21:2142,10de:1c81,10de:0fb9
-      '';
-    */
-    # ,
-    # 0000:21:00.0 0000:21:00.1
-    # echo ""
-    /*
-        initrd.preDeviceCommands = ''
-        DEVS="0000:46:00.0 0000:4d:00.0 0000:4d:00.1"
-        for DEV in $DEVS; do
-            echo "vfio-pci" > /sys/bus/pci/devices/$DEV/driver_override
-        done
-        modprobe -i vfio-pci
-      '';
-    */
   };
 
   # Set your time zone.
