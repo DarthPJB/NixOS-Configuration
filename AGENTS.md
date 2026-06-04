@@ -216,6 +216,41 @@ nix run .#dump-config -- cortex-alpha > config.json
 ./scripts/compare-configs.sh cortex-alpha main HEAD
 ```
 
+### QEMU Bargman Greeter Test Harness
+
+Test the bargman-cinematic LightDM webkit2 greeter in a QEMU VM before deploying to bare metal.
+
+#### Boot the Greeter VM
+```bash
+nix run .#bargman-greeter-vm
+```
+Boots a QEMU VM with the full i3wm + bargman-cinematic greeter stack. Use for visual verification.
+
+#### Headless Serial Debug
+```bash
+nix run .#bargman-greeter-vm-serial
+```
+Boots the VM in headless mode with serial console output. Use for diagnosing boot/greeter rendering issues.
+
+#### Capture Serial Logs
+```bash
+./shell/vm-serial-capture.sh              # 120s timeout, /tmp/greeter-boot.log
+./shell/vm-serial-capture.sh 60           # 60s timeout
+./shell/vm-serial-capture.sh 60 /tmp/custom.log
+```
+
+#### Run Golden Screenshot Test
+```bash
+nix build .#checks.x86_64-linux.bargman-greeter-login-test -L
+```
+Automated visual regression test — boots the VM, waits for the greeter, takes a screenshot, and compares against golden PNGs.
+
+#### Generate Golden Screenshots
+```bash
+# First run with comparison disabled to capture screenshots:
+# (golden PNGs go in tests/bargman-greeter-login/resources/)
+```
+
 ### Legacy Architecture Tasks (Being Phased Out)
 
 These tasks apply to machines still using the old per-file topology architecture.

@@ -16,6 +16,13 @@ This directory contains comprehensive DevOps-standard documentation for the NixO
 - **[code_structure.md](code_structure.md)** - Code organization and patterns
 - **[file_structure.md](file_structure.md)** - Directory layout and file organization
 
+### Session Status (Development Logs)
+- **[session-status-2026-06-02.md](session-status-2026-06-02.md)** - QEMU test harness for bargman-cinematic greeter
+- **[session-status-2026-06-01.md](session-status-2026-06-01.md)** - Minecraft hosting module architecture
+
+### Plans
+- **[plans/qemu-bargman-test-harness.md](plans/qemu-bargman-test-harness.md)** - QEMU VM test harness implementation plan
+
 ## Features
 
 ### HTML Documentation
