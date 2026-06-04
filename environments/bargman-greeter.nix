@@ -7,6 +7,7 @@
 let
   inherit (bargman-assets.packages.${pkgs.stdenv.hostPlatform.system})
     lightdm-theme-bargman-cinematic
+    cursor-theme-bargman-cinematic
     ;
 in
 {
@@ -24,6 +25,11 @@ in
       theme = {
         package = lightdm-theme-bargman-cinematic;
         name = "bargman-cinematic";
+      };
+      cursorTheme = {
+        package = cursor-theme-bargman-cinematic;
+        name = "BargmanCinematic-Cursors";
+        size = 24;
       };
       settings = {
         debug_mode = false;

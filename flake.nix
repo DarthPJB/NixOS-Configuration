@@ -538,7 +538,6 @@
           system = "x86_64-linux";
           modules = [
             ./environments/i3wm_darthpjb.nix
-            ./environments/bargman-greeter.nix
             ./environments/bargman-greeter-vm.nix
             {
               _module.args = {
@@ -612,7 +611,7 @@
             '';
 
         bargman-greeter-login-test = nixpkgs.callPackage ./tests/bargman-greeter-login/default.nix {
-          nixosModule = { imports = [ ./environments/i3wm_darthpjb.nix ./environments/bargman-greeter.nix ./environments/bargman-greeter-vm.nix ]; };
+          nixosModule = { imports = [ ./environments/i3wm_darthpjb.nix ./environments/bargman-greeter-vm.nix ]; };
           resourceDir = ./tests/bargman-greeter-login/resources;
         };
       };
