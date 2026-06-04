@@ -336,6 +336,19 @@
             '';
           });
         };
+        bargman-greeter-vm = {
+          type = "app";
+          program = "${self.nixosConfigurations.bargman-greeter-vm.config.system.build.vm}/bin/run-bargman-greeter-vm-vm";
+        };
+        bargman-greeter-vm-serial = {
+          type = "app";
+          program = toString (
+            nixpkgs.writeShellScript "run-bargman-greeter-vm-serial" ''
+              export QEMU_OPTS="-display none -serial mon:stdio ''${QEMU_OPTS:-}"
+              exec ${self.nixosConfigurations.bargman-greeter-vm.config.system.build.vm}/bin/run-bargman-greeter-vm-vm "$@"
+            ''
+          );
+        };
       };
 
       packages = {
@@ -355,6 +368,8 @@
           minecraft-curseforge-all-the-mons = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/all-the-mons.nix {
             minecraft-curseforge = self.packages.x86_64-linux.minecraft-curseforge;
           };
+          bargman-greeter-vm = self.nixosConfigurations.bargman-greeter-vm.config.system.build.vm;
+          bargman-greeter-vm-bootloader = self.nixosConfigurations.bargman-greeter-vm.config.system.build.vmWithBootLoader;
         };
         "aarch64-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.print-controller
@@ -518,6 +533,24 @@
           extraModules = [ ./users/build.nix ];
           host = topoIp "remote-builder";
         };
+
+        bargman-greeter-vm = nixpkgs_stable.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [
+            ./environments/i3wm_darthpjb.nix
+            ./environments/bargman-greeter.nix
+            ./environments/bargman-greeter-vm.nix
+            {
+              _module.args = {
+                inherit self;
+                inherit bargman-assets;
+              };
+              networking.hostName = "bargman-greeter-vm";
+              nixpkgs.hostPlatform = "x86_64-linux";
+              system.stateVersion = "25.11";
+            }
+          ];
+        };
       };
 
       # Dormant machines: configuration preserved for golden tests but excluded
@@ -577,6 +610,11 @@
               echo "Machines: ${toString coverage.coveredCount}/${toString coverage.totalMachines}"
               touch $out
             '';
+
+        bargman-greeter-login-test = nixpkgs.callPackage ./tests/bargman-greeter-login/default.nix {
+          nixosModule = { imports = [ ./environments/i3wm_darthpjb.nix ./environments/bargman-greeter.nix ./environments/bargman-greeter-vm.nix ]; };
+          resourceDir = ./tests/bargman-greeter-login/resources;
+        };
       };
 
       # CI data exposed under legacyPackages (not a standard flake output type)

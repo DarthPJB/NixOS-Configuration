@@ -5,6 +5,7 @@
 , ninja
 , pkg-config
 , wrapGAppsHook3
+, makeWrapper
 , lightdm
 , gtk3
 , webkitgtk_4_1
@@ -30,6 +31,7 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     pkg-config
     wrapGAppsHook3
+    makeWrapper
   ];
 
   buildInputs = [
@@ -63,6 +65,14 @@ stdenv.mkDerivation (finalAttrs: {
       substituteInPlace "$out/share/xgreeters/lightdm-webkit2-greeter.desktop" \
         --replace-fail "Exec=lightdm-webkit2-greeter" "Exec=$out/bin/lightdm-webkit2-greeter"
     fi
+
+    # Force software rendering for WebKitGTK to avoid black screen on nvidia GPUs.
+    # These are harmless on non-nvidia hardware (Intel, AMD, virtio-gpu) — the
+    # Cairo renderer is used for the greeter which is a short-lived process.
+    wrapProgram "$out/bin/lightdm-webkit2-greeter" \
+      --set GSK_RENDERER cairo \
+      --set WEBKIT_DISABLE_COMPOSITING_MODE 1 \
+      --set GDK_BACKEND x11
   '';
 
   passthru = {

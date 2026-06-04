@@ -7,7 +7,7 @@
 {
   imports = [
     ./i3wm.nix
-    ./bargman-greeter.nix
+    # ./bargman-greeter.nix  # DISABLED: webkit2 greeter causes black screen
   ];
 
   systemd.user.services.xwinwrap = lib.mkDefault {

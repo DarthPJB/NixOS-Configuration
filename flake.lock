@@ -42,11 +42,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1779893423,
-        "narHash": "sha256-mTunAsIe8zLgtjHNH3UkbjeDy/EQZGdMQPTZYNInbU0=",
+        "lastModified": 1780567954,
+        "narHash": "sha256-ivlLkOdxveyfbz8F6CJr3A2/sV0lqoFwZUXU5vRDJeU=",
         "ref": "main",
-        "rev": "90cc5e899ce5a5f3a4cd71eb1f1c2f34afe28ab9",
-        "revCount": 1,
+        "rev": "650a65e54e557d6a2b989679ef8f4a29b6ba45f4",
+        "revCount": 15,
         "type": "git",
         "url": "ssh://git@gitlab.com/mecha-team-zero/bargman-assets.git"
       },
