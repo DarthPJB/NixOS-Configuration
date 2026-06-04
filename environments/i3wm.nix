@@ -93,7 +93,7 @@
         #set background wallpaper
         exec --no-startup-id xsetroot -solid "#000000"
         # set display settings from arandr
-        exec --no-startup-id "sleep 2; ~/.screenlayout/layout.sh"
+        # exec --no-startup-id "sleep 2; ~/.screenlayout/layout.sh"  # Disabled: monitor layout now handled by services.xserver.displayManager.setupCommands
 
         # Use pactl to adjust volume in PulseAudio.
         set $refresh_i3status killall -SIGUSR1 i3status
