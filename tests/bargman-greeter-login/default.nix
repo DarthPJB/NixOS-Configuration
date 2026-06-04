@@ -1,11 +1,11 @@
-{
-  testers,
-  nixosModule,
-  lib,
-  testName ? "bargman-greeter-login",
-  resourceDir,
-  compareGoldens ? true,
-  goldenThreshold ? 6.3,
+{ testers
+, nixosModule
+, lib
+, testName ? "bargman-greeter-login"
+, resourceDir
+, compareGoldens ? true
+, goldenThreshold ? 6.3
+,
 }:
 testers.runNixOSTest {
   imports = [ ../helpers.nix ];
@@ -19,7 +19,7 @@ testers.runNixOSTest {
 
     virtualisation = {
       memorySize = 2048;
-      useBootLoader = false;  # simpler boot for testing
+      useBootLoader = false; # simpler boot for testing
     };
 
     # Don't auto-login — we want to see the greeter

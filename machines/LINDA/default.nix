@@ -200,9 +200,8 @@
     ];
     kernelParams = [
       "video=HDMI-0:1920x1080@60"
-      "video=DP-1:1920x1080@60"
       "video=HDMI-1:3840x2160@60"
-      "video=HDMI-2-0:400x1280@30"
+      "video=DP-3:1920x1080@60"
       "acpi_enforce_resources=lax"
       "amd_iommu=on"
       "amd_pstate=active"
@@ -275,7 +274,7 @@
     nvidia = {
       nvidiaSettings = true;
       open = false;
-      modesetting.enable = false;
+      modesetting.enable = true;
       powerManagement.enable = true;
     };
   };

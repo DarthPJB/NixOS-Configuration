@@ -108,135 +108,149 @@ in
   # This avoids mkIf, which mkMerge/concatLists don't process.
 
   config = {
-    users.users = mkMerge (mapAttrsToList (name: instanceCfg:
-      let
-        user = mkUserGroupName name;
-        dataDir = instanceCfg.dataDir;
-      in
-      if instanceCfg.enable then {
-        "${user}" = {
-          isSystemUser = true;
+    users.users = mkMerge (mapAttrsToList
+      (name: instanceCfg:
+        let
+          user = mkUserGroupName name;
+          dataDir = instanceCfg.dataDir;
+        in
+        if instanceCfg.enable then {
+          "${user}" = {
+            isSystemUser = true;
+            group = user;
+            home = dataDir;
+            createHome = true;
+            description = "Minecraft server '${name}' service user";
+          };
+        } else { }
+      )
+      cfg);
+
+    users.groups = mkMerge (mapAttrsToList
+      (name: instanceCfg:
+        let
+          group = mkUserGroupName name;
+        in
+        if instanceCfg.enable then {
+          "${group}" = { };
+        } else { }
+      )
+      cfg);
+
+    systemd.tmpfiles.rules = concatLists (mapAttrsToList
+      (name: instanceCfg:
+        let
+          dataDir = instanceCfg.dataDir;
+          user = mkUserGroupName name;
           group = user;
-          home = dataDir;
-          createHome = true;
-          description = "Minecraft server '${name}' service user";
-        };
-      } else { }
-    ) cfg);
+        in
+        optionals instanceCfg.enable [
+          "d ${dataDir} 0755 ${user} ${group} -"
+          "d ${dataDir}/backups 0755 ${user} ${group} -"
+          "d ${dataDir}/logs 0755 ${user} ${group} -"
+        ]
+      )
+      cfg);
 
-    users.groups = mkMerge (mapAttrsToList (name: instanceCfg:
-      let
-        group = mkUserGroupName name;
-      in
-      if instanceCfg.enable then {
-        "${group}" = { };
-      } else { }
-    ) cfg);
+    systemd.services = mkMerge (mapAttrsToList
+      (name: instanceCfg:
+        let
+          serviceName = mkServiceName name;
+          user = mkUserGroupName name;
+          group = user;
+          dataDir = instanceCfg.dataDir;
 
-    systemd.tmpfiles.rules = concatLists (mapAttrsToList (name: instanceCfg:
-      let
-        dataDir = instanceCfg.dataDir;
-        user = mkUserGroupName name;
-        group = user;
-      in
-      optionals instanceCfg.enable [
-        "d ${dataDir} 0755 ${user} ${group} -"
-        "d ${dataDir}/backups 0755 ${user} ${group} -"
-        "d ${dataDir}/logs 0755 ${user} ${group} -"
-      ]
-    ) cfg);
+          finalPack = pkgs.symlinkJoin {
+            name = "mc-server-final-${name}";
+            paths = [ instanceCfg.pack ];
+            postBuild = ''
+              ${optionalString instanceCfg.acceptEula ''
+                echo "eula=true" > "$out/eula.txt"
+              ''}
+              cp ${serverPropertiesFile} "$out/server.properties"
+            '';
+            passthru = instanceCfg.pack.passthru or { } // {
+              imageId = instanceCfg.pack.passthru.imageId or (builtins.baseNameOf instanceCfg.pack.src);
+              jre = instanceCfg.pack.passthru.jre or pkgs.jdk21;
+            };
+          };
 
-    systemd.services = mkMerge (mapAttrsToList (name: instanceCfg:
-      let
-        serviceName = mkServiceName name;
-        user = mkUserGroupName name;
-        group = user;
-        dataDir = instanceCfg.dataDir;
+          serverPropertiesFile = pkgs.writeText "server.properties" (
+            generators.toKeyValue
+              {
+                listsAsDuplicateKeys = true;
+              }
+              instanceCfg.serverProperties
+          );
 
-        finalPack = pkgs.symlinkJoin {
-          name = "mc-server-final-${name}";
-          paths = [ instanceCfg.pack ];
-          postBuild = ''
-            ${optionalString instanceCfg.acceptEula ''
-              echo "eula=true" > "$out/eula.txt"
-            ''}
-            cp ${serverPropertiesFile} "$out/server.properties"
+          execStopScript = pkgs.writeShellScript "${serviceName}-exec-stop" ''
+            set -euo pipefail
+            if [ -d "${dataDir}/world" ]; then
+              mkdir -p "${dataDir}/backups"
+              tar czf "${dataDir}/backups/world-$(date +%Y%m%d-%H%M%S).tar.gz" \
+                -C "${dataDir}" world
+            fi
           '';
-          passthru = instanceCfg.pack.passthru or { } // {
-            imageId = instanceCfg.pack.passthru.imageId or (builtins.baseNameOf instanceCfg.pack.src);
-            jre = instanceCfg.pack.passthru.jre or pkgs.jdk21;
+
+          execStartPreScript = pkgs.writeShellScript "${serviceName}-exec-start-pre" ''
+            set -euo pipefail
+            FINAL_PACK="${finalPack}"
+            IMAGE_ID="$(cat "$FINAL_PACK/.image-id")"
+            mkdir -p "${dataDir}"
+            if [ ! -f "${dataDir}/.image-id" ] || \
+               [ "$(cat "${dataDir}/.image-id")" != "$IMAGE_ID" ]; then
+              rsync -a --delete \
+                --exclude=/world \
+                --exclude=/backups \
+                --chown="${user}:${group}" \
+                "$FINAL_PACK/" "${dataDir}/"
+              echo "$IMAGE_ID" > "${dataDir}/.image-id"
+            fi
+          '';
+        in
+        if instanceCfg.enable then {
+          "${serviceName}" = {
+            description = "Minecraft CurseForge Server — ${name}";
+            wantedBy = [ "multi-user.target" ];
+            after = [ "network-online.target" ];
+            wants = [ "network-online.target" ];
+
+            serviceConfig = {
+              Type = "simple";
+              User = user;
+              Group = group;
+              WorkingDirectory = dataDir;
+              ExecStop = execStopScript;
+              ExecStartPre = execStartPreScript;
+              ExecStart = "${dataDir}/start.sh";
+
+              Environment = [
+                "JAVA_MAX_MEM=${instanceCfg.maxMemory}"
+                "JAVA_MIN_MEM=${instanceCfg.minMemory}"
+              ] ++ optional (instanceCfg.jvmArgs != [ ])
+                "JAVA_OPTS=${concatStringsSep " " instanceCfg.jvmArgs}";
+
+              Restart = "on-failure";
+              RestartSec = 15;
+              TimeoutStopSec = 300;
+            };
           };
-        };
+        } else { }
+      )
+      cfg);
 
-        serverPropertiesFile = pkgs.writeText "server.properties" (
-          generators.toKeyValue {
-            listsAsDuplicateKeys = true;
-          } instanceCfg.serverProperties
-        );
+    networking.firewall = mkMerge (mapAttrsToList
+      (name: instanceCfg:
+        if instanceCfg.enable && instanceCfg.openFirewall then {
+          allowedTCPPorts = [ instanceCfg.gamePort ];
+        } else { }
+      )
+      cfg);
 
-        execStopScript = pkgs.writeShellScript "${serviceName}-exec-stop" ''
-          set -euo pipefail
-          if [ -d "${dataDir}/world" ]; then
-            mkdir -p "${dataDir}/backups"
-            tar czf "${dataDir}/backups/world-$(date +%Y%m%d-%H%M%S).tar.gz" \
-              -C "${dataDir}" world
-          fi
-        '';
-
-        execStartPreScript = pkgs.writeShellScript "${serviceName}-exec-start-pre" ''
-          set -euo pipefail
-          FINAL_PACK="${finalPack}"
-          IMAGE_ID="$(cat "$FINAL_PACK/.image-id")"
-          mkdir -p "${dataDir}"
-          if [ ! -f "${dataDir}/.image-id" ] || \
-             [ "$(cat "${dataDir}/.image-id")" != "$IMAGE_ID" ]; then
-            rsync -a --delete \
-              --exclude=/world \
-              --exclude=/backups \
-              --chown="${user}:${group}" \
-              "$FINAL_PACK/" "${dataDir}/"
-            echo "$IMAGE_ID" > "${dataDir}/.image-id"
-          fi
-        '';
-      in
-      if instanceCfg.enable then {
-        "${serviceName}" = {
-          description = "Minecraft CurseForge Server — ${name}";
-          wantedBy = [ "multi-user.target" ];
-          after = [ "network-online.target" ];
-          wants = [ "network-online.target" ];
-
-          serviceConfig = {
-            Type = "simple";
-            User = user;
-            Group = group;
-            WorkingDirectory = dataDir;
-            ExecStop = execStopScript;
-            ExecStartPre = execStartPreScript;
-            ExecStart = "${dataDir}/start.sh";
-
-            Environment = [
-              "JAVA_MAX_MEM=${instanceCfg.maxMemory}"
-              "JAVA_MIN_MEM=${instanceCfg.minMemory}"
-            ] ++ optional (instanceCfg.jvmArgs != [ ])
-              "JAVA_OPTS=${concatStringsSep " " instanceCfg.jvmArgs}";
-
-            Restart = "on-failure";
-            RestartSec = 15;
-            TimeoutStopSec = 300;
-          };
-        };
-      } else { }
-    ) cfg);
-
-    networking.firewall = mkMerge (mapAttrsToList (name: instanceCfg:
-      if instanceCfg.enable && instanceCfg.openFirewall then {
-        allowedTCPPorts = [ instanceCfg.gamePort ];
-      } else { }
-    ) cfg);
-
-    environment.systemPackages = concatLists (mapAttrsToList (name: instanceCfg:
-      optionals instanceCfg.enable [ pkgs.mcrcon ]
-    ) cfg);
+    environment.systemPackages = concatLists (mapAttrsToList
+      (name: instanceCfg:
+        optionals instanceCfg.enable [ pkgs.mcrcon ]
+      )
+      cfg);
   };
 }

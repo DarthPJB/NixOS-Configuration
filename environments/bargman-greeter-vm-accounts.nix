@@ -8,5 +8,5 @@
     extraGroups = [ "wheel" ];
   };
 
-  users.groups.test = {};
+  users.groups.test = { };
 }

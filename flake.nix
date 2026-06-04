@@ -39,6 +39,7 @@
         inherit bargman-assets;
         llm = import nixpkgs_llm { system = "x86_64-linux"; config.allowUnfree = true; };
       };
+      minecraft-curseforge-builder = nixpkgs.callPackage ./pkgs/minecraft-curseforge { };
       commonModules = [
         secrix.nixosModules.default
         ./configuration.nix
@@ -47,7 +48,7 @@
           nixpkgs.config.allowUnfree = true;
           nixpkgs.overlays = [
             (final: prev: {
-              minecraft-curseforge = self.packages.x86_64-linux.minecraft-curseforge;
+              minecraft-curseforge = minecraft-curseforge-builder;
               minecraft-curseforge-atm10 = self.packages.x86_64-linux.minecraft-curseforge-atm10;
               minecraft-curseforge-atm10-to-the-sky = self.packages.x86_64-linux.minecraft-curseforge-atm10-to-the-sky;
               minecraft-curseforge-all-the-mons = self.packages.x86_64-linux.minecraft-curseforge-all-the-mons;
@@ -358,15 +359,14 @@
         #        };
         "x86_64-linux" = {
           lightdm-webkit2-greeter = nixpkgs.callPackage ./pkgs/lightdm-webkit2-greeter.nix { };
-          minecraft-curseforge = nixpkgs.callPackage ./pkgs/minecraft-curseforge { };
           minecraft-curseforge-atm10 = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/atm10.nix {
-            minecraft-curseforge = self.packages.x86_64-linux.minecraft-curseforge;
+            minecraft-curseforge = minecraft-curseforge-builder;
           };
           minecraft-curseforge-atm10-to-the-sky = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/atm10-to-the-sky.nix {
-            minecraft-curseforge = self.packages.x86_64-linux.minecraft-curseforge;
+            minecraft-curseforge = minecraft-curseforge-builder;
           };
           minecraft-curseforge-all-the-mons = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/all-the-mons.nix {
-            minecraft-curseforge = self.packages.x86_64-linux.minecraft-curseforge;
+            minecraft-curseforge = minecraft-curseforge-builder;
           };
           bargman-greeter-vm = self.nixosConfigurations.bargman-greeter-vm.config.system.build.vm;
           bargman-greeter-vm-bootloader = self.nixosConfigurations.bargman-greeter-vm.config.system.build.vmWithBootLoader;
@@ -611,7 +611,13 @@
             '';
 
         bargman-greeter-login-test = nixpkgs.callPackage ./tests/bargman-greeter-login/default.nix {
-          nixosModule = { imports = [ ./environments/i3wm_darthpjb.nix ./environments/bargman-greeter-vm.nix ]; };
+          nixosModule = {
+            imports = [ ./environments/i3wm_darthpjb.nix ./environments/bargman-greeter-vm.nix ];
+            _module.args = {
+              inherit self;
+              inherit bargman-assets;
+            };
+          };
           resourceDir = ./tests/bargman-greeter-login/resources;
         };
       };
