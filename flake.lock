@@ -42,11 +42,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1780567954,
-        "narHash": "sha256-ivlLkOdxveyfbz8F6CJr3A2/sV0lqoFwZUXU5vRDJeU=",
+        "lastModified": 1780571451,
+        "narHash": "sha256-w7qNigAFnx2kqNPh11op+dHqZcU1U0lZXbh4n0z6WAU=",
         "ref": "main",
-        "rev": "650a65e54e557d6a2b989679ef8f4a29b6ba45f4",
-        "revCount": 15,
+        "rev": "374569994cd826efeb78a9ef3a094ec071938f87",
+        "revCount": 18,
         "type": "git",
         "url": "ssh://git@gitlab.com/mecha-team-zero/bargman-assets.git"
       },
@@ -1391,11 +1391,11 @@
     },
     "nixpkgs_llm": {
       "locked": {
-        "lastModified": 1780030872,
-        "narHash": "sha256-u6WU/yd/o8iYQrHX3RAwO1hYa3LkoSL+WNQD0rJfJZQ=",
+        "lastModified": 1780365719,
+        "narHash": "sha256-QfWfccTN+70ZQ4m2qlU9PiKfz2Yppq94058iJyARNwc=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "e9a7635a57597d9754eccebdfc7045e6c8600e6b",
+        "rev": "ffa10e26ae11d676b2db836259889f1f571cb14f",
         "type": "github"
       },
       "original": {
