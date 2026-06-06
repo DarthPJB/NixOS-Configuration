@@ -60,22 +60,29 @@
 
   # ── Minecraft CurseForge Servers ────────────────────────────────────
   services.minecraft-curseforge.all-the-mons = {
-    enable = false;  # disabled post-incident 2026-06-05 — pending start.sh fix
+    enable = true;  # re-enabled 2026-06-06
     pack = pkgs.minecraft-curseforge-all-the-mons;
     acceptEula = true;
     maxMemory = "8G";
     minMemory = "4G";
     gamePort = 25565;
+    rconPort = 25575;
+    rconPassword = "allthemons";  # TODO: change this or move to secrets
     openFirewall = true;
+    ops = [
+      { uuid = "a02323f6-eaf1-44d2-8d37-d260c914cb00"; name = "John88"; level = 4; bypassesPlayerLimit = true; }
+      { uuid = "d23e3eb2-954b-4544-ad3d-982f0ef495aa"; name = "boxfox"; level = 4; bypassesPlayerLimit = true; }
+    ];
     serverProperties = {
       "allow-flight" = true;
-      "motd" = "All the Mons";
+      "motd" = "in the waters of nurse joy a hero blooms";
       "max-tick-time" = 180000;
-      "simulation-distance" = 5;
-      "view-distance" = 8;
-      "max-players" = 10;
+      "simulation-distance" = 8;
+      "view-distance" = 20;
+      "max-players" = 8;
       "difficulty" = "normal";
       "gamemode" = "survival";
+      "level-seed" = "4240772663413292738";
     };
   };
 }

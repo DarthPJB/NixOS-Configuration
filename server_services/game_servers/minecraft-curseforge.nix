@@ -89,6 +89,45 @@ in
           default = 25565;
           description = "TCP port for Minecraft game traffic.";
         };
+
+        rconPort = mkOption {
+          type = types.port;
+          default = 25575;
+          description = "TCP port for RCON remote console.";
+        };
+
+        rconPassword = mkOption {
+          type = types.str;
+          default = "";
+          description = "RCON password. Used internally for graceful shutdown via mcrcon (localhost only).";
+        };
+
+        ops = mkOption {
+          type = types.listOf (types.submodule {
+            options = {
+              uuid = mkOption {
+                type = types.str;
+                description = "Player UUID (e.g. 069a79f4-44e9-4726-a5be-fca90e38aaf5).";
+              };
+              name = mkOption {
+                type = types.str;
+                description = "Player name.";
+              };
+              level = mkOption {
+                type = types.int;
+                default = 4;
+                description = "Op level (1-4). 4 = full access.";
+              };
+              bypassesPlayerLimit = mkOption {
+                type = types.bool;
+                default = true;
+                description = "Whether the player can join when server is full.";
+              };
+            };
+          });
+          default = [];
+          description = "List of server operators. Written to ops.json on start.";
+        };
       };
     }));
     default = { };
@@ -175,19 +214,53 @@ in
             };
           };
 
+          # Merge RCON settings into serverProperties
+          serverPropertiesWithRcon = instanceCfg.serverProperties // {
+            "enable-rcon" = true;
+            "rcon.port" = instanceCfg.rconPort;
+            "rcon.password" = instanceCfg.rconPassword;
+          };
+
           serverPropertiesFile = pkgs.writeText "server.properties" (
             generators.toKeyValue
               {
                 listsAsDuplicateKeys = true;
               }
-              instanceCfg.serverProperties
+              serverPropertiesWithRcon
           );
+
+          # Graceful shutdown via RCON: warn players, save world, then stop server
+          execStopPreScript = pkgs.writeShellScript "${serviceName}-exec-stop-pre" ''
+            set -euo pipefail
+            MCRCON="${lib.getExe pkgs.mcrcon} -H 127.0.0.1 -P ${toString instanceCfg.rconPort} -p '${instanceCfg.rconPassword}'"
+
+            # Warn players with countdown
+            $MCRCON -w 5 "say §c[Server] §fServer shutdown in 30 seconds..." || true
+            sleep 20
+            $MCRCON -w 5 "say §c[Server] §fServer shutdown in 10 seconds..." || true
+            sleep 5
+            $MCRCON -w 5 "say §c[Server] §fServer shutdown in 5 seconds..." || true
+            sleep 3
+            $MCRCON -w 5 "say §c[Server] §fServer shutdown in 2 seconds..." || true
+            sleep 2
+            $MCRCON -w 5 "say §c[Server] §eSaving world and shutting down..." || true
+
+            # Flush world to disk
+            $MCRCON -w 5 "save-all" || true
+            sleep 2
+
+            # Graceful stop
+            $MCRCON -w 5 "stop" || true
+
+            # Wait for process to exit (systemd will SIGTERM after TimeoutStopSec)
+            sleep 5
+          '';
 
           execStopScript = pkgs.writeShellScript "${serviceName}-exec-stop" ''
             set -euo pipefail
             if [ -d "${dataDir}/world" ]; then
               mkdir -p "${dataDir}/backups"
-              tar czf "${dataDir}/backups/world-$(date +%Y%m%d-%H%M%S).tar.gz" \
+              ${lib.getExe pkgs.gnutar} czf "${dataDir}/backups/world-$(date +%Y%m%d-%H%M%S).tar.gz" \
                 -C "${dataDir}" world
               # rotate: keep max 14 days of backups
               ${lib.getExe pkgs.findutils} "${dataDir}/backups" \
@@ -195,20 +268,44 @@ in
             fi
           '';
 
+          # Generate ops.json from declared ops list
+          opsJson = pkgs.writeText "ops.json" (builtins.toJSON (map
+            (op: {
+              uuid = op.uuid;
+              name = op.name;
+              level = op.level;
+              bypassesPlayerLimit = op.bypassesPlayerLimit;
+            })
+            instanceCfg.ops
+          ));
+
           execStartPreScript = pkgs.writeShellScript "${serviceName}-exec-start-pre" ''
             set -euo pipefail
             FINAL_PACK="${finalPack}"
             IMAGE_ID="$(cat "$FINAL_PACK/.image-id")"
             mkdir -p "${dataDir}"
+            chmod u+w "${dataDir}"
+            # Ensure dataDir is writable even if rsync previously set store perms
+            find "${dataDir}" -type d ! -writable -exec chmod u+w {} + 2>/dev/null || true
             if [ ! -f "${dataDir}/.image-id" ] || \
                [ "$(cat "${dataDir}/.image-id")" != "$IMAGE_ID" ]; then
-              ${lib.getExe pkgs.rsync} -a --delete \
+              # Sync pack contents, dereference symlinks to writable copies
+              ${lib.getExe pkgs.rsync} -rltD --delete \
+                --copy-links \
                 --exclude=/world \
                 --exclude=/backups \
                 --chown="${user}:${group}" \
                 "$FINAL_PACK/" "${dataDir}/"
+              # Ensure everything is writable by the service user
+              chmod -R u+w "${dataDir}"
               echo "$IMAGE_ID" > "${dataDir}/.image-id"
             fi
+            # Write ops.json (declarative operator list)
+            cp ${opsJson} "${dataDir}/ops.json"
+            chown "${user}:${group}" "${dataDir}/ops.json"
+            # Write server.properties with RCON and instance settings
+            cp ${serverPropertiesFile} "${dataDir}/server.properties"
+            chown "${user}:${group}" "${dataDir}/server.properties"
           '';
         in
         if instanceCfg.enable then {
@@ -223,6 +320,7 @@ in
               User = user;
               Group = group;
               WorkingDirectory = dataDir;
+              ExecStopPre = execStopPreScript;
               ExecStop = execStopScript;
               ExecStartPre = execStartPreScript;
               ExecStart = "${lib.getExe pkgs.bash} ${dataDir}/start.sh";
@@ -233,10 +331,10 @@ in
               ] ++ optional (instanceCfg.jvmArgs != [ ])
                 "JAVA_OPTS=${concatStringsSep " " instanceCfg.jvmArgs}";
 
-              Restart = "no";
-              # RestartSec = 15;  # Re-enable after testing
-              # StartLimitBurst = 5;
-              # StartLimitIntervalSec = 600;
+              Restart = "on-failure";
+              RestartSec = 15;
+              StartLimitBurst = 5;
+              StartLimitIntervalSec = 600;
               TimeoutStopSec = 300;
             };
           };

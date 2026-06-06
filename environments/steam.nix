@@ -1,6 +1,7 @@
 { config
 , pkgs
 , unstable
+, llm
 , ...
 }:
 
@@ -13,7 +14,7 @@
   # Nice-to-have for any game (highly recommended for SE)
   programs.gamemode.enable = true; # Feral's gamemode
   environment.systemPackages = [
-    unstable.prismlauncher
+    llm.prismlauncher
     unstable.vintagestory
   ];
 }
