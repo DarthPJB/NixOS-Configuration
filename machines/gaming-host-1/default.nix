@@ -60,7 +60,7 @@
 
   # ── Minecraft CurseForge Servers ────────────────────────────────────
   services.minecraft-curseforge.all-the-mons = {
-    enable = true;
+    enable = false;  # disabled post-incident 2026-06-05 — pending start.sh fix
     pack = pkgs.minecraft-curseforge-all-the-mons;
     acceptEula = true;
     maxMemory = "8G";

@@ -189,6 +189,9 @@ in
               mkdir -p "${dataDir}/backups"
               tar czf "${dataDir}/backups/world-$(date +%Y%m%d-%H%M%S).tar.gz" \
                 -C "${dataDir}" world
+              # rotate: keep max 14 days of backups
+              ${lib.getExe pkgs.findutils} "${dataDir}/backups" \
+                -name "world-*.tar.gz" -mtime +14 -delete
             fi
           '';
 
@@ -199,7 +202,7 @@ in
             mkdir -p "${dataDir}"
             if [ ! -f "${dataDir}/.image-id" ] || \
                [ "$(cat "${dataDir}/.image-id")" != "$IMAGE_ID" ]; then
-              rsync -a --delete \
+              ${lib.getExe pkgs.rsync} -a --delete \
                 --exclude=/world \
                 --exclude=/backups \
                 --chown="${user}:${group}" \
@@ -222,7 +225,7 @@ in
               WorkingDirectory = dataDir;
               ExecStop = execStopScript;
               ExecStartPre = execStartPreScript;
-              ExecStart = "${dataDir}/start.sh";
+              ExecStart = "${lib.getExe pkgs.bash} ${dataDir}/start.sh";
 
               Environment = [
                 "JAVA_MAX_MEM=${instanceCfg.maxMemory}"
@@ -232,6 +235,8 @@ in
 
               Restart = "on-failure";
               RestartSec = 15;
+              StartLimitBurst = 5;
+              StartLimitIntervalSec = 600;
               TimeoutStopSec = 300;
             };
           };

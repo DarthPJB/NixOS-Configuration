@@ -32,16 +32,21 @@ stdenv.mkDerivation {
     # Extract modpack
     ${lib.getExe pkgs.unzip} "$src" -d "$out"
 
-    # Patch start script to use Nix JRE
+    # Patch start script to use Nix JRE and create canonical start.sh
+    startScript=""
     for script in startserver.sh server-setup.sh ServerStart.sh LaunchServer.sh; do
       if [ -f "$out/$script" ]; then
         chmod +x "$out/$script"
         sed -i "1s|.*|#!${stdenv.shell}|" "$out/$script"
         sed -i "s|''${ATM10_JAVA:-java}|${lib.getExe jre}|g" "$out/$script"
         sed -i "s|\"java\"|\"${lib.getExe jre}\"|g" "$out/$script"
+        startScript="$script"
         break
       fi
     done
+    if [ -n "$startScript" ]; then
+      ln -sf "./$startScript" "$out/start.sh"
+    fi
 
     # Write image identity
     echo -n "${imageId}" > "$out/.image-id"
