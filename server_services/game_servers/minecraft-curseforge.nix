@@ -233,10 +233,10 @@ in
               ] ++ optional (instanceCfg.jvmArgs != [ ])
                 "JAVA_OPTS=${concatStringsSep " " instanceCfg.jvmArgs}";
 
-              Restart = "on-failure";
-              RestartSec = 15;
-              StartLimitBurst = 5;
-              StartLimitIntervalSec = 600;
+              Restart = "no";
+              # RestartSec = 15;  # Re-enable after testing
+              # StartLimitBurst = 5;
+              # StartLimitIntervalSec = 600;
               TimeoutStopSec = 300;
             };
           };
