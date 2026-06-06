@@ -44,6 +44,7 @@ in
     ./environments/sshd.nix
     ./environments/tools.nix
     ./modules/nixos-deployment-exporter.nix
+    ./modules/sysdiag.nix
   ];
   environment.systemPackages = with pkgs; [
     build-all-script
@@ -60,6 +61,35 @@ in
     enable = true;
     port = 3111;
   };
+  # System diagnostics — disabled for review, enable when ready for deployment
+  # services.sysdiag = {
+  #   enable = true;
+  #   enableTimer = true;
+  #   # Collect everything except slow hardware scan
+  #   collection.hardware = false;
+  #   # Size safeguards — critical for verbose systems (debug logging, no rate limits)
+  #   maxFileSize = "10M";
+  #   maxTotalSize = "100M";
+  #   # Reduced journal limits for verbose systems
+  #   journalRecentLines = 1000;
+  #   journalErrorLines = 500;
+  #   journalWarningLines = 500;
+  #   # Boot journals can be 100MB+ with debug logging — skip by default
+  #   collectBootJournal = false;
+  #   timerConfig = {
+  #     OnBootSec          = "10min";
+  #     OnUnitActiveSec    = "6h";
+  #     RandomizedDelaySec = "15min";
+  #     Persistent         = "true";
+  #   };
+  # };
+
+  # services.sysdiag-cleanup = {
+  #   enable = true;
+  #   retentionDays = 14;
+  #   retentionCount = 20;
+  # };
+
   services.prometheus = {
     exporters.node = {
       enable = true;
