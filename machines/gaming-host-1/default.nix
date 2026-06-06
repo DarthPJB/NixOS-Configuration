@@ -60,14 +60,14 @@
 
   # ── Minecraft CurseForge Servers ────────────────────────────────────
   services.minecraft-curseforge.all-the-mons = {
-    enable = true;  # re-enabled 2026-06-06
+    enable = true; # re-enabled 2026-06-06
     pack = pkgs.minecraft-curseforge-all-the-mons;
     acceptEula = true;
     maxMemory = "8G";
     minMemory = "4G";
     gamePort = 25565;
     rconPort = 25575;
-    rconPassword = "allthemons";  # TODO: change this or move to secrets
+    rconPassword = "allthemons"; # TODO: change this or move to secrets
     openFirewall = true;
     ops = [
       { uuid = "a02323f6-eaf1-44d2-8d37-d260c914cb00"; name = "John88"; level = 4; bypassesPlayerLimit = true; }

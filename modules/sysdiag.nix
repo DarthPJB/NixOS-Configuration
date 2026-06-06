@@ -24,10 +24,12 @@ let
   # ---------------------------------------------------------------------------
   # Generate env-to-collection-toggle mapping for the wrapper script
   # ---------------------------------------------------------------------------
-  collectEnv = lib.mapAttrs' (name: enabled: {
-    name = "SYSDIAG_COLLECT_${lib.toUpper name}";
-    value = if enabled then "1" else "0";
-  }) cfg.collection;
+  collectEnv = lib.mapAttrs'
+    (name: enabled: {
+      name = "SYSDIAG_COLLECT_${lib.toUpper name}";
+      value = if enabled then "1" else "0";
+    })
+    cfg.collection;
 
   # ---------------------------------------------------------------------------
   # Wrapped diagnostics script
@@ -144,26 +146,26 @@ in
     collection = lib.mkOption {
       type = lib.types.attrsOf lib.types.bool;
       default = {
-        system    = true;
-        hardware  = true;
-        memory    = true;
-        disk      = true;
-        network   = true;
-        systemd   = true;
-        journal   = true;
-        kernel    = true;
+        system = true;
+        hardware = true;
+        memory = true;
+        disk = true;
+        network = true;
+        systemd = true;
+        journal = true;
+        kernel = true;
         processes = true;
-        security  = true;
-        nixos     = true;
-        logs      = true;
+        security = true;
+        nixos = true;
+        logs = true;
       };
       description = "Enable or disable individual collection categories";
       example = {
-        system    = true;
-        hardware  = false;  # Skip hardware (slow, noisy)
-        network   = true;
-        journal   = true;
-        kernel    = true;
+        system = true;
+        hardware = false; # Skip hardware (slow, noisy)
+        network = true;
+        journal = true;
+        kernel = true;
       };
     };
 
@@ -223,10 +225,10 @@ in
     timerConfig = lib.mkOption {
       type = lib.types.attrsOf lib.types.str;
       default = {
-        OnBootSec          = "5min";
-        OnUnitActiveSec    = "1h";
+        OnBootSec = "5min";
+        OnUnitActiveSec = "1h";
         RandomizedDelaySec = "5min";
-        Persistent         = "true";
+        Persistent = "true";
       };
       example = {
         OnCalendar = "daily";
@@ -287,8 +289,8 @@ in
     timerConfig = lib.mkOption {
       type = lib.types.attrsOf lib.types.str;
       default = {
-        OnCalendar         = "daily";
-        Persistent         = "true";
+        OnCalendar = "daily";
+        Persistent = "true";
         RandomizedDelaySec = "30min";
       };
       description = "Systemd timer configuration for cleanup";

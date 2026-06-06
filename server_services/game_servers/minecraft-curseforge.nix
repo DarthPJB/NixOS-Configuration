@@ -125,7 +125,7 @@ in
               };
             };
           });
-          default = [];
+          default = [ ];
           description = "List of server operators. Written to ops.json on start.";
         };
       };
