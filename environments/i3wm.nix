@@ -42,6 +42,14 @@
   '';
   programs.dconf.enable = true;
 
+  # Enable xdg-desktop-portal for Chromium/Vivaldi custom URL scheme handoff
+  # (e.g. prismlauncher://, curseforge://) and file picker dialogs
+  xdg.portal = {
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    config.common.default = [ "gtk" ];
+  };
+
   environment.sessionVariables = {
     GTK_THEME = "Arc-Dark";
     QT_STYLE_OVERRIDE = "Adwaita-Dark";

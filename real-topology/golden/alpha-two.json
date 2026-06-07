@@ -18,7 +18,7 @@
     "vm.mmap_rnd_compat_bits": 16
   },
   "environment.systemPackages": [
-    "adwaita-icon-theme",
+    "cursor-theme-bargman-cinematic",
     "lightdm-webkit2-greeter",
     "adwaita-qt",
     "papirus-icon-theme",
@@ -130,6 +130,7 @@
     "cpupower",
     "bcache-tools",
     "systemd",
+    "plymouth",
     "kmod",
     "kexec-tools",
     "xorg-server",
@@ -187,6 +188,8 @@
     "nixos-manual-html",
     "nixos-help",
     "sound-theme-freedesktop",
+    "xdg-desktop-portal",
+    "xdg-desktop-portal-gtk",
     "shared-mime-info",
     "hicolor-icon-theme",
     "fallback-cursor-theme",

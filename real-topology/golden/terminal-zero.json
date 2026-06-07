@@ -165,6 +165,8 @@
     "nixos-manual-html",
     "nixos-help",
     "sound-theme-freedesktop",
+    "xdg-desktop-portal",
+    "xdg-desktop-portal-gtk",
     "shared-mime-info",
     "hicolor-icon-theme",
     "hostname-debian",
