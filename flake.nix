@@ -353,10 +353,6 @@
       };
 
       packages = {
-        #        "x86_64-linux".local-worker-image = mkLibVirtImage {
-        #          config = self.nixosConfigurations.local-worker.config;
-        #          name = "local-worker-image";
-        #        };
         "x86_64-linux" = {
           lightdm-webkit2-greeter = nixpkgs.callPackage ./pkgs/lightdm-webkit2-greeter.nix { };
           minecraft-curseforge-atm10 = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/atm10.nix {
@@ -434,11 +430,6 @@
             }
           ];
         };
-
-        #  local-worker = mkX86_64 "local-worker" {
-        #    host = "10.88.127.89";
-        #    extraModules = [ "${nixpkgs_stable}/nixos/modules/virtualisation/libvirtd.nix" ];
-        #  };
 
         cortex-alpha = mkX86_64 "cortex-alpha" {
           host = topoIp "cortex-alpha";

@@ -34,7 +34,7 @@ deploy-prep = {
 ```
 
 ### **Issue 2: Incomplete Machine Registry**
-**Problem:** Only 16/19 machines tracked. Missing: `beta-one`, `obs-box`, `local-worker`.
+**Problem:** Only 16/19 machines tracked. Missing: `beta-one`.
 
 **Solution:** Update machine lists in `ci.nix`:
 
@@ -53,8 +53,6 @@ x86Machines = [
   "remote-worker"
   "storage-array"
   "remote-builder"
-  "local-worker"  # ADD THIS
-  "obs-box"       # ADD THIS
 ];
 
 # Update armMachines list:

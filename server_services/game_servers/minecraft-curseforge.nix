@@ -232,35 +232,36 @@ in
           # Graceful shutdown via RCON: warn players, save world, then stop server
           execStopPreScript = pkgs.writeShellScript "${serviceName}-exec-stop-pre" ''
             set -euo pipefail
+            SLEEP="${lib.getExe' pkgs.coreutils "sleep"}"
             MCRCON="${lib.getExe pkgs.mcrcon} -H 127.0.0.1 -P ${toString instanceCfg.rconPort} -p '${instanceCfg.rconPassword}'"
 
             # Warn players with countdown
             $MCRCON -w 5 "say §c[Server] §fServer shutdown in 30 seconds..." || true
-            sleep 20
+            $SLEEP 20
             $MCRCON -w 5 "say §c[Server] §fServer shutdown in 10 seconds..." || true
-            sleep 5
+            $SLEEP 5
             $MCRCON -w 5 "say §c[Server] §fServer shutdown in 5 seconds..." || true
-            sleep 3
+            $SLEEP 3
             $MCRCON -w 5 "say §c[Server] §fServer shutdown in 2 seconds..." || true
-            sleep 2
+            $SLEEP 2
             $MCRCON -w 5 "say §c[Server] §eSaving world and shutting down..." || true
 
             # Flush world to disk
             $MCRCON -w 5 "save-all" || true
-            sleep 2
+            $SLEEP 2
 
             # Graceful stop
             $MCRCON -w 5 "stop" || true
 
             # Wait for process to exit (systemd will SIGTERM after TimeoutStopSec)
-            sleep 5
+            $SLEEP 5
           '';
 
           execStopScript = pkgs.writeShellScript "${serviceName}-exec-stop" ''
             set -euo pipefail
             if [ -d "${dataDir}/world" ]; then
-              mkdir -p "${dataDir}/backups"
-              ${lib.getExe pkgs.gnutar} czf "${dataDir}/backups/world-$(date +%Y%m%d-%H%M%S).tar.gz" \
+              ${lib.getExe' pkgs.coreutils "mkdir"} -p "${dataDir}/backups"
+              ${lib.getExe pkgs.gnutar} czf "${dataDir}/backups/world-$(${lib.getExe' pkgs.coreutils "date"} +%Y%m%d-%H%M%S).tar.gz" \
                 -C "${dataDir}" world
               # rotate: keep max 14 days of backups
               ${lib.getExe pkgs.findutils} "${dataDir}/backups" \
@@ -281,14 +282,21 @@ in
 
           execStartPreScript = pkgs.writeShellScript "${serviceName}-exec-start-pre" ''
             set -euo pipefail
+            CAT="${lib.getExe' pkgs.coreutils "cat"}"
+            MKDIR="${lib.getExe' pkgs.coreutils "mkdir"}"
+            CHMOD="${lib.getExe' pkgs.coreutils "chmod"}"
+            FIND="${lib.getExe pkgs.findutils}"
+            CP="${lib.getExe' pkgs.coreutils "cp"}"
+            CHOWN="${lib.getExe' pkgs.coreutils "chown"}"
+            ECHO="${lib.getExe' pkgs.coreutils "echo"}"
             FINAL_PACK="${finalPack}"
-            IMAGE_ID="$(cat "$FINAL_PACK/.image-id")"
-            mkdir -p "${dataDir}"
-            chmod u+w "${dataDir}"
+            IMAGE_ID="$($CAT "$FINAL_PACK/.image-id")"
+            $MKDIR -p "${dataDir}"
+            $CHMOD u+w "${dataDir}"
             # Ensure dataDir is writable even if rsync previously set store perms
-            find "${dataDir}" -type d ! -writable -exec chmod u+w {} + 2>/dev/null || true
+            $FIND "${dataDir}" -type d ! -writable -exec $CHMOD u+w {} + 2>/dev/null || true
             if [ ! -f "${dataDir}/.image-id" ] || \
-               [ "$(cat "${dataDir}/.image-id")" != "$IMAGE_ID" ]; then
+               [ "$($CAT "${dataDir}/.image-id")" != "$IMAGE_ID" ]; then
               # Sync pack contents, dereference symlinks to writable copies
               ${lib.getExe pkgs.rsync} -rltD --delete \
                 --copy-links \
@@ -297,15 +305,15 @@ in
                 --chown="${user}:${group}" \
                 "$FINAL_PACK/" "${dataDir}/"
               # Ensure everything is writable by the service user
-              chmod -R u+w "${dataDir}"
-              echo "$IMAGE_ID" > "${dataDir}/.image-id"
+              $CHMOD -R u+w "${dataDir}"
+              $ECHO "$IMAGE_ID" > "${dataDir}/.image-id"
             fi
             # Write ops.json (declarative operator list)
-            cp ${opsJson} "${dataDir}/ops.json"
-            chown "${user}:${group}" "${dataDir}/ops.json"
+            $CP ${opsJson} "${dataDir}/ops.json"
+            $CHOWN "${user}:${group}" "${dataDir}/ops.json"
             # Write server.properties with RCON and instance settings
-            cp ${serverPropertiesFile} "${dataDir}/server.properties"
-            chown "${user}:${group}" "${dataDir}/server.properties"
+            $CP ${serverPropertiesFile} "${dataDir}/server.properties"
+            $CHOWN "${user}:${group}" "${dataDir}/server.properties"
           '';
         in
         if instanceCfg.enable then {

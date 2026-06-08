@@ -21,8 +21,6 @@ let
     "remote-worker"
     "storage-array"
     "remote-builder"
-    "local-worker" # Added: missing machine
-    "obs-box" # Added: missing machine
   ];
 
   armMachines = [

@@ -1,3 +1,15 @@
+# local-worker.nix — QEMU guest with CUDA and virtiofs overlay nix store
+# Machine was retired. Stored as reference snippet.
+#
+# Key features:
+# - QEMU guest with virtiofs mounts
+# - Overlay filesystem for nix store (read-only base + writable layer)
+# - CUDA/NVIDIA support
+# - Blender environment
+# - Serial console support
+#
+# To reactivate: uncomment local-worker in flake.nix and restore machines/local-worker/
+
 { config
 , pkgs
 , hostname
@@ -40,11 +52,10 @@
       "console=ttyS0,115200"
       "console=tty1"
     ];
-    # Use the systemd-boot EFI boot loader.
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
 
-    #special filesystems
+    # Special filesystems for virtiofs
     initrd.supportedFilesystems = [
       "overlay"
       "virtiofs"
@@ -55,8 +66,7 @@
     ];
   };
 
-  #fileSystems."/nix/.rw-store" = { fsType = "tmpfs"; options = [ "mode=0755" "size=8G" ]; neededForBoot = true; };
-
+  # virtiofs mounts for shared storage
   fileSystems = {
     "/public_share" = {
       device = "public_share";
@@ -70,6 +80,8 @@
       device = "88_FS";
       fsType = "virtiofs";
     };
+
+    # Overlay nix store: read-only base via virtiofs + writable tmpfs layer
     "/nix/.ro-store" = {
       neededForBoot = true;
       device = "nixstore";
@@ -116,5 +128,4 @@
 
   services.qemuGuest.enable = true;
   services.spice-vdagentd.enable = true;
-
 }

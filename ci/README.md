@@ -57,8 +57,8 @@ This will output build warnings to stderr (normal for `nix run`) and the YAML wo
 
 ### 2. Build x86 Job
 - **Depends on**: validation, security
-- Builds 14 x86_64 configurations in parallel
-- Machines: terminal-zero, terminal-nx-01, cortex-alpha, local-nas, alpha-one, alpha-two, alpha-three, LINDA, gaming-host-1, remote-worker, storage-array, remote-builder, **local-worker**, **obs-box**
+- Builds 12 x86_64 configurations in parallel
+- Machines: terminal-zero, terminal-nx-01, cortex-alpha, local-nas, alpha-one, alpha-two, alpha-three, LINDA, gaming-host-1, remote-worker, storage-array, remote-builder
 - Artifact upload with 7-day retention
 - Uploads build artifacts
 
@@ -100,8 +100,6 @@ This will output build warnings to stderr (normal for `nix run`) and the YAML wo
 - remote-worker
 - storage-array
 - remote-builder
-- **local-worker** (added)
-- **obs-box** (added)
 
 ### ARM Machines (5)
 - display-0
