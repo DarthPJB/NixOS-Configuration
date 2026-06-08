@@ -19,6 +19,7 @@
     "vm.mmap_rnd_compat_bits": 16
   },
   "environment.systemPackages": [
+    "mcrcon",
     "btop",
     "nano",
     "wget",
@@ -120,7 +121,8 @@
   "networking.firewall.allowedTCPPorts": [
     1108,
     2108,
-    7777
+    7777,
+    25565
   ],
   "networking.firewall.allowedUDPPorts": [
     2108,

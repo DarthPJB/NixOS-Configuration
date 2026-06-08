@@ -8,7 +8,7 @@ The core-router module enables topology-driven configuration by importing networ
 
 ## How to Add Core-Router to a Machine
 
-To enable the core-router module for a machine:
+To enable the core-router module for a **hub machine** (router/gateway):
 
 1. Create or update a system configuration file (e.g., `systems/<hostname>.nix`)
 2. Import the core-router module alongside your existing machine configuration
@@ -24,6 +24,8 @@ Example:
   ];
 }
 ```
+
+**Note**: This pattern is for hub machines only. Client machines import `modules/enable-wg-topology.nix` directly in their `machines/<hostname>/default.nix`.
 
 ## The `coreRouter.enable` Option
 

@@ -77,11 +77,11 @@
 
 ### TG-004: Missing Error Handling in Tailscale/DHCP
 - **Severity**: High
-- **Status**: PARTIAL
-- **Description**: `mkTailscaleConfig.nix` uses `or { }` / `or null` for graceful fallback. `mkDhcpDns.nix` uses `safeLookup`. But `mkForwarding.nix` has no fallback for missing `topology.forwarding`.
-- **Impact**: Build fails with cryptic errors if forwarding section is missing.
-- **Proposed Solution**: Add `or` defaults to `mkForwarding.nix` for missing sections.
-- **Estimated Effort**: 30 minutes
+- **Status**: PARTIAL (improved)
+- **Description**: `mkTailscaleConfig.nix` uses `or { }` / `or null` for graceful fallback. `mkDhcpDns.nix` uses `safeLookup`. `mkForwarding.nix` now has `or` defaults for `topology.forwarding.tcp` and `topology.forwarding.udp` subfields, but `topology.forwarding.tcp or [ ]` still throws if `topology.forwarding` itself is missing.
+- **Impact**: Build fails with cryptic errors if forwarding section is entirely missing (though `validate.nix` catches this at evaluation time).
+- **Proposed Solution**: Add `or` default to the entire `topology.forwarding` section in `mkForwarding.nix`.
+- **Estimated Effort**: 15 minutes
 
 ### TG-005: Hardcoded Nginx Listen Addresses
 - **Severity**: High
@@ -101,14 +101,14 @@
 
 ### TG-007: Validation Gaps
 - **Severity**: Medium
-- **Status**: OPEN
-- **Description**: `validate.nix` checks structural validity (format, duplicates) but not cross-section consistency:
-  - Forwarding rules targeting IPs not in `lan.hosts`
-  - Nginx proxy backends pointing to unreachable IPs
-  - DNS static entries pointing to unassigned IPs
-- **Impact**: Structural validation passes but runtime config references non-existent hosts.
-- **Proposed Solution**: Add cross-section validation rules to `validate.nix`.
-- **Estimated Effort**: 2-3 hours
+- **Status**: RESOLVED
+- **Description**: `validate.nix` now includes `validateCrossReferences` which checks:
+  - Nginx proxy backends: hostname exists in `lan.hosts`, is reachable (has `routing.wireguard=true` or is in LAN subnet)
+  - Forwarding rule targets: IP/hostname exists, is reachable
+  - DNS static entries: IP exists in topology
+  - Tailscale advertised hosts: exist in `lan.hosts`
+- **Resolution**: Cross-section validation integrated into `validate.nix` lines 350-507. Used by `core-router.nix` at evaluation time.
+- **Location**: `lib/topology/validate.nix` function `validateCrossReferences`
 
 ### TG-012: Golden Test Scope — INTENTIONAL BY DESIGN
 - **Severity**: N/A — This is not an issue
@@ -139,9 +139,9 @@
 
 ### Next: High Priority
 8. TG-003: Standardize function signatures (discuss approach)
-9. TG-004: Add error handling to mkForwarding.nix
+9. TG-004: Add error handling to mkForwarding.nix (section-level fallback)
 10. TG-005: Fix hardcoded nginx listen addresses
 
 ### Following: Medium Priority
 11. TG-006: Update documentation
-12. TG-007: Add cross-section validation
+12. ~~TG-007: Add cross-section validation~~ ✓

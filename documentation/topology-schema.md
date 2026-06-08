@@ -103,14 +103,18 @@ Validation returns `{ valid: boolean; errors: list; warnings: list; }`
 
 ## Transformation Functions
 
-The following `lib/mk*.nix` functions consume topology data to generate configurations:
+The following `lib/topology/*.nix` functions consume topology data to generate configurations:
 
-- **`lib/mkNftables.nix`**: Generates NAT rules for port forwarding from topology `forwarding` section
-- **`lib/mkProxyPass.nix`**: Creates nginx reverse proxy configurations from topology `nginx.proxies`
-- **`lib/mkDhcpReservations.nix`**: Generates DHCP host reservations from topology `lan.hosts`
-- **`lib/mkKnownHosts.nix`**: Creates SSH known_hosts entries (consumes host data)
+- **`lib/topology/mkForwarding.nix`**: Generates nftables DNAT rules and masquerade from topology `forwarding` section
+- **`lib/topology/mkNginxProxies.nix`**: Creates nginx reverse proxy configurations from topology `nginx.proxies`
+- **`lib/topology/mkDhcpDns.nix`**: Generates DNS/DHCP (dnsmasq) configuration from topology `lan.hosts` and `dns` sections
+- **`lib/topology/mkWireguardPeers.nix`**: Generates WireGuard peer configurations from topology `wireguard.peers`
+- **`lib/topology/mkTailscaleConfig.nix`**: Generates Tailscale subnet router configuration from topology `tailscale` section
+- **`lib/topology/validate.nix`**: Validates topology structure and cross-references
+- **`lib/topology/utils.nix`**: Shared utility functions (IP validation, dedup, etc.)
+- **`lib/topology/default.nix`**: Re-exports all transformation functions for convenience
 
-Note: `lib/topology/default.nix` contains placeholder functions for future topology-specific transformations.
+Note: `lib/mkKnownHosts.nix` also exists at the top-level `lib/` directory for SSH known_hosts generation.
 
 ## Example
 

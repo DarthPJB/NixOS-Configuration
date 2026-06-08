@@ -88,7 +88,7 @@ Example for a simple router machine:
 
 ### 3. Create System Configuration File
 
-Create `systems/<machine-name>.nix` following the pattern:
+For **hub machines** (routers like cortex-alpha), create `systems/<machine-name>.nix`:
 
 ```nix
 # systems/<machine-name>.nix
@@ -98,6 +98,20 @@ Create `systems/<machine-name>.nix` following the pattern:
     ../machines/<machine-name>
     ../modules/core-router.nix
   ];
+}
+```
+
+For **client machines**, no `systems/` file is needed. Instead, import `enable-wg-topology.nix` directly in `machines/<machine-name>/default.nix`:
+
+```nix
+# machines/<machine-name>/default.nix
+{ ... }:
+{
+  imports = [
+    ../../modules/enable-wg-topology.nix
+    # ... other imports
+  ];
+  enableWgTopology.enable = true;
 }
 ```
 

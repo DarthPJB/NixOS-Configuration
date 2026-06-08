@@ -371,14 +371,14 @@ Golden tests are the **cornerstone of simulation-driven development**. We simula
 **Lifecycle**:
 ```bash
 # Initial creation — capture the working state
-nix run .#check-network -- cortex-alpha > real-topology/golden/cortex-alpha.json
+nix run .#generate-golden -- cortex-alpha 2>/dev/null > real-topology/golden/cortex-alpha.json
 
 # During CI/CD — validate against golden
 nix run .#check-network -- cortex-alpha
 # Fails if current output != golden file → BLOCK DEPLOYMENT
 
 # After intentional change — user validates new state
-nix run .#check-network -- cortex-alpha > real-topology/golden/cortex-alpha.json
+nix run .#generate-golden -- cortex-alpha 2>/dev/null > real-topology/golden/cortex-alpha.json
 # Review the diff carefully
 git diff real-topology/golden/cortex-alpha.json
 # Only commit after confirming the change is correct
@@ -685,18 +685,15 @@ Phase 5: Extended Network Topologies (Hub-of-Hubs, Complex Routing)
 
 ### 5.1 What Golden Tests Capture
 
-Golden tests capture the network-relevant portions of generated NixOS config:
-- `networking.wireguard`
-- `networking.firewall`
-- `services.nginx`
-- `services.dnsmasq` or `services.resolved` (DNS)
-- `services.tailscale` (if used)
+Golden tests capture the **full deterministic output** of nix evaluation — not just network-relevant sections. This is by design:
 
-NOT captured (to avoid noise):
-- User accounts, permissions
-- Package selections
-- System packages
-- Other service configs unrelated to networking
+- Golden tests represent the best possible working state
+- All failures are errors (no silent failure)
+- The golden captures exactly what nix evaluates — no abstraction, no subset
+- This ensures structural changes cannot have unintended side effects
+- Intended side effects require manual golden update by the user
+
+The golden file includes everything: `networking`, `services`, `environment.systemPackages`, `boot.kernel.sysctl`, and all other evaluated config sections.
 
 ### 5.2 Creating Golden Tests
 
@@ -707,7 +704,7 @@ For each machine in topology.nix:
 # (see topology.nix, machine's attrset)
 
 # 2. Generate golden file
-nix run .#check-network -- cortex-alpha > real-topology/golden/cortex-alpha.json
+nix run .#generate-golden -- cortex-alpha 2>/dev/null > real-topology/golden/cortex-alpha.json
 
 # 3. Visual audit
 cat real-topology/golden/cortex-alpha.json | jq
@@ -728,14 +725,15 @@ git commit -m "topology: add golden test for cortex-alpha"
 When topology changes intentionally:
 
 ```bash
-# Regenerate
-nix run .#check-network -- cortex-alpha > real-topology/golden/cortex-alpha.json
+# 2. Generate golden file
+nix run .#generate-golden -- cortex-alpha 2>/dev/null > real-topology/golden/cortex-alpha.json
 
-# Review diff
-git diff real-topology/golden/cortex-alpha.json
+# 3. Visual audit
+cat real-topology/golden/cortex-alpha.json | jq
 
-# Commit with clear message
-git commit -m "topology: update golden for cortex-alpha (nginx proxy change)"
+# 4. Commit
+git add real-topology/golden/cortex-alpha.json
+git commit -m "topology: add golden test for cortex-alpha"
 ```
 
 When golden test breaks unexpectedly:
@@ -1106,7 +1104,7 @@ golden test for cortex-alpha failed: output differs from golden file
 1. Check what changed: `git diff -- topology.nix real-topology/golden/cortex-alpha.json`
 2. Is it intentional? If yes:
    ```bash
-   nix run .#check-network -- cortex-alpha > real-topology/golden/cortex-alpha.json
+   nix run .#generate-golden -- cortex-alpha 2>/dev/null > real-topology/golden/cortex-alpha.json
    git add real-topology/golden/cortex-alpha.json
    git commit -m "topology: update golden for cortex-alpha (intentional change)"
    ```
@@ -1125,7 +1123,7 @@ networking.hostName 'new-host' not found in topology.nix
    ```nix
    new-host = { wireguard = "10.88.127.99"; lan = { "10.88.128.99" = "eth0"; }; };
    ```
-2. Generate golden: `nix run .#check-network -- new-host > real-topology/golden/new-host.json`
+2. Generate golden: `nix run .#generate-golden -- new-host 2>/dev/null > real-topology/golden/new-host.json`
 3. Commit: `git add topology.nix real-topology/golden/new-host.json && git commit -m "topology: add new-host"`
 
 ---
