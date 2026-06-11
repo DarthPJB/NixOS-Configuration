@@ -204,9 +204,9 @@ in
             paths = [ instanceCfg.pack ];
             postBuild = ''
               ${optionalString instanceCfg.acceptEula ''
-                echo "eula=true" > "$out/eula.txt"
+                ${lib.getExe' pkgs.coreutils "echo"} "eula=true" > "$out/eula.txt"
               ''}
-              cp ${serverPropertiesFile} "$out/server.properties"
+              ${lib.getExe' pkgs.coreutils "cp"} ${serverPropertiesFile} "$out/server.properties"
             '';
             passthru = instanceCfg.pack.passthru or { } // {
               imageId = instanceCfg.pack.passthru.imageId or (builtins.baseNameOf instanceCfg.pack.src);
@@ -230,44 +230,51 @@ in
           );
 
           # Graceful shutdown via RCON: warn players, save world, then stop server
-          execStopPreScript = pkgs.writeShellScript "${serviceName}-exec-stop-pre" ''
-            set -euo pipefail
-            SLEEP="${lib.getExe' pkgs.coreutils "sleep"}"
-            MCRCON="${lib.getExe pkgs.mcrcon} -H 127.0.0.1 -P ${toString instanceCfg.rconPort} -p '${instanceCfg.rconPassword}'"
+          execStopPreScript = pkgs.writeShellApplication {
+            name = "${serviceName}-exec-stop-pre";
+            runtimeInputs = [ pkgs.coreutils pkgs.mcrcon ];
+            text = ''
+              rcon() {
+                ${lib.getExe pkgs.mcrcon} -H 127.0.0.1 -P ${toString instanceCfg.rconPort} -p '${instanceCfg.rconPassword}' "$@"
+              }
 
-            # Warn players with countdown
-            $MCRCON -w 5 "say §c[Server] §fServer shutdown in 30 seconds..." || true
-            $SLEEP 20
-            $MCRCON -w 5 "say §c[Server] §fServer shutdown in 10 seconds..." || true
-            $SLEEP 5
-            $MCRCON -w 5 "say §c[Server] §fServer shutdown in 5 seconds..." || true
-            $SLEEP 3
-            $MCRCON -w 5 "say §c[Server] §fServer shutdown in 2 seconds..." || true
-            $SLEEP 2
-            $MCRCON -w 5 "say §c[Server] §eSaving world and shutting down..." || true
+              # Warn players with countdown
+              rcon -w 5 "say §c[Server] §fServer shutdown in 30 seconds..." || true
+              ${lib.getExe' pkgs.coreutils "sleep"} 20
+              rcon -w 5 "say §c[Server] §fServer shutdown in 10 seconds..." || true
+              ${lib.getExe' pkgs.coreutils "sleep"} 5
+              rcon -w 5 "say §c[Server] §fServer shutdown in 5 seconds..." || true
+              ${lib.getExe' pkgs.coreutils "sleep"} 3
+              rcon -w 5 "say §c[Server] §fServer shutdown in 2 seconds..." || true
+              ${lib.getExe' pkgs.coreutils "sleep"} 2
+              rcon -w 5 "say §c[Server] §eSaving world and shutting down..." || true
 
-            # Flush world to disk
-            $MCRCON -w 5 "save-all" || true
-            $SLEEP 2
+              # Flush world to disk
+              rcon -w 5 "save-all" || true
+              ${lib.getExe' pkgs.coreutils "sleep"} 2
 
-            # Graceful stop
-            $MCRCON -w 5 "stop" || true
+              # Graceful stop
+              rcon -w 5 "stop" || true
 
-            # Wait for process to exit (systemd will SIGTERM after TimeoutStopSec)
-            $SLEEP 5
-          '';
+              # Wait for process to exit (systemd will SIGTERM after TimeoutStopSec)
+              ${lib.getExe' pkgs.coreutils "sleep"} 5
+            '';
+          };
 
-          execStopScript = pkgs.writeShellScript "${serviceName}-exec-stop" ''
-            set -euo pipefail
-            if [ -d "${dataDir}/world" ]; then
-              ${lib.getExe' pkgs.coreutils "mkdir"} -p "${dataDir}/backups"
-              ${lib.getExe pkgs.gnutar} czf "${dataDir}/backups/world-$(${lib.getExe' pkgs.coreutils "date"} +%Y%m%d-%H%M%S).tar.gz" \
-                -C "${dataDir}" world
-              # rotate: keep max 14 days of backups
-              ${lib.getExe pkgs.findutils} "${dataDir}/backups" \
-                -name "world-*.tar.gz" -mtime +14 -delete
-            fi
-          '';
+          execStopScript = pkgs.writeShellApplication {
+            name = "${serviceName}-exec-stop";
+            runtimeInputs = [ pkgs.coreutils pkgs.gnutar pkgs.gzip pkgs.findutils ];
+            text = ''
+              if [ -d "${dataDir}/world" ]; then
+                ${lib.getExe' pkgs.coreutils "mkdir"} -p "${dataDir}/backups"
+                ${lib.getExe pkgs.gnutar} czf "${dataDir}/backups/world-$(${lib.getExe' pkgs.coreutils "date"} +%Y%m%d-%H%M%S).tar.gz" \
+                  -C "${dataDir}" world
+                # rotate: keep max 14 days of backups
+                ${lib.getExe pkgs.findutils} "${dataDir}/backups" \
+                  -name "world-*.tar.gz" -mtime +14 -delete
+              fi
+            '';
+          };
 
           # Generate ops.json from declared ops list
           opsJson = pkgs.writeText "ops.json" (builtins.toJSON (map
@@ -280,41 +287,37 @@ in
             instanceCfg.ops
           ));
 
-          execStartPreScript = pkgs.writeShellScript "${serviceName}-exec-start-pre" ''
-            set -euo pipefail
-            CAT="${lib.getExe' pkgs.coreutils "cat"}"
-            MKDIR="${lib.getExe' pkgs.coreutils "mkdir"}"
-            CHMOD="${lib.getExe' pkgs.coreutils "chmod"}"
-            FIND="${lib.getExe pkgs.findutils}"
-            CP="${lib.getExe' pkgs.coreutils "cp"}"
-            CHOWN="${lib.getExe' pkgs.coreutils "chown"}"
-            ECHO="${lib.getExe' pkgs.coreutils "echo"}"
-            FINAL_PACK="${finalPack}"
-            IMAGE_ID="$($CAT "$FINAL_PACK/.image-id")"
-            $MKDIR -p "${dataDir}"
-            $CHMOD u+w "${dataDir}"
-            # Ensure dataDir is writable even if rsync previously set store perms
-            $FIND "${dataDir}" -type d ! -writable -exec $CHMOD u+w {} + 2>/dev/null || true
-            if [ ! -f "${dataDir}/.image-id" ] || \
-               [ "$($CAT "${dataDir}/.image-id")" != "$IMAGE_ID" ]; then
-              # Sync pack contents, dereference symlinks to writable copies
-              ${lib.getExe pkgs.rsync} -rltD --delete \
-                --copy-links \
-                --exclude=/world \
-                --exclude=/backups \
-                --chown="${user}:${group}" \
-                "$FINAL_PACK/" "${dataDir}/"
-              # Ensure everything is writable by the service user
-              $CHMOD -R u+w "${dataDir}"
-              $ECHO "$IMAGE_ID" > "${dataDir}/.image-id"
-            fi
-            # Write ops.json (declarative operator list)
-            $CP ${opsJson} "${dataDir}/ops.json"
-            $CHOWN "${user}:${group}" "${dataDir}/ops.json"
-            # Write server.properties with RCON and instance settings
-            $CP ${serverPropertiesFile} "${dataDir}/server.properties"
-            $CHOWN "${user}:${group}" "${dataDir}/server.properties"
-          '';
+          execStartPreScript = pkgs.writeShellApplication {
+            name = "${serviceName}-exec-start-pre";
+            runtimeInputs = [ pkgs.coreutils pkgs.findutils pkgs.rsync ];
+            text = ''
+              FINAL_PACK="${finalPack}"
+              IMAGE_ID="$(${lib.getExe' pkgs.coreutils "cat"} "$FINAL_PACK/.image-id")"
+              ${lib.getExe' pkgs.coreutils "mkdir"} -p "${dataDir}"
+              ${lib.getExe' pkgs.coreutils "chmod"} u+w "${dataDir}"
+              # Ensure dataDir is writable even if rsync previously set store perms
+              ${lib.getExe pkgs.findutils} "${dataDir}" -type d ! -writable -exec ${lib.getExe' pkgs.coreutils "chmod"} u+w {} + 2>/dev/null || true
+              if [ ! -f "${dataDir}/.image-id" ] || \
+                 [ "$(${lib.getExe' pkgs.coreutils "cat"} "${dataDir}/.image-id")" != "$IMAGE_ID" ]; then
+                # Sync pack contents, dereference symlinks to writable copies
+                ${lib.getExe pkgs.rsync} -rltD --delete \
+                  --copy-links \
+                  --exclude=/world \
+                  --exclude=/backups \
+                  --chown="${user}:${group}" \
+                  "$FINAL_PACK/" "${dataDir}/"
+                # Ensure everything is writable by the service user
+                ${lib.getExe' pkgs.coreutils "chmod"} -R u+w "${dataDir}"
+                ${lib.getExe' pkgs.coreutils "echo"} "$IMAGE_ID" > "${dataDir}/.image-id"
+              fi
+              # Write ops.json (declarative operator list)
+              ${lib.getExe' pkgs.coreutils "cp"} ${opsJson} "${dataDir}/ops.json"
+              ${lib.getExe' pkgs.coreutils "chown"} "${user}:${group}" "${dataDir}/ops.json"
+              # Write server.properties with RCON and instance settings
+              ${lib.getExe' pkgs.coreutils "cp"} ${serverPropertiesFile} "${dataDir}/server.properties"
+              ${lib.getExe' pkgs.coreutils "chown"} "${user}:${group}" "${dataDir}/server.properties"
+            '';
+          };
         in
         if instanceCfg.enable then {
           "${serviceName}" = {
@@ -328,9 +331,9 @@ in
               User = user;
               Group = group;
               WorkingDirectory = dataDir;
-              ExecStopPre = execStopPreScript;
-              ExecStop = execStopScript;
-              ExecStartPre = execStartPreScript;
+              ExecStopPre = lib.getExe execStopPreScript;
+              ExecStop = lib.getExe execStopScript;
+              ExecStartPre = lib.getExe execStartPreScript;
               ExecStart = "${lib.getExe pkgs.bash} ${dataDir}/start.sh";
 
               Environment = [

@@ -14,6 +14,7 @@
 { name
 , src
 , jre ? pkgs.jdk21
+, postBuild ? ""
 }:
 
 let
@@ -50,6 +51,9 @@ stdenv.mkDerivation {
 
     # Write image identity
     echo -n "${imageId}" > "$out/.image-id"
+
+    # Pack-specific post-build patches
+    ${postBuild}
 
     runHook postBuild
   '';
