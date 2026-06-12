@@ -29,6 +29,87 @@ let
   # Example: instance "all-the-mons" → user "mc-curseforge-all-the-mons" (24 chars)
   mkUserGroupName = name: "mc-curseforge-${name}";
   mkServiceName = name: "mc-curseforge-${name}";
+
+  # squaremap configuration (YAML format)
+  # https://github.com/jpenilla/squaremap/wiki/Default-config.yml
+  # https://github.com/jpenilla/squaremap/wiki/Default-advanced.yml
+  mkSquaremapConfig = name: instanceCfg:
+    let
+      yamlFormat = pkgs.formats.yaml { };
+      configYml = yamlFormat.generate "squaremap-config-${name}.yml" {
+        settings = {
+          internal-webserver = {
+            enabled = true;
+            bind = instanceCfg.squaremapBind;
+            port = instanceCfg.squaremapPort;
+          };
+        };
+      };
+      # advanced.yml: invisible-blocks prevents squaremap from calling
+      # getMapColor() on blocks that NPE with null BlockGetter (e.g. FramedBlocks).
+      # https://github.com/jpenilla/squaremap/blob/master/common/src/main/java/xyz/jpenilla/squaremap/common/data/MapWorldInternal.java
+      advancedYml = yamlFormat.generate "squaremap-advanced-${name}.yml" {
+        config-version = 1;
+        settings = { };
+        world-settings = {
+          default = {
+            invisible-blocks = [
+              "framedblocks:framed_block"
+              "framedblocks:framed_half_block"
+              "framedblocks:framed_slab"
+              "framedblocks:framed_stairs"
+              "framedblocks:framed_wall"
+              "framedblocks:framed_fence"
+              "framedblocks:framed_gate"
+              "framedblocks:framed_door"
+              "framedblocks:framed_trapdoor"
+              "framedblocks:framed_pressure_plate"
+              "framedblocks:framed_button"
+              "framedblocks:framed_lever"
+              "framedblocks:framed_torch"
+              "framedblocks:framed_soul_torch"
+              "framedblocks:framed_redstone_torch"
+              "framedblocks:framed_ladder"
+              "framedblocks:framed_bars"
+              "framedblocks:framed_panel"
+              "framedblocks:framed_corner_pillar"
+              "framedblocks:framed_post"
+              "framedblocks:framed_rail_slope"
+              "framedblocks:framed_powered_rail_slope"
+              "framedblocks:framed_detector_rail_slope"
+              "framedblocks:framed_activator_rail_slope"
+              "framedblocks:framed_flat_slope"
+              "framedblocks:framed_prism_corner"
+              "framedblocks:framed_inner_prism_corner"
+              "framedblocks:framed_threeway_corner"
+              "framedblocks:framed_inner_threeway_corner"
+              "framedblocks:framed_slab_corner"
+              "framedblocks:framed_inner_slab_corner"
+              "framedblocks:framed_pillar"
+              "framedblocks:framed_fence_gate"
+              "framedblocks:framed_lattice_block"
+              "framedblocks:framed_collapsible_block"
+              "framedblocks:framed_collapsible_copycat_block"
+              "framedblocks:framed_content_obsidian"
+              "framedblocks:framed_spectacle_frame"
+              "framedblocks:framed_masonry_corner"
+              "framedblocks:framed_inner_masonry_corner"
+              "framedblocks:framed_double_slab"
+              "framedblocks:framed_divider"
+              "framedblocks:framed_double_panel"
+              "framedblocks:framed_layered_block"
+              "framedblocks:framed_bouncy_block"
+              "framedblocks:framed_storage_block"
+            ];
+          };
+        };
+      };
+    in
+    pkgs.runCommand "squaremap-config-${name}" { } ''
+      mkdir -p $out/config/squaremap $out/config/squaremap/world
+      cp ${configYml} $out/config/squaremap/config.yml
+      cp ${advancedYml} $out/config/squaremap/world/advanced.yml
+    '';
 in
 
 {
@@ -128,6 +209,31 @@ in
           default = [ ];
           description = "List of server operators. Written to ops.json on start.";
         };
+
+        # ── squaremap: web-based world map viewer ──────────────────────
+        enableSquaremap = mkOption {
+          type = types.bool;
+          default = false;
+          description = "Whether to enable squaremap, a web-based world map viewer.";
+        };
+
+        squaremapPort = mkOption {
+          type = types.port;
+          default = 8080;
+          description = "TCP port for the squaremap embedded web server.";
+        };
+
+        squaremapBind = mkOption {
+          type = types.str;
+          default = "0.0.0.0";
+          description = "Bind address for the squaremap web server.";
+        };
+
+        openSquaremapFirewall = mkOption {
+          type = types.bool;
+          default = false;
+          description = "Whether to open the squaremap web port in the firewall.";
+        };
       };
     }));
     default = { };
@@ -147,6 +253,21 @@ in
   # This avoids mkIf, which mkMerge/concatLists don't process.
 
   config = {
+    assertions = concatLists (mapAttrsToList
+      (name: instanceCfg:
+        optionals (instanceCfg.enable && instanceCfg.enableSquaremap) [
+          {
+            assertion = instanceCfg.squaremapPort != instanceCfg.gamePort;
+            message = "squaremap port (${toString instanceCfg.squaremapPort}) must differ from game port (${toString instanceCfg.gamePort}) for instance '${name}'.";
+          }
+          {
+            assertion = instanceCfg.squaremapPort != instanceCfg.rconPort;
+            message = "squaremap port (${toString instanceCfg.squaremapPort}) must differ from RCON port (${toString instanceCfg.rconPort}) for instance '${name}'.";
+          }
+        ]
+      )
+      cfg);
+
     users.users = mkMerge (mapAttrsToList
       (name: instanceCfg:
         let
@@ -207,6 +328,23 @@ in
                 ${lib.getExe' pkgs.coreutils "echo"} "eula=true" > "$out/eula.txt"
               ''}
               ${lib.getExe' pkgs.coreutils "cp"} ${serverPropertiesFile} "$out/server.properties"
+
+              # squaremap: inject mod JAR and configuration
+              ${optionalString instanceCfg.enableSquaremap ''
+                ${lib.getExe' pkgs.coreutils "mkdir"} -p "$out/mods" "$out/config/squaremap"
+                ${lib.getExe' pkgs.coreutils "cp"} \
+                  ${pkgs.squaremap-neoforge}/mods/squaremap-neoforge-mc1.21.1-1.3.2.jar \
+                  "$out/mods/"
+                ${lib.getExe' pkgs.coreutils "cp"} -r \
+                  ${mkSquaremapConfig name instanceCfg}/config/squaremap/* \
+                  "$out/config/squaremap/"
+                # Update image ID to include squaremap config state
+                _sq_image="$(${lib.getExe' pkgs.coreutils "cat"} "$out/.image-id")"
+                ${lib.getExe' pkgs.coreutils "rm"} "$out/.image-id"
+                ${lib.getExe' pkgs.coreutils "printf"} "%s" \
+                  "''${_sq_image}-sq-${toString instanceCfg.squaremapPort}-${builtins.baseNameOf (toString (mkSquaremapConfig name instanceCfg))}" \
+                  > "$out/.image-id"
+              ''}
             '';
             passthru = instanceCfg.pack.passthru or { } // {
               imageId = instanceCfg.pack.passthru.imageId or (builtins.baseNameOf instanceCfg.pack.src);
@@ -229,50 +367,78 @@ in
               serverPropertiesWithRcon
           );
 
-          # Graceful shutdown via RCON: warn players, save world, then stop server
+          # Graceful shutdown: warn players, flush world, stop server, backup after exit
+          #
+          # Ordering is critical:
+          #   1. Countdown + save-all (flush world while server is alive)
+          #   2. rcon stop (server begins graceful shutdown, flushes world again on exit)
+          #   3. Poll MainPID until Java process exits (world is now frozen and consistent)
+          #   4. tar --zstd backup (server is dead, world cannot change)
+          #   5. Return — systemd finishes stopping the service
+          #
+          # The service does NOT finish stopping until the backup is written.
           execStopPreScript = pkgs.writeShellApplication {
             name = "${serviceName}-exec-stop-pre";
-            runtimeInputs = [ pkgs.coreutils pkgs.mcrcon ];
+            runtimeInputs = [ pkgs.coreutils pkgs.mcrcon pkgs.gnutar pkgs.findutils pkgs.systemd ];
             text = ''
               rcon() {
                 ${lib.getExe pkgs.mcrcon} -H 127.0.0.1 -P ${toString instanceCfg.rconPort} -p '${instanceCfg.rconPassword}' "$@"
               }
 
-              # Warn players with countdown
-              rcon -w 5 "say §c[Server] §fServer shutdown in 30 seconds..." || true
+              # ── Phase 1: Warn players ─────────────────────────────────
+              rcon -w 5 "say §c[Server] §fServer shutting down in 30 seconds..." || echo "WARNING: RCON say failed" >&2
               ${lib.getExe' pkgs.coreutils "sleep"} 20
-              rcon -w 5 "say §c[Server] §fServer shutdown in 10 seconds..." || true
+              rcon -w 5 "say §c[Server] §fShutting down in 10 seconds..." || echo "WARNING: RCON say failed" >&2
               ${lib.getExe' pkgs.coreutils "sleep"} 5
-              rcon -w 5 "say §c[Server] §fServer shutdown in 5 seconds..." || true
+              rcon -w 5 "say §c[Server] §f5 seconds..." || echo "WARNING: RCON say failed" >&2
               ${lib.getExe' pkgs.coreutils "sleep"} 3
-              rcon -w 5 "say §c[Server] §fServer shutdown in 2 seconds..." || true
-              ${lib.getExe' pkgs.coreutils "sleep"} 2
-              rcon -w 5 "say §c[Server] §eSaving world and shutting down..." || true
-
-              # Flush world to disk
-              rcon -w 5 "save-all" || true
+              rcon -w 5 "say §c[Server] §f2 seconds..." || echo "WARNING: RCON say failed" >&2
               ${lib.getExe' pkgs.coreutils "sleep"} 2
 
-              # Graceful stop
-              rcon -w 5 "stop" || true
+              # ── Phase 2: Flush world and stop server ──────────────────
+              rcon -w 5 "say §c[Server] §eSaving world..." || echo "WARNING: RCON say failed" >&2
+              rcon -w 5 "save-all" || echo "ERROR: RCON save-all failed — world may not be flushed" >&2
+              ${lib.getExe' pkgs.coreutils "sleep"} 2
+              rcon -w 5 "say §c[Server] §eGoodbye!" || echo "WARNING: RCON say failed" >&2
+              rcon -w 5 "stop" || echo "ERROR: RCON stop failed — will SIGTERM" >&2
 
-              # Wait for process to exit (systemd will SIGTERM after TimeoutStopSec)
-              ${lib.getExe' pkgs.coreutils "sleep"} 5
+              # ── Phase 3: Wait for server to exit ──────────────────────
+              # Poll MainPID — once the Java process is dead, the world is
+              # frozen and consistent. No save-off tricks needed.
+              MAINPID="$(systemctl show -p MainPID --value "${serviceName}.service")"
+              if [ "$MAINPID" -gt 0 ] 2>/dev/null; then
+                echo "Waiting for server process $MAINPID to exit..." >&2
+                while kill -0 "$MAINPID" 2>/dev/null; do
+                  ${lib.getExe' pkgs.coreutils "sleep"} 1
+                done
+                echo "Server process exited." >&2
+              else
+                echo "WARNING: Could not determine MainPID, sleeping 10s as fallback" >&2
+                ${lib.getExe' pkgs.coreutils "sleep"} 10
+              fi
+
+              # ── Phase 4: Backup (server is dead, world is frozen) ─────
+              if [ -d "${dataDir}/world" ]; then
+                ${lib.getExe' pkgs.coreutils "mkdir"} -p "${dataDir}/backups"
+                ${lib.getExe pkgs.gnutar} --zstd \
+                  -cf "${dataDir}/backups/world-$(${lib.getExe' pkgs.coreutils "date"} +%Y%m%d-%H%M%S).tar.zst" \
+                  -C "${dataDir}" \
+                  --exclude='world/backups' \
+                  --exclude='world/session.lock' \
+                  world || echo "WARNING: tar backup had warnings" >&2
+                # rotate: keep max 14 days of backups
+                ${lib.getExe pkgs.findutils} "${dataDir}/backups" \
+                  -name "world-*.tar.zst" -mtime +14 -delete || echo "WARNING: backup rotation failed" >&2
+              fi
             '';
           };
 
+          # ExecStop: explicit graceful stop via RCON (fallback if ExecStopPre fails)
           execStopScript = pkgs.writeShellApplication {
             name = "${serviceName}-exec-stop";
-            runtimeInputs = [ pkgs.coreutils pkgs.gnutar pkgs.gzip pkgs.findutils ];
+            runtimeInputs = [ pkgs.mcrcon ];
             text = ''
-              if [ -d "${dataDir}/world" ]; then
-                ${lib.getExe' pkgs.coreutils "mkdir"} -p "${dataDir}/backups"
-                ${lib.getExe pkgs.gnutar} czf "${dataDir}/backups/world-$(${lib.getExe' pkgs.coreutils "date"} +%Y%m%d-%H%M%S).tar.gz" \
-                  -C "${dataDir}" world
-                # rotate: keep max 14 days of backups
-                ${lib.getExe pkgs.findutils} "${dataDir}/backups" \
-                  -name "world-*.tar.gz" -mtime +14 -delete
-              fi
+              ${lib.getExe pkgs.mcrcon} -H 127.0.0.1 -P ${toString instanceCfg.rconPort} -p '${instanceCfg.rconPassword}' -w 5 "stop" || true
             '';
           };
 
@@ -304,6 +470,8 @@ in
                   --copy-links \
                   --exclude=/world \
                   --exclude=/backups \
+                  --exclude=/config/squaremap/web \
+                  --exclude=/config/squaremap/data \
                   --chown="${user}:${group}" \
                   "$FINAL_PACK/" "${dataDir}/"
                 # Ensure everything is writable by the service user
@@ -326,6 +494,11 @@ in
             after = [ "network-online.target" ];
             wants = [ "network-online.target" ];
 
+            unitConfig = {
+              StartLimitBurst = 5;
+              StartLimitIntervalSec = 600;
+            };
+
             serviceConfig = {
               Type = "simple";
               User = user;
@@ -333,8 +506,12 @@ in
               WorkingDirectory = dataDir;
               ExecStopPre = lib.getExe execStopPreScript;
               ExecStop = lib.getExe execStopScript;
-              ExecStartPre = lib.getExe execStartPreScript;
+              # + prefix runs ExecStartPre as root (needed for chown, rsync, mkdir)
+              ExecStartPre = "+${lib.getExe execStartPreScript}";
               ExecStart = "${lib.getExe pkgs.bash} ${dataDir}/start.sh";
+
+              # Only SIGTERM the main Java process — don't kill ExecStopPre
+              KillMode = "process";
 
               Environment = [
                 "JAVA_MAX_MEM=${instanceCfg.maxMemory}"
@@ -344,8 +521,6 @@ in
 
               Restart = "on-failure";
               RestartSec = 15;
-              StartLimitBurst = 5;
-              StartLimitIntervalSec = 600;
               TimeoutStopSec = 300;
             };
           };
@@ -355,8 +530,10 @@ in
 
     networking.firewall = mkMerge (mapAttrsToList
       (name: instanceCfg:
-        if instanceCfg.enable && instanceCfg.openFirewall then {
-          allowedTCPPorts = [ instanceCfg.gamePort ];
+        if instanceCfg.enable && (instanceCfg.openFirewall || instanceCfg.openSquaremapFirewall) then {
+          allowedTCPPorts =
+            optional instanceCfg.openFirewall instanceCfg.gamePort
+            ++ optional instanceCfg.openSquaremapFirewall instanceCfg.squaremapPort;
         } else { }
       )
       cfg);

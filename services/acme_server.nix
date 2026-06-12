@@ -13,12 +13,14 @@ in
   # trigger the actual certificate generation for additional hostname
   security.acme.certs."${fqdn}" = {
     extraDomainNames = [ ]; # "johnbargman.com"];
+    group = "nginx";
   };
 
   secrix.system.secrets.dns01.encrypted.file = ../secrets/gandi_dns01_token;
   # Configure ACME appropriately
   security.acme.acceptTerms = true;
   security.acme.defaults = {
+    email = "john@bargman.net";
     dnsProvider = "gandiv5";
     group = "acme";
     environmentFile = config.secrix.system.secrets.dns01.decrypted.path;

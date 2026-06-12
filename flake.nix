@@ -52,6 +52,7 @@
               minecraft-curseforge-atm10 = self.packages.x86_64-linux.minecraft-curseforge-atm10;
               minecraft-curseforge-atm10-to-the-sky = self.packages.x86_64-linux.minecraft-curseforge-atm10-to-the-sky;
               minecraft-curseforge-all-the-mons = self.packages.x86_64-linux.minecraft-curseforge-all-the-mons;
+              squaremap-neoforge = self.packages.x86_64-linux.squaremap-neoforge;
             })
           ];
           system.stateVersion = "25.11";
@@ -364,6 +365,7 @@
           minecraft-curseforge-all-the-mons = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/all-the-mons.nix {
             minecraft-curseforge = minecraft-curseforge-builder;
           };
+          squaremap-neoforge = nixpkgs.callPackage ./pkgs/minecraft-curseforge/squaremap.nix { };
           bargman-greeter-vm = self.nixosConfigurations.bargman-greeter-vm.config.system.build.vm;
           bargman-greeter-vm-bootloader = self.nixosConfigurations.bargman-greeter-vm.config.system.build.vmWithBootLoader;
         };
