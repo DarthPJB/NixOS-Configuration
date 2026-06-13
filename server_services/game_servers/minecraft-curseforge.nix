@@ -106,9 +106,9 @@ let
       };
     in
     pkgs.runCommand "squaremap-config-${name}" { } ''
-      mkdir -p $out/config/squaremap $out/config/squaremap/world
-      cp ${configYml} $out/config/squaremap/config.yml
-      cp ${advancedYml} $out/config/squaremap/world/advanced.yml
+      mkdir -p $out/squaremap
+      cp ${configYml} $out/squaremap/config.yml
+      cp ${advancedYml} $out/squaremap/advanced.yml
     '';
 in
 
@@ -331,13 +331,13 @@ in
 
               # squaremap: inject mod JAR and configuration
               ${optionalString instanceCfg.enableSquaremap ''
-                ${lib.getExe' pkgs.coreutils "mkdir"} -p "$out/mods" "$out/config/squaremap"
+                ${lib.getExe' pkgs.coreutils "mkdir"} -p "$out/mods" "$out/squaremap"
                 ${lib.getExe' pkgs.coreutils "cp"} \
                   ${pkgs.squaremap-neoforge}/mods/squaremap-neoforge-mc1.21.1-1.3.2.jar \
                   "$out/mods/"
                 ${lib.getExe' pkgs.coreutils "cp"} -r \
-                  ${mkSquaremapConfig name instanceCfg}/config/squaremap/* \
-                  "$out/config/squaremap/"
+                  ${mkSquaremapConfig name instanceCfg}/squaremap/* \
+                  "$out/squaremap/"
                 # Update image ID to include squaremap config state
                 _sq_image="$(${lib.getExe' pkgs.coreutils "cat"} "$out/.image-id")"
                 ${lib.getExe' pkgs.coreutils "rm"} "$out/.image-id"
@@ -369,6 +369,9 @@ in
 
           # Graceful shutdown: warn players, flush world, stop server, backup after exit
           #
+          # NOTE: systemd has NO ExecStopPre directive. Only ExecStop exists.
+          # All graceful shutdown logic lives here in a single script.
+          #
           # Ordering is critical:
           #   1. Countdown + save-all (flush world while server is alive)
           #   2. rcon stop (server begins graceful shutdown, flushes world again on exit)
@@ -377,8 +380,8 @@ in
           #   5. Return — systemd finishes stopping the service
           #
           # The service does NOT finish stopping until the backup is written.
-          execStopPreScript = pkgs.writeShellApplication {
-            name = "${serviceName}-exec-stop-pre";
+          execStopScript = pkgs.writeShellApplication {
+            name = "${serviceName}-exec-stop";
             runtimeInputs = [ pkgs.coreutils pkgs.mcrcon pkgs.gnutar pkgs.findutils pkgs.systemd ];
             text = ''
               rcon() {
@@ -397,7 +400,7 @@ in
 
               # ── Phase 2: Flush world and stop server ──────────────────
               rcon -w 5 "say §c[Server] §eSaving world..." || echo "WARNING: RCON say failed" >&2
-              rcon -w 5 "save-all" || echo "ERROR: RCON save-all failed — world may not be flushed" >&2
+              rcon -w 30 "save-all" || echo "ERROR: RCON save-all failed — world may not be flushed" >&2
               ${lib.getExe' pkgs.coreutils "sleep"} 2
               rcon -w 5 "say §c[Server] §eGoodbye!" || echo "WARNING: RCON say failed" >&2
               rcon -w 5 "stop" || echo "ERROR: RCON stop failed — will SIGTERM" >&2
@@ -433,15 +436,6 @@ in
             '';
           };
 
-          # ExecStop: explicit graceful stop via RCON (fallback if ExecStopPre fails)
-          execStopScript = pkgs.writeShellApplication {
-            name = "${serviceName}-exec-stop";
-            runtimeInputs = [ pkgs.mcrcon ];
-            text = ''
-              ${lib.getExe pkgs.mcrcon} -H 127.0.0.1 -P ${toString instanceCfg.rconPort} -p '${instanceCfg.rconPassword}' -w 5 "stop" || true
-            '';
-          };
-
           # Generate ops.json from declared ops list
           opsJson = pkgs.writeText "ops.json" (builtins.toJSON (map
             (op: {
@@ -470,8 +464,10 @@ in
                   --copy-links \
                   --exclude=/world \
                   --exclude=/backups \
-                  --exclude=/config/squaremap/web \
-                  --exclude=/config/squaremap/data \
+                  --exclude=/squaremap/web \
+                  --exclude=/squaremap/data \
+                  --exclude=/squaremap/tiles \
+                  --exclude=/squaremap/locale \
                   --chown="${user}:${group}" \
                   "$FINAL_PACK/" "${dataDir}/"
                 # Ensure everything is writable by the service user
@@ -504,7 +500,6 @@ in
               User = user;
               Group = group;
               WorkingDirectory = dataDir;
-              ExecStopPre = lib.getExe execStopPreScript;
               ExecStop = lib.getExe execStopScript;
               # + prefix runs ExecStartPre as root (needed for chown, rsync, mkdir)
               ExecStartPre = "+${lib.getExe execStartPreScript}";
@@ -521,7 +516,7 @@ in
 
               Restart = "on-failure";
               RestartSec = 15;
-              TimeoutStopSec = 300;
+              TimeoutStopSec = 600;
             };
           };
         } else { }

@@ -1,0 +1,26 @@
+--- a/common/src/main/java/xyz/jpenilla/squaremap/common/data/MapWorldInternal.java
++++ b/common/src/main/java/xyz/jpenilla/squaremap/common/data/MapWorldInternal.java
+@@ -14,6 +14,8 @@
+ import java.util.Set;
+ import java.util.concurrent.ConcurrentHashMap;
+ import net.minecraft.server.level.ServerLevel;
++import net.minecraft.core.BlockPos;
++import net.minecraft.world.level.EmptyBlockGetter;
+ import net.minecraft.world.level.block.state.BlockState;
+ import org.checkerframework.checker.nullness.qual.NonNull;
+ import org.checkerframework.framework.qual.DefaultQualifier;
+@@ -138,13 +140,12 @@
+         return this.tilesPath;
+     }
+ 
+-    @SuppressWarnings("ConstantConditions") // params for getMapColor are never used, check on mc update
+     public int getMapColor(final BlockState state) {
+         final int special = this.blockColors.color(state);
+         if (special != -1) {
+             return special;
+         }
+-        return Colors.rgb(state.getMapColor(null, null));
++        return Colors.rgb(state.getMapColor(EmptyBlockGetter.INSTANCE, BlockPos.ZERO));
+     }
+ 
+     public void saveImage(final Image image) {
