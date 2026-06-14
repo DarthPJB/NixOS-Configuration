@@ -17,9 +17,6 @@
 , postBuild ? ""
 }:
 
-let
-  imageId = builtins.baseNameOf src;
-in
 stdenv.mkDerivation {
   pname = "minecraft-server-builder-${name}";
   version = "unstable";
@@ -49,9 +46,6 @@ stdenv.mkDerivation {
       ln -sf "./$startScript" "$out/start.sh"
     fi
 
-    # Write image identity
-    echo -n "${imageId}" > "$out/.image-id"
-
     # Pack-specific post-build patches
     ${postBuild}
 
@@ -60,7 +54,7 @@ stdenv.mkDerivation {
 
   installPhase = "true";
 
-  passthru = { inherit imageId jre; };
+  passthru = { inherit jre; };
 
   meta = with lib; {
     description = "Builder for Minecraft CurseForge server packs";

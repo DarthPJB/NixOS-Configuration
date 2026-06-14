@@ -338,16 +338,9 @@ in
                 ${lib.getExe' pkgs.coreutils "cp"} -r \
                   ${mkSquaremapConfig name instanceCfg}/squaremap/* \
                   "$out/squaremap/"
-                # Update image ID to include squaremap config state
-                _sq_image="$(${lib.getExe' pkgs.coreutils "cat"} "$out/.image-id")"
-                ${lib.getExe' pkgs.coreutils "rm"} "$out/.image-id"
-                ${lib.getExe' pkgs.coreutils "printf"} "%s" \
-                  "''${_sq_image}-sq-${toString instanceCfg.squaremapPort}-${builtins.baseNameOf (toString (mkSquaremapConfig name instanceCfg))}" \
-                  > "$out/.image-id"
               ''}
             '';
             passthru = instanceCfg.pack.passthru or { } // {
-              imageId = instanceCfg.pack.passthru.imageId or (builtins.baseNameOf instanceCfg.pack.src);
               jre = instanceCfg.pack.passthru.jre or pkgs.jdk21;
             };
           };
@@ -452,13 +445,16 @@ in
             runtimeInputs = [ pkgs.coreutils pkgs.findutils pkgs.rsync ];
             text = ''
               FINAL_PACK="${finalPack}"
-              IMAGE_ID="$(${lib.getExe' pkgs.coreutils "cat"} "$FINAL_PACK/.image-id")"
+              # The store path basename is a content-addressed hash of ALL inputs
+              # (pack source, squaremap JAR, squaremap config, JRE, etc.).
+              # If anything changes, the path changes, rsync triggers.
+              PACK_ID="$(${lib.getExe' pkgs.coreutils "basename"} "$FINAL_PACK")"
               ${lib.getExe' pkgs.coreutils "mkdir"} -p "${dataDir}"
               ${lib.getExe' pkgs.coreutils "chmod"} u+w "${dataDir}"
               # Ensure dataDir is writable even if rsync previously set store perms
               ${lib.getExe pkgs.findutils} "${dataDir}" -type d ! -writable -exec ${lib.getExe' pkgs.coreutils "chmod"} u+w {} + 2>/dev/null || true
-              if [ ! -f "${dataDir}/.image-id" ] || \
-                 [ "$(${lib.getExe' pkgs.coreutils "cat"} "${dataDir}/.image-id")" != "$IMAGE_ID" ]; then
+              if [ ! -f "${dataDir}/.pack-id" ] || \
+                 [ "$(${lib.getExe' pkgs.coreutils "cat"} "${dataDir}/.pack-id")" != "$PACK_ID" ]; then
                 # Sync pack contents, dereference symlinks to writable copies
                 ${lib.getExe pkgs.rsync} -rltD --delete \
                   --copy-links \
@@ -472,7 +468,7 @@ in
                   "$FINAL_PACK/" "${dataDir}/"
                 # Ensure everything is writable by the service user
                 ${lib.getExe' pkgs.coreutils "chmod"} -R u+w "${dataDir}"
-                ${lib.getExe' pkgs.coreutils "echo"} "$IMAGE_ID" > "${dataDir}/.image-id"
+                ${lib.getExe' pkgs.coreutils "echo"} "$PACK_ID" > "${dataDir}/.pack-id"
               fi
               # Write ops.json (declarative operator list)
               ${lib.getExe' pkgs.coreutils "cp"} ${opsJson} "${dataDir}/ops.json"
