@@ -360,28 +360,17 @@ in
               serverPropertiesWithRcon
           );
 
-          # Graceful shutdown: warn players, flush world, stop server, backup after exit
-          #
-          # NOTE: systemd has NO ExecStopPre directive. Only ExecStop exists.
-          # All graceful shutdown logic lives here in a single script.
-          #
-          # Ordering is critical:
-          #   1. Countdown + save-all (flush world while server is alive)
-          #   2. rcon stop (server begins graceful shutdown, flushes world again on exit)
-          #   3. Poll MainPID until Java process exits (world is now frozen and consistent)
-          #   4. tar --zstd backup (server is dead, world cannot change)
-          #   5. Return — systemd finishes stopping the service
-          #
-          # The service does NOT finish stopping until the backup is written.
+          # ExecStop: graceful RCON shutdown — warn players, flush world, tell server to stop.
+          # Returns after `rcon stop`. systemd then waits for MainPID to exit.
+          # With ATM10_RESTART=false, bash exits when Java exits. No polling needed.
           execStopScript = pkgs.writeShellApplication {
             name = "${serviceName}-exec-stop";
-            runtimeInputs = [ pkgs.coreutils pkgs.mcrcon pkgs.gnutar pkgs.findutils pkgs.systemd ];
+            runtimeInputs = [ pkgs.coreutils pkgs.mcrcon ];
             text = ''
               rcon() {
                 ${lib.getExe pkgs.mcrcon} -H 127.0.0.1 -P ${toString instanceCfg.rconPort} -p '${instanceCfg.rconPassword}' "$@"
               }
 
-              # ── Phase 1: Warn players ─────────────────────────────────
               rcon -w 5 "say §c[Server] §fServer shutting down in 30 seconds..." || echo "WARNING: RCON say failed" >&2
               ${lib.getExe' pkgs.coreutils "sleep"} 20
               rcon -w 5 "say §c[Server] §fShutting down in 10 seconds..." || echo "WARNING: RCON say failed" >&2
@@ -391,29 +380,21 @@ in
               rcon -w 5 "say §c[Server] §f2 seconds..." || echo "WARNING: RCON say failed" >&2
               ${lib.getExe' pkgs.coreutils "sleep"} 2
 
-              # ── Phase 2: Flush world and stop server ──────────────────
               rcon -w 5 "say §c[Server] §eSaving world..." || echo "WARNING: RCON say failed" >&2
               rcon -w 30 "save-all" || echo "ERROR: RCON save-all failed — world may not be flushed" >&2
               ${lib.getExe' pkgs.coreutils "sleep"} 2
               rcon -w 5 "say §c[Server] §eGoodbye!" || echo "WARNING: RCON say failed" >&2
               rcon -w 5 "stop" || echo "ERROR: RCON stop failed — will SIGTERM" >&2
+              # Return — systemd waits for MainPID to exit, then runs ExecStopPost
+            '';
+          };
 
-              # ── Phase 3: Wait for server to exit ──────────────────────
-              # Poll MainPID — once the Java process is dead, the world is
-              # frozen and consistent. No save-off tricks needed.
-              MAINPID="$(systemctl show -p MainPID --value "${serviceName}.service")"
-              if [ "$MAINPID" -gt 0 ] 2>/dev/null; then
-                echo "Waiting for server process $MAINPID to exit..." >&2
-                while kill -0 "$MAINPID" 2>/dev/null; do
-                  ${lib.getExe' pkgs.coreutils "sleep"} 1
-                done
-                echo "Server process exited." >&2
-              else
-                echo "WARNING: Could not determine MainPID, sleeping 10s as fallback" >&2
-                ${lib.getExe' pkgs.coreutils "sleep"} 10
-              fi
-
-              # ── Phase 4: Backup (server is dead, world is frozen) ─────
+          # ExecStopPost: backup the world after systemd has stopped the service.
+          # Runs as root. The service is dead — world is frozen and consistent.
+          execStopPostScript = pkgs.writeShellApplication {
+            name = "${serviceName}-exec-stop-post";
+            runtimeInputs = [ pkgs.coreutils pkgs.gnutar pkgs.findutils ];
+            text = ''
               if [ -d "${dataDir}/world" ]; then
                 ${lib.getExe' pkgs.coreutils "mkdir"} -p "${dataDir}/backups"
                 ${lib.getExe pkgs.gnutar} --zstd \
@@ -500,13 +481,16 @@ in
               # + prefix runs ExecStartPre as root (needed for chown, rsync, mkdir)
               ExecStartPre = "+${lib.getExe execStartPreScript}";
               ExecStart = "${lib.getExe pkgs.bash} ${dataDir}/start.sh";
-
-              # Only SIGTERM the main Java process — don't kill ExecStopPre
-              KillMode = "process";
+              # Backup after systemd stops the service — world is frozen, safe to tar.
+              ExecStopPost = "+${lib.getExe execStopPostScript}";
 
               Environment = [
                 "JAVA_MAX_MEM=${instanceCfg.maxMemory}"
                 "JAVA_MIN_MEM=${instanceCfg.minMemory}"
+                # Disable start.sh auto-restart — systemd handles restarts via Restart=on-failure.
+                # Without this, start.sh's while-loop restarts Java after rcon stop, defeating
+                # systemd's stop ordering (MainPID never exits → service hangs in deactivating).
+                "ATM10_RESTART=false"
               ] ++ optional (instanceCfg.jvmArgs != [ ])
                 "JAVA_OPTS=${concatStringsSep " " instanceCfg.jvmArgs}";
 
