@@ -1,3 +1,22 @@
+## Development Velocity
+
+Current development is phased. Each phase builds on the previous.
+
+### Phase A: Backup Capabilities
+1. ~~Create backup capabilities proposal and report~~ ✅ (`documentation/backup-capacity-report.md`)
+2. ~~Implement minimal phase-1 backup~~ ✅ (`lib/rclone-target.nix` extended with `mode`, `calendar`, `bwlimit`, `preExec`; example in `snippets/gaming-host-1-daily-backup.nix`)
+
+### Phase B: Complete Transformer Architecture
+1. Finish WIP transformers (`mkDnsSettings`, `mkFirewallSettings`, `mkNginxSettings`) with real data
+2. Wire `core-router-topology.nix` into cortex-alpha, validate golden tests match
+3. Include backup topology as first-draft WIP in `topology.nix`
+
+### Phase C: Library Split
+Split infrastructure into separate modular library components:
+- **Ketchup** — The open-source, freely distributable library (generic NixOS modules, topology engine, transformers, generators)
+- **Secret-Sauce** — The closed-source Bargman proprietary library (machine configs, secrets, service definitions, game servers)
+- **Mayo** — Helpers and utilities shared between both (shared functions, validation, common patterns)
+
 ## Architecture
 
 ### CRITICAL: Formatter Configuration
@@ -127,18 +146,17 @@ modules/core-router.nix (NixOS config generation)
 - `lib/topology/validate.nix` - Topology validation
 - `lib/topology/utils.nix` - Shared utilities
 - `modules/core-router.nix` - Core router module (imported by cortex-alpha)
-- `modules/enable-wg.nix` - WireGuard client module
+- `modules/enable-wg-topology.nix` - WireGuard client module (deployed on 13 machines)
 
 **Currently Using Production Architecture:** cortex-alpha (via `machines/cortex-alpha/default.nix`)
 
 **Known Issues (Active):**
-- Inconsistent function signatures across transformers
-- `validate.nix` cross-reference validation not fully integrated
-- Hardcoded nginx listen addresses
+- Inconsistent function signatures across transformers (TG-003)
+- `mkForwarding.nix` missing section-level `or` default for `topology.forwarding` (TG-004)
 
 ### WIP: Two-Layer Topology Architecture (Incremental Development)
 
-The WIP architecture introduces a **single topology source of truth** with a clear two-layer pattern: **Transformers** → **Generators**. This is under active development and NOT yet used by any machine.
+The WIP architecture introduces a **single topology source of truth** with a clear two-layer pattern: **Transformers** → **Generators**. The WireGuard client module (`enable-wg-topology.nix`) is deployed on 13 machines. The hub module (`core-router-topology.nix`) is not yet wired into cortex-alpha.
 
 **Architecture Pattern (WIP):**
 ```
@@ -171,7 +189,7 @@ modules/core-router-topology.nix or modules/enable-wg-topology.nix
 - `modules/core-router-topology.nix` - Hub machine module (WIP)
 - `modules/enable-wg-topology.nix` - Unified WireGuard module (WIP)
 
-**Status:** WIP — not wired into any machine configuration. Will be integrated incrementally, one machine at a time, and MUST pass golden validation before deployment.
+**Status:** WIP — `enable-wg-topology.nix` is deployed on 13 client machines (replaces legacy `enable-wg.nix`). `core-router-topology.nix` is not yet wired into cortex-alpha. Will be integrated incrementally, one machine at a time, and MUST pass golden validation before deployment.
 
 ## Common Tasks
 
@@ -190,7 +208,7 @@ Validates that the current configuration matches the golden test for cortex-alph
 nix run .#check-network -- cortex-alpha
 nix run .#check-network -- cortex-beta
 nix run .#check-network -- cortex-gamma
-# ... for all 12 machines
+# ... for all 17 machines
 ```
 
 #### Generate New Golden File (Config Changes Only)
@@ -251,11 +269,9 @@ Automated visual regression test — boots the VM, waits for the greeter, takes 
 # (golden PNGs go in tests/bargman-greeter-login/resources/)
 ```
 
-### Legacy Architecture Tasks (Being Phased Out)
+### Golden Test Operations
 
-These tasks apply to machines still using the old per-file topology architecture.
-
-#### Generate Golden from Main (Legacy)
+#### Generate Golden from Main Branch
 ```bash
 git worktree add /tmp/nixos-main main
 mkdir -p /tmp/nixos-main/real-topology
@@ -267,8 +283,8 @@ git worktree remove /tmp/nixos-main --force
 ## Repository Structure
 - `real-topology/` - Topology data and golden tests
 - `lib/topology/` - Transformation functions
-- `modules/` - NixOS modules (core-router.nix, enable-wg.nix)
-- `documentation/` - Architecture docs and session status
+- `modules/` - NixOS modules (core-router.nix, enable-wg-topology.nix)
+- `documentation/` - Architecture docs and operational references
 - `scripts/` - Utility scripts (compare-configs.sh)
 - `secrets/` - Encrypted secrets (private keys) and public keys
 

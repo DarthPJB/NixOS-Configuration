@@ -1,0 +1,11 @@
+Filesystem      Size  Used Avail Use% Mounted on
+devtmpfs        392M     0  392M   0% /dev
+tmpfs           3.9G  114M  3.8G   3% /dev/shm
+tmpfs           2.0G  5.0M  2.0G   1% /run
+/dev/sda1       679G  227G  418G  36% /
+efivarfs        128K   75K   49K  61% /sys/firmware/efi/efivars
+tmpfs           3.9G  1.2M  3.9G   1% /run/wrappers
+/dev/sda3       487M   62M  425M  13% /boot
+tmpfs           783M  104K  783M   1% /run/user/1000
+tmpfs           1.0M     0  1.0M   0% /run/credentials/systemd-journald.service
+tmpfs           783M  8.0K  783M   1% /run/user/1110

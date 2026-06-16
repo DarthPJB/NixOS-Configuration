@@ -1,6 +1,6 @@
 # Topology Generator Issue Tracker
 **Created**: 2026-04-23
-**Last Updated**: 2026-05-06
+**Last Updated**: 2026-06-14
 **Status**: Active
 **Priority**: High
 
@@ -83,13 +83,11 @@
 - **Proposed Solution**: Add `or` default to the entire `topology.forwarding` section in `mkForwarding.nix`.
 - **Estimated Effort**: 15 minutes
 
-### TG-005: Hardcoded Nginx Listen Addresses
+### TG-005: Hardcoded Nginx Listen Addresses — RESOLVED (2026-06-14)
 - **Severity**: High
-- **Status**: PARTIAL
-- **Description**: `mkNginxProxies.nix` fallback references `topology.hosts.cortex-alpha.ip` which doesn't exist (hosts are under `topology.lan.hosts`). Currently masked because cortex-alpha's topology defines `topology.nginx.listenAddresses` explicitly.
-- **Impact**: Would crash for any machine relying on the fallback path.
-- **Proposed Solution**: Change fallback to `topology.lan.hosts.${config.networking.hostName}.ip` or require `listenAddresses` in topology schema.
-- **Estimated Effort**: 1 hour
+- **Status**: RESOLVED
+- **Resolution**: `mkNginxProxies.nix` now derives `defaultListenAddresses` from `topology.lan.gateway` and `topology.lan.hosts.${topology.hostname}.ip`. The fallback path is fixed.
+- **Location**: `lib/topology/mkNginxProxies.nix` lines 28-31
 
 ### TG-006: Incomplete Documentation
 - **Severity**: Medium
@@ -136,11 +134,11 @@
 5. ~~TG-010: Fix evaluation timing~~ ✓
 6. ~~TG-011: Create utils lib~~ ✓
 7. ~~TG-013: Remove dead code~~ ✓
+8. ~~TG-005: Fix hardcoded nginx listen addresses~~ ✓
 
 ### Next: High Priority
-8. TG-003: Standardize function signatures (discuss approach)
-9. TG-004: Add error handling to mkForwarding.nix (section-level fallback)
-10. TG-005: Fix hardcoded nginx listen addresses
+9. TG-003: Standardize function signatures (discuss approach)
+10. TG-004: Add error handling to mkForwarding.nix (section-level fallback)
 
 ### Following: Medium Priority
 11. TG-006: Update documentation

@@ -1,0 +1,5 @@
+NAME          SIZE TYPE MOUNTPOINT
+nvme0n1     476.9G disk 
+├─nvme0n1p1   462G part /
+└─nvme0n1p2  14.9G part [SWAP]
+nvme1n1     476.9G disk 

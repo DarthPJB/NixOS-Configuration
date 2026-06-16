@@ -1,0 +1,9 @@
+Filesystem      Size  Used Avail Use% Mounted on
+devtmpfs         45M     0   45M   0% /dev
+tmpfs           448M     0  448M   0% /dev/shm
+tmpfs           224M  3.4M  221M   2% /run
+/dev/mmcblk0p2   30G  5.1G   23G  19% /
+tmpfs           1.0M     0  1.0M   0% /run/credentials/systemd-journald.service
+tmpfs           448M  1.6M  446M   1% /run/wrappers
+tmpfs            90M  4.0K   90M   1% /run/user/1108
+tmpfs            90M  4.0K   90M   1% /run/user/1110

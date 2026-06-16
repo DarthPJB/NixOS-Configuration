@@ -1,0 +1,7 @@
+NAME    SIZE TYPE MOUNTPOINT
+sr0     500K rom  
+vda      40G disk 
+└─vda1   40G part /
+vdb     300G disk 
+└─vdb1  300G part /home/pokej/mnt2
+vdc     100G disk /home/pokej/mnt

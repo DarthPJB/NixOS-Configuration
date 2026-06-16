@@ -24,8 +24,11 @@
       url = "git+ssh://git@gitlab.com/mecha-team-zero/bargman-assets.git?ref=main";
       inputs.nixpkgs.follows = "nixpkgs_stable";
     };
+    denton-glasses = {
+      url = "path:/speed-storage/LLM-END/denton-glasses";
+    };
   };
-  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ikbaeb-th, bargman-assets }:
+  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ikbaeb-th, bargman-assets, denton-glasses }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;

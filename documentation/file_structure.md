@@ -6,6 +6,7 @@ This document describes the directory layout of the NixOS-Configuration reposito
 
 ## Root Level
 - `flake.nix` - Main flake definition with inputs, outputs, and system configurations
+- `topology.nix` - Incremental network topology (WIP two-layer architecture)
 - `configuration.nix` - Legacy NixOS configuration (may be minimal or transitional)
 - `AGENTS.md` - Instructions for AI agents working on this repository
 
@@ -13,6 +14,18 @@ This document describes the directory layout of the NixOS-Configuration reposito
 - `machines/` - Machine-specific NixOS configurations
   - One subdirectory per host (e.g., `cortex-alpha/`, `terminal-zero/`)
   - Each contains `default.nix` for primary config and `hardware-configuration.nix` for auto-generated hardware details
+- `real-topology/` - Per-machine topology data and golden tests
+  - `<machine>.nix` - Topology data (DNS, nginx, firewall, WireGuard, etc.)
+  - `golden/<machine>.json` - Golden test references (sacrosanct)
+  - `default.nix` - Golden test generator
+- `lib/topology/` - Topology transformation functions
+  - `mk*.nix` - Transformers (topology data → flat settings)
+  - `gen*.nix` - Generators (settings → NixOS config)
+  - `validate.nix` - Topology validation
+  - `utils.nix` - Shared utilities
+- `modules/` - NixOS modules
+  - `core-router.nix` - Hub machine module (production architecture)
+  - `enable-wg-topology.nix` - WireGuard client module (deployed on 13 machines)
 - `environments/` - Environment modules for software collections
   - Named by purpose (e.g., `code.nix` for development tools, `browsers.nix` for web apps)
   - Each file defines packages and services for a specific use case
@@ -26,31 +39,34 @@ This document describes the directory layout of the NixOS-Configuration reposito
 - `services/` - Service-specific configurations
   - One file per service (e.g., `nextcloud.nix`, `prometheus.nix`)
   - Includes service options and setup logic
+- `server_services/` - Server-specific service configurations
+  - Game servers (Minecraft, Space Engineers, etc.)
 - `modifier_imports/` - System-wide modifiers and features
   - Global settings like virtualization, builders, or energy saving
   - Applied across multiple machines as needed
 
 ## Assets and Secrets
 - `secrets/` - Encrypted secrets managed by secrix
-  - WireGuard keys, API tokens, passwords
+  - `private_keys/` - WireGuard private keys (encrypted)
+  - `public_keys/` - Public cryptographic keys
+    - `wireguard/` - WireGuard public keys (`wg_<hostname>_pub`)
+    - `host_keys/` - SSH host keys
+  - API tokens, passwords, other secrets
   - Never commit decrypted versions
-- `public_key/` - Public cryptographic keys
 - `dotfiles/` - User configuration files (dotfiles)
   - Symlinked via home-manager or manual setup
 - `ascetics_bin/` - Binary assets and media files
   - Images, videos, scripts not part of Nix builds
 
 ## Development and Tools
+- `documentation/` - Architecture docs, operational references, plans
+- `scripts/` - Utility scripts (compare-configs.sh, etc.)
+- `tests/` - NixOS tests and validation
 - `llm/` - AI agent outputs and analysis
-  - Briefings, task analyses, and shared summaries
 - `snippets/` - Reusable configuration snippets
-  - Quick templates for common setups
 - `kalymos/` - Project-specific subdirectories
-  - Custom hardware projects or specialized configs
 - `locale/` - Localization and network settings
-  - Time zones, locales, WiFi configurations
 
 ## Web and Services
 - `webroot/` - Static web content
-- `server_services/` - Server-specific service configurations
-  - Services that run on dedicated servers
+- `pkgs/` - Custom package derivations (minecraft-curseforge, etc.)
