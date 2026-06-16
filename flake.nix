@@ -471,6 +471,8 @@
             xlibre-overlay.nixosModules.overlay-xlibre-xserver
             xlibre-overlay.nixosModules.overlay-all-xlibre-drivers
             xlibre-overlay.nixosModules.nvidia-ignore-ABI
+            denton-glasses.nixosModules.eye-tracking
+            denton-glasses.nixosModules.voxtype
             {
               environment.systemPackages = [
                 parsecgaming.packages.x86_64-linux.parsecgaming

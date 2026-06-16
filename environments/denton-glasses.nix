@@ -14,14 +14,9 @@
 #   Microphones: pactl list sources short
 #   By-id paths: ls /dev/v4l/by-id/
 
-{ config, pkgs, lib, denton-glasses, ... }:
+{ config, pkgs, lib, llm, ... }:
 
 {
-  imports = [
-    denton-glasses.nixosModules.eye-tracking
-    denton-glasses.nixosModules.voxtype
-  ];
-
   # ── Eye Tracking (OpenFace) ──────────────────────────────────────
   #
   # Uses V4L2 by-id path for stable camera identification.
@@ -66,7 +61,7 @@
   services.voxtype = {
     enable = true;
     user = "John88";
-    package = pkgs.voxtype-vulkan;  # GPU-accelerated whisper via Vulkan
+    package = llm.voxtype-vulkan;  # GPU-accelerated whisper via Vulkan (from nixpkgs_llm)
 
     x11.display = ":0";  # LINDA uses X11 i3wm
 
