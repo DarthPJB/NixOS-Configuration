@@ -32,6 +32,7 @@
     ../../locale/input-methods.nix
     ../../environments/rtl-sdr.nix
     ../../modifier_imports/bluetooth.nix
+    ../../environments/denton-glasses.nix
     ../../modifier_imports/memtest.nix
     ../../modifier_imports/hosts.nix
     ../../modifier_imports/zfs.nix
