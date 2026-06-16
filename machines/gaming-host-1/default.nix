@@ -18,6 +18,7 @@
     ../../server_services/game_servers/minecraft-curseforge.nix
     (import ../../services/acme_server.nix { fqdn = "gaming-host-1.johnbargman.net"; })
   ];
+  security.acme.defaults.email = "commander@johnbargman.net";
   enableWgTopology.enable = true;
   virtualisation.docker.enable = true;
   services.dragonwilds-server.enable = true;
@@ -31,7 +32,7 @@
     enable = true;
     uid = 29987;
     gid = 29987;
-    password = "godlet";
+    password = "godlet"; # Plaintext by design — game server password, not a security credential
     openFirewall = true;
     map = "Phaeton";
   };
@@ -86,7 +87,7 @@
     minMemory = "4G";
     gamePort = 25565;
     rconPort = 25575;
-    rconPassword = "allthemons"; # TODO: change this or move to secrets
+    rconPassword = "allthemons"; # Plaintext by design — game RCON, not an infrastructure secret
     openFirewall = true;
 
     # squaremap web map viewer

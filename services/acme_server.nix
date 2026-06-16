@@ -20,7 +20,6 @@ in
   # Configure ACME appropriately
   security.acme.acceptTerms = true;
   security.acme.defaults = {
-    email = "john@bargman.net";
     dnsProvider = "gandiv5";
     group = "acme";
     environmentFile = config.secrix.system.secrets.dns01.decrypted.path;
