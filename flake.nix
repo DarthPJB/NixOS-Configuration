@@ -619,6 +619,13 @@
           };
           resourceDir = ./tests/bargman-greeter-login/resources;
         };
+
+        # Minecraft server lifecycle test:
+        # Boots VM, waits for "Done", verifies RCON, sends stop, checks clean exit
+        minecraft-server-test = nixpkgs.callPackage ./tests/minecraft-server/default.nix {
+          minecraft-curseforge-all-the-mons = self.packages.x86_64-linux.minecraft-curseforge-all-the-mons;
+          minecraft-curseforge-module = ./server_services/game_servers/minecraft-curseforge.nix;
+        };
       };
 
       # CI data exposed under legacyPackages (not a standard flake output type)
