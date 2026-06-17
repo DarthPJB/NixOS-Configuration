@@ -14,7 +14,7 @@
 #   Microphones: pactl list sources short
 #   By-id paths: ls /dev/v4l/by-id/
 
-{ config, pkgs, lib, llm, ... }:
+{ config, pkgs, lib, pkgs_llm, ... }:
 
 {
   # ── Eye Tracking (OpenFace) ──────────────────────────────────────
@@ -32,9 +32,8 @@
     enable = true;
     user = "John88";
 
-    # TODO: Replace with actual by-id path from `ls /dev/v4l/by-id/` on LINDA.
-    #       Using index 0 as placeholder until device enumeration is confirmed.
-    camera = "0";
+    # NewEye 60s USB webcam — stable V4L2 by-id path
+    camera = "/dev/v4l/by-id/usb-NewEye_60s_NewEye_60s_20240131-video-index0";
 
     autoStart = false;  # Manual start until validated with real hardware
     outputDir = "/var/lib/denton-glasses/eye-tracking";
@@ -61,22 +60,26 @@
   services.voxtype = {
     enable = true;
     user = "John88";
-    package = llm.voxtype-vulkan;  # GPU-accelerated whisper via Vulkan (from nixpkgs_llm)
+    package = pkgs_llm.voxtype-vulkan;  # GPU-accelerated whisper via Vulkan (from nixpkgs_llm)
 
     x11.display = ":0";  # LINDA uses X11 i3wm
 
     loadModels = [ "base.en" ];
 
     settings = {
+      hotkey = {
+        key = "EVTEST_47";
+        modifiers = [];
+        mode = "push_to_talk";
+      };
       whisper = {
         model = "base.en";
         language = "en";
       };
       audio = {
-        # TODO: Replace "default" with actual Q9-1 PulseAudio source name
-        #       from `pactl list sources short` on LINDA.
-        #       Example: "alsa_input.usb-XXXX_Q9-1_XXXX.analog-stereo"
-        device = "default";
+        # CMEDIA Q9-1 USB microphone (ALSA card 3)
+        # PipeWire-Pulse exposes this as an analog-stereo source
+        device = "alsa_input.usb-CMEDIA_Q9-1-00.analog-stereo";
         sample_rate = 16000;
         max_duration_secs = 60;
       };

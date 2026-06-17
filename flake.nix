@@ -41,7 +41,7 @@
         inherit ikbaeb-th;
         inherit bargman-assets;
         inherit denton-glasses;
-        llm = import nixpkgs_llm { system = "x86_64-linux"; config.allowUnfree = true; };
+        pkgs_llm = import nixpkgs_llm { system = "x86_64-linux"; config.allowUnfree = true; };
       };
       minecraft-curseforge-builder = nixpkgs.callPackage ./pkgs/minecraft-curseforge { };
       commonModules = [
