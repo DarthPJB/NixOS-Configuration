@@ -11,7 +11,6 @@
 #   nix build .#checks.x86_64-linux.minecraft-server-test -L
 
 { testers
-, nixpkgs
 , lib
 , pkgs
 , minecraft-curseforge-all-the-mons
@@ -25,15 +24,16 @@ testers.runNixOSTest {
   name = "minecraft-server-test";
 
   # Minecraft needs time: world generation, mod loading, RCON test, shutdown
-  globalTimeout = 15 * 60; # 15 minutes
+  globalTimeout = lib.mkForce (15 * 60); # 15 minutes
 
   nodes.machine = {
     imports = [ minecraft-curseforge-module ];
 
-    # VM needs enough RAM for Minecraft + mods
+    # VM needs enough RAM for Minecraft + mods (8GB heap + OS overhead)
     virtualisation = {
-      memorySize = 6144; # 6GB
-      diskSize = 8192;   # 8GB for world data
+      memorySize = 12288; # 12GB (8GB heap + 4GB OS/mods overhead)
+      diskSize = 16384;   # 16GB for world data
+      cores = 4;
     };
 
     # Minimal config — just enough to test the server lifecycle
@@ -41,8 +41,8 @@ testers.runNixOSTest {
       enable = true;
       pack = minecraft-curseforge-all-the-mons;
       acceptEula = true;
-      maxMemory = "4G";
-      minMemory = "2G";
+      maxMemory = "8G";
+      minMemory = "4G";
       gamePort = 25565;
       rconPort = 25575;
       rconPassword = "testpassword";
@@ -67,9 +67,6 @@ testers.runNixOSTest {
     { nodes, ... }:
     # python
     ''
-      import subprocess
-      import time
-
       machine.start()
 
       # ── Phase 1: Wait for service to start ──────────────────────────
@@ -77,15 +74,13 @@ testers.runNixOSTest {
           machine.wait_for_unit("mc-curseforge-test-instance.service")
           print("Service unit active")
 
-      # ── Phase 2: Wait for server to reach "Done" ────────────────────
-      # The NeoForge server prints "Done" when fully loaded.
-      # This can take several minutes with mods.
-      with subtest("server reaches Done state"):
-          machine.wait_for_console_text("Done", timeout=600)
-          print("Server reached Done state — world generated")
-
-      # Give RCON a moment to bind after "Done"
-      time.sleep(10)
+      # ── Phase 2: Wait for server to be ready ────────────────────────
+      # ModernFix suppresses the "Done" message. Instead, wait for RCON
+      # port to open, which happens after the server is fully loaded.
+      with subtest("server reaches ready state"):
+          # Wait for RCON port to be listening (server fully loaded)
+          machine.wait_for_open_port(25575, timeout=600)
+          print("RCON port open — server is ready")
 
       # ── Phase 3: Verify RCON is responsive ──────────────────────────
       with subtest("RCON responds to list command"):
@@ -117,14 +112,15 @@ testers.runNixOSTest {
 
       # ── Phase 6: Verify clean exit (not killed) ─────────────────────
       with subtest("service exited cleanly (not SIGKILL)"):
-          # Check the exit status — clean stop shows "Deactivated successfully"
-          journal = machine.succeed("journalctl -u mc-curseforge-test-instance.service --no-pager -n 20")
+          journal = machine.succeed("journalctl -u mc-curseforge-test-instance.service --no-pager -n 30")
           print(f"Journal tail:\n{journal}")
 
           # Should NOT see "Killed" or "SIGKILL" — that means timeout was exceeded
           assert "Killed" not in journal, "Service was SIGKILL'd — stop timeout exceeded"
-          assert "Deactivated successfully" in journal or "Stopped" in journal, \
-              "Service did not deactivate cleanly"
+
+          # Verify all worlds were saved (clean shutdown)
+          assert "All dimensions are saved" in journal or "All chunks are saved" in journal, \
+              "Worlds were not saved — unclean shutdown"
 
       print("All tests passed!")
     '';
