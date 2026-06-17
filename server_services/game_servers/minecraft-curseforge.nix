@@ -393,7 +393,7 @@ in
           # Runs as root. The service is dead — world is frozen and consistent.
           execStopPostScript = pkgs.writeShellApplication {
             name = "${serviceName}-exec-stop-post";
-            runtimeInputs = [ pkgs.coreutils pkgs.gnutar pkgs.findutils ];
+            runtimeInputs = [ pkgs.coreutils pkgs.gnutar pkgs.findutils pkgs.zstd ];
             text = ''
               if [ -d "${dataDir}/world" ]; then
                 ${lib.getExe' pkgs.coreutils "mkdir"} -p "${dataDir}/backups"
@@ -487,6 +487,7 @@ in
               Environment = [
                 "JAVA_MAX_MEM=${instanceCfg.maxMemory}"
                 "JAVA_MIN_MEM=${instanceCfg.minMemory}"
+                "ATM10_JAVA=${lib.getExe finalPack.passthru.jre}"
                 # Disable start.sh auto-restart — systemd handles restarts via Restart=on-failure.
                 # Without this, start.sh's while-loop restarts Java after rcon stop, defeating
                 # systemd's stop ordering (MainPID never exits → service hangs in deactivating).
