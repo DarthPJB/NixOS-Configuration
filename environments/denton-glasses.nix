@@ -59,7 +59,8 @@
 
   # ── Input Device Access ────────────────────────────────────────
   # Voxtype needs /dev/input/event* for hotkey detection
-  users.users.John88.extraGroups = [ "input" ];
+  # NOTE: Now handled automatically by the voxtype module via inputGroup option
+  # users.users.John88.extraGroups = [ "input" ];
 
   services.voxtype = {
     enable = true;
@@ -67,6 +68,12 @@
     package = pkgs_llm.voxtype-vulkan;  # GPU-accelerated whisper via Vulkan (from nixpkgs_llm)
 
     x11.display = ":0";  # LINDA uses X11 i3wm
+
+    # LINDA has 2 GPUs — use primary GPU (index 0) for Vulkan inference
+    gpu = {
+      backend = "vulkan";
+      primaryIndex = 0;
+    };
 
     loadModels = [ "base.en" ];
 
