@@ -57,6 +57,10 @@
   #
   # Then set audio.device to that source name.
 
+  # ── Input Device Access ────────────────────────────────────────
+  # Voxtype needs /dev/input/event* for hotkey detection
+  users.users.John88.extraGroups = [ "input" ];
+
   services.voxtype = {
     enable = true;
     user = "John88";
@@ -69,7 +73,7 @@
     settings = {
       hotkey = {
         key = "EVTEST_47";
-        modifiers = [];
+        modifiers = ["EVTEST_125"];
         mode = "push_to_talk";
       };
       whisper = {
