@@ -72,7 +72,7 @@
     # LINDA has 2 GPUs — use primary GPU (index 0) for Vulkan inference
     gpu = {
       backend = "vulkan";
-      primaryIndex = 0;
+      primaryIndex = 1;  # GTX 1050 (secondary GPU, offload whisper from RTX 3060)
     };
 
     loadModels = [ "base.en" ];
@@ -90,7 +90,7 @@
       audio = {
         # CMEDIA Q9-1 USB microphone (ALSA card 3)
         # PipeWire-Pulse exposes this as an analog-stereo source
-        device = "alsa_input.usb-CMEDIA_Q9-1-00.analog-stereo";
+        device = "default";
         sample_rate = 16000;
         max_duration_secs = 60;
       };
