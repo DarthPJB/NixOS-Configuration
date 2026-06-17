@@ -1,12 +1,12 @@
 { minecraft-curseforge, fetchurl, lib }:
 
 let
-  version = "1.0.0-rc.6";
+  version = "1.0.0-rc.7";
   src = fetchurl {
-    url = "https://mediafilez.forgecdn.net/files/8120/605/ServerFiles-${version}.zip";
-    hash = "sha256-58i7bAvr1KXFciihjA6/kFKIzZGbR5idRLkOw0zxtf0=";
+    url = "https://mediafilez.forgecdn.net/files/8249/958/ServerFiles-${version}.zip";
+    hash = "sha256-C02SBrJ+1rXrWn2XIHUYIYhu/sFlgIiAERJlzRGPTnI=";
   };
-  moaPatch = import ../patches/rc6-moa-patch.nix { inherit lib version; };
+  moaPatch = import ../patches/rc7-moa-patch.nix { inherit lib version; };
 in
 minecraft-curseforge {
   name = "all-the-mons";
