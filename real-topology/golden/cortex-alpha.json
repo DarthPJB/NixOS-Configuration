@@ -236,109 +236,109 @@
           "allowedIPs": [
             "10.88.127.88/32"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "4rWs+u0ABt2HCZK0zC2CyGE2BTs3h9WxiU23yS3otmg="
         },
         {
           "allowedIPs": [
             "10.88.127.108/32"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "QYtEIM+1viKj60/byM0V1tBzZ7YA5MYqdIFsIjsfhkc="
         },
         {
           "allowedIPs": [
             "10.88.127.107/32"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "JnqPdAXqurjVL4pMSTsLg37l1xUh1FwOxOoSY+dpLwo="
         },
         {
           "allowedIPs": [
             "10.88.127.211/32"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "QSZUXdngUsh/i/icjMbEqzDw4IRRoh5kJFxXiXaI3gQ="
         },
         {
           "allowedIPs": [
             "10.88.127.1/32"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "lMo4Rf3nlXqd8rIX7rNMedygdsHTZqh+NLxre+vwYH8="
         },
         {
           "allowedIPs": [
             "10.88.127.40/32"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "RRDFDvOnR5c66Ri2fxQ10LZCpW8psxZeI/TxAMDyvEA="
         },
         {
           "allowedIPs": [
             "10.88.127.41/32"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "zdm0VEtg4q4onsmL5CAG58/L+1nIbwbzEhR1nW1BfXo="
         },
         {
           "allowedIPs": [
             "10.88.127.42/32"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "+JqIec2p63rRbYQpD8h2tm3EXYUzWkZHBuax91hOb28="
         },
         {
           "allowedIPs": [
             "10.88.127.210/32"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "PUZKEOZe8fUNZjy9EPy8OTBZAWkxY2obtH56XMrxrzU="
         },
         {
           "allowedIPs": [
             "10.88.127.52/32"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "LnVeRKKXrTduFZj3ttg/qxaPPjAJimotyMsj56e1x0I="
         },
         {
           "allowedIPs": [
             "10.88.127.212/32"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "piXREjUuA1xBicb7+/qmFYn6LilYe6BZX9nsK1i6dik="
         },
         {
           "allowedIPs": [
             "10.88.127.3/32"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "TJtGx15VqBET/JPSq05dzHp+lEPEHIAYeH/w/R6Kpm0="
         },
         {
           "allowedIPs": [
             "10.88.127.30/32"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "ZCMtPLFKuvuS5iMTBxmy1zywiSugvq8t4dJ82jrrDHM="
         },
         {
           "allowedIPs": [
             "10.88.127.51/32"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "PKqZ/2sXuNWX2VCYmVDc/JIxfNyyZKH3sfJwzZMKC0g="
         },
         {
           "allowedIPs": [
             "10.88.127.50/32"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "Xvn6+ZxLJMOoMyXtAT6yJKIdHEMoHXSxdB/oY7XEcSM="
         },
         {
           "allowedIPs": [
             "10.88.127.4/32"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "tM/utDMXzjolWpwBwOvsxNzcJB21hxsOsZz/rq/pplo="
         },
         {
           "allowedIPs": [
             "10.88.127.21/32"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "mxyHIIeDBegbXhOcb2gNjkDZ707vm23iFg0DLgBB21c="
         },
         {
           "allowedIPs": [
             "10.88.127.20/32"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "HfDnJryNMPIfqyKAq1wMFOs1T6bXWIMICe2r0lIeJDU="
         }
       ]
     }

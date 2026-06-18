@@ -195,7 +195,7 @@
         "openface": "openface"
       },
       "locked": {
-        "narHash": "sha256-hzujxXFiYN/S41U3xzIhJushV+avFayaYfpjqlxoKgc=",
+        "narHash": "sha256-2Ko2smx8CYloWkNob6Si7Mqdf63BoimE4THaeUJUdEE=",
         "path": "/speed-storage/LLM-END/denton-glasses",
         "type": "path"
       },
