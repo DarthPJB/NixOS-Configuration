@@ -80,6 +80,8 @@ in
 
     # TODO: Password is stored in plaintext in the Nix store via pkgs.writeText.
     # Migrate to secrix or agenix for runtime secret injection.
+    # Plaintext passwords are intentional for gaming server exemplar code.
+    # These are reference configurations, not production secrets.
     password = mkOption {
       type = types.str;
       default = "";

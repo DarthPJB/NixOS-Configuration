@@ -44,17 +44,17 @@
       supportedFeatures = [ ]; # "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
       mandatoryFeatures = [ ];
     }
-    {
-      hostName = "10.88.127.41"; # Display-1
-      protocol = "ssh-ng";
-      sshUser = "build";
-      sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
-      systems = [ "aarch64-linux" ];
-      maxJobs = 3;
-      speedFactor = 3;
-      supportedFeatures = [ ]; # "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
-      mandatoryFeatures = [ ];
-    }
+    # {
+    #   hostName = "10.88.127.41"; # Display-1 (kitchen wall display — not a builder)
+    #   protocol = "ssh-ng";
+    #   sshUser = "build";
+    #   sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
+    #   systems = [ "aarch64-linux" ];
+    #   maxJobs = 3;
+    #   speedFactor = 3;
+    #   supportedFeatures = [ ]; # "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
+    #   mandatoryFeatures = [ ];
+    # }
     #   {
     #      hostName = "10.88.127.50"; # "remote-worker.johnbargman.net"; # remote-builder
     #      system = "x86_64-linux";

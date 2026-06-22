@@ -177,6 +177,10 @@ in
           description = "TCP port for RCON remote console.";
         };
 
+        # TODO: Password is stored in plaintext in the Nix store via server.properties.
+        # Migrate to secrix or agenix for runtime secret injection.
+        # Plaintext passwords are intentional for gaming server exemplar code.
+        # These are reference configurations, not production secrets.
         rconPassword = mkOption {
           type = types.str;
           default = "";

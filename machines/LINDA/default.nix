@@ -43,7 +43,20 @@
     ../../modifier_imports/remote-builder.nix
   ];
   enableWgTopology.enable = true;
+  programs.ssh.extraConfig = ''
+    Host hyperhyper
+      ControlMaster auto
+      ControlPath /run/ssh-mux/%r@%h:%p
+      ControlPersist 600
+  '';
   environment = {
+    # Force wgpu to target the RTX 3060 explicitly.
+    # Without this, Xlibre-overlay's broken Vulkan WSI causes
+    # RequestDeviceError { inner: Core(Device(Lost)) } on startup.
+    variables = {
+      WGPU_ADAPTER_NAME = "RTX 3060";
+      WGPU_BACKEND = "vulkan";
+    };
     rclone-target = {
       enable = true;
       configFile = "${self}/secrets/rclone-config-file";
@@ -162,6 +175,7 @@
   systemd.tmpfiles.rules = [
     "f /dev/shm/looking-glass 0660 John88 qemu-libvirtd -"
     "d /rendercache 0755 John88 users"
+    "d /run/ssh-mux 0755 John88 users"
   ];
   boot = {
     tmp.useTmpfs = false;

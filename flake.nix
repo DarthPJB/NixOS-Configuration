@@ -19,6 +19,7 @@
     hype-train-outlaw.url = "git+ssh://git@gitlab.com/mecha-team-zero/macha-orchestration";
     star-citizen.url = "github:LovingMelody/nix-citizen";
     xlibre-overlay.url = "git+https://codeberg.org/takagemacoed/xlibre-overlay";
+    ratty.url = "github:orhun/ratty";
     ikbaeb-th = { url = "github:DarthPJB/IKBAEB-th"; };
     bargman-assets = {
       url = "git+ssh://git@gitlab.com/mecha-team-zero/bargman-assets.git?ref=main";
@@ -29,7 +30,7 @@
     # };
     denton-glasses.url = "path:/speed-storage/LLM-END/denton-glasses";
   };
-  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ikbaeb-th, bargman-assets, denton-glasses }:
+  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
@@ -47,6 +48,7 @@
       minecraft-curseforge-builder = nixpkgs.callPackage ./pkgs/minecraft-curseforge { };
       commonModules = [
         secrix.nixosModules.default
+        ratty.nixosModules.default
         ./configuration.nix
         {
           programs.ssh.knownHosts = mkKnownHosts self.nixosConfigurations;
@@ -475,6 +477,7 @@
             denton-glasses.nixosModules.eye-tracking
             denton-glasses.nixosModules.voxtype
             {
+              programs.ratty.enable = true;
               environment.systemPackages = [
                 parsecgaming.packages.x86_64-linux.parsecgaming
                 star-citizen.packages.x86_64-linux.rsi-launcher
