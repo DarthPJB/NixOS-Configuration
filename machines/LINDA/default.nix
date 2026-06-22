@@ -50,13 +50,6 @@
       ControlPersist 600
   '';
   environment = {
-    # Force wgpu to target the RTX 3060 explicitly.
-    # Without this, Xlibre-overlay's broken Vulkan WSI causes
-    # RequestDeviceError { inner: Core(Device(Lost)) } on startup.
-    variables = {
-      WGPU_ADAPTER_NAME = "RTX 3060";
-      WGPU_BACKEND = "vulkan";
-    };
     rclone-target = {
       enable = true;
       configFile = "${self}/secrets/rclone-config-file";
