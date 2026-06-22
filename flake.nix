@@ -146,18 +146,56 @@
           (name: mkUncompressedSdImage (builtins.getAttr name self.nixosConfigurations));
 
       mkKnownHosts = nixosConfigs:
-        lib.filterAttrs (name: value: value != null)
-          (lib.mapAttrs
-            (name: cfg:
-              let
-                hostPubKey = cfg.config.secrix.hostPubKey or null;
-              in
-              if hostPubKey != null then {
-                hostNames = [ name "${name}.johnbargman.net" ];
-                publicKey = hostPubKey;
+        let
+          # Combine active and dormant configs for key lookup
+          allConfigs = nixosConfigs // (self.dormantConfigurations or { });
+
+          # Get public key: secrix first, file fallback second
+          getPubKey = name:
+            let
+              fromConfig = allConfigs.${name}.config.secrix.hostPubKey or null;
+              fromFile =
+                let p = ./secrets/public_keys/host_keys/${name}.pub;
+                in if builtins.pathExists p then builtins.readFile p else null;
+            in
+            if fromConfig != null then fromConfig else fromFile;
+
+          # Build hostNames from topology: hostname + domain + all known IP routes
+          getHostNames = name:
+            let
+              entry = topo.${name} or null;
+              names = [ name "${name}.johnbargman.net" ];
+            in
+            if entry != null then
+              lib.unique (names
+                ++ lib.optionals (entry ? wireguard) [ entry.wireguard ]
+                ++ lib.optionals (entry ? lan) (builtins.attrNames entry.lan)
+                ++ lib.optionals (entry ? uplink) (builtins.attrNames entry.uplink)
+              )
+            else
+              names;
+
+          # Union of all known machines: topology + active configs + dormant configs
+          allMachines = lib.unique (
+            builtins.attrNames topo
+            ++ builtins.attrNames nixosConfigs
+            ++ builtins.attrNames (self.dormantConfigurations or { })
+          );
+
+          # Build entries, skipping machines without a known key
+          entries = builtins.listToAttrs (map (name:
+            let
+              pubKey = getPubKey name;
+            in
+            lib.nameValuePair name (
+              if pubKey != null then {
+                hostNames = getHostNames name;
+                publicKey = pubKey;
               } else null
             )
-            nixosConfigs);
+          ) allMachines);
+        in
+        lib.filterAttrs (name: value: value != null) entries;
 
       # CI/CD Configuration
       ci = import ./ci.nix { inherit self lib; pkgs = nixpkgs; };
