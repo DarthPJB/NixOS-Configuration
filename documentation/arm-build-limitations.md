@@ -1,6 +1,6 @@
 # ARM Build Limitations
 
-> **Interim Resolution Planned:** display-2 (Raspberry Pi 4 cyberdeck with NVMe) will be converted to a dedicated ARM builder. Device retrieved, IP confirmed as 10.88.127.42.
+> **Status:** Remote builder connection verified working. NVMe installation and full deployment pending.
 
 ## Device Roles
 
@@ -115,13 +115,13 @@ nix build .#nixosConfigurations.display-0.config.system.build.toplevel
 
 ## Failed Approaches
 
-### Remote Builders (Currently Unreachable)
+### Remote Builders (Previously Unreachable — Now Fixed)
 
 The flake configures remote builders at:
-- `10.88.127.42` (unreachable)
-- `10.88.127.41` (unreachable)
+- `10.88.127.42` (display-2 — **now working**)
+- `10.88.127.41` (display-1 — commented out, kitchen display)
 
-These were presumably ARM devices acting as builders. Without them, the x86_64 host has no path to produce aarch64 outputs.
+The remote builder connection was broken due to missing IP addresses in the SSH known hosts generator. Fixed in commit `db866ce` by updating `mkKnownHosts` in `flake.nix` to include all IP routes from `topology.nix`.
 
 ### QEMU User-Mode Emulation
 
@@ -144,24 +144,45 @@ Nix supports distributed builds via `nix.buildMachines` configuration. This requ
 
 ## Recommended Solutions
 
-### Option 1: Dedicated ARM Builder (Interim — display-2)
+### Option 1: Dedicated ARM Builder (display-2)
 
-**Status: Device retrieved, awaiting NVMe device path confirmation**
+**Status: Remote builder verified working. NVMe installation pending.**
 
 Convert display-2 (Raspberry Pi 4 cyberdeck) into a dedicated ARM builder. This device already has:
 - Working NixOS aarch64 configuration
 - WireGuard connectivity (10.88.127.42)
-- SSH access (port 1108, user John88)
-- NVMe installed (currently configured as swap, needs reconfiguration)
+- SSH access (port 1108, user John88; port 22, user build)
+- Remote builder connection verified (builds dispatch and complete)
 
-**Required Changes:**
-1. Reconfigure NVMe from swap to build storage (`/nix` or `/var/lib/nix-builds`)
-2. Remove GUI services (browser, terminal, i3wm) — headless builder
-3. Add nix daemon configuration for accepting remote builds
-4. Register as remote builder on x86_64 hosts
+**Current Limitations:**
+- 3.7GB RAM (3.2GB available) — insufficient for large builds
+- 58GB SD card only — no fast storage for `/nix/store`
+- NVMe not currently installed
 
-**Builder Configuration (display-1):**
-```nix
+#### Deployment Plan
+
+**Phase 1: NVMe Installation & Swap**
+
+1. Install NVMe physically
+2. Configure NVMe partition for swap (RAM overflow for builds)
+3. Rebuild display-1 using display-2 as remote builder
+4. Rebuild display-2 using display-2 as remote builder
+5. Switch display-1 configuration and reboot (validate)
+6. Switch display-2 configuration and reboot (validate)
+
+**Phase 2: NVMe `/nix/store` Migration**
+
+7. Create partition on NVMe for `/nix/store`
+8. Copy `/nix/store` to NVMe partition
+9. Remount/kexec to use NVMe-backed `/nix/store`
+10. Deploy display-2 with correct mount points (swap + `/nix`)
+11. Final reboot and validation
+
+**Expected Final State:**
+- NVMe partition 1: swap (RAM overflow)
+- NVMe partition 2: `/nix/store` (fast build storage)
+- SD card: root filesystem
+- Remote builder accepting aarch64 builds from all x86_64 hosts
 # Headless builder config — remove GUI imports
 imports = [
   ../../configuration.nix

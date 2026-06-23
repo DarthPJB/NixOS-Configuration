@@ -19,7 +19,7 @@
     hype-train-outlaw.url = "git+ssh://git@gitlab.com/mecha-team-zero/macha-orchestration";
     star-citizen.url = "github:LovingMelody/nix-citizen";
     xlibre-overlay.url = "git+https://codeberg.org/takagemacoed/xlibre-overlay";
-    ratty.url = "github:orhun/ratty";
+    ratty.url = "github:DarthPJB/ratty/feat/nix-module-gpu-options";
     ikbaeb-th = { url = "github:DarthPJB/IKBAEB-th"; };
     bargman-assets = {
       url = "git+ssh://git@gitlab.com/mecha-team-zero/bargman-assets.git?ref=main";
@@ -515,7 +515,11 @@
             denton-glasses.nixosModules.eye-tracking
             denton-glasses.nixosModules.voxtype
             {
-              programs.ratty.enable = true;
+              programs.ratty = {
+                enable = true;
+                gpuBackend = "vulkan";
+                gpuAdapter = "RTX 3060";
+              };
               environment.systemPackages = [
                 parsecgaming.packages.x86_64-linux.parsecgaming
                 star-citizen.packages.x86_64-linux.rsi-launcher

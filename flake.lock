@@ -1739,15 +1739,16 @@
         "nixpkgs": "nixpkgs_12"
       },
       "locked": {
-        "lastModified": 1781814866,
-        "narHash": "sha256-eOAEslohw4ANWvozxgIRhRLy8vo3MqQ/snacyGi38AM=",
-        "owner": "orhun",
+        "lastModified": 1782182074,
+        "narHash": "sha256-eXEDPDHyYNs/Fb70zgmfVN8FaccFL43G8iBcQdcbQiA=",
+        "owner": "DarthPJB",
         "repo": "ratty",
-        "rev": "550272c472ccba486a41856ee33722f5af3d873d",
+        "rev": "b253cbc9f091ae280db56b700de6483b0aabde7b",
         "type": "github"
       },
       "original": {
-        "owner": "orhun",
+        "owner": "DarthPJB",
+        "ref": "feat/nix-module-gpu-options",
         "repo": "ratty",
         "type": "github"
       }
