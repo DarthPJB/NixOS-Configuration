@@ -28,7 +28,7 @@
     # denton-glasses = {
     #   url = "path:/speed-storage/LLM-END/denton-glasses";
     # };
-    denton-glasses.url = "path:/speed-storage/LLM-END/denton-glasses";
+    denton-glasses.url = "git+ssh://git@gitlab.com/mecha-team-zero/denton-glasses.git";
   };
   outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses }:
     let
