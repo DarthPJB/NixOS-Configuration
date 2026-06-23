@@ -1198,11 +1198,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1782233505,
-        "narHash": "sha256-mtyl83OjZjvBIgaEAU8zNdRzJDVldzcoQjGRTi1b/mY=",
+        "lastModified": 1782238876,
+        "narHash": "sha256-0xCwfZqquUb24wgRV4DPEXerAMfgvz/fCOAKFO53Ji4=",
         "owner": "Bargman-Tech",
         "repo": "nixinate",
-        "rev": "cf321cc7a9f765b0b6f358efcee32c8feb7b1123",
+        "rev": "4dc2d5908c4f54fb4dfe83c28106ba0beea9c8b4",
         "type": "github"
       },
       "original": {
@@ -1705,16 +1705,16 @@
         "nixpkgs": "nixpkgs_13"
       },
       "locked": {
-        "lastModified": 1782182074,
-        "narHash": "sha256-eXEDPDHyYNs/Fb70zgmfVN8FaccFL43G8iBcQdcbQiA=",
+        "lastModified": 1782235606,
+        "narHash": "sha256-NNDOtvkGB4sue6ihQ/BH3ZbnvLag/58P0f2aMWYPySI=",
         "owner": "DarthPJB",
         "repo": "ratty",
-        "rev": "b253cbc9f091ae280db56b700de6483b0aabde7b",
+        "rev": "47c7d3be5f1e07682e18c7cf28853a21dabb2d82",
         "type": "github"
       },
       "original": {
         "owner": "DarthPJB",
-        "ref": "feat/nix-module-gpu-options",
+        "ref": "fix/nix-module-improvements",
         "repo": "ratty",
         "type": "github"
       }

@@ -19,7 +19,7 @@
     hype-train-outlaw.url = "git+ssh://git@gitlab.com/mecha-team-zero/macha-orchestration";
     star-citizen.url = "github:LovingMelody/nix-citizen";
     xlibre-overlay.url = "git+https://codeberg.org/takagemacoed/xlibre-overlay";
-    ratty.url = "github:DarthPJB/ratty/feat/nix-module-gpu-options";
+    ratty.url = "github:DarthPJB/ratty/fix/nix-module-improvements";
     ikbaeb-th = { url = "github:DarthPJB/IKBAEB-th"; };
     bargman-assets = {
       url = "git+ssh://git@gitlab.com/mecha-team-zero/bargman-assets.git?ref=main";
@@ -54,6 +54,7 @@
           programs.ssh.knownHosts = mkKnownHosts self.nixosConfigurations;
           nixpkgs.config.allowUnfree = true;
           nixpkgs.overlays = [
+            ratty.overlays.default
             (final: prev: {
               minecraft-curseforge = minecraft-curseforge-builder;
               # minecraft-curseforge-atm10 = self.packages.x86_64-linux.minecraft-curseforge-atm10;
