@@ -83,6 +83,7 @@
     url = "https://nextcloud.johnbargman.net";
     username = "admin";
     passwordFile = config.secrix.system.secrets.nextcloud_password_file.decrypted.path;
+    user = "nextcloud";
   };
 
 }
