@@ -8,7 +8,7 @@
     lint-utils = { url = "github:homotopic/lint-utils"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
     secrix.url = "github:Platonic-Systems/secrix";
-    nixinate = { url = "github:DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
+    nixinate = { url = "github:Bargman-Tech/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
     nixpkgs_llm.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
@@ -56,8 +56,8 @@
           nixpkgs.overlays = [
             (final: prev: {
               minecraft-curseforge = minecraft-curseforge-builder;
-              minecraft-curseforge-atm10 = self.packages.x86_64-linux.minecraft-curseforge-atm10;
-              minecraft-curseforge-atm10-to-the-sky = self.packages.x86_64-linux.minecraft-curseforge-atm10-to-the-sky;
+              # minecraft-curseforge-atm10 = self.packages.x86_64-linux.minecraft-curseforge-atm10;
+              # minecraft-curseforge-atm10-to-the-sky = self.packages.x86_64-linux.minecraft-curseforge-atm10-to-the-sky;
               minecraft-curseforge-all-the-mons = self.packages.x86_64-linux.minecraft-curseforge-all-the-mons;
               squaremap-neoforge = self.packages.x86_64-linux.squaremap-neoforge;
             })
@@ -401,12 +401,12 @@
       packages = {
         "x86_64-linux" = {
           lightdm-webkit2-greeter = nixpkgs.callPackage ./pkgs/lightdm-webkit2-greeter.nix { };
-          minecraft-curseforge-atm10 = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/atm10.nix {
-            minecraft-curseforge = minecraft-curseforge-builder;
-          };
-          minecraft-curseforge-atm10-to-the-sky = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/atm10-to-the-sky.nix {
-            minecraft-curseforge = minecraft-curseforge-builder;
-          };
+          # minecraft-curseforge-atm10 = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/atm10.nix {
+          #   minecraft-curseforge = minecraft-curseforge-builder;
+          # };
+          # minecraft-curseforge-atm10-to-the-sky = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/atm10-to-the-sky.nix {
+          #   minecraft-curseforge = minecraft-curseforge-builder;
+          # };
           minecraft-curseforge-all-the-mons = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/all-the-mons.nix {
             minecraft-curseforge = minecraft-curseforge-builder;
           };

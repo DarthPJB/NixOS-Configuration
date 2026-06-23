@@ -121,7 +121,31 @@ The flake configures remote builders at:
 - `10.88.127.42` (display-2 — **now working**)
 - `10.88.127.41` (display-1 — commented out, kitchen display)
 
-The remote builder connection was broken due to missing IP addresses in the SSH known hosts generator. Fixed in commit `db866ce` by updating `mkKnownHosts` in `flake.nix` to include all IP routes from `topology.nix`.
+**Issues Found and Fixed:**
+
+1. **SSH known hosts missing IP addresses** — The `mkKnownHosts` function in `flake.nix` only generated hostname and domain entries, not IP addresses. Since nix-daemon connects via WireGuard IP, SSH host key verification always failed. Fixed in commit `db866ce` by reading IPs from `topology.nix`.
+
+2. **`big-parallel` feature not advertised** — The RPi kernel build requires the `big-parallel` feature, but display-2's builder config had `supportedFeatures = [ ]` (commented out). Fixed in commit `03ba281` by adding `"big-parallel"` to the feature list.
+
+**Current Remote Builder Configuration (`modifier_imports/remote-builder.nix`):**
+```nix
+{
+  hostName = "10.88.127.42"; # Display-2
+  protocol = "ssh-ng";
+  sshUser = "build";
+  sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
+  systems = [ "aarch64-linux" ];
+  maxJobs = 3;
+  speedFactor = 5;
+  supportedFeatures = [ "big-parallel" ];
+  mandatoryFeatures = [ ];
+}
+```
+
+**SSH Access Model:**
+- Port 22: `build` user only (WireGuard 10.88.127.0/24), for nix remote builder
+- Port 1108: `John88`/`deploy` users, for administration
+- `deploy` user has passwordless sudo for remote management
 
 ### QEMU User-Mode Emulation
 
@@ -146,37 +170,50 @@ Nix supports distributed builds via `nix.buildMachines` configuration. This requ
 
 ### Option 1: Dedicated ARM Builder (display-2)
 
-**Status: Remote builder verified working. NVMe installation pending.**
+**Status: Phase 1 in progress — kernel builds running**
 
 Convert display-2 (Raspberry Pi 4 cyberdeck) into a dedicated ARM builder. This device already has:
 - Working NixOS aarch64 configuration
 - WireGuard connectivity (10.88.127.42)
 - SSH access (port 1108, user John88; port 22, user build)
 - Remote builder connection verified (builds dispatch and complete)
+- NVMe installed (500GB WD Black SN750 via USB 3.0)
+- Swap active (233GB total — NVMe + swapfile)
 
-**Current Limitations:**
-- 3.7GB RAM (3.2GB available) — insufficient for large builds
-- 58GB SD card only — no fast storage for `/nix/store`
-- NVMe not currently installed
+**Hardware Status:**
+| Component | Status |
+|-----------|--------|
+| NVMe | ✓ Installed, 500GB WD Black SN750 |
+| `/dev/sda1` | ✓ ext4, 232.9GB (for `/nix/store`) |
+| `/dev/sda2` | ✓ 232.9GB swap active |
+| Total swap | 233GB |
+| RAM | 3.7GB (2.5GB available) |
+
+**Issues Resolved:**
+1. **SSH known hosts** — `mkKnownHosts` in `flake.nix` was missing IP addresses from topology. Fixed in commit `db866ce`.
+2. **Remote builder features** — `big-parallel` feature was commented out for display-2. Fixed in commit `03ba281`.
 
 #### Deployment Plan
 
 **Phase 1: NVMe Installation & Swap**
 
-1. Install NVMe physically
-2. Configure NVMe partition for swap (RAM overflow for builds)
-3. Rebuild display-1 using display-2 as remote builder
-4. Rebuild display-2 using display-2 as remote builder
+1. ~~Install NVMe physically~~ ✓
+2. ~~Configure NVMe partition for swap (RAM overflow for builds)~~ ✓
+3. ~~Rebuild display-1 using display-2 as remote builder~~ — In progress (RPi kernel building)
+4. ~~Rebuild display-2 using display-2 as remote builder~~ — In progress (RPi kernel building)
 5. Switch display-1 configuration and reboot (validate)
 6. Switch display-2 configuration and reboot (validate)
 
 **Phase 2: NVMe `/nix/store` Migration**
 
-7. Create partition on NVMe for `/nix/store`
-8. Copy `/nix/store` to NVMe partition
-9. Remount/kexec to use NVMe-backed `/nix/store`
-10. Deploy display-2 with correct mount points (swap + `/nix`)
-11. Final reboot and validation
+7. ~~Create partition on NVMe for `/nix/store`~~ ✓
+8. ~~Copy `/nix/store` to NVMe partition~~ ✓ (13GB, 1880 items)
+9. **IMPORTANT:** After Phase 1 builds are deployed, clone `/nix/store` again — the new system closure will have additional paths not in the original copy
+10. Remount/kexec to use NVMe-backed `/nix/store`
+11. Deploy display-2 with correct mount points (swap + `/nix`)
+12. Final reboot and validation
+
+> **⚠️ Critical:** The current `/nix/store` copy was made before the new system closures were built. After deploying display-1 and display-2, the store will contain new derivations (kernel, modules, etc.) that must be present on the NVMe before switching mount points. Running `sudo cp -a /nix/. /mnt/nix-nvme/` again after deployment will sync the delta.
 
 **Expected Final State:**
 - NVMe partition 1: swap (RAM overflow)
