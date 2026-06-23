@@ -41,7 +41,7 @@
       systems = [ "aarch64-linux" ];
       maxJobs = 3;
       speedFactor = 5;
-      supportedFeatures = [ ]; # "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
+      supportedFeatures = [ "big-parallel" ];
       mandatoryFeatures = [ ];
     }
     # {
