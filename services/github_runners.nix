@@ -48,13 +48,15 @@ in
       url = "https://github.com/DarthPJB/NixOS-Configuration";
 
       # GitLab authentication for private flake inputs
+      # The GIT_ASKPASS script reads from /run/github-runner-hate-filled-keys/gitlab_netrc
+      # which is placed there by the keys service and accessible via RuntimeDirectory.
+      # DO NOT add serviceOverrides.bindReadOnlyPaths — it is a broken systemd directive
+      # (lowercase 'b' is ignored) and causes service hash instability that forces
+      # runner re-registration with stale tokens.
       extraEnvironment = {
         GIT_ASKPASS = "${gitlabAskpass}";
       };
       extraLabels = [ "self-hosted" ];
-      serviceOverrides = {
-        bindReadOnlyPaths = [ gitlabNetrcPath ];
-      };
     };
     entropy-is-origin = {
       enable = true;
