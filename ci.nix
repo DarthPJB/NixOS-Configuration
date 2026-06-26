@@ -34,9 +34,10 @@ let
   # CI job definitions
   ciJobs = {
     # Validation jobs (run on all PRs)
+    # Uses self-hosted runner for private flake input access
     validation = {
       name = "Validation & Linting";
-      runs-on = "ubuntu-latest";
+      runs-on = "self-hosted";
       steps = [
         {
           name = "Checkout";
@@ -66,13 +67,14 @@ let
     };
 
     # Build matrix for x86_64 machines
+    # Uses self-hosted runner for private flake input access
     build-x86 = {
       needs = [
         "validation"
         "security"
       ]; # Added: enforce job hierarchy
       name = "Build x86_64 Configurations";
-      runs-on = "ubuntu-latest";
+      runs-on = "self-hosted";
       strategy = {
         fail-fast = false;
         matrix = {
@@ -109,13 +111,14 @@ let
     };
 
     # Build matrix for ARM machines
+    # Uses self-hosted runner for private flake input access
     build-arm = {
       needs = [
         "validation"
         "security"
       ]; # Added: enforce job hierarchy
       name = "Build ARM Configurations";
-      runs-on = "ubuntu-latest";
+      runs-on = "self-hosted";
       strategy = {
         fail-fast = false;
         matrix = {
@@ -213,6 +216,7 @@ let
     };
 
     # Deployment preparation (manual trigger)
+    # Uses self-hosted runner for private flake input access
     deploy-prep = {
       needs = [
         "validation"
@@ -221,7 +225,7 @@ let
         "build-arm"
       ]; # Added: full dependency chain
       name = "Deploy - \${{ github.event.inputs.machine }}";
-      runs-on = "ubuntu-latest";
+      runs-on = "self-hosted";
       "if" = "github.event_name == 'workflow_dispatch'";
       # REMOVED: strategy.matrix - build only selected machine
       steps = [

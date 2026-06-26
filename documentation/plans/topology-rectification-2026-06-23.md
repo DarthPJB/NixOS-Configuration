@@ -1,7 +1,49 @@
 # Final Topology Rectification — Action Plan
 **Created**: 2026-06-23  
-**Status**: PLANNING  
-**Priority**: High — Blocker for Phase C (Library Split)
+**Status**: PLANNING — Deferred to post-overlord-I  
+**Priority**: High — Blocker for Phase C (Library Split)  
+**Primary Branch**: `jb/overlord-II` (not yet created)
+
+## Objective
+
+Restructure topology files into a clean `topology/` directory hierarchy that:
+1. Serves as the single source of truth for all network topology data
+2. Is importable by external tools (graph generators, diagram renderers)
+3. Eliminates the `real-topology` naming
+4. Maintains 1:1 isomorphism with current golden test output at every step
+
+## Critical Constraint
+
+**Golden tests are sacrosanct.** Every structural change MUST produce byte-identical golden output. If `nix run .#check-network -- <machine>` fails at any step, the structural change is wrong — revert and fix.
+
+**Never regenerate golden files as part of this work.** Golden regeneration is ONLY for intentional configuration changes.
+
+## Agent Delegation Pattern
+
+### Execution Model
+- **Worker Agent**: `bellana-deepseek` — Executes individual steps in serial
+- **Validation Agent**: `tpol-minimax` — Validates phase completion via systematic review and nix evaluation
+
+### Per-Phase Workflow
+1. Create worktree from `jb/overlord-II`
+2. `bellana-deepseek` executes steps in serial (one step completes and builds before next begins)
+3. `tpol-minimax` validates phase completion:
+   - Systematic review of all changes
+   - Run required nix evaluations (`nix build`, `nix run .#check-network`)
+   - Verify golden tests pass
+4. Merge worktree into `jb/overlord-II`
+5. Proceed to next phase (new worktree)
+
+### Prompt Requirements
+Each step prompt for `bellana-deepseek` must include:
+- Critical requirements (golden test constraint, specific files to modify)
+- Validation commands to run before marking complete
+- Expected output/behavior
+
+Each validation prompt for `tpol-minimax` must include:
+- Full list of changes made in the phase
+- Golden test results
+- Any deviations from plan (and justification)
 
 ## Objective
 
@@ -118,6 +160,8 @@ lib/
 
 ### Phase 1: Preparation — Verify Golden Baseline
 **Goal**: Establish that all golden tests pass before any changes.
+**Worktree**: N/A (read-only operations)
+**Agent**: `bellana-deepseek`
 
 **Steps:**
 1. Run full golden validation for all 17 machines
@@ -132,11 +176,14 @@ done
 ```
 
 **Exit criteria:** All machines pass (or pre-existing failures documented).
+**Validation Agent**: `tpol-minimax` — Verify baseline results
 
 ---
 
 ### Phase 2: Create `topology/`, `goldens/`, and Directory Structure
 **Goal**: Create the new directories with proper separation of concerns.
+**Worktree**: `topology-rectification-phase-2` (from `jb/overlord-II`)
+**Agent**: `bellana-deepseek`
 
 **Steps:**
 1. `mkdir topology/ topology/external/ goldens/`
@@ -160,11 +207,14 @@ nix run .#check-network -- cortex-alpha
 ```
 
 **Exit criteria:** Files created, golden tests pass (old paths still active).
+**Validation Agent**: `tpol-minimax` — Verify directory structure and golden tests
 
 ---
 
 ### Phase 3: Update `topology/default.nix` Imports
 **Goal**: Make `topology/default.nix` self-contained (imports from `topology/` not `real-topology/`).
+**Worktree**: `topology-rectification-phase-3` (from `jb/overlord-II`)
+**Agent**: `bellana-deepseek`
 
 **Steps:**
 1. Update `topology/default.nix` to import from `../lib/topology/utils.nix` (path unchanged)
@@ -187,11 +237,14 @@ diff real-topology/golden/cortex-alpha.json /tmp/test-golden.json
 ```
 
 **Exit criteria:** `topology/default.nix` produces identical golden output.
+**Validation Agent**: `tpol-minimax` — Verify golden output matches
 
 ---
 
 ### Phase 4: Update `modules/core-router.nix`
 **Goal**: Point `core-router.nix` at `topology/<machine>.nix` instead of `real-topology/<machine>.nix`.
+**Worktree**: `topology-rectification-phase-4` (from `jb/overlord-II`)
+**Agent**: `bellana-deepseek`
 
 **Steps:**
 1. Change import path in `core-router.nix`:
@@ -209,11 +262,14 @@ nix run .#check-network -- cortex-alpha
 ```
 
 **Exit criteria:** cortex-alpha golden passes with new import path.
+**Validation Agent**: `tpol-minimax` — Verify golden test passes
 
 ---
 
 ### Phase 5: Update `flake.nix` References
 **Goal**: Point flake at `topology/` for golden generation and coverage.
+**Worktree**: `topology-rectification-phase-5` (from `jb/overlord-II`)
+**Agent**: `bellana-deepseek`
 
 **Steps:**
 1. Update `generate-golden` app:
@@ -240,11 +296,14 @@ nix run .#check-network -- remote-builder
 ```
 
 **Exit criteria:** All golden tests pass with flake pointing at `topology/`.
+**Validation Agent**: `tpol-minimax` — Verify all golden tests pass
 
 ---
 
 ### Phase 6: Remove `topology.nix` Root File
 **Goal**: Remove `topology.nix` entirely; `topology/shared.nix` replaces it.
+**Worktree**: `topology-rectification-phase-6` (from `jb/overlord-II`)
+**Agent**: `bellana-deepseek`
 
 **Steps:**
 1. Update `modules/enable-wg-topology.nix`:
@@ -265,11 +324,14 @@ nix run .#check-network -- remote-builder
 ```
 
 **Exit criteria:** WireGuard client golden tests pass.
+**Validation Agent**: `tpol-minimax` — Verify WireGuard client golden tests pass
 
 ---
 
 ### Phase 7: Remove `real-topology/` Directory
 **Goal**: Eliminate `real-topology/` entirely.
+**Worktree**: `topology-rectification-phase-7` (from `jb/overlord-II`)
+**Agent**: `bellana-deepseek`
 
 **Steps:**
 1. Verify NO remaining references to `real-topology`:
@@ -287,11 +349,14 @@ done
 ```
 
 **Exit criteria:** `real-topology/` gone forever, all golden tests pass.
+**Validation Agent**: `tpol-minimax` — Verify `real-topology/` removed and all golden tests pass
 
 ---
 
 ### Phase 8: Update Documentation
 **Goal**: Update all documentation references to reflect new structure.
+**Worktree**: `topology-rectification-phase-8` (from `jb/overlord-II`)
+**Agent**: `bellana-deepseek`
 
 **Files to update:**
 - `AGENTS.md` — Update architecture section, file references
@@ -309,6 +374,7 @@ grep -r "real-topology" documentation/ AGENTS.md README.md
 ```
 
 **Exit criteria:** No remaining references to `real-topology` in docs.
+**Validation Agent**: `tpol-minimax` — Verify no stale references remain
 
 ---
 

@@ -48,12 +48,12 @@
         "rev": "9ca45626ac55a074e205b2e25373849274d43133",
         "revCount": 20,
         "type": "git",
-        "url": "ssh://git@gitlab.com/mecha-team-zero/bargman-assets.git"
+        "url": "https://gitlab.com/mecha-team-zero/bargman-assets.git"
       },
       "original": {
         "ref": "main",
         "type": "git",
-        "url": "ssh://git@gitlab.com/mecha-team-zero/bargman-assets.git"
+        "url": "https://gitlab.com/mecha-team-zero/bargman-assets.git"
       }
     },
     "carmelsite": {
@@ -62,17 +62,17 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1782245630,
-        "narHash": "sha256-V/Rh4OJseT7Bs0RdesDAQRJlEqkEy+bdFUI/fHC1fNw=",
+        "lastModified": 1782448073,
+        "narHash": "sha256-Pnaby4izMjVTaMv6yqom1jUfq58d5Ufu7Vr/j7hQ5CI=",
         "ref": "refs/heads/main",
-        "rev": "584ab3f082a84458277107a47ee3683d634c8aad",
-        "revCount": 25,
+        "rev": "4588254294534f39f5f56710fb53a9edf0774d98",
+        "revCount": 39,
         "type": "git",
-        "url": "ssh://git@gitlab.platonic.systems/john.bargman/carmelsite"
+        "url": "https://gitlab.com/mecha-team-zero/carmelsite.git"
       },
       "original": {
         "type": "git",
-        "url": "ssh://git@gitlab.platonic.systems/john.bargman/carmelsite"
+        "url": "https://gitlab.com/mecha-team-zero/carmelsite.git"
       }
     },
     "crane": {
@@ -192,11 +192,11 @@
         "rev": "ca7bf8cce6e242eaf7200d7e109f02a833764017",
         "revCount": 31,
         "type": "git",
-        "url": "ssh://git@gitlab.com/mecha-team-zero/denton-glasses.git"
+        "url": "https://gitlab.com/mecha-team-zero/denton-glasses.git"
       },
       "original": {
         "type": "git",
-        "url": "ssh://git@gitlab.com/mecha-team-zero/denton-glasses.git"
+        "url": "https://gitlab.com/mecha-team-zero/denton-glasses.git"
       }
     },
     "determinate": {
@@ -679,11 +679,11 @@
         "rev": "8126867704e4f5abdef7d90f64bc8989932f66a8",
         "revCount": 84,
         "type": "git",
-        "url": "ssh://git@gitlab.com/mecha-team-zero/macha-orchestration"
+        "url": "https://gitlab.com/mecha-team-zero/macha-orchestration"
       },
       "original": {
         "type": "git",
-        "url": "ssh://git@gitlab.com/mecha-team-zero/macha-orchestration"
+        "url": "https://gitlab.com/mecha-team-zero/macha-orchestration"
       }
     },
     "hyprcursor": {

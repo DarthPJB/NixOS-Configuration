@@ -19,6 +19,7 @@
     ../../environments/steam.nix
     ../../environments/code.nix
     ../../environments/neovim.nix
+    ../../services/gitlab-credentials.nix
   ];
   enableWgTopology.enable = true;
   # Use the systemd-boot EFI boot loader.

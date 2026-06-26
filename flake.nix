@@ -2,7 +2,7 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
-    carmelsite = { url = "git+ssh://git@gitlab.platonic.systems/john.bargman/carmelsite"; };
+    carmelsite = { url = "git+https://gitlab.com/mecha-team-zero/carmelsite.git"; };
     deadnix = { url = "github:astro/deadnix"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     hyprland.url = "github:hyprwm/Hyprland";
     lint-utils = { url = "github:homotopic/lint-utils"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
@@ -16,19 +16,19 @@
     nix-mcp-servers.url = "github:cameronfyfe/nix-mcp-servers";
     nixos-hardware.url = "github:nixos/nixos-hardware";
     hype-train-claw.url = "github:marijanp/zeroclaw";
-    hype-train-outlaw.url = "git+ssh://git@gitlab.com/mecha-team-zero/macha-orchestration";
+    hype-train-outlaw.url = "git+https://gitlab.com/mecha-team-zero/macha-orchestration";
     star-citizen.url = "github:LovingMelody/nix-citizen";
     xlibre-overlay.url = "git+https://codeberg.org/takagemacoed/xlibre-overlay";
     ratty.url = "github:DarthPJB/ratty/fix/nix-module-improvements";
     ikbaeb-th = { url = "github:DarthPJB/IKBAEB-th"; };
     bargman-assets = {
-      url = "git+ssh://git@gitlab.com/mecha-team-zero/bargman-assets.git?ref=main";
+      url = "git+https://gitlab.com/mecha-team-zero/bargman-assets.git?ref=main";
       inputs.nixpkgs.follows = "nixpkgs_stable";
     };
     # denton-glasses = {
     #   url = "path:/speed-storage/LLM-END/denton-glasses";
     # };
-    denton-glasses.url = "git+ssh://git@gitlab.com/mecha-team-zero/denton-glasses.git";
+    denton-glasses.url = "git+https://gitlab.com/mecha-team-zero/denton-glasses.git";
   };
   outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses }:
     let

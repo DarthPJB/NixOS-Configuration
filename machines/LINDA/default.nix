@@ -12,6 +12,7 @@
     ./hardware-configuration.nix
     ../../services/ollama.nix
     ../../services/litellm.nix
+    ../../services/gitlab-credentials.nix
     ../../modules/enable-wg-topology.nix
     ../../lib/rclone-target.nix
     ../../environments/i3wm_darthpjb.nix
