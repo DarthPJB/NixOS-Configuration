@@ -35,7 +35,7 @@
     # NewEye 60s USB webcam — stable V4L2 by-id path
     camera = "/dev/v4l/by-id/usb-NewEye_60s_NewEye_60s_20240131-video-index0";
 
-    autoStart = false;  # Manual start until validated with real hardware
+    autoStart = false; # Manual start until validated with real hardware
     outputDir = "/var/lib/denton-glasses/eye-tracking";
     outputFormat = "csv";
   };
@@ -65,14 +65,14 @@
   services.voxtype = {
     enable = true;
     user = "John88";
-    package = pkgs_llm.voxtype-vulkan;  # GPU-accelerated whisper via Vulkan (from nixpkgs_llm)
+    package = pkgs_llm.voxtype-vulkan; # GPU-accelerated whisper via Vulkan (from nixpkgs_llm)
 
-    x11.display = ":0";  # LINDA uses X11 i3wm
+    x11.display = ":0"; # LINDA uses X11 i3wm
 
     # LINDA has 2 GPUs — use primary GPU (index 0) for Vulkan inference
     gpu = {
       backend = "vulkan";
-      primaryIndex = 1;  # GTX 1050 (secondary GPU, offload whisper from RTX 3060)
+      primaryIndex = 1; # GTX 1050 (secondary GPU, offload whisper from RTX 3060)
     };
 
     loadModels = [ "base.en" ];
@@ -80,7 +80,7 @@
     settings = {
       hotkey = {
         key = "EVTEST_47";
-        modifiers = ["EVTEST_125"];
+        modifiers = [ "EVTEST_125" ];
         mode = "push_to_talk";
       };
       whisper = {

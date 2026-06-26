@@ -264,7 +264,7 @@
         USB_SERIAL_CH341 = yes;
         USB_SERIAL_PL2303 = yes;
         USB_SERIAL_OPTION = yes;
-        USB_ACM = yes;           # CDC ACM for STM32
+        USB_ACM = yes; # CDC ACM for STM32
 
         # HID (keyboard/mouse if connected)
         HID = yes;

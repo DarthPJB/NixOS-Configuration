@@ -168,11 +168,12 @@
               names = [ name "${name}.johnbargman.net" ];
             in
             if entry != null then
-              lib.unique (names
-                ++ lib.optionals (entry ? wireguard) [ entry.wireguard ]
-                ++ lib.optionals (entry ? lan) (builtins.attrNames entry.lan)
-                ++ lib.optionals (entry ? uplink) (builtins.attrNames entry.uplink)
-              )
+              lib.unique
+                (names
+                  ++ lib.optionals (entry ? wireguard) [ entry.wireguard ]
+                  ++ lib.optionals (entry ? lan) (builtins.attrNames entry.lan)
+                  ++ lib.optionals (entry ? uplink) (builtins.attrNames entry.uplink)
+                )
             else
               names;
 
@@ -184,17 +185,19 @@
           );
 
           # Build entries, skipping machines without a known key
-          entries = builtins.listToAttrs (map (name:
-            let
-              pubKey = getPubKey name;
-            in
-            lib.nameValuePair name (
-              if pubKey != null then {
-                hostNames = getHostNames name;
-                publicKey = pubKey;
-              } else null
+          entries = builtins.listToAttrs (map
+            (name:
+              let
+                pubKey = getPubKey name;
+              in
+              lib.nameValuePair name (
+                if pubKey != null then {
+                  hostNames = getHostNames name;
+                  publicKey = pubKey;
+                } else null
+              )
             )
-          ) allMachines);
+            allMachines);
         in
         lib.filterAttrs (name: value: value != null) entries;
 

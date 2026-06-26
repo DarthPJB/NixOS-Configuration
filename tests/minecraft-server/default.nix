@@ -32,7 +32,7 @@ testers.runNixOSTest {
     # VM needs enough RAM for Minecraft + mods (8GB heap + OS overhead)
     virtualisation = {
       memorySize = 12288; # 12GB (8GB heap + 4GB OS/mods overhead)
-      diskSize = 16384;   # 16GB for world data
+      diskSize = 16384; # 16GB for world data
       cores = 4;
     };
 

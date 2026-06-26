@@ -146,62 +146,62 @@ stdenv.mkDerivation {
   # reference store paths. The service module provides the JRE via ATM10_JAVA
   # environment variable.
   postBuild = ''
-    # ── Rewrite start script ─────────────────────────────────────────
-    # For NeoForge packs, the launcher uses @user_jvm_args.txt and
-    # @libraries/net/neoforged/neoforge/<version>/unix_args.txt.
-    # The service module sets ATM10_JAVA to the Nix JRE path.
+        # ── Rewrite start script ─────────────────────────────────────────
+        # For NeoForge packs, the launcher uses @user_jvm_args.txt and
+        # @libraries/net/neoforged/neoforge/<version>/unix_args.txt.
+        # The service module sets ATM10_JAVA to the Nix JRE path.
 
-    # Check if this is a NeoForge pack (has unix_args.txt after install)
-    neoForgeArgs=$(find "$out/libraries/net/neoforged" -name "unix_args.txt" 2>/dev/null | head -1)
+        # Check if this is a NeoForge pack (has unix_args.txt after install)
+        neoForgeArgs=$(find "$out/libraries/net/neoforged" -name "unix_args.txt" 2>/dev/null | head -1)
 
-    if [ -n "$neoForgeArgs" ]; then
-      echo "NeoForge pack detected — creating launcher wrapper"
-      cat > "$out/start.sh" << 'STARTSCRIPT'
-#!/bin/bash
-set -eu
-NEOFORGE_VERSION=$(ls libraries/net/neoforged/neoforge/ | head -1)
-JAVA=''${ATM10_JAVA:-java}
+        if [ -n "$neoForgeArgs" ]; then
+          echo "NeoForge pack detected — creating launcher wrapper"
+          cat > "$out/start.sh" << 'STARTSCRIPT'
+    #!/bin/bash
+    set -eu
+    NEOFORGE_VERSION=$(ls libraries/net/neoforged/neoforge/ | head -1)
+    JAVA=''${ATM10_JAVA:-java}
 
-cd "$(dirname "$0")"
-if [ ! -d libraries ]; then
-  echo "ERROR: libraries/ not found — NeoForge not installed"
-  exit 1
-fi
-
-exec "$JAVA" \
-  @user_jvm_args.txt \
-  @libraries/net/neoforged/neoforge/$NEOFORGE_VERSION/unix_args.txt \
-  nogui
-STARTSCRIPT
-    else
-      # Simple pack — find the server jar
-      cat > "$out/start.sh" << 'STARTSCRIPT'
-#!/bin/bash
-set -eu
-JAVA=''${ATM10_JAVA:-java}
-
-cd "$(dirname "$0")"
-JAR=$(find . -maxdepth 1 -name "*.jar" -type f | head -1)
-if [ -z "$JAR" ]; then
-  echo "ERROR: No .jar files found"
-  exit 1
-fi
-
-exec "$JAVA" \
-  -Xmx''${JAVA_MAX_MEM:-4G} \
-  -Xms''${JAVA_MIN_MEM:-2G} \
-  ''${JAVA_OPTS:-} \
-  -jar "$JAR" nogui
-STARTSCRIPT
+    cd "$(dirname "$0")"
+    if [ ! -d libraries ]; then
+      echo "ERROR: libraries/ not found — NeoForge not installed"
+      exit 1
     fi
 
-    chmod +x "$out/start.sh"
+    exec "$JAVA" \
+      @user_jvm_args.txt \
+      @libraries/net/neoforged/neoforge/$NEOFORGE_VERSION/unix_args.txt \
+      nogui
+    STARTSCRIPT
+        else
+          # Simple pack — find the server jar
+          cat > "$out/start.sh" << 'STARTSCRIPT'
+    #!/bin/bash
+    set -eu
+    JAVA=''${ATM10_JAVA:-java}
 
-    # ── Normalize timestamps for deterministic output ────────────────
-    find "$out" -exec touch -t 198001010000 {} + 2>/dev/null || true
+    cd "$(dirname "$0")"
+    JAR=$(find . -maxdepth 1 -name "*.jar" -type f | head -1)
+    if [ -z "$JAR" ]; then
+      echo "ERROR: No .jar files found"
+      exit 1
+    fi
 
-    # ── Write image identity ─────────────────────────────────────────
-    echo -n "${imageId}" > "$out/.image-id"
+    exec "$JAVA" \
+      -Xmx''${JAVA_MAX_MEM:-4G} \
+      -Xms''${JAVA_MIN_MEM:-2G} \
+      ''${JAVA_OPTS:-} \
+      -jar "$JAR" nogui
+    STARTSCRIPT
+        fi
+
+        chmod +x "$out/start.sh"
+
+        # ── Normalize timestamps for deterministic output ────────────────
+        find "$out" -exec touch -t 198001010000 {} + 2>/dev/null || true
+
+        # ── Write image identity ─────────────────────────────────────────
+        echo -n "${imageId}" > "$out/.image-id"
   '';
 
   # No installPhase — the entire $out directory IS the output.

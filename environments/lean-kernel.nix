@@ -23,14 +23,14 @@
         DRM_NOUVEAU = no;
         DRM_QXL = no;
         DRM_VBOXVIDEO = no;
-        DRM_VMWGFX = no;      # VMware GPU
-        DRM_BOCHS = no;       # QEMU/Bochs GPU
+        DRM_VMWGFX = no; # VMware GPU
+        DRM_BOCHS = no; # QEMU/Bochs GPU
         DRM_CIRRUS_QEMU = no; # QEMU Cirrus
-        DRM_VIRTIO_GPU = no;  # VirtIO GPU
-        DRM_GMA500 = no;      # Intel GMA
-        DRM_AST = no;         # ASPEED server GPU
-        DRM_MGAG200 = no;     # Matrox server GPU
-        DRM_HISI_HIBMC = no;  # HiSilicon server GPU
+        DRM_VIRTIO_GPU = no; # VirtIO GPU
+        DRM_GMA500 = no; # Intel GMA
+        DRM_AST = no; # ASPEED server GPU
+        DRM_MGAG200 = no; # Matrox server GPU
+        DRM_HISI_HIBMC = no; # HiSilicon server GPU
       };
     }
 
@@ -191,17 +191,17 @@
       patch = null;
       extraStructuredConfig = with lib.kernel; {
         # Enterprise WiFi (Intel, Qualcomm Atheros enterprise)
-        IWLWIFI = no;         # Intel WiFi
-        ATH11K = no;          # Qualcomm WiFi 6 (enterprise)
-        ATH12K = no;          # Qualcomm WiFi 7
-        WL18XX = no;          # TI WiFi (enterprise)
-        WL12XX = no;          # TI WiFi (enterprise)
-        CW1200 = no;          # ST-Ericsson WiFi
-        RSICS = no;           # RSI WiFi
-        WILC1000 = no;        # Microchip WiFi
-        AT86RF230 = no;       # Atmel 802.15.4
-        CC2520 = no;          # TI 802.15.4
-        ATUSB = no;           # Atmel USB 802.15.4
+        IWLWIFI = no; # Intel WiFi
+        ATH11K = no; # Qualcomm WiFi 6 (enterprise)
+        ATH12K = no; # Qualcomm WiFi 7
+        WL18XX = no; # TI WiFi (enterprise)
+        WL12XX = no; # TI WiFi (enterprise)
+        CW1200 = no; # ST-Ericsson WiFi
+        RSICS = no; # RSI WiFi
+        WILC1000 = no; # Microchip WiFi
+        AT86RF230 = no; # Atmel 802.15.4
+        CC2520 = no; # TI 802.15.4
+        ATUSB = no; # Atmel USB 802.15.4
 
         # Cellular modems (not needed on display machines)
         USB_SERIAL_OPTION = no;
