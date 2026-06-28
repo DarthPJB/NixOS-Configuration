@@ -72,7 +72,7 @@
     # LINDA has 2 GPUs — use primary GPU (index 0) for Vulkan inference
     gpu = {
       backend = "vulkan";
-      primaryIndex = 1; # GTX 1050 (secondary GPU, offload whisper from RTX 3060)
+#      primaryIndex = 1; # GTX 1050 (secondary GPU, offload whisper from RTX 3060)
     };
 
     loadModels = [ "base.en" ];
