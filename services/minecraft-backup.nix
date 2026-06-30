@@ -54,8 +54,8 @@
       # Default dataDir is /bulk-storage/minecraft/<name>/backups/
       filePath = "/bulk-storage/minecraft/all-the-mons/backups/";
 
-      # Destination: local-nas bulk-storage, organized by machine
-      remoteName = "local-nas:/bulk-storage/backups/gaming-host-1/minecraft/";
+      # Destination: S3 bucket on local-nas (same Minio instance as LINDA/terminal-zero)
+      remoteName = "minio:minecraft-backups";
 
       # Daily at 06:00 UTC — calendar-based, not interval-based
       calendar = "*-*-* 06:00:00";

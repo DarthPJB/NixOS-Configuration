@@ -19,7 +19,6 @@
     (import ../../services/acme_server.nix { fqdn = "gaming-host-1.johnbargman.net"; })
     ../../lib/rclone-target.nix
     ../../services/minecraft-backup.nix
-    ../../users/inspect.nix
   ];
   security.acme.defaults.email = "commander@johnbargman.net";
   enableWgTopology.enable = true;

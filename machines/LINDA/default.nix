@@ -55,7 +55,7 @@
       configFile = "${self}/secrets/rclone-config-file";
       targets = {
         obsidian-v3 = {
-          filePath = " /bulk-storage/88-DB-v3/";
+          filePath = "/bulk-storage/88-DB-v3/";
           remoteName = "minio:obsidian-v3";
           syncInterval = 60; # every minute
         };

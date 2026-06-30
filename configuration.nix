@@ -39,6 +39,7 @@ in
     ./modifier_imports/hosts.nix
     ./modifier_imports/energy_saving.nix
     ./users/deployment.nix
+    ./users/inspect.nix
     ./locale/en_gb.nix
     ./locale/home_networks.nix
     ./environments/sshd.nix
