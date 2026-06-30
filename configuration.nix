@@ -173,6 +173,7 @@ in
     "John88"
     "build"
     "deploy"
+    "inspect"
   ];
 
   services.kmscon = {

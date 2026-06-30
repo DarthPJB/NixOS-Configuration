@@ -42,11 +42,6 @@
 { pkgs, lib, self, ... }:
 
 {
-  imports = [
-    # ... existing imports ...
-    ../../lib/rclone-target.nix
-  ];
-
   environment.rclone-target = {
     enable = true;
     configFile = "${self}/secrets/rclone-config-file";
