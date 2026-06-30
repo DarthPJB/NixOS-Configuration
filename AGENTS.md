@@ -21,6 +21,11 @@ Default-on caching (e.g., DetSys "magic nix cache") that may exfiltrate code
 is not acceptable without conscious authorization. Builds must complete from
 source within our controlled environment unless a specific exception is granted.
 
+**Planned: In-House Binary Cache.** We will operate our own Nix binary cache
+server within the closed environment, dogfooding our infrastructure
+capabilities. Until the cache is operational, builds complete from source.
+No third-party cache is configured in CI. See `ci/README.md` for status.
+
 ### Golden Tests Are Ground Truth
 Golden tests represent the canonical correct state. If a golden test fails,
 the code is wrong — never the golden. Regeneration is only for intentional

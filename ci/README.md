@@ -10,10 +10,14 @@ GitHub-hosted runners are inherently insecure — they have no place in
 professional netrunner infrastructure. Bargman-Tech production builds are
 siloed in closed infrastructure; GitHub is used only for public-facing projects.
 
-Third-party build caching or relay services (e.g., DetSys "magic nix cache")
-that have access to source code or build artifacts are not acceptable without
-explicit, conscious authorization. Builds must complete from source within our
-controlled environment unless a specific exception is granted.
+Third-party build caching and relay services have been **removed from CI**.
+No external cache (DetSys, Cachix, etc.) is configured. Builds complete from
+source within our controlled environment.
+
+**Planned: In-House Binary Cache.** We will operate our own Nix binary cache
+server, dogfooding our infrastructure capabilities. This will accelerate builds
+without compromising the closed-system principle. Until operational, all builds
+complete from source — slow but correct.
 
 **Correctness is non-negotiable.** If `nix flake check` takes four hours to
 evaluate all machines, that is acceptable — provided it guarantees correctness.

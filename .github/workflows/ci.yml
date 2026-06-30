@@ -4,14 +4,10 @@ jobs:
     needs:
     - validation
     - security
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@main
-    - name: Setup Magic Nix Cache
-      uses: DeterminateSystems/magic-nix-cache-action@main
     - name: Build configuration
       run: nixos-rebuild build --flake .#${{ matrix.machine }}
     - name: Upload build artifact
@@ -34,14 +30,10 @@ jobs:
     needs:
     - validation
     - security
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@main
-    - name: Setup Magic Nix Cache
-      uses: DeterminateSystems/magic-nix-cache-action@main
     - name: Build configuration
       run: nixos-rebuild build --flake .#${{ matrix.machine }}
     - name: Upload build artifact
@@ -66,8 +58,6 @@ jobs:
         - remote-worker
         - storage-array
         - remote-builder
-        - local-worker
-        - obs-box
   deploy-prep:
     if: github.event_name == 'workflow_dispatch'
     name: Deploy - ${{ github.event.inputs.machine }}
@@ -76,14 +66,10 @@ jobs:
     - security
     - build-x86
     - build-arm
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@main
-    - name: Setup Magic Nix Cache
-      uses: DeterminateSystems/magic-nix-cache-action@main
     - name: Build configuration
       run: nixos-rebuild build --flake .#${{ github.event.inputs.machine }}
     - if: github.event.inputs.action == 'test'
@@ -132,14 +118,10 @@ jobs:
         \ appear standard\"\nfi\n"
   validation:
     name: Validation & Linting
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@main
-    - name: Setup Magic Nix Cache
-      uses: DeterminateSystems/magic-nix-cache-action@main
     - name: Format check
       run: nix fmt -- --check .
     - name: Flake check
@@ -188,8 +170,6 @@ name: NixOS CI/CD
         - remote-worker
         - storage-array
         - remote-builder
-        - local-worker
-        - obs-box
         - display-0
         - display-1
         - display-2
