@@ -28,7 +28,6 @@
     ../../environments/audio_visual_editing.nix
     ../../environments/general_fonts.nix
     ../../environments/video_call_streaming.nix
-    ../../environments/cloud_and_backup.nix
     ../../locale/tailscale.nix
     ../../locale/input-methods.nix
     ../../environments/rtl-sdr.nix
