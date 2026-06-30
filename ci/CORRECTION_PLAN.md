@@ -1,8 +1,20 @@
 # CI/CD Correction Plan
 ## Addressing Seven-of-Nine's Critical Findings
 
+> **Note (2026-06-30):** This analysis was conducted from a "speed and
+> efficiency" perspective. Several items flagged as issues are **intentional
+> architectural decisions** under the project's Build Philosophy:
+>
+> - **Issue #5 (ARM runners):** Self-hosted runners are the desired state,
+>   not a deficiency. GitHub-hosted runners are inherently insecure.
+> - **Issue #6 (Security scanning):** Now implemented via Gitleaks.
+> - Build-speed concerns are secondary to build-correctness. See AGENTS.md
+>   "Build Philosophy" section for the governing principles.
+
 ### Executive Summary
-The current CI configuration has **6 critical flaws** that will cause resource waste, operational friction, and security vulnerabilities. This plan details exact modifications needed to achieve production-ready status.
+The current CI configuration has several flaws that will cause resource waste,
+operational friction, and security vulnerabilities. This plan details exact
+modifications needed to achieve production-ready status.
 
 ---
 

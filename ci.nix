@@ -43,14 +43,7 @@ let
           name = "Checkout";
           uses = "actions/checkout@v4";
         }
-        {
-          name = "Install Nix";
-          uses = "DeterminateSystems/nix-installer-action@main";
-        }
-        {
-          name = "Setup Magic Nix Cache";
-          uses = "DeterminateSystems/magic-nix-cache-action@main";
-        }
+
         {
           name = "Format check";
           run = "nix fmt -- --check .";
@@ -86,14 +79,7 @@ let
           name = "Checkout";
           uses = "actions/checkout@v4";
         }
-        {
-          name = "Install Nix";
-          uses = "DeterminateSystems/nix-installer-action@main";
-        }
-        {
-          name = "Setup Magic Nix Cache";
-          uses = "DeterminateSystems/magic-nix-cache-action@main";
-        }
+
         {
           name = "Build configuration";
           run = "nixos-rebuild build --flake .#\${{ matrix.machine }}";
@@ -130,14 +116,7 @@ let
           name = "Checkout";
           uses = "actions/checkout@v4";
         }
-        {
-          name = "Install Nix";
-          uses = "DeterminateSystems/nix-installer-action@main";
-        }
-        {
-          name = "Setup Magic Nix Cache";
-          uses = "DeterminateSystems/magic-nix-cache-action@main";
-        }
+
         {
           name = "Build configuration";
           run = "nixos-rebuild build --flake .#\${{ matrix.machine }}";
@@ -233,14 +212,7 @@ let
           name = "Checkout";
           uses = "actions/checkout@v4";
         }
-        {
-          name = "Install Nix";
-          uses = "DeterminateSystems/nix-installer-action@main";
-        }
-        {
-          name = "Setup Magic Nix Cache";
-          uses = "DeterminateSystems/magic-nix-cache-action@main";
-        }
+
         {
           name = "Build configuration";
           # CHANGED: Use selected machine from input

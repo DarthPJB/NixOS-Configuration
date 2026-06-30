@@ -1,64 +1,59 @@
 # NixOS Configuration Documentation
 
-This directory contains comprehensive DevOps-standard documentation for the NixOS Configuration repository.
+This directory contains documentation for the NixOS Configuration repository.
 
 ## Documentation Structure
 
-### HTML Documentation (DevOps Standard)
-- **[index.html](index.html)** - Documentation Hub with navigation and overview
-- **[architecture.html](architecture.html)** - System architecture and design documentation
-- **[development.html](development.html)** - Development guide and procedures
-- **[operations.html](operations.html)** - Operations guide and runbooks
-- **[security.html](security.html)** - Security architecture and practices
-- **[roadmap.html](roadmap.html)** - Development goals and roadmap
-
-### Markdown Documentation (Reference)
+### Reference Documentation
 - **[code_structure.md](code_structure.md)** - Code organization and patterns
 - **[file_structure.md](file_structure.md)** - Directory layout and file organization
 
-### Session Status (Development Logs)
-- **[session-status-2026-06-02.md](session-status-2026-06-02.md)** - QEMU test harness for bargman-cinematic greeter
-- **[session-status-2026-06-01.md](session-status-2026-06-01.md)** - Minecraft hosting module architecture
+### Security & Operations
+- **[security-reference.md](security-reference.md)** - User accounts, security layers, incident response
+- **[operations-runbooks.md](operations-runbooks.md)** - Maintenance schedules, deployment runbooks
+- **[secrix-workflow.md](secrix-workflow.md)** - Secrix encryption workflow
 
-### Plans
-- **[plans/qemu-bargman-test-harness.md](plans/qemu-bargman-test-harness.md)** - QEMU VM test harness implementation plan
+### Development
+- **[development-guide.md](development-guide.md)** - Prohibited practices, troubleshooting procedures
+- **[core-router-usage.md](core-router-usage.md)** - Core router module usage
 
-## Features
+### Topology & Networking
+- **[topology-schema.md](topology-schema.md)** - Topology data schema
+- **[topology-migration-guide.md](topology-migration-guide.md)** - Migration guide for topology changes
+- **[topology-generator-issues.md](topology-generator-issues.md)** - Known issues (TG-003, TG-004)
+- **[network-topology-golden.md](network-topology-golden.md)** - Golden test documentation
+- **[tailscale-subnet-routers.md](tailscale-subnet-routers.md)** - Tailscale configuration
+- **[dual-tailscale-plan.md](dual-tailscale-plan.md)** - Dual Tailscale plan
 
-### HTML Documentation
-- **Responsive Design**: Works on desktop and mobile devices
-- **Interactive Navigation**: Sidebar navigation with smooth scrolling
-- **Visual Indicators**: Status badges, progress bars, and metrics
-- **Professional Layout**: DevOps-standard formatting and organization
-- **Comprehensive Coverage**: Architecture, development, operations, security, and roadmap
+### Architecture & Planning
+- **[backup-capacity-report.md](backup-capacity-report.md)** - Backup capacity report
+- **[roadmap-snapshot.md](roadmap-snapshot.md)** - Historical snapshot of goals, debt, metrics (April 2026)
+- **[tracking-research-decisions.md](tracking-research-decisions.md)** - Research decision tracking
 
-### Content Coverage
-- **Architecture**: System design, network topology, machine inventory
-- **Development**: Workflow, testing, standards, troubleshooting
-- **Operations**: Deployment, monitoring, maintenance, backup
-- **Security**: Architecture, secrets management, access control
-- **Roadmap**: Goals, timeline, technical debt, metrics
+### Specialized Guides
+- **[arm-build-limitations.md](arm-build-limitations.md)** - ARM build limitations
+- **[build-monitoring-pattern.md](build-monitoring-pattern.md)** - Build monitoring pattern
+- **[denton-glasses-linda.md](denton-glasses-linda.md)** - Denton glasses on LINDA
+- **[i3-balances.md](i3-balances.md)** - i3 window manager configuration
+- **[hetzner-nixos-recovery-reference.md](hetzner-nixos-recovery-reference.md)** - Hetzner recovery reference
+- **[nixos-rebuild-ng-deployment-analysis.md](nixos-rebuild-ng-deployment-analysis.md)** - Deployment analysis
+- **[minecraft-fod-pattern.md](minecraft-fod-pattern.md)** - Minecraft FOD pattern
+- **[minecraft-live-diagnostics.md](minecraft-live-diagnostics.md)** - Minecraft live diagnostics
 
-## Usage
+### Incident Reports (`incidents/`)
+- **[2026-06-28-voxtype-gpu-primaryIndex.md](incidents/2026-06-28-voxtype-gpu-primaryIndex.md)** - Voxtype GPU incident
 
-1. **Open Documentation**: Open `index.html` in a web browser
-2. **Navigate Sections**: Use the sidebar navigation or top menu
-3. **Bookmark Pages**: Bookmark specific sections for quick reference
-4. **Print Documentation**: Use browser print function for PDF generation
+### Plans (`plans/`)
+- **[topology-rectification-2026-06-23.md](plans/topology-rectification-2026-06-23.md)** - Topology rectification plan
+- **[declarative-dns-management.md](plans/declarative-dns-management.md)** - DNS management plan
+- **[ci-ssh-injection-2026-06-26.md](plans/ci-ssh-injection-2026-06-26.md)** - CI SSH injection plan
+- **[flake-input-consolidation.md](plans/flake-input-consolidation.md)** - Flake input consolidation plan
 
-## Maintenance
+### Research (`research/`)
+- **[gpu-primary-selection-nixos.md](research/gpu-primary-selection-nixos.md)** - GPU primary selection research
 
-The HTML documentation is generated from structured content and should be updated:
-- **Quarterly**: Review and update all documentation
-- **After Major Changes**: Update relevant sections
-- **During Audits**: Verify accuracy and completeness
-- **For New Features**: Add documentation for new capabilities
+### Logs (`logs/`)
+- **[investigation-item-clear-2026-06-16.md](logs/investigation-item-clear-2026-06-16.md)** - Investigation log
 
-## Standards
-
-This documentation follows DevOps technical standards:
-- **HTML5**: Modern web standards
-- **Responsive Design**: Mobile-friendly layout
-- **Accessibility**: Semantic HTML structure
-- **Version Control**: Documentation tracked in git
-- **Regular Updates**: Maintained alongside code changes
+### Backup Survey Data (`backup-survey/`)
+Raw survey outputs (lsblk, zpool, df, nix-store) per machine. Used by `backup-capacity-report.md`.
