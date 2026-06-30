@@ -51,12 +51,10 @@ jobs:
         - cortex-alpha
         - local-nas
         - alpha-one
-        - alpha-two
         - alpha-three
         - LINDA
         - gaming-host-1
         - remote-worker
-        - storage-array
         - remote-builder
   deploy-prep:
     if: github.event_name == 'workflow_dispatch'
@@ -127,7 +125,7 @@ jobs:
     - name: Flake check
       run: nix flake check
     - name: Dead code check
-      run: nix run .#deadnix
+      run: nix run .#checks.x86_64-linux.deadnix
 name: NixOS CI/CD
 'on':
   pull_request:
@@ -163,12 +161,10 @@ name: NixOS CI/CD
         - cortex-alpha
         - local-nas
         - alpha-one
-        - alpha-two
         - alpha-three
         - LINDA
         - gaming-host-1
         - remote-worker
-        - storage-array
         - remote-builder
         - display-0
         - display-1

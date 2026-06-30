@@ -14,12 +14,10 @@ let
     "cortex-alpha"
     "local-nas"
     "alpha-one"
-    "alpha-two"
     "alpha-three"
     "LINDA"
     "gaming-host-1"
     "remote-worker"
-    "storage-array"
     "remote-builder"
   ];
 
@@ -54,7 +52,7 @@ let
         }
         {
           name = "Dead code check";
-          run = "nix run .#deadnix";
+          run = "nix run .#checks.x86_64-linux.deadnix";
         }
       ];
     };

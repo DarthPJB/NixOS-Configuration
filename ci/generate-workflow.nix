@@ -39,7 +39,7 @@ let
 
       # Generate workflow from Nix evaluation and convert to YAML
       # Only stdout contains the JSON, stderr contains warnings (which we ignore)
-      nix eval --json .#ci.ci.github-actions 2>/dev/null | json2yaml
+      nix eval --json --impure .#ci.ci.github-actions 2>/dev/null | json2yaml
     '';
   };
 
