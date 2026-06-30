@@ -41,7 +41,11 @@ This directory contains documentation for the NixOS Configuration repository.
 - **[minecraft-live-diagnostics.md](minecraft-live-diagnostics.md)** - Minecraft live diagnostics
 
 ### Incident Reports (`incidents/`)
+- **[2026-06-30-nas-zfs-saturation.md](incidents/2026-06-30-nas-zfs-saturation.md)** - local-nas ZFS saturation during concurrent backups
 - **[2026-06-28-voxtype-gpu-primaryIndex.md](incidents/2026-06-28-voxtype-gpu-primaryIndex.md)** - Voxtype GPU incident
+
+### Operations Logs (`logs/`)
+- **[operations-workflow-2026-06-30.md](operations-workflow-2026-06-30.md)** - Backup audit, inspect user deployment, minecraft backup verification
 
 ### Plans (`plans/`)
 - **[topology-rectification-2026-06-23.md](plans/topology-rectification-2026-06-23.md)** - Topology rectification plan

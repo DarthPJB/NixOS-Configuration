@@ -59,6 +59,27 @@
           remoteName = "minio:obsidian-v3";
           syncInterval = 60; # every minute
         };
+        "88-FS-V3" = {
+          filePath = "/bulk-storage/88-FS-V3/";
+          remoteName = "minio:fs-v3-88";
+          mode = "copy";
+          calendar = "*-*-* 0/2:30:00"; # every 2 hours at half past
+          bwlimit = "10M";
+        };
+        bargman-tech = {
+          filePath = "/speed-storage/bargman-tech/";
+          remoteName = "minio:bargman-tech";
+          mode = "copy";
+          calendar = "*-*-* *:15:00"; # every hour at 15 past
+          bwlimit = "10M";
+        };
+        downloads = {
+          filePath = "/speed-storage/Downloads/";
+          remoteName = "minio:downloads";
+          mode = "copy";
+          calendar = "*-*-* 05:00:00"; # daily at 5AM
+          bwlimit = "10M";
+        };
       };
     };
   };
