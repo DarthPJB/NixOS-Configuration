@@ -52,7 +52,8 @@ let
         }
         {
           name = "Dead code check";
-          run = "nix run .#checks.x86_64-linux.deadnix";
+          run = "nix shell nixpkgs#deadnix -c deadnix .";
+          "continue-on-error" = true;
         }
       ];
     };

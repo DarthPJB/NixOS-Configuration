@@ -615,14 +615,6 @@
       };
 
       checks."x86_64-linux" = {
-        deadnix = nixpkgs.writeShellApplication {
-          name = "run-deadnix";
-          meta.description = "runs deadnix on the flake source";
-          text = ''
-            nix run ${deadnix}#deadnix "${self}"
-          '';
-        };
-
         nixpkgs-fmt = lint-utils.linters.x86_64-linux.nixpkgs-fmt { src = self; };
 
         # Network topology golden check for cortex-alpha (manual run)

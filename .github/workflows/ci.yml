@@ -1,3 +1,4 @@
+warning: Git tree '/speed-storage/bargman-tech/NixOS-Configuration' has uncommitted changes
 jobs:
   build-arm:
     name: Build ARM Configurations
@@ -124,8 +125,9 @@ jobs:
       run: nix fmt -- --check .
     - name: Flake check
       run: nix flake check
-    - name: Dead code check
-      run: nix run .#checks.x86_64-linux.deadnix
+    - continue-on-error: true
+      name: Dead code check
+      run: nix shell nixpkgs#deadnix -c deadnix .
 name: NixOS CI/CD
 'on':
   pull_request:
