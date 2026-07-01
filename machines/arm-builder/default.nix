@@ -1,5 +1,6 @@
 # machines/arm-builder/default.nix
 # Minimal headless ARM builder — cross-compiled from x86_64
+# Bootstrap image: absolute baseline, no configuration.nix bloat
 # Reuses display-2's WireGuard identity (10.88.127.42) for zero hub-side reconfiguration
 { pkgs
 , config
@@ -13,10 +14,27 @@
   nixpkgs.buildPlatform = "x86_64-linux";
 
   imports = [
-    ../../configuration.nix
+    # ../../configuration.nix  # INTENTIONALLY OMITTED — bootstrap image, no bloat
     ../../modules/enable-wg-topology.nix
-    ../../environments/lean-kernel.nix
+    # ../../environments/lean-kernel.nix  # INTENTIONALLY OMITTED — needed later for display machines
+    ../../users/build.nix
+    ../../users/deployment.nix
+    ../../users/inspect.nix
   ];
+
+  # Strip heavy module profiles (beta/1.nix precedent)
+  disabledModules = [
+    "profiles/all-hardware.nix"
+    "profiles/base.nix"
+  ];
+
+  # No documentation — bootstrap image, absolute baseline
+  documentation = {
+    enable = false;
+    dev.enable = false;
+    man.enable = false;
+    info.enable = false;
+  };
 
   system.name = "${hostname}";
 
