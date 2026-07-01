@@ -51,12 +51,14 @@ This directory contains documentation for the NixOS Configuration repository.
 - **[operations-workflow-2026-06-30.md](operations-workflow-2026-06-30.md)** - Backup audit, inspect user deployment, minecraft backup verification
 
 ### Plans (`plans/`)
+- **[arm-builder-bootstrap-2026-07-01.md](plans/arm-builder-bootstrap-2026-07-01.md)** - ARM builder restoration via cross-compiled bootstrap (display-2 failure recovery)
 - **[topology-rectification-2026-06-23.md](plans/topology-rectification-2026-06-23.md)** - Topology rectification plan
 - **[declarative-dns-management.md](plans/declarative-dns-management.md)** - DNS management plan
 - **[ci-ssh-injection-2026-06-26.md](plans/ci-ssh-injection-2026-06-26.md)** - CI SSH injection plan
 - **[flake-input-consolidation.md](plans/flake-input-consolidation.md)** - Flake input consolidation plan
 
 ### Research (`research/`)
+- **[rpi4-usb-nvme-boot-methods.md](research/rpi4-usb-nvme-boot-methods.md)** - rPi4 USB-NVMe / u-boot boot method research (for ARM builder bootstrap plan)
 - **[gpu-primary-selection-nixos.md](research/gpu-primary-selection-nixos.md)** - GPU primary selection research
 
 ### Logs (`logs/`)

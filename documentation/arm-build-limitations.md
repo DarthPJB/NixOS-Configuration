@@ -1,15 +1,18 @@
 # ARM Build Limitations
 
-> **Status:** Remote builder connection verified working. NVMe installation and full deployment pending.
+> **Status (2026-07-01):** ⚠️ **ARM build capacity OFFLINE.** `display-2` (the only aarch64
+> remote builder) failed due to a corrupted SD card caused by an incorrect mount entry.
+> `display-1` and `print-controller` are architecturally insufficient to replace it.
+> Recovery plan: [plans/arm-builder-bootstrap-2026-07-01.md](plans/arm-builder-bootstrap-2026-07-01.md).
 
 ## Device Roles
 
-| Device | Role | Notes |
-|--------|------|-------|
-| display-0 | Pi 3 | Minimal display, `/home` on separate disk |
-| display-1 | Wall-mounted kitchen display | Pi 4, fixed location, GUI autostart |
-| display-2 | Cyberdeck | Pi 4, portable, NVMe installed, candidate for ARM builder |
-| print-controller | Klipper print server | Pi 3, headless |
+| Device | Board | Role | Notes |
+|--------|-------|------|-------|
+| display-0 | Pi 3 | Minimal display (status unverified) | `/home` on separate disk; may not be online — needs reachability check |
+| display-1 | Pi 4 (low RAM) | Wall-mounted kitchen display | Fixed location, GUI autostart; scratch is zram + 1 GB `/swapfile`; insufficient for kernel builds |
+| display-2 | Pi 4 | ~~Cyberdeck / ARM builder~~ **OFFLINE** | SD card failed (incorrect mount entry); NVMe (500GB WD SN750 via USB) intact but unreachable |
+| print-controller | Pi 3 (1 GB cap) | Klipper print server | Headless; 1 GB RAM ceiling — architecturally incapable of kernel builds |
 
 ## Problem Statement
 
@@ -115,13 +118,19 @@ nix build .#nixosConfigurations.display-0.config.system.build.toplevel
 
 ## Failed Approaches
 
-### Remote Builders (Previously Unreachable — Now Fixed)
+### Remote Builders (Previously Working — Now OFFLINE)
 
 The flake configures remote builders at:
-- `10.88.127.42` (display-2 — **now working**)
-- `10.88.127.41` (display-1 — commented out, kitchen display)
+- `10.88.127.42` (display-2 — **OFFLINE since 2026-07-01**, SD card failure)
+- `10.88.127.41` (display-1 — commented out, kitchen display, insufficient for builds)
 
-**Issues Found and Fixed:**
+> **⚠️ Stale registration:** `modifier_imports/remote-builder.nix` (lines 36–46) still
+> registers `10.88.127.42` as an `aarch64-linux` builder with `big-parallel`. Dispatches to
+> this address will hang/time out until the builder is restored. The new bootstrap plan
+> intentionally resurrects this same WG address (reusing existing keys + cortex-alpha's
+> known config) so no hub-side registration change is required once the builder is back up.
+
+**Issues Found and Fixed (historical):**
 
 1. **SSH known hosts missing IP addresses** — The `mkKnownHosts` function in `flake.nix` only generated hostname and domain entries, not IP addresses. Since nix-daemon connects via WireGuard IP, SSH host key verification always failed. Fixed in commit `db866ce` by reading IPs from `topology.nix`.
 
@@ -168,11 +177,13 @@ Nix supports distributed builds via `nix.buildMachines` configuration. This requ
 
 ## Recommended Solutions
 
-### Option 1: Dedicated ARM Builder (display-2)
+### Option 1: Dedicated ARM Builder (display-2) — OFFLINE, recovery in progress
 
-**Status: Phase 1 in progress — kernel builds running**
+**Status: ⚠️ OFFLINE since 2026-07-01.** SD card corrupted by an incorrect mount entry.
+Recovery via [cross-compiled bootstrap plan](plans/arm-builder-bootstrap-2026-07-01.md).
+The device's prior assets (NVMe, WG identity, builder config) are the basis for the restore.
 
-Convert display-2 (Raspberry Pi 4 cyberdeck) into a dedicated ARM builder. This device already has:
+Historically this device already had:
 - Working NixOS aarch64 configuration
 - WireGuard connectivity (10.88.127.42)
 - SSH access (port 1108, user John88; port 22, user build)
