@@ -81,7 +81,7 @@ let
 
         {
           name = "Build configuration";
-          run = "nixos-rebuild build --flake .#\${{ matrix.machine }}";
+          run = "nix build .#nixosConfigurations.\${{ matrix.machine }}.config.system.build.toplevel";
         }
         {
           name = "Upload build artifact";
@@ -118,7 +118,7 @@ let
 
         {
           name = "Build configuration";
-          run = "nixos-rebuild build --flake .#\${{ matrix.machine }}";
+          run = "nix build .#nixosConfigurations.\${{ matrix.machine }}.config.system.build.toplevel";
         }
         {
           name = "Upload build artifact";
@@ -215,7 +215,7 @@ let
         {
           name = "Build configuration";
           # CHANGED: Use selected machine from input
-          run = "nixos-rebuild build --flake .#\${{ github.event.inputs.machine }}";
+          run = "nix build .#nixosConfigurations.\${{ github.event.inputs.machine }}.config.system.build.toplevel";
         }
         {
           name = "Test deployment";
@@ -333,6 +333,6 @@ in
       else if action == "test" then
         "nix run .#${machine}"
       else
-        "nixos-rebuild build --flake .#${machine}";
+        "nix build .#nixosConfigurations.${machine}.config.system.build.toplevel";
   };
 }
