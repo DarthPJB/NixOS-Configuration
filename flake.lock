@@ -1198,15 +1198,15 @@
     "nixinate": {
       "inputs": {
         "nixpkgs": [
-          "nixpkgs_stable"
+          "nixpkgs_unstable"
         ]
       },
       "locked": {
-        "lastModified": 1782240028,
-        "narHash": "sha256-AWdO+uFRRnDaLPBEtTSxkE1Qz+ljyoVcwTE+jcvz+l8=",
+        "lastModified": 1782438152,
+        "narHash": "sha256-byMBQff7JQ3lsrk/f1bvtZ1cH/L4e7GHHkuX/jFxbkw=",
         "owner": "Bargman-Tech",
         "repo": "nixinate",
-        "rev": "84b88c720af9e58381ab33af9441a09225f69341",
+        "rev": "4b3ac50924a8f814a67047518ab6f1c306864123",
         "type": "github"
       },
       "original": {

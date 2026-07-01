@@ -44,6 +44,9 @@ This directory contains documentation for the NixOS Configuration repository.
 - **[2026-06-30-nas-zfs-saturation.md](incidents/2026-06-30-nas-zfs-saturation.md)** - local-nas ZFS saturation during concurrent backups
 - **[2026-06-28-voxtype-gpu-primaryIndex.md](incidents/2026-06-28-voxtype-gpu-primaryIndex.md)** - Voxtype GPU incident
 
+### Infrastructure
+- **[local-nas-storage.md](local-nas-storage.md)** - local-nas disk inventory, ZFS pools, and action plan
+
 ### Operations Logs (`logs/`)
 - **[operations-workflow-2026-06-30.md](operations-workflow-2026-06-30.md)** - Backup audit, inspect user deployment, minecraft backup verification
 

@@ -73,6 +73,26 @@
                 Example: "find /path/to/backups -mtime +14 -delete"
               '';
             };
+            excludePatterns = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+              description = ''
+                List of rclone exclude patterns. Examples:
+                  - ".cache/**"
+                  - "Games/**"
+                  - ".local/share/Steam/**"
+              '';
+            };
+            filterRules = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+              description = ''
+                List of rclone filter rules (applied in order). Examples:
+                  - "+ .config/vivaldi/**"
+                  - "- .config/**"
+                These take precedence over excludePatterns when set.
+              '';
+            };
           };
         }
       );
@@ -96,11 +116,16 @@
         let
           flags = baseFlags name target;
           resyncFlag = lib.optionalString isResync " --resync";
+          excludeFlags = lib.concatMapStrings (p: " --exclude '${p}'") target.excludePatterns;
+          filterFlags = lib.concatMapStrings (r: " --filter '${r}'") target.filterRules;
+          skipLinksFlag = " --skip-links";
+          # Use filter rules if set, otherwise use exclude patterns
+          patternFlags = if target.filterRules != [ ] then filterFlags else excludeFlags;
         in
         if target.mode == "bisync" then
-          "${pkgs.rclone}/bin/rclone ${flags} bisync${resyncFlag} --resilient --recover --max-lock 2m --conflict-resolve newer --check-access ${target.filePath} ${target.remoteName}"
+          "${pkgs.rclone}/bin/rclone ${flags} bisync${resyncFlag} --resilient --recover --max-lock 2m --conflict-resolve newer --check-access${skipLinksFlag}${patternFlags} ${target.filePath} ${target.remoteName}"
         else
-          "${pkgs.rclone}/bin/rclone ${flags} copy ${target.filePath} ${target.remoteName}";
+          "${pkgs.rclone}/bin/rclone ${flags} copy${skipLinksFlag}${patternFlags} ${target.filePath} ${target.remoteName}";
 
       mkSecrets = lib.concatMapAttrs
         (name: target: {

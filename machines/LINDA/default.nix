@@ -13,6 +13,7 @@
     ../../services/ollama.nix
     ../../services/litellm.nix
     ../../services/gitlab-credentials.nix
+    ../../services/github-runner-nixos-config.nix
     ../../modules/enable-wg-topology.nix
     ../../lib/rclone-target.nix
     ../../environments/i3wm_darthpjb.nix
@@ -79,6 +80,68 @@
           mode = "copy";
           calendar = "*-*-* 05:00:00"; # daily at 5AM
           bwlimit = "10M";
+        };
+        home = {
+          filePath = "/home/pokej/";
+          remoteName = "minio:linda-home";
+          mode = "copy";
+          calendar = "*-*-* 0/6:00:00"; # every 6 hours
+          bwlimit = "10M";
+          filterRules = [
+            # Include Vivaldi browser data
+            "+ .config/vivaldi/Default/**"
+            "+ .config/vivaldi/Profile*/**"
+            "+ .config/vivaldi/Local State"
+            "+ .config/vivaldi/search_engines.json"
+            "+ .config/vivaldi/search_engines_prompt.json"
+            "- .config/vivaldi/**"
+            "- .config/**"
+            # Include essential directories
+            "+ .gnupg/**"
+            "+ .ssh/**"
+            "+ .mozilla/**"
+            "+ .thunderbird/**"
+            "+ Pictures/**"
+            "+ Monero/**"
+            # Exclude everything else
+            "- .cache/**"
+            "- .local/**"
+            "- .ollama/**"
+            "- Games/**"
+            "- .steam/**"
+            "- .minecraft/**"
+            "- .android/**"
+            "- .java/**"
+            "- .cargo/**"
+            "- .rustup/**"
+            "- .bun/**"
+            "- .conan2/**"
+            "- .dotnet/**"
+            "- .emacs.d/**"
+            "- .stack/**"
+            "- .venv/**"
+            "- .npm/**"
+            "- .nuget/**"
+            "- .platformio/**"
+            "- .pulsar/**"
+            "- .vscode/**"
+            "- .atom/**"
+            "- .gitkraken/**"
+            "- .gk/**"
+            "- result"
+            "- *.iso"
+            "- *.tar.zst"
+            "- *.tar.gz"
+            "- *.zip"
+            "- *.mp4"
+            "- *.bmp"
+            "- *.xcf"
+            "- Selection_*.bmp"
+            "- Workspaces_*.bmp"
+            "- y2mate.is*"
+            "- nixos-*.iso"
+            "- .bash_history-*"
+          ];
         };
       };
     };

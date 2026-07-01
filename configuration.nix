@@ -46,6 +46,7 @@ in
     ./environments/tools.nix
     ./modules/nixos-deployment-exporter.nix
     ./modules/sysdiag.nix
+    ./modules/smart-monitoring.nix
   ];
   environment.systemPackages = with pkgs; [
     build-all-script
