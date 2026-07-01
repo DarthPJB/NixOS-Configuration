@@ -32,7 +32,7 @@
       "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showThresholdLabels": false, "showThresholdMarkers": true },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_zfs_zpool_capacity * 100", "legendFormat": "{{instance}} {{zpool}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "(1 - zfs_pool_free_bytes / zfs_pool_size_bytes) * 100", "legendFormat": "{{instance}} {{pool}}", "refId": "A" }
       ],
       "title": "Pool Capacity Used",
       "type": "gauge"
@@ -55,7 +55,7 @@
       "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showThresholdLabels": false, "showThresholdMarkers": true },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_zfs_zpool_fragmentation * 100", "legendFormat": "{{instance}} {{zpool}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "zfs_pool_fragmentation_ratio * 100", "legendFormat": "{{instance}} {{pool}}", "refId": "A" }
       ],
       "title": "Pool Fragmentation",
       "type": "gauge"
@@ -85,10 +85,10 @@
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "rate(node_zfs_zpool_reads[5m])", "legendFormat": "{{instance}} {{zpool}} reads", "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "-rate(node_zfs_zpool_writes[5m])", "legendFormat": "{{instance}} {{zpool}} writes", "refId": "B" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "rate(node_zfs_zpool_dataset_reads[5m])", "legendFormat": "{{instance}} {{dataset}} reads", "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "-rate(node_zfs_zpool_dataset_writes[5m])", "legendFormat": "{{instance}} {{dataset}} writes", "refId": "B" }
       ],
-      "title": "Pool Read/Write Ops",
+      "title": "Dataset Read/Write Ops",
       "type": "timeseries"
     },
     {
@@ -108,60 +108,6 @@
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "rate(node_zfs_zpool_nread[5m])", "legendFormat": "{{instance}} {{zpool}} read", "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "-rate(node_zfs_zpool_nwritten[5m])", "legendFormat": "{{instance}} {{zpool}} write", "refId": "B" }
-      ],
-      "title": "Pool Read/Write Bandwidth",
-      "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 },
-      "id": 102,
-      "panels": [],
-      "title": "Dataset I/O",
-      "type": "row"
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus01" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": { "fillOpacity": 30, "lineWidth": 2, "spanNulls": false },
-          "mappings": [],
-          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
-          "unit": "ops"
-        },
-        "overrides": []
-      },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 19 },
-      "id": 5,
-      "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "pluginVersion": "12.3.0",
-      "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "rate(node_zfs_zpool_dataset_reads[5m])", "legendFormat": "{{instance}} {{dataset}} reads", "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "-rate(node_zfs_zpool_dataset_writes[5m])", "legendFormat": "{{instance}} {{dataset}} writes", "refId": "B" }
-      ],
-      "title": "Dataset Read/Write Ops",
-      "type": "timeseries"
-    },
-    {
-      "datasource": { "type": "prometheus", "uid": "prometheus01" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": { "fillOpacity": 30, "lineWidth": 2, "spanNulls": false },
-          "mappings": [],
-          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
-          "unit": "Bps"
-        },
-        "overrides": []
-      },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 19 },
-      "id": 6,
-      "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "pluginVersion": "12.3.0",
-      "targets": [
         { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "rate(node_zfs_zpool_dataset_nread[5m])", "legendFormat": "{{instance}} {{dataset}} read", "refId": "A" },
         { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "-rate(node_zfs_zpool_dataset_nwritten[5m])", "legendFormat": "{{instance}} {{dataset}} write", "refId": "B" }
       ],
@@ -170,8 +116,8 @@
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 27 },
-      "id": 103,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 },
+      "id": 102,
       "panels": [],
       "title": "Pool Health",
       "type": "row"
@@ -188,15 +134,38 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 28 },
-      "id": 7,
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 19 },
+      "id": 5,
       "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_zfs_zpool_state", "legendFormat": "{{instance}} {{zpool}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_zfs_zpool_state{state=\"online\"}", "legendFormat": "{{instance}} {{zpool}}", "refId": "A" }
       ],
-      "title": "Pool State",
+      "title": "Pool State (Online)",
       "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus01" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 50 }, { "color": "red", "value": 80 }] },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 19 },
+      "id": 6,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "zfs_pool_deduplication_ratio * 100", "legendFormat": "{{instance}} {{pool}}", "refId": "A" }
+      ],
+      "title": "Deduplication Ratio",
+      "type": "gauge"
     },
     {
       "datasource": { "type": "prometheus", "uid": "prometheus01" },
@@ -206,18 +175,20 @@
           "custom": { "fillOpacity": 20, "lineWidth": 2, "spanNulls": false },
           "mappings": [],
           "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
-          "unit": "none"
+          "unit": "bytes"
         },
         "overrides": []
       },
-      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 28 },
-      "id": 8,
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 25 },
+      "id": 7,
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_zfs_zpool_scan_errors", "legendFormat": "{{instance}} {{zpool}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "zfs_pool_size_bytes", "legendFormat": "{{instance}} {{pool}} total", "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "zfs_pool_allocated_bytes", "legendFormat": "{{instance}} {{pool}} allocated", "refId": "B" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "zfs_pool_free_bytes", "legendFormat": "{{instance}} {{pool}} free", "refId": "C" }
       ],
-      "title": "Scan Errors",
+      "title": "Pool Size Breakdown",
       "type": "timeseries"
     }
   ],

@@ -63,7 +63,7 @@
       "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "smartctl_device_temperature_celsius", "legendFormat": "{{instance}} {{device}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "smartctl_device_temperature", "legendFormat": "{{instance}} {{device}}", "refId": "A" }
       ],
       "title": "Disk Temperature",
       "type": "timeseries"

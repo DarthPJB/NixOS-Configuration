@@ -14,9 +14,10 @@
   };
 
   # Prometheus exporter for SMART metrics
+  # Port allocation: 3100=node, 3101=dnsmasq/grafana, 3102=zfs, 3103=nvidia, 3104=klipper, 3105-3106=remote-worker
   services.prometheus.exporters.smartctl = {
     enable = true;
-    port = 3102;
+    port = 3107;
     openFirewall = false;
   };
 
