@@ -32,6 +32,7 @@ let
     name = "generate-ci-workflow";
     runtimeInputs = [
       pkgs.nix
+      pkgs.jq
       json2yaml
     ];
     text = ''
@@ -39,7 +40,8 @@ let
 
       # Generate workflow from Nix evaluation and convert to YAML
       # Only stdout contains the JSON, stderr contains warnings (which we ignore)
-      nix eval --json .#ci.ci.github-actions 2>/dev/null | json2yaml
+      # Strip any 'warning' field that leaks from nix eval
+      nix eval --json .#ci.ci.github-actions 2>/dev/null | jq 'del(.warning)' | json2yaml
     '';
   };
 
