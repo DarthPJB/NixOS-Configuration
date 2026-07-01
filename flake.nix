@@ -420,9 +420,8 @@
         };
         "aarch64-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.print-controller
-          self.nixosConfigurations.display-0
           self.nixosConfigurations.display-1
-          self.nixosConfigurations.display-2
+          self.nixosConfigurations.arm-builder
         ];
         "armv7l-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.beta-one
@@ -446,19 +445,17 @@
           host = topoIp "display-1";
           extraModules = [ ./users/build.nix ];
         };
-        display-2 = mkAarch64 "display-2" {
-          host = topoIp "display-2";
-          extraModules = [ ./users/build.nix ];
+        arm-builder = mkAarch64 "arm-builder" {
+          host = topoIp "arm-builder";
+          extraModules = [
+            ./users/deployment.nix
+            ./users/build.nix
+          ];
         };
         print-controller = mkAarch64 "print-controller" {
           host = topoIp "print-controller";
           hardware = nixos-hardware.nixosModules.raspberry-pi-3;
           extraModules = [ ./server_services/klipper.nix ];
-        };
-        display-0 = mkAarch64 "display-0" {
-          host = topoIp "display-0";
-          hardware = nixos-hardware.nixosModules.raspberry-pi-3;
-          extraModules = [ ./modifier_imports/minimal.nix ./modifier_imports/pi-firmware.nix ];
         };
 
         terminal-zero = mkX86_64 "terminal-zero" {
@@ -611,6 +608,15 @@
         };
         storage-array = mkX86_64 "storage-array" {
           host = topoIp "storage-array";
+        };
+        display-0 = mkAarch64 "display-0" {
+          host = topoIp "display-0";
+          hardware = nixos-hardware.nixosModules.raspberry-pi-3;
+          extraModules = [ ./modifier_imports/minimal.nix ./modifier_imports/pi-firmware.nix ];
+        };
+        display-2 = mkAarch64 "display-2" {
+          host = topoIp "display-2";
+          extraModules = [ ./users/build.nix ];
         };
       };
 

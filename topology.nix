@@ -13,7 +13,7 @@
       "cortex-alpha"
       "display-0"
       "display-1"
-      "display-2"
+      "arm-builder"
       "dlyon"
       "gaming-host-1"
       "grimterm"
@@ -73,7 +73,7 @@
     hub = "cortex-alpha";
   };
 
-  display-2 = {
+  arm-builder = {
     wireguard = "10.88.127.42";
     hub = "cortex-alpha";
   };
