@@ -14,16 +14,23 @@
   nixpkgs.buildPlatform = "x86_64-linux";
 
   imports = [
-    # ../../configuration.nix  # INTENTIONALLY OMITTED — bootstrap image, no bloat
+    # configuration.nix is blocked via disabledModules below —
+    # commonModules injects it for ALL machines, but we don't need
+    # tools.nix (magic-wormhole), monitoring, WiFi, or admin user.
     ../../modules/enable-wg-topology.nix
     # ../../environments/lean-kernel.nix  # INTENTIONALLY OMITTED — needed later for display machines
+    ../../environments/sshd.nix
+    ../../modifier_imports/flakes.nix
     ../../users/build.nix
     ../../users/deployment.nix
     ../../users/inspect.nix
   ];
 
-  # Strip heavy module profiles (beta/1.nix precedent)
+  # Block configuration.nix (injected by commonModules at flake level)
+  # and heavy NixOS profiles. This eliminates tools.nix, monitoring modules,
+  # WiFi config, admin user, and all non-essential packages.
   disabledModules = [
+    ../../configuration.nix
     "profiles/all-hardware.nix"
     "profiles/base.nix"
   ];
@@ -59,6 +66,9 @@
       generic-extlinux-compatible.enable = true;
     };
   };
+
+  # Timezone — was inherited from configuration.nix/locale, now explicit
+  time.timeZone = "Etc/UTC";
 
   # Wired ethernet at boot — no wpa_supplicant (reduces cross-compile complexity)
   networking.interfaces.eth0.useDHCP = lib.mkDefault true;
