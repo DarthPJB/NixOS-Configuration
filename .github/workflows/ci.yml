@@ -10,12 +10,6 @@ jobs:
       uses: actions/checkout@v4
     - name: Build configuration
       run: nix build .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel
-    - name: Upload build artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.machine }}-config
-        path: result/
-        retention-days: '7'
     strategy:
       fail-fast: false
       matrix:
@@ -36,12 +30,6 @@ jobs:
       uses: actions/checkout@v4
     - name: Build configuration
       run: nix build .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel
-    - name: Upload build artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.machine }}-config
-        path: result/
-        retention-days: '7'
     strategy:
       fail-fast: false
       matrix:

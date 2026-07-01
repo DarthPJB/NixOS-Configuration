@@ -83,15 +83,6 @@ let
           name = "Build configuration";
           run = "nix build .#nixosConfigurations.\${{ matrix.machine }}.config.system.build.toplevel";
         }
-        {
-          name = "Upload build artifact";
-          uses = "actions/upload-artifact@v4";
-          "with" = {
-            name = "\${{ matrix.machine }}-config";
-            path = "result/";
-            retention-days = "7";
-          };
-        }
       ];
     };
 
@@ -119,15 +110,6 @@ let
         {
           name = "Build configuration";
           run = "nix build .#nixosConfigurations.\${{ matrix.machine }}.config.system.build.toplevel";
-        }
-        {
-          name = "Upload build artifact";
-          uses = "actions/upload-artifact@v4";
-          "with" = {
-            name = "\${{ matrix.machine }}-config";
-            path = "result/";
-            retention-days = "7";
-          };
         }
       ];
     };
