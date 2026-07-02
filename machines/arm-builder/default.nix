@@ -55,30 +55,6 @@
 
   enableWgTopology.enable = true;
 
-  # Pre-generated SSH host key — deterministic, enables secrix decryption on first boot
-  secrix.services.ssh-host-key.secrets.arm-builder-host-key.encrypted.file =
-    ../../secrets/host_keys/arm-builder_ssh_host_ed25519;
-
-  # Copy decrypted host key to /etc/ssh before sshd starts
-  systemd.services.ssh-host-key-setup = {
-    description = "Setup SSH host key from secrix secret";
-    wantedBy = [ "sshd.service" ];
-    before = [ "sshd.service" ];
-    after = [ "secrix-ssh-host-key-secrets.service" ];
-    requires = [ "secrix-ssh-host-key-secrets.service" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-    };
-    script = ''
-      mkdir -p /etc/ssh
-      cp ${config.secrix.services.ssh-host-key.secrets.arm-builder-host-key.decrypted.path} /etc/ssh/ssh_host_ed25519_key
-      chmod 600 /etc/ssh/ssh_host_ed25519_key
-      # Derive public key from private key
-      ${pkgs.openssh}/bin/ssh-keygen -y -f /etc/ssh/ssh_host_ed25519_key > /etc/ssh/ssh_host_ed25519_key.pub
-    '';
-  };
-
   # Headless kernel params — serial console for debug, no video output
   boot = {
     kernelParams = [
