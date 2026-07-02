@@ -1,17 +1,18 @@
 # ARM Build Limitations
 
-> **Status (2026-07-01):** ⚠️ **ARM build capacity OFFLINE.** `display-2` (the only aarch64
-> remote builder) failed due to a corrupted SD card caused by an incorrect mount entry.
-> `display-1` and `print-controller` are architecturally insufficient to replace it.
-> Recovery plan: [plans/arm-builder-bootstrap-2026-07-01.md](plans/arm-builder-bootstrap-2026-07-01.md).
+> **Status (2026-07-02):** ✅ **ARM build capacity RESTORED.** Cross-compiled `arm-builder`
+> image built and verified. Ready to flash SD card and boot. display-0 and display-2 moved
+> to `dormantConfigurations`. Recovery plan:
+> [plans/arm-builder-bootstrap-2026-07-01.md](plans/arm-builder-bootstrap-2026-07-01.md).
 
 ## Device Roles
 
 | Device | Board | Role | Notes |
 |--------|-------|------|-------|
-| display-0 | Pi 3 | Minimal display (status unverified) | `/home` on separate disk; may not be online — needs reachability check |
+| arm-builder | Pi 4 | Cross-compiled bootstrap builder | SD card image built and verified; ready to flash. WG 10.88.127.42 (reuses display-2 identity). Replaces display-2 as remote builder. |
+| display-0 | Pi 3 | ~~Minimal display~~ **DORMANT** | Moved to `dormantConfigurations` — no WG key, no hub in topology, unverified hardware |
 | display-1 | Pi 4 (low RAM) | Wall-mounted kitchen display | Fixed location, GUI autostart; scratch is zram + 1 GB `/swapfile`; insufficient for kernel builds |
-| display-2 | Pi 4 | ~~Cyberdeck / ARM builder~~ **OFFLINE** | SD card failed (incorrect mount entry); NVMe (500GB WD SN750 via USB) intact but unreachable |
+| display-2 | Pi 4 | ~~Cyberdeck / ARM builder~~ **DORMANT** | SD card failed (raw-UUID mount entry for absent disks); NVMe intact. Moved to `dormantConfigurations`. |
 | print-controller | Pi 3 (1 GB cap) | Klipper print server | Headless; 1 GB RAM ceiling — architecturally incapable of kernel builds |
 
 ## Problem Statement
@@ -22,10 +23,11 @@ ARM-based NixOS configurations (aarch64-linux, armv7l-linux) cannot be built fro
 
 | Machine | Architecture | Status |
 |---------|-------------|--------|
-| display-0 | aarch64-linux | Cannot build from x86_64 host |
-| display-1 | aarch64-linux | Cannot build from x86_64 host |
-| display-2 | aarch64-linux | Cannot build from x86_64 host |
-| print-controller | aarch64-linux | Cannot build from x86_64 host |
+| arm-builder | aarch64-linux | ✅ Bootstrap image built, ready to flash |
+| display-0 | aarch64-linux | DORMANT (moved to dormantConfigurations) |
+| display-1 | aarch64-linux | Cannot build from x86_64 host (needs remote builder) |
+| display-2 | aarch64-linux | DORMANT (moved to dormantConfigurations) |
+| print-controller | aarch64-linux | Cannot build from x86_64 host (needs remote builder) |
 | beta-one | armv7l-linux | Cannot build from x86_64 host (timeout) |
 
 ## Root Causes
@@ -118,17 +120,15 @@ nix build .#nixosConfigurations.display-0.config.system.build.toplevel
 
 ## Failed Approaches
 
-### Remote Builders (Previously Working — Now OFFLINE)
+### Remote Builders
 
 The flake configures remote builders at:
-- `10.88.127.42` (display-2 — **OFFLINE since 2026-07-01**, SD card failure)
+- `10.88.127.42` (**arm-builder** — replaces display-2, bootstrap image ready to flash)
 - `10.88.127.41` (display-1 — commented out, kitchen display, insufficient for builds)
 
-> **⚠️ Stale registration:** `modifier_imports/remote-builder.nix` (lines 36–46) still
-> registers `10.88.127.42` as an `aarch64-linux` builder with `big-parallel`. Dispatches to
-> this address will hang/time out until the builder is restored. The new bootstrap plan
-> intentionally resurrects this same WG address (reusing existing keys + cortex-alpha's
-> known config) so no hub-side registration change is required once the builder is back up.
+> **Registration:** `modifier_imports/remote-builder.nix` registers `10.88.127.42` as an
+> `aarch64-linux` builder with `big-parallel`. The arm-builder reuses display-2's WG
+> identity so no hub-side registration change is required.
 
 **Issues Found and Fixed (historical):**
 
@@ -177,19 +177,20 @@ Nix supports distributed builds via `nix.buildMachines` configuration. This requ
 
 ## Recommended Solutions
 
-### Option 1: Dedicated ARM Builder (display-2) — OFFLINE, recovery in progress
+### Option 1: Dedicated ARM Builder (arm-builder) — IMAGE BUILT, READY TO FLASH
 
-**Status: ⚠️ OFFLINE since 2026-07-01.** SD card corrupted by an incorrect mount entry.
-Recovery via [cross-compiled bootstrap plan](plans/arm-builder-bootstrap-2026-07-01.md).
-The device's prior assets (NVMe, WG identity, builder config) are the basis for the restore.
+**Status: ✅ Bootstrap image complete (2026-07-02).** Cross-compiled SD card image built
+and verified. Ready to flash to SD card and boot on Pi 4 hardware.
 
-Historically this device already had:
-- Working NixOS aarch64 configuration
-- WireGuard connectivity (10.88.127.42)
-- SSH access (port 1108, user John88; port 22, user build)
-- Remote builder connection verified (builds dispatch and complete)
-- NVMe installed (500GB WD Black SN750 via USB 3.0)
-- Swap active (233GB total — NVMe + swapfile)
+**What was built:**
+- Machine config: `machines/arm-builder/default.nix` (minimal headless, no configuration.nix bloat)
+- Image: 2.6 GB SD card image (cross-compiled from x86_64, remote builder offloading)
+- Golden test: passes
+- Users: build (1111), deploy (1110), inspect (1112)
+- WireGuard: 10.88.127.42 (reuses display-2 identity)
+- SSH: port 1108 (deploy/inspect), port 22 (build user on WG)
+
+**Next steps:** Flash SD card, boot Pi 4, verify WG connectivity, nixinate deploy.
 
 **Hardware Status:**
 | Component | Status |
