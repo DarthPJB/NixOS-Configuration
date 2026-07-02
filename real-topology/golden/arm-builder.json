@@ -47,6 +47,7 @@
     "bash-interactive",
     "nano",
     "less",
+    "gnupg",
     "fuse",
     "bind",
     "hostname-debian",
