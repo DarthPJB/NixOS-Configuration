@@ -638,20 +638,7 @@
 
   monitoring = {
     exporters = {
-      node = {
-        enable = true;
-        port = 3100;
-        enabledCollectors = [
-          "systemd"
-          "hwmon"
-          "cpu"
-          "drm"
-          "ethtool"
-          "logind"
-          "wifi"
-        ];
-        disabledCollectors = [ "textfile" ];
-      };
+      # node exporter handled by configuration.nix (commonModules) fleet-wide
       dnsmasq = {
         enable = true;
         listenAddress = "10.88.127.1";
