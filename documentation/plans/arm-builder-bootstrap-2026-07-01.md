@@ -2,7 +2,7 @@
 
 > **Created:** 2026-07-01
 > **Last updated:** 2026-07-02
-> **Status:** Active — Phase 1 COMPLETE, Phase 2 ready (flash + boot)
+> **Status:** Active — Phase 2 IN PROGRESS (deployment attempted, bootstrap image rebuilt)
 > **Supersedes:** `arm-build-limitations.md` Option 1 deployment plan (now offline)
 > **Parent directive:** Correctness over speed; closed-system builds; no cloud providers
 
@@ -187,26 +187,35 @@ nix flake check                          # ✅ PASSES
 3. Connect ethernet (preferred) — WG will come up if the hub is reachable
 4. Boot; observe via serial console (`console=ttyS1,115200n8`) or WG ping to `10.88.127.42`
 
-### 2.2 Initrd resizefs
+### 2.2 Deployment Attempt (2026-07-02)
 
-The standard nixpkgs `sd-image-aarch64.nix` includes an initrd that auto-expands the
-root partition to fill the SD card on first boot (runtime, not build-time). Confirm this
-is present in the cross-compiled image — if not, add `sdImage.expandOnBoot = true` or
-equivalent. The expanded root gives the builder working space before NVMe is attached.
+**Bootstrap image booted successfully:**
+- Device discovered via mDNS: `nixos-bootstrap.local` → `10.88.128.210`
+- SSH access verified: `ssh -p 22 deploy@10.88.128.210`
+- Host key extracted: `ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIS4+Ikv5ocpopM3ShOXRSxy2i/Z86JSxiI7t/e8394E`
+- WG keys generated and encrypted with secrix
 
-### 2.3 Deploy via nixinate
+**Deployment failed:**
+```
+error: cannot add path '...' because it lacks a signature by a trusted key
+```
+Root cause: Bootstrap image did not have `deploy` user as trusted nix user.
 
-Once the minimal image is booted and reachable on WG (`10.88.127.42`):
+**Fix applied:**
+- Added `nix.settings.trusted-users = [ "deploy" ]` to `machines/arm-bootstrap/default.nix`
+- Bootstrap image rebuilt: `/nix/store/pkvgnmgc669xlilc6r7q87lfwq0qfj60-nixos-image-sd-card-26.05.20260511.c6e5ca3-aarch64-linux.img-aarch64-unknown-linux-gnu`
+
+**Status:** Ready to re-burn SD card and re-attempt deployment.
+
+### 2.3 Deploy via nixos-rebuild
+
+Once the bootstrap image is booted and reachable:
 
 ```bash
-# From cortex-alpha:
-nix run .#deploy.arm-builder
+# Temporarily set host = "<device-lan-ip>" in flake.nix
+NIX_SSHOPTS="-p 22" nixos-rebuild switch --flake .#arm-builder --target-host deploy@<device-ip> --sudo
+# Reset to WG IP in flake.nix
 ```
-
-nixinate connects via the `deploy` user on port 1108, pushes the full system closure,
-and switches. **This build runs natively on the Pi 4** (nixinate's `buildOn = "local"`
-means the target builds its own closure — slow but correct, and now the Pi has a real
-Nix store from which to work).
 
 ### 2.4 First-Boot Configuration (Minimal Builder)
 
@@ -419,7 +428,7 @@ WG identity stays `10.88.127.42`.
 |-------|--------|-------------------|------|
 | 0 | Research USB-NVMe boot; verify hardware | Hours | ✅ COMPLETE — research report done, display-0/display-2 moved to dormant |
 | 1 | Cross-compile minimal builder image | ~30 min (with remote builder offload) | ✅ COMPLETE — image built, verified, golden passes |
-| 2 | Flash SD, boot, WG connect, nixinate deploy | Minutes (after image boots) | READY — waiting for SD card flash |
+| 2 | Flash SD, boot, deploy actual config | Minutes (after image boots) | 🔄 IN PROGRESS — bootstrap booted, host key extracted, WG keys generated, deployment failed (missing trusted user), bootstrap image rebuilt |
 | 3 | Attach NVMe, redeploy with mounts | Minutes (after NVMe recognized) | `nix store ping` from cortex-alpha succeeds |
 | 4 | Native rebuild of display fleet | Up to 48 hours per machine | All ARM machines deployed & golden-validated |
 | 5 | Physical relocation (optional) | Minutes (hardware) | No code change if WG identity unchanged |

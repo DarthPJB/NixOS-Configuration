@@ -120,11 +120,14 @@ echo -n 'ABYJMUQ4OYIVQXKA5T6QOR3KHMFW2' | nix run .#secrix encrypt secrets/githu
 # 1. Generate key
 wg genkey | tee priv | wg pubkey > pub
 
-# 2. Encrypt private key
-nix run .#secrix create ./secrets/private_keys/wireguard/wg_new-host -- -u John88 < priv
+# 2. Encrypt private key (ALWAYS include -u John88)
+cat priv | nix run .#secrix encrypt secrets/private_keys/wireguard/wg_new-host -- -u John88 -s new-host
 
-# 3. Clean up
-rm priv
+# 3. Store public key
+cp pub secrets/public_keys/wireguard/wg_new-host_pub
+
+# 4. Clean up
+rm priv pub
 ```
 
 ## Troubleshooting

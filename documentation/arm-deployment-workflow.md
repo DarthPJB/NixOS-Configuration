@@ -1,7 +1,7 @@
 # ARM Deployment Workflow
 
 > **Last updated:** 2026-07-02
-> **Status:** Active — evolving rapidly
+> **Status:** Active — validated through arm-builder deployment
 
 ## Overview
 
@@ -21,6 +21,7 @@ The bootstrap image (`.#packages.aarch64-linux.arm-bootstrap`) is a generic, one
 - Avahi/mDNS discovery (`nixos-bootstrap.local`)
 - No WireGuard — that's part of the actual config
 - Cross-compiled from x86_64, minimal closure
+- `nix.settings.trusted-users = [ "deploy" ]` — required for nixos-rebuild to copy closures
 
 **Build and flash:**
 ```bash
@@ -37,10 +38,9 @@ After booting the bootstrap image:
 
 1. **Avahi/mDNS discovery:**
    ```bash
-   # From any machine on the same network
+   # From any machine on the same network (cortex-alpha has Avahi configured)
    avahi-resolve -n nixos-bootstrap.local
-   # or
-   ping nixos-bootstrap.local
+   # Returns: nixos-bootstrap.local	<device-ip>
    ```
 
 2. **Or check DHCP leases** on your router/DHCP server
@@ -52,39 +52,31 @@ After booting the bootstrap image:
 
 ## Stage 3: Extract Host Key
 
-The device has a fresh SSH host key generated at boot. We need to capture it for secrix.
+The device has a fresh SSH host key generated at boot. We need to capture it for secrix encryption.
 
-1. **SSH into the device:**
+1. **Extract the host public key (from your workstation):**
    ```bash
-   ssh -p 22 John88@<device-ip>
+   ssh -p 22 deploy@<device-ip> "sudo cat /etc/ssh/ssh_host_ed25519_key.pub"
+   # Returns: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5... root@arm-bootstrap
    ```
 
-2. **Extract the host key pair:**
+2. **Extract the host private key (from your workstation):**
    ```bash
-   # On the device
-   sudo cat /etc/ssh/ssh_host_ed25519_key > /tmp/host_key
-   sudo cat /etc/ssh/ssh_host_ed25519_key.pub > /tmp/host_key.pub
+   ssh -p 22 deploy@<device-ip> "sudo cat /etc/ssh/ssh_host_ed25519_key"
+   # Save to /tmp/arm-host-key
    ```
 
-3. **Copy the keys to your workstation:**
+3. **Store the public key:**
    ```bash
-   # From your workstation
-   scp -P 22 John88@<device-ip>:/tmp/host_key /tmp/arm-host-key
-   scp -P 22 John88@<device-ip>:/tmp/host_key.pub /tmp/arm-host-key.pub
+   echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5..." > secrets/public_keys/host_keys/<hostname>.pub
    ```
 
-4. **Encrypt the private key with secrix (ALWAYS include `-u John88`):**
+4. **Encrypt the private key with secrix (for backup only, NOT runtime decryption):**
    ```bash
-   cd /path/to/NixOS-Configuration
    cat /tmp/arm-host-key | nix run .#secrix encrypt secrets/host_keys/<hostname>_ssh_host_ed25519 -- -u John88
    ```
 
-5. **Store the public key:**
-   ```bash
-   cp /tmp/arm-host-key.pub secrets/public_keys/host_keys/<hostname>.pub
-   ```
-
-**CRITICAL: Always encrypt with `-u John88` (or `--all-users`). Never encrypt with `-s hostname` only — the operator will be locked out.**
+**IMPORTANT:** The SSH host private key is the root of trust for secrix. It is NOT decrypted at runtime — it stays on the device. The encrypted copy is for operator backup only.
 
 ## Stage 4: Generate WireGuard Keys
 
@@ -125,19 +117,23 @@ Each device needs unique WireGuard keys.
 1. **Edit flake.nix** — change the host IP from WireGuard to LAN IP:
    ```nix
    # In the machine's mkAarch64 call:
-   host = "<device-lan-ip>";  # e.g., "192.168.1.100"
-   sshPort = 22;              # bootstrap listens on 22
+   host = "<device-lan-ip>";  # e.g., "10.88.128.210"
    ```
 
-2. **Deploy with --switch:**
+2. **Deploy with nixos-rebuild:**
    ```bash
-   nix run .#deploy.<hostname> -- --switch
+   NIX_SSHOPTS="-p 22" nixos-rebuild switch --flake .#<hostname> --target-host deploy@<device-ip> --sudo
    ```
 
-3. **Reset flake.nix** to WireGuard IP and port:
+3. **Reset flake.nix** to WireGuard IP:
    ```nix
    host = topoIp "<hostname>";  # back to WG IP
-   sshPort = 1108;              # back to WG port
+   ```
+
+4. **Commit and push:**
+   ```bash
+   git add flake.nix && git commit -m "deploy: reset <hostname> to WG IP"
+   git push origin jb/overlord-I
    ```
 
 ## Stage 7: Verify
@@ -165,24 +161,25 @@ nix build .#packages.aarch64-linux.arm-bootstrap --no-link --print-out-paths
 dd if=<path>/sd-image/*.img of=/dev/sdX bs=4M status=progress conv=fsync
 
 # 2. Boot and discover
-ping nixos-bootstrap.local  # or check DHCP
+avahi-resolve -n nixos-bootstrap.local
+# Returns: nixos-bootstrap.local	10.88.128.210
 
 # 3. Extract host key
-ssh -p 22 John88@<device-ip>
-sudo cat /etc/ssh/ssh_host_ed25519_key > /tmp/host_key
-# Copy to workstation and encrypt with secrix
+ssh -p 22 deploy@10.88.128.210 "sudo cat /etc/ssh/ssh_host_ed25519_key.pub"
+# Store in secrets/public_keys/host_keys/arm-builder.pub
 
 # 4. Generate WG keys
 wg genkey | tee /tmp/wg-priv | wg pubkey > /tmp/wg-pub
-# Encrypt private key with secrix
+cat /tmp/wg-priv | nix run .#secrix encrypt secrets/private_keys/wireguard/wg_arm-builder -- -u John88 -s arm-builder
+cp /tmp/wg-pub secrets/public_keys/wireguard/wg_arm-builder_pub
 
 # 5. Build arm-builder config
 nix build .#packages.aarch64-linux.arm-builder --no-link --print-out-paths
 
 # 6. Deploy
-# Temporarily set host = "<device-lan-ip>" and sshPort = 22 in flake.nix
-nix run .#deploy.arm-builder -- --switch
-# Reset to WG IP and port 1108
+# Temporarily set host = "10.88.128.210" in flake.nix
+NIX_SSHOPTS="-p 22" nixos-rebuild switch --flake .#arm-builder --target-host deploy@10.88.128.210 --sudo
+# Reset to WG IP in flake.nix
 
 # 7. Verify
 ping 10.88.127.42
@@ -196,10 +193,15 @@ ssh -p 1108 deploy@10.88.127.42
 - **Host key extraction is critical** — secrix needs the actual host key for encryption
 - **Deploy over LAN first** — then switch to WireGuard for future deployments
 - **Each device needs unique keys** — never reuse WireGuard or SSH host keys
+- **Deploy user must be trusted** — bootstrap image needs `nix.settings.trusted-users = [ "deploy" ]`
+- **Always encrypt with `-u John88`** — never encrypt with `-s hostname` only
+- **Use `NIX_SSHOPTS="-p 22"`** — for deployment to bootstrap image (port 22)
+- **Use `nixos-rebuild`** — not `nix run .#deploy.<hostname>` (that syntax is wrong)
 
-## Future Improvements
+## Lessons Learned
 
-- [ ] Automate host key extraction and secrix encryption
-- [ ] Automate WireGuard key generation and encryption
-- [ ] Consider using `nixos-rebuild-ng` for deployment
-- [ ] Add device discovery via mDNS/Avahi (in progress)
+1. **Circular dependency**: SSH host private key cannot be a secrix secret (secrix needs it to decrypt)
+2. **Trusted users**: Bootstrap image must have deploy user as trusted nix user
+3. **SSH port**: Use `NIX_SSHOPTS` environment variable for port specification
+4. **Encryption**: Always encrypt with `-u John88` — never with `-s hostname` only
+5. **Deployment command**: `nixos-rebuild switch --flake .#<hostname> --target-host deploy@<ip> --sudo`

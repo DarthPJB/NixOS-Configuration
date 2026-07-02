@@ -1,8 +1,9 @@
 # ARM Build Limitations
 
-> **Status (2026-07-02):** ✅ **ARM build capacity RESTORED.** Cross-compiled `arm-builder`
-> image built and verified. Ready to flash SD card and boot. display-0 and display-2 moved
-> to `dormantConfigurations`. Recovery plan:
+> **Status (2026-07-02):** 🔄 **ARM build capacity RESTORATION IN PROGRESS.** Cross-compiled
+> `arm-builder` image built and verified. Generic bootstrap image created. Deployment attempted,
+> bootstrap image rebuilt (missing trusted user). Ready to re-burn and deploy. display-0 and
+> display-2 moved to `dormantConfigurations`. Recovery plan:
 > [plans/arm-builder-bootstrap-2026-07-01.md](plans/arm-builder-bootstrap-2026-07-01.md).
 
 ## Device Roles
