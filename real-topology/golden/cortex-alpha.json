@@ -69,6 +69,7 @@
     "nftables",
     "nixos-firewall-tool",
     "dhcpcd",
+    "avahi",
     "rsyslog",
     "openldap",
     "sudo",
@@ -131,7 +132,9 @@
     636,
     1108
   ],
-  "networking.firewall.allowedUDPPorts": [],
+  "networking.firewall.allowedUDPPorts": [
+    5353
+  ],
   "networking.firewall.interfaces": {
     "enp2s0": {
       "allowedTCPPortRanges": [],
@@ -175,6 +178,7 @@
         3100,
         3101,
         3102,
+        3107,
         3111
       ],
       "allowedUDPPortRanges": [],
