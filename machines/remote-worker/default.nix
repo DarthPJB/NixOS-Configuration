@@ -2,6 +2,7 @@
 
 { config
 , pkgs
+, lib
 , hostname
 , ...
 }:
@@ -60,6 +61,10 @@
       };
     };
   };
+  # Virtual disk devices — smartctl/smartd not applicable
+  services.smartd.enable = lib.mkForce false;
+  services.prometheus.exporters.smartctl.enable = lib.mkForce false;
+
   enableWgTopology.enable = true;
 
   networking.hostId = "e3fabb5b";
