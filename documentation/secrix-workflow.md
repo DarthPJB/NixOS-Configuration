@@ -156,3 +156,31 @@ ssh -p 1108 deploy@10.88.127.50 "sudo journalctl -u secrix* -n 50"
 - Decrypted secrets exist only in tmpfs (`/run/`) and are lost on reboot
 - Never commit plaintext secrets to the repository
 - Use `--all-users` when multiple developers need access
+
+## CRITICAL: Always Encrypt with `--all-users`
+
+**Every secret MUST be encrypted with `--all-users` (or `-u John88` at minimum).**
+
+Failure to do this means the operator cannot decrypt keys for management,
+backup, or re-keying. This is a hard requirement, not optional.
+
+**Correct:**
+```bash
+# Encrypt for both user AND host
+echo -n 'SECRET' | nix run .#secrix encrypt secrets/output -- -u John88 -s hostname
+
+# Or encrypt for all users and all systems
+echo -n 'SECRET' | nix run .#secrix encrypt secrets/output -- --all-users --all-systems
+```
+
+**WRONG (operator locked out):**
+```bash
+# NEVER encrypt for host only — operator cannot decrypt
+echo -n 'SECRET' | nix run .#secrix encrypt secrets/output -- -s hostname
+```
+
+**Applies to ALL secrets:**
+- WireGuard private keys
+- SSH host private keys
+- API tokens
+- Any other encrypted asset

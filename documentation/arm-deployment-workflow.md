@@ -73,16 +73,18 @@ The device has a fresh SSH host key generated at boot. We need to capture it for
    scp -P 22 John88@<device-ip>:/tmp/host_key.pub /tmp/arm-host-key.pub
    ```
 
-4. **Encrypt the private key with secrix:**
+4. **Encrypt the private key with secrix (ALWAYS include `-u John88`):**
    ```bash
    cd /path/to/NixOS-Configuration
-   cat /tmp/arm-host-key | nix run .#secrix encrypt secrets/host_keys/<hostname>_ssh_host_ed25519 -- -s <hostname>
+   cat /tmp/arm-host-key | nix run .#secrix encrypt secrets/host_keys/<hostname>_ssh_host_ed25519 -- -u John88
    ```
 
 5. **Store the public key:**
    ```bash
    cp /tmp/arm-host-key.pub secrets/public_keys/host_keys/<hostname>.pub
    ```
+
+**CRITICAL: Always encrypt with `-u John88` (or `--all-users`). Never encrypt with `-s hostname` only — the operator will be locked out.**
 
 ## Stage 4: Generate WireGuard Keys
 
@@ -93,15 +95,17 @@ Each device needs unique WireGuard keys.
    wg genkey | tee /tmp/wg-priv | wg pubkey > /tmp/wg-pub
    ```
 
-2. **Encrypt private key with secrix:**
+2. **Encrypt private key with secrix (ALWAYS include `-u John88`):**
    ```bash
-   cat /tmp/wg-priv | nix run .#secrix encrypt secrets/private_keys/wireguard/wg_<hostname> -- -s <hostname>
+   cat /tmp/wg-priv | nix run .#secrix encrypt secrets/private_keys/wireguard/wg_<hostname> -- -u John88 -s <hostname>
    ```
 
 3. **Store public key:**
    ```bash
    cp /tmp/wg-pub secrets/public_keys/wireguard/wg_<hostname>_pub
    ```
+
+**CRITICAL: Always encrypt with `-u John88` (or `--all-users`). Never encrypt with `-s hostname` only — the operator will be locked out.**
 
 ## Stage 5: Build Actual Configuration
 
