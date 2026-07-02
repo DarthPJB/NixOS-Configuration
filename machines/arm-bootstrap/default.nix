@@ -88,6 +88,9 @@
   # Timezone
   time.timeZone = "Etc/UTC";
 
+  # Nix settings — deploy user must be trusted for nixos-rebuild
+  nix.settings.trusted-users = [ "deploy" ];
+
   # Wired ethernet at boot — DHCP
   networking.interfaces.eth0.useDHCP = lib.mkDefault true;
 
