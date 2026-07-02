@@ -7,7 +7,7 @@
 }:
 {
   imports = [
-    ../../configuration.nix
+    # ../../configuration.nix — already in commonModules (flake.nix), do not duplicate
     ../../server_services/gitolite.nix
     ./hardware-configuration.nix
     ../../modules/enable-wg-topology.nix
@@ -23,6 +23,10 @@
     ../../environments/emacs.nix
     ../../environments/sshd.nix
   ];
+
+  # Virtual disk devices — smartctl/smartd not applicable
+  services.smartd.enable = lib.mkForce false;
+  services.prometheus.exporters.smartctl.enable = lib.mkForce false;
 
   enableWgTopology.enable = true;
 

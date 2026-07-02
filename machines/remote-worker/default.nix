@@ -8,7 +8,7 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ../../configuration.nix
+    # ../../configuration.nix — already in commonModules (flake.nix), do not duplicate
     ../../locale/tailscale.nix
     ../../server_services/nextcloud.nix
     ../../users/build.nix
