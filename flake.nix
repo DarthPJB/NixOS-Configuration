@@ -422,6 +422,7 @@
           self.nixosConfigurations.print-controller
           self.nixosConfigurations.display-1
           self.nixosConfigurations.arm-builder
+          self.nixosConfigurations.arm-bootstrap
         ];
         "armv7l-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.beta-one
@@ -450,6 +451,31 @@
           extraModules = [
             ./users/deployment.nix
             ./users/build.nix
+          ];
+        };
+        # Generic ARM bootstrap image — reusable for ALL ARM devices
+        # No WG, no device-specific config, open SSH on port 22
+        arm-bootstrap = nixpkgs_unstable.lib.nixosSystem {
+          system = "aarch64-linux";
+          modules = [
+            "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
+            nixos-hardware.nixosModules.raspberry-pi-4
+            secrix.nixosModules.default
+            ./machines/arm-bootstrap
+            {
+              nixpkgs.overlays = [
+                (final: super: {
+                  makeModulesClosure = x: super.makeModulesClosure (x // { allowMissing = true; });
+                })
+              ];
+              nixpkgs.hostPlatform = "aarch64-linux";
+              networking.hostName = "arm-bootstrap";
+              _module.args = globalArgs // {
+                hostname = "arm-bootstrap";
+                unstable = import nixpkgs_unstable { system = "aarch64-linux"; config.allowUnfree = true; };
+              };
+            }
           ];
         };
         print-controller = mkAarch64 "print-controller" {
