@@ -14,7 +14,7 @@
     openssh.authorizedKeys.keys = [
       "${lib.readFile ../secrets/public_keys/INSPECT_ED_25519.pub}"
     ];
-    # No extraGroups — no sudo, no wheel, no privileged access
+    extraGroups = [ "systemd-journal" ]; # read-only journal access
   };
 
   services.openssh = {

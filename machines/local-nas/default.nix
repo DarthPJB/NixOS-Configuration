@@ -24,10 +24,6 @@
     ../../environments/sshd.nix
   ];
 
-  # Virtual disk devices — smartctl/smartd not applicable
-  services.smartd.enable = lib.mkForce false;
-  services.prometheus.exporters.smartctl.enable = lib.mkForce false;
-
   enableWgTopology.enable = true;
 
   networking.useDHCP = false;

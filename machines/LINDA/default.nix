@@ -43,10 +43,6 @@
     ../../modifier_imports/cuda.nix
     ../../modifier_imports/remote-builder.nix
   ];
-  # Virtual disk devices — smartctl/smartd not applicable
-  services.smartd.enable = lib.mkForce false;
-  services.prometheus.exporters.smartctl.enable = lib.mkForce false;
-
   enableWgTopology.enable = true;
   programs.ssh.extraConfig = ''
     Host hyperhyper
