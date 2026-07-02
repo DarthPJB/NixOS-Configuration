@@ -18,6 +18,7 @@
   };
 
   services.openssh = {
+    settings.AllowUsers = [ "inspect" ];
     extraConfig = ''
       Match LocalPort 1108 User inspect Address 10.88.127.0/24
         PermitRootLogin no
