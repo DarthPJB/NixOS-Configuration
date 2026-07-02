@@ -447,7 +447,7 @@
           extraModules = [ ./users/build.nix ];
         };
         arm-builder = mkAarch64 "arm-builder" {
-          host = "10.88.128.210";
+          host = topoIp "arm-builder";
           extraModules = [
             ./users/deployment.nix
             ./users/build.nix
