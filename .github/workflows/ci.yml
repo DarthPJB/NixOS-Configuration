@@ -1,4 +1,3 @@
-warning: Git tree '/speed-storage/bargman-tech/NixOS-Configuration' has uncommitted changes
 jobs:
   build-arm:
     name: Build ARM Configurations
