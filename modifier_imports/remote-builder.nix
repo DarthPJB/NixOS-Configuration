@@ -34,7 +34,7 @@
       mandatoryFeatures = [ ];
     }
     {
-      hostName = "10.88.127.42"; # Display-2
+      hostName = "10.88.127.43"; # arm-builder
       protocol = "ssh-ng";
       sshUser = "build";
       sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;

@@ -124,7 +124,7 @@
   "networking.wireguard.interfaces": {
     "wireg0": {
       "ips": [
-        "10.88.127.42/32"
+        "10.88.127.43/32"
       ],
       "listenPort": 2108,
       "peers": [

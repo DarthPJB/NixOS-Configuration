@@ -10,7 +10,7 @@
 
 | Device | Board | Role | Notes |
 |--------|-------|------|-------|
-| arm-builder | Pi 4 | Cross-compiled bootstrap builder | SD card image built and verified; ready to flash. WG 10.88.127.42 (reuses display-2 identity). Replaces display-2 as remote builder. |
+| arm-builder | Pi 4 | Cross-compiled bootstrap builder | SD card image built and verified; ready to flash. WG 10.88.127.43. Independent topology entry (no longer reuses display-2 identity). |
 | display-0 | Pi 3 | ~~Minimal display~~ **DORMANT** | Moved to `dormantConfigurations` — no WG key, no hub in topology, unverified hardware |
 | display-1 | Pi 4 (low RAM) | Wall-mounted kitchen display | Fixed location, GUI autostart; scratch is zram + 1 GB `/swapfile`; insufficient for kernel builds |
 | display-2 | Pi 4 | ~~Cyberdeck / ARM builder~~ **DORMANT** | SD card failed (raw-UUID mount entry for absent disks); NVMe intact. Moved to `dormantConfigurations`. |
@@ -124,12 +124,12 @@ nix build .#nixosConfigurations.display-0.config.system.build.toplevel
 ### Remote Builders
 
 The flake configures remote builders at:
-- `10.88.127.42` (**arm-builder** — replaces display-2, bootstrap image ready to flash)
+- `10.88.127.43` (**arm-builder** — bootstrap image ready to flash, independent topology entry)
 - `10.88.127.41` (display-1 — commented out, kitchen display, insufficient for builds)
 
-> **Registration:** `modifier_imports/remote-builder.nix` registers `10.88.127.42` as an
-> `aarch64-linux` builder with `big-parallel`. The arm-builder reuses display-2's WG
-> identity so no hub-side registration change is required.
+> **Registration:** `modifier_imports/remote-builder.nix` registers `10.88.127.43` as an
+> `aarch64-linux` builder with `big-parallel`. Arm-builder has its own independent
+> WireGuard identity — no longer shares display-2's slot.
 
 **Issues Found and Fixed (historical):**
 
@@ -140,7 +140,7 @@ The flake configures remote builders at:
 **Current Remote Builder Configuration (`modifier_imports/remote-builder.nix`):**
 ```nix
 {
-  hostName = "10.88.127.42"; # Display-2
+  hostName = "10.88.127.43"; # arm-builder
   protocol = "ssh-ng";
   sshUser = "build";
   sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
@@ -188,7 +188,7 @@ and verified. Ready to flash to SD card and boot on Pi 4 hardware.
 - Image: 2.6 GB SD card image (cross-compiled from x86_64, remote builder offloading)
 - Golden test: passes
 - Users: build (1111), deploy (1110), inspect (1112)
-- WireGuard: 10.88.127.42 (reuses display-2 identity)
+- WireGuard: 10.88.127.43 (independent topology entry)
 - SSH: port 1108 (deploy/inspect), port 22 (build user on WG)
 
 **Next steps:** Flash SD card, boot Pi 4, verify WG connectivity, nixinate deploy.
@@ -261,7 +261,7 @@ services.openssh.enable = true;
 **Registration on x86_64 host (cortex-alpha):**
 ```nix
 nix.buildMachines = [{
-  hostName = "10.88.127.42";
+  hostName = "10.88.127.43";
   system = "aarch64-linux";
   maxJobs = 4;
   speedFactor = 2;

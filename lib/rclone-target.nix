@@ -105,16 +105,17 @@
     let
       cfg = config.environment.rclone-target;
 
-      baseFlags = name: target:
+      baseFlags = name: target: isResync:
         let
-          configPath = config.secrix.services."rclone-sync-${name}".secrets.config-file.decrypted.path;
+          serviceName = if isResync then "rclone-sync-${name}-resync" else "rclone-sync-${name}";
+          configPath = config.secrix.services.${serviceName}.secrets.config-file.decrypted.path;
           bwlimitFlag = lib.optionalString (target.bwlimit != "") " --bwlimit ${target.bwlimit}";
         in
         "--config ${configPath}${bwlimitFlag}";
 
       mkCommand = name: target: isResync:
         let
-          flags = baseFlags name target;
+          flags = baseFlags name target isResync;
           resyncFlag = lib.optionalString isResync " --resync";
           excludeFlags = lib.concatMapStrings (p: " --exclude '${p}'") target.excludePatterns;
           filterFlags = lib.concatMapStrings (r: " --filter '${r}'") target.filterRules;
