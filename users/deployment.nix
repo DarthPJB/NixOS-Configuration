@@ -43,4 +43,7 @@
       ];
     }
   ];
+
+  # Required for nixos-rebuild to copy closures to remote targets
+  nix.settings.trusted-users = [ "deploy" ];
 }

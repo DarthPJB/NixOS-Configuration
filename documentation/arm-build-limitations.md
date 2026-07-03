@@ -196,10 +196,10 @@ and verified. Ready to flash to SD card and boot on Pi 4 hardware.
 **Hardware Status:**
 | Component | Status |
 |-----------|--------|
-| NVMe | ✓ Installed, 500GB WD Black SN750 |
-| `/dev/sda1` | ✓ ext4, 232.9GB (for `/nix/store`) |
-| `/dev/sda2` | ✓ 232.9GB swap active |
-| Total swap | 233GB |
+| NVMe | ✓ Installed, WD Black SN750 (250GB nominal, LUKS-encrypted) |
+| USB Caddy | DockCase SSD Enclosure C1P (DSWC1P), SN 202308101777 — exemplar unit with secondary power port. Only this caddy works reliably; other DockCase units return 0-byte SCSI sense errors (ASC=0x20). |
+| `/dev/sda1` | ✓ ext4 (for `/nix/store`) |
+| `/dev/sda2` | ✓ swap active |
 | RAM | 3.7GB (2.5GB available) |
 
 **Issues Resolved:**

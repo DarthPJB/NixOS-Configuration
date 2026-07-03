@@ -51,6 +51,18 @@
     fsType = "ext4";
   };
 
+  # NVMe storage for /nix (DockCase USB caddy, may need manual reset after reboot)
+  fileSystems."/nix" = {
+    device = "/dev/disk/by-uuid/382a0c33-7680-412a-bc69-df162c790f81";
+    fsType = "ext4";
+    options = [ "nofail" ];
+  };
+
+  # NVMe swap partition
+  swapDevices = [
+    { device = "/dev/disk/by-uuid/6e9025be-928a-4224-86ae-964922839929"; }
+  ];
+
   sdImage.compressImage = false;
 
   enableWgTopology.enable = true;
