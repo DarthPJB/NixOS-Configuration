@@ -446,6 +446,10 @@
           host = topoIp "display-1";
           extraModules = [ ./users/build.nix ];
         };
+        display-2 = mkAarch64 "display-2" {
+          host = topoIp "display-2";
+          extraModules = [ ./users/build.nix ];
+        };
         arm-builder = mkAarch64 "arm-builder" {
           host = topoIp "arm-builder";
           extraModules = [
@@ -639,10 +643,6 @@
           host = topoIp "display-0";
           hardware = nixos-hardware.nixosModules.raspberry-pi-3;
           extraModules = [ ./modifier_imports/minimal.nix ./modifier_imports/pi-firmware.nix ];
-        };
-        display-2 = mkAarch64 "display-2" {
-          host = topoIp "display-2";
-          extraModules = [ ./users/build.nix ];
         };
       };
 

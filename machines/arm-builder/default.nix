@@ -88,4 +88,15 @@
 
   # SSH for nixinate deployment and management
   services.openssh.enable = true;
+
+  # Prometheus node exporter — minimal metrics for build monitoring
+  services.prometheus.exporters.node = {
+    enable = true;
+    port = 9100;
+    listenAddress = "10.88.127.43";
+    enabledCollectors = [ "systemd" "diskstats" "meminfo" "loadavg" "cpu" "filesystem" ];
+  };
+
+  # Firewall: allow node_exporter from WireGuard network
+  networking.firewall.allowedTCPPorts = [ 9100 ];
 }

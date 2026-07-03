@@ -169,6 +169,7 @@
       "allowedTCPPorts": [
         22,
         3100,
+        3107,
         3111
       ],
       "allowedUDPPortRanges": [],
