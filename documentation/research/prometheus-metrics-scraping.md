@@ -3,6 +3,7 @@
 > **Created:** 2026-07-03
 > **Last updated:** 2026-07-03
 > **Context:** arm-builder (Pi 4 aarch64) monitoring during kernel builds
+> **Companion:** `prometheus-mcp-server-comparison.md` — MCP server options for agent access
 
 ## Prometheus API Endpoints
 
@@ -107,6 +108,27 @@ curl -s 'http://10.88.127.43:9100/metrics' | grep 'node_systemd_unit_state{state
 2. Memory available drops below 300MB → swap kicks in, adds I/O to NVMe
 3. SMART temperature > 70°C → thermal throttling in enclosure
 
+## MCP Server Access (for Agents)
+
+For programmatic Prometheus access by agents (not curl), see `prometheus-mcp-server-comparison.md`.
+
+**Recommended:** `prometheus/prometheus-mcp` (official, Go) — 30+ tools, single binary,
+token-efficient (TOON encoding), embedded Prometheus docs, trivially packaged for NixOS.
+
+**Deployment path:**
+1. Package as Nix derivation (`buildGoModule`)
+2. Run as systemd service on local-nas alongside Prometheus
+3. Expose via WireGuard on stdio or HTTP transport
+4. Agents connect to `http://10.88.127.3:<mcp-port>` or use stdio over SSH
+
+**Key MCP tools for build monitoring:**
+- `query` — instant PromQL queries (equivalent to curl `/api/v1/query`)
+- `range_query` — time series data (equivalent to curl `/api/v1/query_range`)
+- `list_targets` — scrape target health
+- `series` — discover available metric series
+- `label_values` — enumerate label values (e.g., all instances)
+- `tsdb_stats` — storage engine statistics
+
 ## Architecture
 
 ```
@@ -115,10 +137,20 @@ arm-builder (10.88.127.43)              local-nas (10.88.127.3)
 │ node_exporter    :9100  │────WG──────→│ prometheus        :8080  │
 │ smartctl_exporter :3107 │             │   scrapes every 30s      │
 │ smartd (disabled)       │             │ grafana           :3101  │
-│ nix-daemon               │             └──────────────────────────┘
-│ NVMe: /dev/sda → /nix   │
+│ nix-daemon               │             │ [future: MCP server]     │
+│ NVMe: /dev/sda → /nix   │             └──────────────────────────┘
 └─────────────────────────┘
 ```
+
+## Verified Baseline (2026-07-03 20:24 UTC, idle)
+
+| Metric | Value |
+|--------|-------|
+| Load | 0 |
+| Memory available | 3.4 GB |
+| /nix available | ~194 GB |
+| Node exporter | up ✅ |
+| Smartctl exporter | up ✅ |
 
 ## Notes
 
@@ -127,9 +159,13 @@ arm-builder (10.88.127.43)              local-nas (10.88.127.3)
 - Port 9100 was standardised from the previous 3100 — all machines now use 9100.
 - The `environments/metrics.nix` module uses `lib.mkDefault` for all values, so
   individual machines can override ports or collectors if needed.
+- The smartctl_exporter on arm-builder reports SMART via USB-SAT bridge — temperature,
+  power-on hours, and health status are available even though `smartd` can't detect the
+  device.
 
 ## Related Documents
 
+- `prometheus-mcp-server-comparison.md` — MCP server options for agent access
 - `environments/metrics.nix` — shared exporter module
 - `services/prometheus.nix` — prometheus + grafana config (on local-nas)
 - `documentation/plans/arm-builder-usb-nvme-reliability-2026-07-03.md`
