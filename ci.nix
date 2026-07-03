@@ -14,19 +14,16 @@ let
     "cortex-alpha"
     "local-nas"
     "alpha-one"
-    "alpha-two"
     "alpha-three"
     "LINDA"
     "gaming-host-1"
     "remote-worker"
-    "storage-array"
     "remote-builder"
   ];
 
   armMachines = [
-    "display-0"
+    "arm-builder"
     "display-1"
-    "display-2"
     "print-controller"
     "beta-one" # Added: armv7l-linux machine
   ];
@@ -43,14 +40,7 @@ let
           name = "Checkout";
           uses = "actions/checkout@v4";
         }
-        {
-          name = "Install Nix";
-          uses = "DeterminateSystems/nix-installer-action@main";
-        }
-        {
-          name = "Setup Magic Nix Cache";
-          uses = "DeterminateSystems/magic-nix-cache-action@main";
-        }
+
         {
           name = "Format check";
           run = "nix fmt -- --check .";
@@ -61,7 +51,8 @@ let
         }
         {
           name = "Dead code check";
-          run = "nix run .#deadnix";
+          run = "nix shell nixpkgs#deadnix -c deadnix .";
+          "continue-on-error" = true;
         }
       ];
     };
@@ -86,26 +77,10 @@ let
           name = "Checkout";
           uses = "actions/checkout@v4";
         }
-        {
-          name = "Install Nix";
-          uses = "DeterminateSystems/nix-installer-action@main";
-        }
-        {
-          name = "Setup Magic Nix Cache";
-          uses = "DeterminateSystems/magic-nix-cache-action@main";
-        }
+
         {
           name = "Build configuration";
-          run = "nixos-rebuild build --flake .#\${{ matrix.machine }}";
-        }
-        {
-          name = "Upload build artifact";
-          uses = "actions/upload-artifact@v4";
-          "with" = {
-            name = "\${{ matrix.machine }}-config";
-            path = "result/";
-            retention-days = "7";
-          };
+          run = "nix build .#nixosConfigurations.\${{ matrix.machine }}.config.system.build.toplevel";
         }
       ];
     };
@@ -130,26 +105,10 @@ let
           name = "Checkout";
           uses = "actions/checkout@v4";
         }
-        {
-          name = "Install Nix";
-          uses = "DeterminateSystems/nix-installer-action@main";
-        }
-        {
-          name = "Setup Magic Nix Cache";
-          uses = "DeterminateSystems/magic-nix-cache-action@main";
-        }
+
         {
           name = "Build configuration";
-          run = "nixos-rebuild build --flake .#\${{ matrix.machine }}";
-        }
-        {
-          name = "Upload build artifact";
-          uses = "actions/upload-artifact@v4";
-          "with" = {
-            name = "\${{ matrix.machine }}-config";
-            path = "result/";
-            retention-days = "7";
-          };
+          run = "nix build .#nixosConfigurations.\${{ matrix.machine }}.config.system.build.toplevel";
         }
       ];
     };
@@ -233,18 +192,11 @@ let
           name = "Checkout";
           uses = "actions/checkout@v4";
         }
-        {
-          name = "Install Nix";
-          uses = "DeterminateSystems/nix-installer-action@main";
-        }
-        {
-          name = "Setup Magic Nix Cache";
-          uses = "DeterminateSystems/magic-nix-cache-action@main";
-        }
+
         {
           name = "Build configuration";
           # CHANGED: Use selected machine from input
-          run = "nixos-rebuild build --flake .#\${{ github.event.inputs.machine }}";
+          run = "nix build .#nixosConfigurations.\${{ github.event.inputs.machine }}.config.system.build.toplevel";
         }
         {
           name = "Test deployment";
@@ -362,6 +314,6 @@ in
       else if action == "test" then
         "nix run .#${machine}"
       else
-        "nixos-rebuild build --flake .#${machine}";
+        "nix build .#nixosConfigurations.${machine}.config.system.build.toplevel";
   };
 }

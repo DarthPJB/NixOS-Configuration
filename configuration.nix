@@ -39,12 +39,14 @@ in
     ./modifier_imports/hosts.nix
     ./modifier_imports/energy_saving.nix
     ./users/deployment.nix
+    ./users/inspect.nix
     ./locale/en_gb.nix
     ./locale/home_networks.nix
     ./environments/sshd.nix
     ./environments/tools.nix
     ./modules/nixos-deployment-exporter.nix
     ./modules/sysdiag.nix
+    ./modules/smart-monitoring.nix
   ];
   environment.systemPackages = with pkgs; [
     build-all-script
@@ -169,11 +171,8 @@ in
       ];
     };
   };
-  services.openssh.settings.AllowUsers = [
-    "John88"
-    "build"
-    "deploy"
-  ];
+  # AllowUsers is now per-user in each user module (build.nix, deployment.nix, inspect.nix)
+  # sshd.nix manages John88. NixOS module system merges all entries.
 
   services.kmscon = {
     #  Alright, I know what you are thinking; For real? All I have to do is grab a John-tech and enter tty?

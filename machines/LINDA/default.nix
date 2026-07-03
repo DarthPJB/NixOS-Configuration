@@ -13,6 +13,7 @@
     ../../services/ollama.nix
     ../../services/litellm.nix
     ../../services/gitlab-credentials.nix
+    ../../services/github-runner-nixos-config.nix
     ../../modules/enable-wg-topology.nix
     ../../lib/rclone-target.nix
     ../../environments/i3wm_darthpjb.nix
@@ -28,7 +29,6 @@
     ../../environments/audio_visual_editing.nix
     ../../environments/general_fonts.nix
     ../../environments/video_call_streaming.nix
-    ../../environments/cloud_and_backup.nix
     ../../locale/tailscale.nix
     ../../locale/input-methods.nix
     ../../environments/rtl-sdr.nix
@@ -56,9 +56,92 @@
       configFile = "${self}/secrets/rclone-config-file";
       targets = {
         obsidian-v3 = {
-          filePath = " /bulk-storage/88-DB-v3/";
+          filePath = "/bulk-storage/88-DB-v3/";
           remoteName = "minio:obsidian-v3";
           syncInterval = 60; # every minute
+        };
+        "88-FS-V3" = {
+          filePath = "/bulk-storage/88-FS-V3/";
+          remoteName = "minio:fs-v3-88";
+          mode = "copy";
+          calendar = "*-*-* 0/2:30:00"; # every 2 hours at half past
+          bwlimit = "10M";
+        };
+        bargman-tech = {
+          filePath = "/speed-storage/bargman-tech/";
+          remoteName = "minio:bargman-tech";
+          mode = "copy";
+          calendar = "*-*-* *:15:00"; # every hour at 15 past
+          bwlimit = "10M";
+        };
+        downloads = {
+          filePath = "/speed-storage/Downloads/";
+          remoteName = "minio:downloads";
+          mode = "copy";
+          calendar = "*-*-* 05:00:00"; # daily at 5AM
+          bwlimit = "10M";
+        };
+        home = {
+          filePath = "/home/pokej/";
+          remoteName = "minio:linda-home";
+          mode = "copy";
+          calendar = "*-*-* 0/6:00:00"; # every 6 hours
+          bwlimit = "10M";
+          filterRules = [
+            # Include Vivaldi browser data
+            "+ .config/vivaldi/Default/**"
+            "+ .config/vivaldi/Profile*/**"
+            "+ .config/vivaldi/Local State"
+            "+ .config/vivaldi/search_engines.json"
+            "+ .config/vivaldi/search_engines_prompt.json"
+            "- .config/vivaldi/**"
+            "- .config/**"
+            # Include essential directories
+            "+ .gnupg/**"
+            "+ .ssh/**"
+            "+ .mozilla/**"
+            "+ .thunderbird/**"
+            "+ Pictures/**"
+            "+ Monero/**"
+            # Exclude everything else
+            "- .cache/**"
+            "- .local/**"
+            "- .ollama/**"
+            "- Games/**"
+            "- .steam/**"
+            "- .minecraft/**"
+            "- .android/**"
+            "- .java/**"
+            "- .cargo/**"
+            "- .rustup/**"
+            "- .bun/**"
+            "- .conan2/**"
+            "- .dotnet/**"
+            "- .emacs.d/**"
+            "- .stack/**"
+            "- .venv/**"
+            "- .npm/**"
+            "- .nuget/**"
+            "- .platformio/**"
+            "- .pulsar/**"
+            "- .vscode/**"
+            "- .atom/**"
+            "- .gitkraken/**"
+            "- .gk/**"
+            "- result"
+            "- *.iso"
+            "- *.tar.zst"
+            "- *.tar.gz"
+            "- *.zip"
+            "- *.mp4"
+            "- *.bmp"
+            "- *.xcf"
+            "- Selection_*.bmp"
+            "- Workspaces_*.bmp"
+            "- y2mate.is*"
+            "- nixos-*.iso"
+            "- .bash_history-*"
+          ];
         };
       };
     };

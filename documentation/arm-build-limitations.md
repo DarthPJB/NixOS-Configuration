@@ -1,15 +1,30 @@
 # ARM Build Limitations
 
-> **Status:** Remote builder connection verified working. NVMe installation and full deployment pending.
+> **Status (2026-07-03):** 🔄 **ARM build capacity — arm-builder deployed, NVMe unstable.**
+> 
+> **Completed:**
+> - Arm-builder deployed via bootstrap → nixos-rebuild workflow. Live at WG `10.88.127.43:1108`.
+> - Display-2 identity fully restored in `topology.nix` and `real-topology/cortex-alpha.nix`. Arm-builder is an independent entry.
+> - `remote-builder.nix` updated to `10.88.127.43`. Build user SSH confirmed working from LINDA.
+> - `/nix` and swap configured on NVMe via UUID in `machines/arm-builder/default.nix` (nofail).
+> - `trusted-users = [ "deploy" ]` added to `users/deployment.nix`.
+> - `DenyUsers *` on port 22 replaced with `AllowUsers build` whitelist in `users/build.nix`.
+> 
+> **Known Issues:**
+> - **NVMe USB caddy requires UAS quirk.** DockCase DSWC1P (31db:9210) has broken UAS. Fixed with kernel param `usb_storage.quirks=31db:9210:u` in machine config. Without this, the bridge disconnects from USB 3.0 and falls back to USB 2.0 where it returns 0-byte capacity.
+> - **NVMe filesystem corruption.** The UAS crash during a delegated build left `/dev/sda1` with filesystem damage. fsck ran but the filesystem may need reformatting and re-syncing from the SD card.
+> - **Caddy requires manual reset after reboot.** The DockCase does not reliably enumerate at boot. `nofail` on the `/nix` mount allows the system to boot degraded.
+> - **Cortex-alpha golden stale.** Still references display-2's old WG key. Needs regeneration after cortex-alpha rebuild.
 
 ## Device Roles
 
-| Device | Role | Notes |
-|--------|------|-------|
-| display-0 | Pi 3 | Minimal display, `/home` on separate disk |
-| display-1 | Wall-mounted kitchen display | Pi 4, fixed location, GUI autostart |
-| display-2 | Cyberdeck | Pi 4, portable, NVMe installed, candidate for ARM builder |
-| print-controller | Klipper print server | Pi 3, headless |
+| Device | Board | Role | Notes |
+|--------|-------|------|-------|
+| arm-builder | Pi 4 | Cross-compiled bootstrap builder | SD card image built and verified; ready to flash. WG 10.88.127.43. Independent topology entry (no longer reuses display-2 identity). |
+| display-0 | Pi 3 | ~~Minimal display~~ **DORMANT** | Moved to `dormantConfigurations` — no WG key, no hub in topology, unverified hardware |
+| display-1 | Pi 4 (low RAM) | Wall-mounted kitchen display | Fixed location, GUI autostart; scratch is zram + 1 GB `/swapfile`; insufficient for kernel builds |
+| display-2 | Pi 4 | ~~Cyberdeck / ARM builder~~ **DORMANT** | SD card failed (raw-UUID mount entry for absent disks); NVMe intact. Moved to `dormantConfigurations`. |
+| print-controller | Pi 3 (1 GB cap) | Klipper print server | Headless; 1 GB RAM ceiling — architecturally incapable of kernel builds |
 
 ## Problem Statement
 
@@ -19,10 +34,11 @@ ARM-based NixOS configurations (aarch64-linux, armv7l-linux) cannot be built fro
 
 | Machine | Architecture | Status |
 |---------|-------------|--------|
-| display-0 | aarch64-linux | Cannot build from x86_64 host |
-| display-1 | aarch64-linux | Cannot build from x86_64 host |
-| display-2 | aarch64-linux | Cannot build from x86_64 host |
-| print-controller | aarch64-linux | Cannot build from x86_64 host |
+| arm-builder | aarch64-linux | ✅ Bootstrap image built, ready to flash |
+| display-0 | aarch64-linux | DORMANT (moved to dormantConfigurations) |
+| display-1 | aarch64-linux | Cannot build from x86_64 host (needs remote builder) |
+| display-2 | aarch64-linux | DORMANT (moved to dormantConfigurations) |
+| print-controller | aarch64-linux | Cannot build from x86_64 host (needs remote builder) |
 | beta-one | armv7l-linux | Cannot build from x86_64 host (timeout) |
 
 ## Root Causes
@@ -115,13 +131,17 @@ nix build .#nixosConfigurations.display-0.config.system.build.toplevel
 
 ## Failed Approaches
 
-### Remote Builders (Previously Unreachable — Now Fixed)
+### Remote Builders
 
 The flake configures remote builders at:
-- `10.88.127.42` (display-2 — **now working**)
-- `10.88.127.41` (display-1 — commented out, kitchen display)
+- `10.88.127.43` (**arm-builder** — bootstrap image ready to flash, independent topology entry)
+- `10.88.127.41` (display-1 — commented out, kitchen display, insufficient for builds)
 
-**Issues Found and Fixed:**
+> **Registration:** `modifier_imports/remote-builder.nix` registers `10.88.127.43` as an
+> `aarch64-linux` builder with `big-parallel`. Arm-builder has its own independent
+> WireGuard identity — no longer shares display-2's slot.
+
+**Issues Found and Fixed (historical):**
 
 1. **SSH known hosts missing IP addresses** — The `mkKnownHosts` function in `flake.nix` only generated hostname and domain entries, not IP addresses. Since nix-daemon connects via WireGuard IP, SSH host key verification always failed. Fixed in commit `db866ce` by reading IPs from `topology.nix`.
 
@@ -130,7 +150,7 @@ The flake configures remote builders at:
 **Current Remote Builder Configuration (`modifier_imports/remote-builder.nix`):**
 ```nix
 {
-  hostName = "10.88.127.42"; # Display-2
+  hostName = "10.88.127.43"; # arm-builder
   protocol = "ssh-ng";
   sshUser = "build";
   sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
@@ -168,25 +188,29 @@ Nix supports distributed builds via `nix.buildMachines` configuration. This requ
 
 ## Recommended Solutions
 
-### Option 1: Dedicated ARM Builder (display-2)
+### Option 1: Dedicated ARM Builder (arm-builder) — IMAGE BUILT, READY TO FLASH
 
-**Status: Phase 1 in progress — kernel builds running**
+**Status: ✅ Bootstrap image complete (2026-07-02).** Cross-compiled SD card image built
+and verified. Ready to flash to SD card and boot on Pi 4 hardware.
 
-Convert display-2 (Raspberry Pi 4 cyberdeck) into a dedicated ARM builder. This device already has:
-- Working NixOS aarch64 configuration
-- WireGuard connectivity (10.88.127.42)
-- SSH access (port 1108, user John88; port 22, user build)
-- Remote builder connection verified (builds dispatch and complete)
-- NVMe installed (500GB WD Black SN750 via USB 3.0)
-- Swap active (233GB total — NVMe + swapfile)
+**What was built:**
+- Machine config: `machines/arm-builder/default.nix` (minimal headless, no configuration.nix bloat)
+- Image: 2.6 GB SD card image (cross-compiled from x86_64, remote builder offloading)
+- Golden test: passes
+- Users: build (1111), deploy (1110), inspect (1112)
+- WireGuard: 10.88.127.43 (independent topology entry)
+- SSH: port 1108 (deploy/inspect), port 22 (build user on WG)
+
+**Next steps:** Flash SD card, boot Pi 4, verify WG connectivity, nixinate deploy.
 
 **Hardware Status:**
 | Component | Status |
 |-----------|--------|
-| NVMe | ✓ Installed, 500GB WD Black SN750 |
-| `/dev/sda1` | ✓ ext4, 232.9GB (for `/nix/store`) |
-| `/dev/sda2` | ✓ 232.9GB swap active |
-| Total swap | 233GB |
+| NVMe | ✓ Installed, WD Black SN750 (500GB nominal) |
+| USB Caddy | DockCase SSD Enclosure C1P (DSWC1P), SN 202308101777 — exemplar unit with secondary power port. Only this caddy works reliably; other DockCase units return 0-byte SCSI sense errors (ASC=0x20). |
+| UAS Quirk | **REQUIRED:** `usb_storage.quirks=31db:9210:u` — DockCase bridge has broken UAS implementation. Without this quirk the VL805 USB 3.0 controller resets the device, causing it to fall back to USB 2.0 (0-byte capacity). Set via `boot.kernelParams` in machine config. |
+| `/dev/sda1` | ✓ ext4 (for `/nix/store`) |
+| `/dev/sda2` | ✓ swap active |
 | RAM | 3.7GB (2.5GB available) |
 
 **Issues Resolved:**
@@ -248,7 +272,7 @@ services.openssh.enable = true;
 **Registration on x86_64 host (cortex-alpha):**
 ```nix
 nix.buildMachines = [{
-  hostName = "10.88.127.42";
+  hostName = "10.88.127.43";
   system = "aarch64-linux";
   maxJobs = 4;
   speedFactor = 2;

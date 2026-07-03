@@ -120,11 +120,14 @@ echo -n 'ABYJMUQ4OYIVQXKA5T6QOR3KHMFW2' | nix run .#secrix encrypt secrets/githu
 # 1. Generate key
 wg genkey | tee priv | wg pubkey > pub
 
-# 2. Encrypt private key
-nix run .#secrix create ./secrets/private_keys/wireguard/wg_new-host -- -u John88 < priv
+# 2. Encrypt private key (ALWAYS include -u John88)
+cat priv | nix run .#secrix encrypt secrets/private_keys/wireguard/wg_new-host -- -u John88 -s new-host
 
-# 3. Clean up
-rm priv
+# 3. Store public key
+cp pub secrets/public_keys/wireguard/wg_new-host_pub
+
+# 4. Clean up
+rm priv pub
 ```
 
 ## Troubleshooting
@@ -156,3 +159,31 @@ ssh -p 1108 deploy@10.88.127.50 "sudo journalctl -u secrix* -n 50"
 - Decrypted secrets exist only in tmpfs (`/run/`) and are lost on reboot
 - Never commit plaintext secrets to the repository
 - Use `--all-users` when multiple developers need access
+
+## CRITICAL: Always Encrypt with `--all-users`
+
+**Every secret MUST be encrypted with `--all-users` (or `-u John88` at minimum).**
+
+Failure to do this means the operator cannot decrypt keys for management,
+backup, or re-keying. This is a hard requirement, not optional.
+
+**Correct:**
+```bash
+# Encrypt for both user AND host
+echo -n 'SECRET' | nix run .#secrix encrypt secrets/output -- -u John88 -s hostname
+
+# Or encrypt for all users and all systems
+echo -n 'SECRET' | nix run .#secrix encrypt secrets/output -- --all-users --all-systems
+```
+
+**WRONG (operator locked out):**
+```bash
+# NEVER encrypt for host only — operator cannot decrypt
+echo -n 'SECRET' | nix run .#secrix encrypt secrets/output -- -s hostname
+```
+
+**Applies to ALL secrets:**
+- WireGuard private keys
+- SSH host private keys
+- API tokens
+- Any other encrypted asset

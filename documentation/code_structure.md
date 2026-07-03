@@ -2,7 +2,6 @@
 
 This document explains how NixOS configurations are organized in this repository.
 
-> **Note:** For comprehensive DevOps-standard documentation with HTML formatting, see the [Documentation Hub](index.html).
 
 ## Architecture Overview
 

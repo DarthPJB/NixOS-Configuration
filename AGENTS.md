@@ -1,10 +1,68 @@
+## Build Philosophy
+
+This is professional netrunner infrastructure, not a hobby project.
+Every decision flows from these principles.
+
+### Correctness Over Speed
+Build-speed is valuable, but irrelevant if the build fails or the output is
+corrupt. The ONLY correct build is a build that completes. If evaluation takes
+four hours, that is acceptable — provided it *guarantees* correctness.
+
+### Closed-System Build Environment
+All builds run on **self-hosted runners** within our own environment.
+GitHub-hosted runners are inherently insecure and not acceptable for
+proprietary work. Bargman-Tech production infrastructure will be siloed in
+closed infrastructure. GitHub is used only for public-facing projects.
+
+### No Implicit Third-Party Intermediaries
+Third-party build caching, acceleration, or relay services that have access to
+source code or build artifacts must be explicitly reviewed and approved.
+Default-on caching (e.g., DetSys "magic nix cache") that may exfiltrate code
+is not acceptable without conscious authorization. Builds must complete from
+source within our controlled environment unless a specific exception is granted.
+
+**Planned: In-House Binary Cache.** We will operate our own Nix binary cache
+server within the closed environment, dogfooding our infrastructure
+capabilities. Until the cache is operational, builds complete from source.
+No third-party cache is configured in CI. See `ci/README.md` for status.
+
+### Golden Tests Are Ground Truth
+Golden tests represent the canonical correct state. If a golden test fails,
+the code is wrong — never the golden. Regeneration is only for intentional
+configuration changes, never for refactoring. Deployments are blocked on
+golden mismatch. See golden test section for operational details.
+
+### Simplicity Over Cleverness
+Embrace simplicity. Reject unnecessary complexity. If a Nix expression requires
+three paragraphs to explain, it needs rewriting. The topology engine,
+transformers, and generators exist to *reduce* cognitive load, not to
+demonstrate language prowess.
+
+### Phase Discipline
+Development proceeds in phases. Each phase builds on the previous. Do not
+jump ahead. Complete the current phase before beginning the next. WIP code
+is dead code until wired into a machine's config and validated against golden.
+
+---
+
 ## Development Velocity
 
-Current development is phased. Each phase builds on the previous.
-
-### Phase A: Backup Capabilities
-1. ~~Create backup capabilities proposal and report~~ ✅ (`documentation/backup-capacity-report.md`)
-2. ~~Implement minimal phase-1 backup~~ ✅ (`lib/rclone-target.nix` extended with `mode`, `calendar`, `bwlimit`, `preExec`; example in `snippets/gaming-host-1-daily-backup.nix`)
+Current development is phased. Each phase builds on the
+  previous.### Phase A: Backup Capabilities
+  1. ~~Create
+  backup
+  capabilities
+  proposal
+  and
+  report~~ ✅
+  (`documentation/backup-capacity-report.md`)
+  2. ~~
+  Implement
+  minimal
+  phase-1
+  backup~~ ✅
+  (`lib/rclone-target.nix` extended with `
+  mode`, `calendar`, `bwlimit`, `preExec`; example in `snippets/gaming-host-1-daily-backup.nix`)
 
 ### Phase B: Complete Transformer Architecture
 1. Finish WIP transformers (`mkDnsSettings`, `mkFirewallSettings`, `mkNginxSettings`) with real data
@@ -104,10 +162,10 @@ Public keys are read from `secrets/public_keys/wireguard/wg_${name}_pub` files u
 WireGuard private key is managed by secrix:
 ```nix
 secrix.services.wireguard-wireg0.secrets.cortex-alpha.encrypted.file =
-  ../../secrets/private_keys/wireguard/wg_cortex-alpha;
+../../secrets/private_keys/wireguard/wg_cortex-alpha;
 
 networking.wireguard.interfaces.wireg0.privateKeyFile =
-  config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
+config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
 ```
 
 ### CRITICAL: Golden Tests Must NEVER Be Changed by Restructuring
@@ -127,9 +185,9 @@ The production architecture uses per-machine topology files with direct transfor
 **Data Flow:**
 ```
 real-topology/<machine>.nix (per-machine topology data)
-         ↓
+↓
 lib/topology/*.nix (transformation functions: mkWireguardPeers, mkNginxProxies, mkDhcpDns, etc.)
-         ↓
+↓
 modules/core-router.nix (NixOS config generation)
 ```
 
@@ -151,8 +209,7 @@ modules/core-router.nix (NixOS config generation)
 **Currently Using Production Architecture:** cortex-alpha (via `machines/cortex-alpha/default.nix`)
 
 **Known Issues (Active):**
-- Inconsistent function signatures across transformers (TG-003)
-- `mkForwarding.nix` missing section-level `or` default for `topology.forwarding` (TG-004)
+- Production transformers return heterogeneous shapes; WIP architecture (transformers → generators with uniform `{ warnings, errors, machines }` returns) solves this — migration pending (TG-003)
 
 ### WIP: Two-Layer Topology Architecture (Incremental Development)
 
@@ -161,11 +218,11 @@ The WIP architecture introduces a **single topology source of truth** with a cle
 **Architecture Pattern (WIP):**
 ```
 topology.nix (incremental — only models what it currently generates, NOT a complete network description)
-     ↓
+↓
 lib/topology/mk*Settings.nix (transformers: topology + files → flat pure data)
-     ↓
+↓
 lib/topology/gen*.nix (generators: settings + hostname → NixOS config)
-     ↓
+↓
 modules/core-router-topology.nix or modules/enable-wg-topology.nix
 ```
 

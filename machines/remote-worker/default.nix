@@ -2,13 +2,14 @@
 
 { config
 , pkgs
+, lib
 , hostname
 , ...
 }:
 {
   imports = [
     ./hardware-configuration.nix
-    ../../configuration.nix
+    # ../../configuration.nix — already in commonModules (flake.nix), do not duplicate
     ../../locale/tailscale.nix
     ../../server_services/nextcloud.nix
     ../../users/build.nix
@@ -60,6 +61,10 @@
       };
     };
   };
+  # Virtual disk devices — smartctl/smartd not applicable
+  services.smartd.enable = lib.mkForce false;
+  services.prometheus.exporters.smartctl.enable = lib.mkForce false;
+
   enableWgTopology.enable = true;
 
   networking.hostId = "e3fabb5b";

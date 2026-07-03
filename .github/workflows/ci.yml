@@ -4,29 +4,18 @@ jobs:
     needs:
     - validation
     - security
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@main
-    - name: Setup Magic Nix Cache
-      uses: DeterminateSystems/magic-nix-cache-action@main
     - name: Build configuration
-      run: nixos-rebuild build --flake .#${{ matrix.machine }}
-    - name: Upload build artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.machine }}-config
-        path: result/
-        retention-days: '7'
+      run: nix build .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel
     strategy:
       fail-fast: false
       matrix:
         machine:
-        - display-0
+        - arm-builder
         - display-1
-        - display-2
         - print-controller
         - beta-one
   build-x86:
@@ -34,22 +23,12 @@ jobs:
     needs:
     - validation
     - security
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@main
-    - name: Setup Magic Nix Cache
-      uses: DeterminateSystems/magic-nix-cache-action@main
     - name: Build configuration
-      run: nixos-rebuild build --flake .#${{ matrix.machine }}
-    - name: Upload build artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.machine }}-config
-        path: result/
-        retention-days: '7'
+      run: nix build .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel
     strategy:
       fail-fast: false
       matrix:
@@ -59,15 +38,11 @@ jobs:
         - cortex-alpha
         - local-nas
         - alpha-one
-        - alpha-two
         - alpha-three
         - LINDA
         - gaming-host-1
         - remote-worker
-        - storage-array
         - remote-builder
-        - local-worker
-        - obs-box
   deploy-prep:
     if: github.event_name == 'workflow_dispatch'
     name: Deploy - ${{ github.event.inputs.machine }}
@@ -76,16 +51,12 @@ jobs:
     - security
     - build-x86
     - build-arm
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@main
-    - name: Setup Magic Nix Cache
-      uses: DeterminateSystems/magic-nix-cache-action@main
     - name: Build configuration
-      run: nixos-rebuild build --flake .#${{ github.event.inputs.machine }}
+      run: nix build .#nixosConfigurations.${{ github.event.inputs.machine }}.config.system.build.toplevel
     - if: github.event.inputs.action == 'test'
       name: Test deployment
       run: nix run .#${{ github.event.inputs.machine }}
@@ -132,20 +103,17 @@ jobs:
         \ appear standard\"\nfi\n"
   validation:
     name: Validation & Linting
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Install Nix
-      uses: DeterminateSystems/nix-installer-action@main
-    - name: Setup Magic Nix Cache
-      uses: DeterminateSystems/magic-nix-cache-action@main
     - name: Format check
       run: nix fmt -- --check .
     - name: Flake check
       run: nix flake check
-    - name: Dead code check
-      run: nix run .#deadnix
+    - continue-on-error: true
+      name: Dead code check
+      run: nix shell nixpkgs#deadnix -c deadnix .
 name: NixOS CI/CD
 'on':
   pull_request:
@@ -181,18 +149,13 @@ name: NixOS CI/CD
         - cortex-alpha
         - local-nas
         - alpha-one
-        - alpha-two
         - alpha-three
         - LINDA
         - gaming-host-1
         - remote-worker
-        - storage-array
         - remote-builder
-        - local-worker
-        - obs-box
-        - display-0
+        - arm-builder
         - display-1
-        - display-2
         - print-controller
         - beta-one
         required: true

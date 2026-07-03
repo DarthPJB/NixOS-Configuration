@@ -448,6 +448,51 @@ The transformer-generator separation serves three purposes:
 | `genTailscale.nix` | Tailscale generator | ❌ Not implemented |
 | `genForwarding.nix` | Forwarding generator | ❌ Not implemented |
 
+### Future: Backup Transformer (overlord-II)
+
+**Scope:** Part of topology rectification. Follows existing two-layer pattern.
+
+**Data model:** Each machine's topology defines backup targets:
+
+```nix
+# topology/LINDA.nix
+{
+  backup = {
+    configFile = "rclone-config-file";  # default: shared config
+    targets = {
+      obsidian-v3 = {
+        source = "/bulk-storage/88-DB-v3/";
+        bucket = "obsidian-v3";
+        mode = "bisync";
+        interval = 60;
+      };
+    };
+  };
+}
+```
+
+**Data flow:**
+```
+topology.<machine>.backup
+         ↓
+mkBackupSettings.nix (transformer)
+         ↓
+genBackup.nix (generator)
+         ↓
+environment.rclone-target config
+```
+
+**Key decisions:**
+- Remote type: S3 (Minio) only
+- Config file: Single encrypted file, referenced by topology
+- Destination: Bucket name in topology, endpoint in config
+- Scope: Per-machine targets (not centralized)
+- NFS/local path: Future investigation
+
+**Files to create:**
+- `lib/topology/mkBackupSettings.nix` — Transformer
+- `lib/topology/genBackup.nix` — Generator
+
 **Note:** The WIP generators exist but are NOT validated against golden tests. They must produce identical output to the production transformers before they can be used.
 
 ## Progress Tracking

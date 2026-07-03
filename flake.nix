@@ -8,7 +8,7 @@
     lint-utils = { url = "github:homotopic/lint-utils"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
     secrix.url = "github:Platonic-Systems/secrix";
-    nixinate = { url = "github:Bargman-Tech/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
+    nixinate = { url = "github:Bargman-Tech/nixinate"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
     nixpkgs_llm.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
@@ -420,9 +420,9 @@
         };
         "aarch64-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.print-controller
-          self.nixosConfigurations.display-0
           self.nixosConfigurations.display-1
-          self.nixosConfigurations.display-2
+          self.nixosConfigurations.arm-builder
+          self.nixosConfigurations.arm-bootstrap
         ];
         "armv7l-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.beta-one
@@ -446,19 +446,42 @@
           host = topoIp "display-1";
           extraModules = [ ./users/build.nix ];
         };
-        display-2 = mkAarch64 "display-2" {
-          host = topoIp "display-2";
-          extraModules = [ ./users/build.nix ];
+        arm-builder = mkAarch64 "arm-builder" {
+          host = topoIp "arm-builder";
+          extraModules = [
+            ./users/deployment.nix
+            ./users/build.nix
+          ];
+        };
+        # Generic ARM bootstrap image — reusable for ALL ARM devices
+        # No WG, no device-specific config, open SSH on port 22
+        arm-bootstrap = nixpkgs_unstable.lib.nixosSystem {
+          system = "aarch64-linux";
+          modules = [
+            "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
+            nixos-hardware.nixosModules.raspberry-pi-4
+            secrix.nixosModules.default
+            ./machines/arm-bootstrap
+            {
+              nixpkgs.overlays = [
+                (final: super: {
+                  makeModulesClosure = x: super.makeModulesClosure (x // { allowMissing = true; });
+                })
+              ];
+              nixpkgs.hostPlatform = "aarch64-linux";
+              networking.hostName = "arm-bootstrap";
+              _module.args = globalArgs // {
+                hostname = "arm-bootstrap";
+                unstable = import nixpkgs_unstable { system = "aarch64-linux"; config.allowUnfree = true; };
+              };
+            }
+          ];
         };
         print-controller = mkAarch64 "print-controller" {
           host = topoIp "print-controller";
           hardware = nixos-hardware.nixosModules.raspberry-pi-3;
           extraModules = [ ./server_services/klipper.nix ];
-        };
-        display-0 = mkAarch64 "display-0" {
-          host = topoIp "display-0";
-          hardware = nixos-hardware.nixosModules.raspberry-pi-3;
-          extraModules = [ ./modifier_imports/minimal.nix ./modifier_imports/pi-firmware.nix ];
         };
 
         terminal-zero = mkX86_64 "terminal-zero" {
@@ -612,17 +635,18 @@
         storage-array = mkX86_64 "storage-array" {
           host = topoIp "storage-array";
         };
+        display-0 = mkAarch64 "display-0" {
+          host = topoIp "display-0";
+          hardware = nixos-hardware.nixosModules.raspberry-pi-3;
+          extraModules = [ ./modifier_imports/minimal.nix ./modifier_imports/pi-firmware.nix ];
+        };
+        display-2 = mkAarch64 "display-2" {
+          host = topoIp "display-2";
+          extraModules = [ ./users/build.nix ];
+        };
       };
 
       checks."x86_64-linux" = {
-        deadnix = nixpkgs.writeShellApplication {
-          name = "run-deadnix";
-          meta.description = "runs deadnix on the flake source";
-          text = ''
-            nix run ${deadnix}#deadnix "${self}"
-          '';
-        };
-
         nixpkgs-fmt = lint-utils.linters.x86_64-linux.nixpkgs-fmt { src = self; };
 
         # Network topology golden check for cortex-alpha (manual run)

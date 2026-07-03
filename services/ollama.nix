@@ -44,5 +44,9 @@
     self.inputs.nix-mcp-servers.packages.x86_64-linux.github-mcp-server
     self.inputs.nix-mcp-servers.packages.x86_64-linux.mcp-server-git
     self.inputs.nix-mcp-servers.packages.x86_64-linux.mcp-server-filesystem
+    self.inputs.nix-mcp-servers.packages.x86_64-linux.mcp-server-time
+    self.inputs.nix-mcp-servers.packages.x86_64-linux.mcp-server-sqlite
+    self.inputs.nix-mcp-servers.packages.x86_64-linux.mcp-server-gitlab
+    self.inputs.nix-mcp-servers.packages.x86_64-linux.mcp-server-playwright
   ];
 }
