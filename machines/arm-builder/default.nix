@@ -72,6 +72,7 @@
     kernelParams = [
       "console=ttyS1,115200n8"
       "cma=128M"
+      "usb_storage.quirks=31db:9210:u" # DockCase DSWC1P: disable broken UAS
     ];
     loader = {
       grub.enable = false;

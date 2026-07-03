@@ -1,10 +1,20 @@
 # ARM Build Limitations
 
-> **Status (2026-07-02):** 🔄 **ARM build capacity RESTORATION IN PROGRESS.** Cross-compiled
-> `arm-builder` image built and verified. Generic bootstrap image created. Deployment attempted,
-> bootstrap image rebuilt (missing trusted user). Ready to re-burn and deploy. display-0 and
-> display-2 moved to `dormantConfigurations`. Recovery plan:
-> [plans/arm-builder-bootstrap-2026-07-01.md](plans/arm-builder-bootstrap-2026-07-01.md).
+> **Status (2026-07-03):** 🔄 **ARM build capacity — arm-builder deployed, NVMe unstable.**
+> 
+> **Completed:**
+> - Arm-builder deployed via bootstrap → nixos-rebuild workflow. Live at WG `10.88.127.43:1108`.
+> - Display-2 identity fully restored in `topology.nix` and `real-topology/cortex-alpha.nix`. Arm-builder is an independent entry.
+> - `remote-builder.nix` updated to `10.88.127.43`. Build user SSH confirmed working from LINDA.
+> - `/nix` and swap configured on NVMe via UUID in `machines/arm-builder/default.nix` (nofail).
+> - `trusted-users = [ "deploy" ]` added to `users/deployment.nix`.
+> - `DenyUsers *` on port 22 replaced with `AllowUsers build` whitelist in `users/build.nix`.
+> 
+> **Known Issues:**
+> - **NVMe USB caddy requires UAS quirk.** DockCase DSWC1P (31db:9210) has broken UAS. Fixed with kernel param `usb_storage.quirks=31db:9210:u` in machine config. Without this, the bridge disconnects from USB 3.0 and falls back to USB 2.0 where it returns 0-byte capacity.
+> - **NVMe filesystem corruption.** The UAS crash during a delegated build left `/dev/sda1` with filesystem damage. fsck ran but the filesystem may need reformatting and re-syncing from the SD card.
+> - **Caddy requires manual reset after reboot.** The DockCase does not reliably enumerate at boot. `nofail` on the `/nix` mount allows the system to boot degraded.
+> - **Cortex-alpha golden stale.** Still references display-2's old WG key. Needs regeneration after cortex-alpha rebuild.
 
 ## Device Roles
 
@@ -196,8 +206,9 @@ and verified. Ready to flash to SD card and boot on Pi 4 hardware.
 **Hardware Status:**
 | Component | Status |
 |-----------|--------|
-| NVMe | ✓ Installed, WD Black SN750 (250GB nominal, LUKS-encrypted) |
+| NVMe | ✓ Installed, WD Black SN750 (500GB nominal) |
 | USB Caddy | DockCase SSD Enclosure C1P (DSWC1P), SN 202308101777 — exemplar unit with secondary power port. Only this caddy works reliably; other DockCase units return 0-byte SCSI sense errors (ASC=0x20). |
+| UAS Quirk | **REQUIRED:** `usb_storage.quirks=31db:9210:u` — DockCase bridge has broken UAS implementation. Without this quirk the VL805 USB 3.0 controller resets the device, causing it to fall back to USB 2.0 (0-byte capacity). Set via `boot.kernelParams` in machine config. |
 | `/dev/sda1` | ✓ ext4 (for `/nix/store`) |
 | `/dev/sda2` | ✓ swap active |
 | RAM | 3.7GB (2.5GB available) |

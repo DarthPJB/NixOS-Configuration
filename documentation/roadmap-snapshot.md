@@ -1,5 +1,26 @@
 # Roadmap Snapshot — April 2026
 
+> **⚠️ HISTORICAL SNAPSHOT — DO NOT RELY ON FOR CURRENT STATUS**
+>
+> Extracted from roadmap.html (April 15, 2026). This file is preserved for
+> historical reference only. It predates the overlord branch cycle and the
+> phased development model.
+>
+> **For current status, see `AGENTS.md`** (Phases A–C, active architecture,
+> golden test discipline, deployment flow).
+>
+> Key divergences as of July 2026:
+> - Phase A (Backup Capabilities) is complete — `lib/rclone-target.nix` extended
+>   with `mode`, `calendar`, `bwlimit`, `preExec`; gaming-host-1 daily backup
+>   running.
+> - Phase B (Transformer Architecture) is in progress — WIP transformers
+>   (`mkDnsSettings`, `mkFirewallSettings`, `mkNginxSettings`) and generators.
+> - Phase C (Library Split: ketchup/secret-sauce/mayo) is planned.
+> - Build array planning (Phase 0–5) has been scoped but deprioritized.
+> - ARM CI is blocked pending arm-builder hardware restoration.
+> - SSH multiplexing via topology is planned for overlord-II (see
+>   `plans/ssh-multiplex-topology-2026-07-03.md`).
+
 Extracted from roadmap.html (April 15, 2026). Historical snapshot of development goals, technical debt, and success metrics. For current phased development status, see `AGENTS.md`.
 
 ## Development Timeline

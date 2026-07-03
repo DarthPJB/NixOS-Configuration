@@ -39,7 +39,7 @@ in
       PasswordAuthentication = no
 
     Match LocalPort 22
-      DenyUsers *
+      AllowUsers build
   '';
 
   services.openssh.listenAddresses = lib.mkIf (wgIp != null) [

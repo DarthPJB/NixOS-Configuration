@@ -6,10 +6,10 @@ Extracted from security.html (April 2026). Consolidates security architecture, u
 
 | User | UID | Groups | Sudo | SSH Port | Scope | Purpose |
 |------|-----|--------|------|----------|-------|---------|
-| John88 | 1108 | wheel, libvirtd, video, vboxusers, dialout, disk, networkManager | Yes (password) | 1108 | All | Primary user |
+| John88 | 1108 | wheel, libvirtd, video, vboxusers, dialout, disk, networkManager, systemd-journal | Yes (password) | 1108 | All | Primary user |
 | build | 1111 | — | No | 22 | WireGuard only | Remote Nix builds |
 | deploy | 1110 | wheel | NOPASSWD ALL | 1108 | WireGuard only | nixinate deployment |
-| inspect | 1112 | — | No | 1108 | WireGuard only | Passive system inspection |
+| inspect | 1112 | systemd-journal | No | 1108 | WireGuard only | Passive system inspection |
 
 Service accounts are isolated per-service. No shared accounts. No root login.
 
