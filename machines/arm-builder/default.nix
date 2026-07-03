@@ -13,12 +13,9 @@
   nixpkgs.buildPlatform = "x86_64-linux";
 
   imports = [
-    # configuration.nix is blocked via disabledModules below —
-    # commonModules injects it for ALL machines, but we don't need
-    # tools.nix (magic-wormhole), monitoring, WiFi, or admin user.
     ../../modules/enable-wg-topology.nix
-    # ../../environments/lean-kernel.nix  # INTENTIONALLY OMITTED — needed later for display machines
     ../../environments/sshd.nix
+    ../../environments/metrics.nix
     ../../modifier_imports/flakes.nix
     ../../users/darthpjb.nix
     ../../users/build.nix
@@ -88,15 +85,4 @@
 
   # SSH for nixinate deployment and management
   services.openssh.enable = true;
-
-  # Prometheus node exporter — minimal metrics for build monitoring
-  services.prometheus.exporters.node = {
-    enable = true;
-    port = 9100;
-    listenAddress = "10.88.127.43";
-    enabledCollectors = [ "systemd" "diskstats" "meminfo" "loadavg" "cpu" "filesystem" ];
-  };
-
-  # Firewall: allow node_exporter from WireGuard network
-  networking.firewall.allowedTCPPorts = [ 9100 ];
 }

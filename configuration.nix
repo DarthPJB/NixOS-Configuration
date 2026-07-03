@@ -46,7 +46,7 @@ in
     ./environments/tools.nix
     ./modules/nixos-deployment-exporter.nix
     ./modules/sysdiag.nix
-    ./modules/smart-monitoring.nix
+    ./environments/metrics.nix
   ];
   environment.systemPackages = with pkgs; [
     build-all-script
@@ -56,7 +56,6 @@ in
     pkgs.bottom
   ];
   networking.firewall.interfaces."wireg0".allowedTCPPorts = [
-    config.services.prometheus.exporters.node.port
     config.services.nixos-deployment-exporter.port
   ];
   services.nixos-deployment-exporter = {
@@ -92,22 +91,7 @@ in
   #   retentionCount = 20;
   # };
 
-  services.prometheus = {
-    exporters.node = {
-      enable = true;
-      port = 3100;
-      enabledCollectors = [
-        "systemd"
-        "hwmon"
-        "cpu"
-        "drm"
-        "ethtool"
-        "logind"
-        "wifi"
-      ];
-      disabledCollectors = [ "textfile" ];
-    };
-  };
+
   services.journald = {
     extraConfig = ''
       Storage=persistent
