@@ -2,9 +2,15 @@
 
 > **Created:** 2026-07-03
 > **Last updated:** 2026-07-03
-> **Status:** Pending — not yet scheduled
+> **Status:** Blocked — NVMe failure incident on 2026-07-03
+> **Superseded by:** `documentation/incidents/2026-07-03-arm-builder-nvme-failure.md`
 > **Parent:** `arm-builder-bootstrap-2026-07-01.md` (Phase 2/3)
 > **Parent directive:** Correctness over speed; closed-system builds; firmware maintenance is a fact of life
+
+> **INCIDENT:** The NVMe (WD SN750 in DockCase DSWC1P) failed during CI kernel builds
+> on 2026-07-03. The system lost `/nix` and became unresponsive. The firmware updates
+> documented below were not completed before the CI dispatched builds to arm-builder.
+> See incident report: `documentation/incidents/2026-07-03-arm-builder-nvme-failure.md`
 
 ## Context
 
