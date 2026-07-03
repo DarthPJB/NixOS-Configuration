@@ -10,12 +10,22 @@
 #
 # See: https://github.com/prometheus/prometheus-mcp
 { lib
-, buildGoModule
+, buildGo126Module
 , fetchFromGitHub
+, fetchzip
 , versionCheckHook
 }:
 
-buildGoModule (finalAttrs: {
+let
+  docsVersion = "bd8a3f4fe92454ea0709895d6d9c771b8e86e710";
+  docs = fetchzip {
+    name = "prometheus-docs-${docsVersion}";
+    url = "https://github.com/prometheus/docs/archive/${docsVersion}.tar.gz";
+    hash = "sha256-S4nlqko+Boc97xF5uwukrLkcfoeF7Sn+orbyNfPmM/k=";
+    stripRoot = false;
+  };
+in
+buildGo126Module (finalAttrs: {
   pname = "prometheus-mcp-server";
   version = "0.18.0";
 
@@ -23,20 +33,28 @@ buildGoModule (finalAttrs: {
     owner = "prometheus";
     repo = "prometheus-mcp";
     tag = "v${finalAttrs.version}";
-    # NOTE: On first build, replace lib.fakeHash with the hash Nix provides
-    hash = lib.fakeHash;
+    hash = "sha256-Zlzh63YnsYbr+yPDY+Pxy3uk/WOTeqx3StogfTjNO6Q=";
   };
 
-  vendorHash = lib.fakeHash;
+  vendorHash = "sha256-QAny2SDYHaUHgiUn0KNesDmwfwh5NWpUB3FtwsB2g/I=";
 
-  subPackages = [ "cmd/prometheus-mcp" ];
+  subPackages = [ "cmd/prometheus-mcp-server" ];
+
+  # Copy pre-fetched Prometheus docs into the embed directory
+  preBuild = ''
+    DOCS_DIR="cmd/prometheus-mcp-server/external/docs"
+    rm -rf "$DOCS_DIR"
+    mkdir -p "$DOCS_DIR"
+    cp -r ${docs}/* "$DOCS_DIR/"
+    echo "${docsVersion}" > "$DOCS_DIR/COMMIT_HASH"
+  '';
 
   ldflags = [
     "-s"
     "-w"
-    "-X=main.version=${finalAttrs.version}"
-    "-X=main.commit=${finalAttrs.src.rev}"
-    "-X=main.date=1970-01-01T00:00:00Z"
+    "-X=github.com/tjhop/prometheus-mcp-server/internal/version.Version=${finalAttrs.version}"
+    "-X=github.com/tjhop/prometheus-mcp-server/internal/version.Commit=${finalAttrs.src.rev}"
+    "-X=github.com/tjhop/prometheus-mcp-server/internal/version.BuildDate=1970-01-01T00:00:00Z"
   ];
 
   doInstallCheck = true;

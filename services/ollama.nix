@@ -48,5 +48,6 @@
     self.inputs.nix-mcp-servers.packages.x86_64-linux.mcp-server-sqlite
     self.inputs.nix-mcp-servers.packages.x86_64-linux.mcp-server-gitlab
     self.inputs.nix-mcp-servers.packages.x86_64-linux.mcp-server-playwright
+    pkgs.prometheus-mcp-server
   ];
 }

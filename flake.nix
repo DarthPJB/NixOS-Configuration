@@ -46,6 +46,7 @@
         pkgs_llm = import nixpkgs_llm { system = "x86_64-linux"; config.allowUnfree = true; config.permittedInsecurePackages = [ "nodejs-20.20.2" "nodejs-slim-20.20.2" ]; };
       };
       minecraft-curseforge-builder = nixpkgs.callPackage ./pkgs/minecraft-curseforge { };
+      prometheus-mcp-server-builder = nixpkgs.callPackage ./pkgs/prometheus-mcp-server { };
       commonModules = [
         secrix.nixosModules.default
         ratty.nixosModules.default
@@ -57,6 +58,7 @@
             ratty.overlays.default
             (final: prev: {
               minecraft-curseforge = minecraft-curseforge-builder;
+              prometheus-mcp-server = prometheus-mcp-server-builder;
               # minecraft-curseforge-atm10 = self.packages.x86_64-linux.minecraft-curseforge-atm10;
               # minecraft-curseforge-atm10-to-the-sky = self.packages.x86_64-linux.minecraft-curseforge-atm10-to-the-sky;
               minecraft-curseforge-all-the-mons = self.packages.x86_64-linux.minecraft-curseforge-all-the-mons;
