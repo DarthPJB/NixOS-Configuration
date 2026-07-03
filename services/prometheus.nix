@@ -168,6 +168,7 @@ in
               # display-0 moved to dormantConfigurations
               "10.88.127.41:${toString self.nixosConfigurations.display-1.config.services.prometheus.exporters.smartctl.port}"
               "10.88.127.42:${toString self.nixosConfigurations.display-2.config.services.prometheus.exporters.smartctl.port}"
+              "10.88.127.43:${toString self.nixosConfigurations.arm-builder.config.services.prometheus.exporters.smartctl.port}"
               # display-0 dormant; arm-builder: smartctl not yet configured (USB-NVMe)
             ];
           }

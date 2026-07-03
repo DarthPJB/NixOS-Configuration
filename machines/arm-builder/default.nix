@@ -85,4 +85,8 @@
 
   # SSH for nixinate deployment and management
   services.openssh.enable = true;
+
+  # smartd can't detect SMART through the USB-NVMe bridge — disable it.
+  # smartctl_exporter (from metrics.nix) handles USB devices directly.
+  services.smartd.enable = false;
 }
