@@ -22,9 +22,8 @@ let
   ];
 
   armMachines = [
-    "display-0"
+    "arm-builder"
     "display-1"
-    "display-2"
     "print-controller"
     "beta-one" # Added: armv7l-linux machine
   ];

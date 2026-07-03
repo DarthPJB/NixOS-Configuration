@@ -29,6 +29,7 @@ in
       download-buffer-size = lib.mkDefault 524288000;
       #  max-jobs = lib.mkDefault 10;
       cores = lib.mkDefault 0;
+      trusted-users = [ "build" ];
     };
     #nrBuildUsers = lib.mkDefault 10;
   };

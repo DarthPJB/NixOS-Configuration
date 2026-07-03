@@ -13,7 +13,6 @@
     #../../environments/hyperland.nix
     ../../environments/i3wm.nix
     ../../environments/browsers.nix
-    ../../environments/lean-kernel.nix
   ];
   system.name = "${hostname}";
   fileSystems."/" = {

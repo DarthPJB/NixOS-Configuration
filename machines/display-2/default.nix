@@ -21,7 +21,6 @@
     ../../environments/i3wm.nix
     ../../environments/rtl-sdr.nix
     ../../environments/browsers.nix
-    ../../environments/lean-kernel.nix
   ];
   system.name = "${hostname}";
   fileSystems."/" = {

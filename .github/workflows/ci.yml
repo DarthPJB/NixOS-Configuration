@@ -1,3 +1,4 @@
+warning: Git tree '/speed-storage/bargman-tech/NixOS-Configuration' has uncommitted changes
 jobs:
   build-arm:
     name: Build ARM Configurations
@@ -14,9 +15,8 @@ jobs:
       fail-fast: false
       matrix:
         machine:
-        - display-0
+        - arm-builder
         - display-1
-        - display-2
         - print-controller
         - beta-one
   build-x86:
@@ -155,9 +155,8 @@ name: NixOS CI/CD
         - gaming-host-1
         - remote-worker
         - remote-builder
-        - display-0
+        - arm-builder
         - display-1
-        - display-2
         - print-controller
         - beta-one
         required: true

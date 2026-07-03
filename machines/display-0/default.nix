@@ -13,7 +13,6 @@
   imports = [
     ../../configuration.nix
     ./piscreen.nix
-    ../../environments/lean-kernel.nix
   ];
   swapDevices = [{ device = "/dev/disk/by-uuid/ea2a84bb-a66c-4291-ac03-597999559a5d"; }];
   #swapDevices = [{ device = "/swapfile"; size = 1024; }];

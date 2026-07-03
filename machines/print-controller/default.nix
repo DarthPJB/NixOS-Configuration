@@ -10,7 +10,6 @@
     ../../configuration.nix
     ../../modifier_imports/zram.nix
     ../../modules/enable-wg-topology.nix
-    ../../environments/lean-kernel-print.nix
   ];
   enableWgTopology.enable = true;
   boot = {
