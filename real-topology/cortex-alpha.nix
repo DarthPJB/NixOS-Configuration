@@ -220,6 +220,16 @@
         services = [ ];
       };
 
+      arm-builder = {
+        ip = "10.88.127.43";
+        hostname = "arm-builder";
+        routing = {
+          tailscale = false;
+          wireguard = true;
+        };
+        services = [ ];
+      };
+
       local-nas = {
         ip = "10.88.127.3";
         hostname = "local-nas-wg";
@@ -572,6 +582,7 @@
       "display-0"
       "display-1"
       "display-2"
+      "arm-builder"
       "dlyon"
       "gaming-host-1"
       "grimterm"
