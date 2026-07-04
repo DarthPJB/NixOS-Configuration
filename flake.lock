@@ -6,11 +6,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1783133887,
-        "narHash": "sha256-XXYsRQtpvoDu+qpcJabB1A500+vP7ME6axxpx4R1M0A=",
+        "lastModified": 1783134758,
+        "narHash": "sha256-MUUQlvrfbr1D4IMuIOMyw93+3thrKnVYMOhhzMtSBU4=",
         "ref": "refs/heads/main",
-        "rev": "2a47d97429fa283c5f01a9ed2ec98c6b2d08dbd9",
-        "revCount": 373,
+        "rev": "fb1683438d9a6bb2f67b04ffca14e24873c9a6ef",
+        "revCount": 375,
         "type": "git",
         "url": "ssh://git@gitlab.com/mecha-team-zero/llm-core.git"
       },

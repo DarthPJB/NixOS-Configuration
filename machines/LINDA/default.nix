@@ -449,6 +449,12 @@
     };
   };
 
+  # secrix secret declarations for MCP tokens
+  secrix.system.secrets.github-PAT-token.encrypted.file =
+    "${self}/secrets/github-PAT-token";
+  secrix.system.secrets.gitlab-PAT-token.encrypted.file =
+    "${self}/secrets/gitlab-PAT-token";
+
   # OpenCode fleet configuration — full fleet with MCP servers
   services.opencode-fleet = {
     enable = true;
@@ -460,13 +466,11 @@
     mcp.playwright.enable = true;
     mcp.github = {
       enable = true;
-      # Token file path — secrix secret declared in flake.nix or separate module
-      tokenFile = config.secrix.system.secrets.github-pat-token.decrypted.path;
+      tokenFile = config.secrix.system.secrets.github-PAT-token.decrypted.path;
     };
     mcp.gitlab = {
       enable = true;
-      # Token file path — secrix secret declared in flake.nix or separate module
-      tokenFile = config.secrix.system.secrets.gitlab-pat-token.decrypted.path;
+      tokenFile = config.secrix.system.secrets.gitlab-PAT-token.decrypted.path;
     };
     mcp.prometheus = {
       enable = true;
