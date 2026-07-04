@@ -22,12 +22,12 @@
 }:
 
 let
-  version = "1.0.0-rc.7";
+  version = "1.0.1";
   src = fetchurl {
-    url = "https://mediafilez.forgecdn.net/files/8249/958/ServerFiles-${version}.zip";
-    hash = "sha256-C02SBrJ+1rXrWn2XIHUYIYhu/sFlgIiAERJlzRGPTnI=";
+    url = "https://mediafilez.forgecdn.net/files/8360/850/ServerFiles-${version}.zip";
+    hash = "sha256-FXK/iFkcwAJJwnZTnzvmzvKb9a8YM6KZfpJjPHxtLck=";
   };
-  moaPatch = import ../patches/rc7-moa-patch.nix { inherit lib version; };
+  moaPatch = import ../patches/v1.0.1-moa-patch.nix { inherit lib version; };
 in
 minecraft-curseforge {
   name = "all-the-mons";
@@ -36,5 +36,5 @@ minecraft-curseforge {
 
   # Fixed-output hash of the built server directory.
   # Nix will tell you the correct value on the first failed build.
-  outputHash = "sha256-9tId0CJfRlwA/ch1nNkJkYktul4Im3XdqHCN0sBc6/g=";
+  outputHash = "sha256-1bDkPWWq8zknj0EJsXN4VLwsZygzLTHFU7WW/nH590A=";
 }
