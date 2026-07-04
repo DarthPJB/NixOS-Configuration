@@ -4,8 +4,12 @@
 , pkgs
 , lib
 , hostname
+, self
 , ...
 }:
+let
+  personal-site = self.inputs.personal-site;
+in
 {
   imports = [
     ./hardware-configuration.nix
@@ -49,6 +53,8 @@
           #proxyWebsockets = false; # needed if you need to use websocket
         };
       };
+      # johnbargman.com — split-horizon
+      # Public: serves existing webroot on all interfaces
       "johnbargman.com" = {
         enableACME = true;
         acmeRoot = null;
@@ -56,7 +62,17 @@
         listenAddresses = [ "0.0.0.0" ];
         locations."/" = {
           root = ../../webroot;
-          #proxyWebsockets = false; # needed if you need to use websocket
+        };
+      };
+      # WireGuard: serves personal-site on WG IP only
+      "johnbargman.com-wg" = {
+        serverName = "johnbargman.com";
+        enableACME = true;
+        acmeRoot = null;
+        forceSSL = true;
+        listenAddresses = [ "10.88.127.50" ];
+        locations."/" = {
+          root = personal-site.packages.${pkgs.system}.webroot;
         };
       };
     };
@@ -89,6 +105,13 @@
     username = "admin";
     passwordFile = config.secrix.system.secrets.nextcloud_password_file.decrypted.path;
     user = "nextcloud";
+  };
+
+  # OpenCode fleet configuration
+  services.opencode-fleet = {
+    enable = true;
+    voyagerOnly = true; # Client machine — deploy Voyager only
+    user = "John88";
   };
 
 }

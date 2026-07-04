@@ -13,7 +13,7 @@
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
     nixpkgs_llm.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
-    nix-mcp-servers.url = "github:cameronfyfe/nix-mcp-servers";
+    # nix-mcp-servers.url = "github:cameronfyfe/nix-mcp-servers";  # Moved to LLM-CORE
     nixos-hardware.url = "github:nixos/nixos-hardware";
     hype-train-claw.url = "github:marijanp/zeroclaw";
     hype-train-outlaw.url = "git+https://gitlab.com/mecha-team-zero/macha-orchestration";
@@ -29,8 +29,10 @@
     #   url = "path:/speed-storage/LLM-END/denton-glasses";
     # };
     denton-glasses.url = "git+https://gitlab.com/mecha-team-zero/denton-glasses.git";
+    personal-site = { url = "git+ssh://git@gitlab.com/darthpjb/personal-site.git"; };
+    LLM-CORE = { url = "git+ssh://git@gitlab.com/mecha-team-zero/llm-core.git"; };
   };
-  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses }:
+  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
@@ -43,6 +45,8 @@
         inherit ikbaeb-th;
         inherit bargman-assets;
         inherit denton-glasses;
+        inherit personal-site;
+        inherit LLM-CORE;
         pkgs_llm = import nixpkgs_llm { system = "x86_64-linux"; config.allowUnfree = true; config.permittedInsecurePackages = [ "nodejs-20.20.2" "nodejs-slim-20.20.2" ]; };
       };
       minecraft-curseforge-builder = nixpkgs.callPackage ./pkgs/minecraft-curseforge { };
@@ -547,6 +551,7 @@
             xlibre-overlay.nixosModules.nvidia-ignore-ABI
             denton-glasses.nixosModules.eye-tracking
             denton-glasses.nixosModules.voxtype
+            self.inputs.LLM-CORE.nixosModules.opencode-fleet
             {
               programs.ratty = {
                 enable = true;
@@ -570,6 +575,7 @@
           host = topoIp "remote-worker";
           extraModules = [
             ./users/build.nix
+            self.inputs.LLM-CORE.nixosModules.opencode-fleet
             {
               services.nginx = {
                 enable = true;

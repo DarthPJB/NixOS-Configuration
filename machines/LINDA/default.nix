@@ -449,4 +449,29 @@
     };
   };
 
+  # OpenCode fleet configuration — full fleet with MCP servers
+  services.opencode-fleet = {
+    enable = true;
+    voyagerOnly = false;  # Full fleet
+    mcp.git.enable = true;
+    mcp.filesystem.enable = true;
+    mcp.time.enable = true;
+    mcp.sqlite.enable = true;
+    mcp.playwright.enable = true;
+    mcp.github = {
+      enable = true;
+      # Token file path — secrix secret declared in flake.nix or separate module
+      tokenFile = config.secrix.system.secrets.github-pat-token.decrypted.path;
+    };
+    mcp.gitlab = {
+      enable = true;
+      # Token file path — secrix secret declared in flake.nix or separate module
+      tokenFile = config.secrix.system.secrets.gitlab-pat-token.decrypted.path;
+    };
+    mcp.prometheus = {
+      enable = true;
+      prometheusUrl = "http://10.88.127.3:8080";
+    };
+  };
+
 }
