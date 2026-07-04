@@ -42,10 +42,11 @@
 
   # ── Speech-to-Text (Voxtype / Whisper) ───────────────────────────
   #
-  # Audio pipeline: USB mic → PipeWire → PipeWire-Pulse → voxtype (libpulse)
+  # Audio pipeline: USB mic → PipeWire → PipeWire-ALSA → voxtype (alsa-lib)
+  # NOTE: voxtype-vulkan package links alsa-lib (not pulseaudio); see package.nix
   #
   # LINDA uses PipeWire with ALSA + PulseAudio compatibility.
-  # Voxtype talks PulseAudio (libpulse), which PipeWire-Pulse provides.
+  # Voxtype uses alsa-lib (linked in package.nix), so PipeWire-ALSA handles routing.
   # The ALSA udev rules from the voxtype module are compatible —
   # pipewire-alsa still exposes /dev/snd/pcm*c* device nodes.
   #
@@ -72,8 +73,20 @@
     # LINDA has 2 GPUs — use primary GPU (index 0) for Vulkan inference
     gpu = {
       backend = "vulkan";
-      #      primaryIndex = 1; # GTX 1050 (secondary GPU, offload whisper from RTX 3060)
     };
+
+    # X11-only driver chain — skip Wayland trash (wtype) and uninstalled drivers
+    # Valid voxtype drivers: wtype, eitype, dotool, ydotool, clipboard, xclip
+    # NOTE: xdotool is NOT a valid voxtype driver variant
+    output.driverOrder = [ "dotool" "xclip" ];
+
+    # RUST_LOG-based logging (tracing-subscriber with EnvFilter)
+    # Bump to "debug" or "trace" for troubleshooting
+    logLevel = "info";
+
+    # Durable /dev/uinput access via uinput group + udev rule
+    # (default is true, but explicit for documentation)
+    uinput.enable = true;
 
     loadModels = [ "base.en" ];
 
@@ -114,7 +127,7 @@
   #   SUBSYSTEM=="sound", KERNEL=="controlC*", GROUP="audio", MODE="0660"
   #
   # These are compatible. pipewire-alsa creates /dev/snd/pcm*c* nodes.
-  # Voxtype uses libpulse (not raw ALSA), so pipewire-pulse handles routing.
+  # Voxtype uses alsa-lib (linked in package.nix), so PipeWire-ALSA handles routing.
   #
   # If voxtype cannot find the mic, check:
   #   1. pactl list sources short    — verify source exists

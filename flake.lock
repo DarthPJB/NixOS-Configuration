@@ -229,11 +229,11 @@
         "openface": "openface"
       },
       "locked": {
-        "lastModified": 1781723106,
-        "narHash": "sha256-Lf9SAYaD18H+hHamX1ygkEoqi0bBXtXjzydWEeDz4R4=",
+        "lastModified": 1783133154,
+        "narHash": "sha256-0MshUZy/+1QqESxbFh17FYWISPZuU3SMMynEXI3K3z0=",
         "ref": "refs/heads/main",
-        "rev": "149da6fc548740878f427482c9a9bb8a3b2ebc3d",
-        "revCount": 35,
+        "rev": "941f8251174fa1eadf03e9e3b1866205a800bbb5",
+        "revCount": 37,
         "type": "git",
         "url": "https://gitlab.com/mecha-team-zero/denton-glasses.git"
       },

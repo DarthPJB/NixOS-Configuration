@@ -28,7 +28,7 @@
     # denton-glasses = {
     #   url = "path:/speed-storage/LLM-END/denton-glasses";
     # };
-    denton-glasses.url = "git+https://gitlab.com/mecha-team-zero/denton-glasses.git";
+denton-glasses.url = "git+https://gitlab.com/mecha-team-zero/denton-glasses.git";
     personal-site = { url = "git+ssh://git@gitlab.com/darthpjb/personal-site.git"; };
     LLM-CORE = { url = "git+ssh://git@gitlab.com/mecha-team-zero/llm-core.git"; };
   };
