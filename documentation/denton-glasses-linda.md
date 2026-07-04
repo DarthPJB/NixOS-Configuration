@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-17
 **Machine:** LINDA (WireGuard: `10.75.69.88`, sshPort: `1108`)
-**Status:** ✅ Voxtype operational, eye-tracking configured (manual start)
+**Status:** ✅ Voxtype operational (post-2026-07-04 intermittent typing fix)
 
 ---
 
@@ -41,7 +41,7 @@ Both modules are imported via `flake.nix` → `extraModules` in the LINDA machin
 - **Config:** `/etc/voxtype/config.toml` (declarative, from NixOS module)
 
 ### Verified Working
-- [x] Hotkey detection (META+V)
+- [x] Hotkey detection (META+V) — verified working (was intermittent pre-fix due to driver_order + uinput)
 - [x] Model loading (base.en, Vulkan GPU)
 - [x] Audio recording (PipeWire-ALSA default device)
 - [x] Transcription output (type mode)
@@ -117,6 +117,39 @@ The following systemd service hardening is currently **commented out**:
 ### ALSA Fallback
 Voxtype uses ALSA directly (not libpulse). The `voxtype-vulkan` package is not linked against `libpulse`. Using `device = "default"` with PipeWire-ALSA routing works correctly.
 
+### Intermittent Typing (Resolved 2026-07-04)
+**Root cause:** /dev/uinput access was ACL-gated by logind active-session state
+(revoked on VT switch / screen lock / session change). No `uinput` group existed.
+dotool fell back to clipboard silently when the ACL was revoked.
+
+**Driver chain fix:** voxtype's auto-detected driver_order tried `wtype`
+(Wayland-only, always fails on X11) first, adding latency and a failure
+point before dotool. Now set explicitly to `[dotool xclip]` via the
+denton-glasses module's new `output.driverOrder` option.
+
+**Fix:** denton-glasses module now creates a `uinput` group + udev rule
+(`uinput.enable=true`, default). `driver_order` set to `[dotool xclip]`
+(skips Wayland-only `wtype`). `modifier_release_timeout_ms` bumped
+750→1500ms for slow META release on X11. `pre_type_delay_ms=50` added
+for virtual keyboard init time.
+
+### Empty Journal (Partially Resolved 2026-07-04)
+**Root cause:** Per-UID journald namespace (`systemd-journald@1108.service`)
+is inactive (dead) — systemd-258 / NixOS-25.11 regression. Affects all
+user units, not just voxtype. Socket activation not firing; namespace
+dir `/run/systemd/journal.1108/` doesn't exist.
+
+**Workaround:** `RUST_LOG=voxtype=info` wired via `services.voxtype.logLevel`
+(new denton-glasses module option). Logs route to journald stdout socket
+but may not persist in `journalctl --user -u voxtype` until the namespace
+journald issue is resolved (separate task, tracked as Phase 6).
+
+For immediate debugging, run voxtype manually with full stderr:
+```bash
+systemctl --user stop voxtype
+DISPLAY=:0 XDG_RUNTIME_DIR=/run/user/1108 VK_DEVICE_INDEX=0 RUST_LOG=voxtype=debug voxtype daemon 2>&1 | tee /tmp/voxtype-debug.log
+```
+
 ---
 
 ## Troubleshooting
@@ -145,6 +178,32 @@ cat /proc/asound/cards
 ```bash
 systemctl --user stop voxtype
 DISPLAY=:0 XDG_RUNTIME_DIR=/run/user/1108 voxtype daemon
+```
+
+### Enable Debug Logging (NixOS-level)
+In `environments/denton-glasses.nix`:
+```nix
+services.voxtype.logLevel = "debug";  # or "trace" for maximum detail
+```
+Rebuild and deploy, then:
+```bash
+journalctl --user -u voxtype --since "5 min ago" --no-pager
+```
+Note: per-user journald namespace may be inactive (systemd-258 regression);
+if journal shows empty, use the manual stderr method above.
+
+### Verify Driver Chain (post-fix)
+```bash
+voxtype config | grep driver_order
+# Expected: driver_order = [Dotool, Xclip] (X11-only, skips Wayland wtype)
+```
+
+### Verify /dev/uinput Access (post-fix)
+```bash
+getent group uinput
+# Expected: group exists with John88 as member
+getfacl /dev/uinput
+# Expected: group::rw- (durable, not session-state ACL-gated)
 ```
 
 ### Re-download Model
