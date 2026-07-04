@@ -210,17 +210,13 @@
         "openface": "openface"
       },
       "locked": {
-        "lastModified": 1781723106,
-        "narHash": "sha256-Lf9SAYaD18H+hHamX1ygkEoqi0bBXtXjzydWEeDz4R4=",
-        "ref": "refs/heads/main",
-        "rev": "149da6fc548740878f427482c9a9bb8a3b2ebc3d",
-        "revCount": 35,
-        "type": "git",
-        "url": "https://gitlab.com/mecha-team-zero/denton-glasses.git"
+        "narHash": "sha256-FQ+HBabxoNagqk9J+iURVSDHet1dxoEFgpWIcUFAkBI=",
+        "path": "/speed-storage/bargman-tech/denton-glasses",
+        "type": "path"
       },
       "original": {
-        "type": "git",
-        "url": "https://gitlab.com/mecha-team-zero/denton-glasses.git"
+        "path": "/speed-storage/bargman-tech/denton-glasses",
+        "type": "path"
       }
     },
     "determinate": {
