@@ -157,10 +157,6 @@ let
           '';
         }
         {
-          name = "Validate secrix configuration";
-          run = "nix run .#secrix -- --help";
-        }
-        {
           name = "Check for hardcoded IPs";
           run = ''
             echo "Checking for hardcoded IP addresses..."

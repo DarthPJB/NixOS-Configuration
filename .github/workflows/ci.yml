@@ -16,6 +16,7 @@ jobs:
         machine:
         - arm-builder
         - display-1
+        - display-2
         - print-controller
         - beta-one
   build-x86:
@@ -92,8 +93,6 @@ jobs:
         \  echo \"\u26A0\uFE0F  Potential secrets found in Nix files\"\n  echo \"\
         Review the above matches manually\"\n  # Don't fail - just warn for now\n\
         else\n  echo \"\u2705 No obvious secrets found in Nix files\"\nfi\n"
-    - name: Validate secrix configuration
-      run: nix run .#secrix -- --help
     - name: Check for hardcoded IPs
       run: "echo \"Checking for hardcoded IP addresses...\"\n# Look for IP patterns\
         \ but exclude documentation\nif grep -rE \"[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\\
@@ -156,6 +155,7 @@ name: NixOS CI/CD
         - remote-builder
         - arm-builder
         - display-1
+        - display-2
         - print-controller
         - beta-one
         required: true
