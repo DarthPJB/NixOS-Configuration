@@ -20,13 +20,10 @@
     xlibre-overlay.url = "git+https://codeberg.org/takagemacoed/xlibre-overlay";
     ratty.url = "github:DarthPJB/ratty/fix/nix-module-improvements";
     ikbaeb-th = { url = "github:DarthPJB/IKBAEB-th"; };
-    bargman-assets = {
-      url = "git+https://gitlab.com/mecha-team-zero/bargman-assets.git?ref=main";
-      inputs.nixpkgs.follows = "nixpkgs_stable";
-    };
+    bargman-assets.url = "git+https://gitlab.com/mecha-team-zero/bargman-assets.git";
     denton-glasses.url = "git+https://gitlab.com/mecha-team-zero/denton-glasses.git";
     personal-site = { url = "git+ssh://git@gitlab.com/darthpjb/personal-site.git"; };
-    LLM-CORE = { url = "git+ssh://git@gitlab.com/mecha-team-zero/llm-core.git"; };
+    LLM-CORE = { url = "git+https://gitlab.com/mecha-team-zero/llm-core.git"; };
   };
   outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE }:
     let
