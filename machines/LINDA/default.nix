@@ -458,7 +458,7 @@
   # OpenCode fleet configuration — full fleet with MCP servers
   services.opencode-fleet = {
     enable = true;
-    voyagerOnly = false;  # Full fleet
+    voyagerOnly = false; # Full fleet
     mcp.git.enable = true;
     mcp.filesystem.enable = true;
     mcp.time.enable = true;
