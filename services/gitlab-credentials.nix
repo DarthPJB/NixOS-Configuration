@@ -39,6 +39,7 @@ in
       ExecStart = pkgs.writeShellScript "gitlab-netrc-copy" ''
         umask 022
         cp /run/system-keys/gitlab_netrc ${userNetrcPath}
+        chmod 0644 ${userNetrcPath}
       '';
     };
   };
