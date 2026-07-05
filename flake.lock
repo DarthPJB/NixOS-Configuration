@@ -6,11 +6,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1783134758,
-        "narHash": "sha256-MUUQlvrfbr1D4IMuIOMyw93+3thrKnVYMOhhzMtSBU4=",
+        "lastModified": 1783232495,
+        "narHash": "sha256-k7kgkcqKLCF5VArWkUW05HRPmgXDsRUl34xiFfB9mxI=",
         "ref": "refs/heads/main",
-        "rev": "fb1683438d9a6bb2f67b04ffca14e24873c9a6ef",
-        "revCount": 375,
+        "rev": "6777af5cea4a2661a231f103cb182ff3034cc5f3",
+        "revCount": 376,
         "type": "git",
         "url": "ssh://git@gitlab.com/mecha-team-zero/llm-core.git"
       },
@@ -67,12 +67,12 @@
         "rev": "9ca45626ac55a074e205b2e25373849274d43133",
         "revCount": 20,
         "type": "git",
-        "url": "https://gitlab.com/mecha-team-zero/bargman-assets.git"
+        "url": "ssh://git@gitlab.com/mecha-team-zero/bargman-assets.git"
       },
       "original": {
         "ref": "main",
         "type": "git",
-        "url": "https://gitlab.com/mecha-team-zero/bargman-assets.git"
+        "url": "ssh://git@gitlab.com/mecha-team-zero/bargman-assets.git"
       }
     },
     "carmelsite": {
@@ -87,11 +87,11 @@
         "rev": "4588254294534f39f5f56710fb53a9edf0774d98",
         "revCount": 39,
         "type": "git",
-        "url": "https://gitlab.com/mecha-team-zero/carmelsite.git"
+        "url": "ssh://git@gitlab.com/mecha-team-zero/carmelsite.git"
       },
       "original": {
         "type": "git",
-        "url": "https://gitlab.com/mecha-team-zero/carmelsite.git"
+        "url": "ssh://git@gitlab.com/mecha-team-zero/carmelsite.git"
       }
     },
     "crane": {
@@ -235,11 +235,11 @@
         "rev": "941f8251174fa1eadf03e9e3b1866205a800bbb5",
         "revCount": 37,
         "type": "git",
-        "url": "https://gitlab.com/mecha-team-zero/denton-glasses.git"
+        "url": "ssh://git@gitlab.com/mecha-team-zero/denton-glasses.git"
       },
       "original": {
         "type": "git",
-        "url": "https://gitlab.com/mecha-team-zero/denton-glasses.git"
+        "url": "ssh://git@gitlab.com/mecha-team-zero/denton-glasses.git"
       }
     },
     "determinate": {
@@ -251,12 +251,12 @@
         "nixpkgs": "nixpkgs_6"
       },
       "locked": {
-        "lastModified": 1778179392,
-        "narHash": "sha256-W6zorvjBYbzMNvqKIqCdpDF4rq3gj50Xximl56YM9/I=",
-        "rev": "efd54faa68be8cd777b5c28cab11e638998a0853",
-        "revCount": 416,
+        "lastModified": 1781815324,
+        "narHash": "sha256-5pDiPOe2tLKDOH59TkzP3MNiCCCbGxw3giDyRrSdP4E=",
+        "rev": "fdef7e382e042b1fe418f65770c3acda5933b155",
+        "revCount": 422,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/determinate/3.20.0/019e03c3-7dc0-7873-a333-9ab02d6f690c/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/determinate/3.21.2/019edc7b-7758-7223-a52e-d8a340361a73/source.tar.gz"
       },
       "original": {
         "type": "tarball",
@@ -266,37 +266,37 @@
     "determinate-nixd-aarch64-darwin": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-z4mCqKI3Qd6weuHrlfzGccJG0giym/VJhKv20ijRSs0=",
+        "narHash": "sha256-pQ7YeoB96bBl3iJGRdUWjdOFwahPUMwNN1yl9fwJufY=",
         "type": "file",
-        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.20.0/macOS"
+        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.21.2/macOS"
       },
       "original": {
         "type": "file",
-        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.20.0/macOS"
+        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.21.2/macOS"
       }
     },
     "determinate-nixd-aarch64-linux": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-yW+VNepSRytzfanSssPMJPvwioCcmlZYaBX8++UFkAk=",
+        "narHash": "sha256-t6Tc358tx16GFely1je18dmrfB8Wv1FkV6nRnU7ITYY=",
         "type": "file",
-        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.20.0/aarch64-linux"
+        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.21.2/aarch64-linux"
       },
       "original": {
         "type": "file",
-        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.20.0/aarch64-linux"
+        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.21.2/aarch64-linux"
       }
     },
     "determinate-nixd-x86_64-linux": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-+L102C3Hhkd1GlXmRm2eLTLsZKBxEvooiQZFqQRlBf0=",
+        "narHash": "sha256-M5e/05UlhljIuqS2ZMozD3OJ2MTTYol9SxQwqrzJdkk=",
         "type": "file",
-        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.20.0/x86_64-linux"
+        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.21.2/x86_64-linux"
       },
       "original": {
         "type": "file",
-        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.20.0/x86_64-linux"
+        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.21.2/x86_64-linux"
       }
     },
     "fenix": {
@@ -370,17 +370,15 @@
     "flake-compat_3": {
       "flake": false,
       "locked": {
-        "lastModified": 1767039857,
-        "narHash": "sha256-vNpUSpF5Nuw8xvDLj2KCwwksIbjua2LZCqhV1LNRDns=",
-        "owner": "NixOS",
-        "repo": "flake-compat",
-        "rev": "5edf11c44bc78a0d334f6334cdaf7d60d732daab",
-        "type": "github"
+        "lastModified": 1777699697,
+        "narHash": "sha256-Eg9b/rq/ECYwNwEXs5i9wHyhxNI0JrYx2srdI2uZMaQ=",
+        "rev": "382052b74656a369c5408822af3f2501e9b1af81",
+        "type": "tarball",
+        "url": "https://git.lix.systems/api/v1/repos/lix-project/flake-compat/archive/382052b74656a369c5408822af3f2501e9b1af81.tar.gz?rev=382052b74656a369c5408822af3f2501e9b1af81"
       },
       "original": {
-        "owner": "NixOS",
-        "repo": "flake-compat",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://git.lix.systems/lix-project/flake-compat/archive/main.tar.gz"
       }
     },
     "flake-parts": {
@@ -737,11 +735,11 @@
         "rev": "8126867704e4f5abdef7d90f64bc8989932f66a8",
         "revCount": 84,
         "type": "git",
-        "url": "https://gitlab.com/mecha-team-zero/macha-orchestration"
+        "url": "ssh://git@gitlab.com/mecha-team-zero/macha-orchestration"
       },
       "original": {
         "type": "git",
-        "url": "https://gitlab.com/mecha-team-zero/macha-orchestration"
+        "url": "ssh://git@gitlab.com/mecha-team-zero/macha-orchestration"
       }
     },
     "hyprcursor": {
@@ -1156,12 +1154,12 @@
         "nixpkgs-regression": "nixpkgs-regression"
       },
       "locked": {
-        "lastModified": 1778177425,
-        "narHash": "sha256-oyHvP5HDRe59opmjTrq2ED9lh+R9FrHyaCGPPNfBqWM=",
-        "rev": "f0ccb960d3ad5bff28acd9cabf8bdef885b5d52f",
-        "revCount": 25858,
+        "lastModified": 1780939209,
+        "narHash": "sha256-/JuW5C6sWuC836Y9b7hga3ZvhRiY4k4Zs73RRg5KVWM=",
+        "rev": "952beffe9c45ed245d30209d4f17cf1d26654a2a",
+        "revCount": 26044,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/nix-src/3.20.0/019e03bc-3f83-7833-aba3-b691ef4956c7/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/nix-src/3.21.1/019ea860-2acd-7680-ae61-10f9574b2694/source.tar.gz"
       },
       "original": {
         "type": "tarball",
@@ -1182,11 +1180,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1782017494,
-        "narHash": "sha256-GYP8iYciiZjFoY61VdGEexLGNh2sBE9OtEv7a4KZRoU=",
+        "lastModified": 1782934759,
+        "narHash": "sha256-1YTEea1x4jfVZkwj2P9K+EpN4huU4PlCsMXbl4ili/A=",
         "owner": "fufexan",
         "repo": "nix-gaming",
-        "rev": "f83806d230369cc515368783dba1c838a402dda0",
+        "rev": "a34118c61059e72f9276680400c4f52e8b4db4dd",
         "type": "github"
       },
       "original": {
@@ -1239,11 +1237,11 @@
         "nixpkgs": "nixpkgs_12"
       },
       "locked": {
-        "lastModified": 1782166108,
-        "narHash": "sha256-/EtnQBcKbsaCAGQ5VRcplrHRkR4ryqyLMpBfkVuG9Xw=",
+        "lastModified": 1782562157,
+        "narHash": "sha256-a7+T6QSeowynwZ1ZJJbP8T8ntAytvrui8kFGJmIZt2c=",
         "owner": "nixos",
         "repo": "nixos-hardware",
-        "rev": "875776f0252fcb8618bb948640a0d1f7a5b362be",
+        "rev": "a9cf7546a938c737b079e738de73934a13de9784",
         "type": "github"
       },
       "original": {
@@ -1441,11 +1439,11 @@
     },
     "nixpkgs_17": {
       "locked": {
-        "lastModified": 1781577229,
-        "narHash": "sha256-lrp67w8AulE9Ks53n27I45ADSzbOCn4H+CNW1Ck8B+8=",
+        "lastModified": 1782959384,
+        "narHash": "sha256-xnJJk+ct+D2+wdRxj1wk36w5zV9RVESwRqcklPdt3fM=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "567a49d1913ce81ac6e9582e3553dd90a955875f",
+        "rev": "65179426c83bb3f6bc14898b42ea1c6f01d374b0",
         "type": "github"
       },
       "original": {
@@ -1535,12 +1533,12 @@
     },
     "nixpkgs_6": {
       "locked": {
-        "lastModified": 1777826146,
-        "narHash": "sha256-wQ/iN5Zp5VIa3ebBibijPnLyKhor+xEbDy4d0goa9Zs=",
-        "rev": "73c703c22422b8951895a960959dbbaca7296492",
-        "revCount": 991389,
+        "lastModified": 1780930886,
+        "narHash": "sha256-rppURzHviaQN131F+nLiLdGfcb0uCd9gGP0E5+iw9MI=",
+        "rev": "8c3cede7ddc26bd659d2d383b5610efbd2c7a16e",
+        "revCount": 1012902,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/nixpkgs-weekly/0.1.991389%2Brev-73c703c22422b8951895a960959dbbaca7296492/019df6c8-934b-7d40-b402-027bb5def30f/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/nixpkgs-weekly/0.1.1012902%2Brev-8c3cede7ddc26bd659d2d383b5610efbd2c7a16e/019eab22-bd1e-7e40-b919-277db893c789/source.tar.gz"
       },
       "original": {
         "type": "tarball",
@@ -1736,11 +1734,11 @@
         "nixpkgs": "nixpkgs_14"
       },
       "locked": {
-        "lastModified": 1783125660,
-        "narHash": "sha256-Z/RUCn/PQVV8aj/2TUoQNVi7iUd5Fupww/+rzI7YMPY=",
+        "lastModified": 1783231853,
+        "narHash": "sha256-gU7SeyrU13iqw8GMtqm+gaHtcQ660zTq9aiA7oCQamA=",
         "ref": "refs/heads/main",
-        "rev": "40bd3faac8e0b83645afef964d0cae9871114315",
-        "revCount": 45,
+        "rev": "79769c8c6af7293efd1ca328b48d2683f7e10a3e",
+        "revCount": 46,
         "type": "git",
         "url": "ssh://git@gitlab.com/darthpjb/personal-site.git"
       },
@@ -1858,11 +1856,11 @@
         "nixpkgs": "nixpkgs_16"
       },
       "locked": {
-        "lastModified": 1763929380,
-        "narHash": "sha256-Yc7gZME/lcHoJH6bMPCG7CyjKWhOLJPqLI8MXtyKPHo=",
+        "lastModified": 1781802448,
+        "narHash": "sha256-fquZY1SFToXU+M5jBAiNGoMBUfXbDB036lS4K7M81FA=",
         "owner": "Platonic-Systems",
         "repo": "secrix",
-        "rev": "c6e3ca7af47c329dcf442a3d017ae171eee5612f",
+        "rev": "f79faf63b260e27c3a1a2ba047ac72963d5b0066",
         "type": "github"
       },
       "original": {
@@ -1899,11 +1897,11 @@
         "treefmt-nix": "treefmt-nix_2"
       },
       "locked": {
-        "lastModified": 1782155169,
-        "narHash": "sha256-G27O3FHzFhFZWd+G9DQFK1wGkYdpPyOCt/Hcq2OZ1O4=",
+        "lastModified": 1783192860,
+        "narHash": "sha256-gJPZkL4+9LkU3PPxlGOAyTH5vf4W9vLhhODNU1vh3+o=",
         "owner": "LovingMelody",
         "repo": "nix-citizen",
-        "rev": "dc7fd3444c9326121ad7b1b88ff5cede2198c94f",
+        "rev": "b3c67abfab626bdd0be226fcf8120eefcae545c8",
         "type": "github"
       },
       "original": {

@@ -2,7 +2,7 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
-    carmelsite = { url = "git+https://gitlab.com/mecha-team-zero/carmelsite.git"; };
+    carmelsite = { url = "git+ssh://git@gitlab.com/mecha-team-zero/carmelsite.git"; };
     deadnix = { url = "github:astro/deadnix"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     hyprland.url = "github:hyprwm/Hyprland";
     lint-utils = { url = "github:homotopic/lint-utils"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
@@ -13,22 +13,18 @@
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
     nixpkgs_llm.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
-    # nix-mcp-servers.url = "github:cameronfyfe/nix-mcp-servers";  # Moved to LLM-CORE
     nixos-hardware.url = "github:nixos/nixos-hardware";
     hype-train-claw.url = "github:marijanp/zeroclaw";
-    hype-train-outlaw.url = "git+https://gitlab.com/mecha-team-zero/macha-orchestration";
+    hype-train-outlaw.url = "git+ssh://git@gitlab.com/mecha-team-zero/macha-orchestration";
     star-citizen.url = "github:LovingMelody/nix-citizen";
     xlibre-overlay.url = "git+https://codeberg.org/takagemacoed/xlibre-overlay";
     ratty.url = "github:DarthPJB/ratty/fix/nix-module-improvements";
     ikbaeb-th = { url = "github:DarthPJB/IKBAEB-th"; };
     bargman-assets = {
-      url = "git+https://gitlab.com/mecha-team-zero/bargman-assets.git?ref=main";
+      url = "git+ssh://git@gitlab.com/mecha-team-zero/bargman-assets.git?ref=main";
       inputs.nixpkgs.follows = "nixpkgs_stable";
     };
-    # denton-glasses = {
-    #   url = "path:/speed-storage/LLM-END/denton-glasses";
-    # };
-    denton-glasses.url = "git+https://gitlab.com/mecha-team-zero/denton-glasses.git";
+    denton-glasses.url = "git+ssh://git@gitlab.com/mecha-team-zero/denton-glasses.git";
     personal-site = { url = "git+ssh://git@gitlab.com/darthpjb/personal-site.git"; };
     LLM-CORE = { url = "git+ssh://git@gitlab.com/mecha-team-zero/llm-core.git"; };
   };
