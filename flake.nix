@@ -23,9 +23,11 @@
     bargman-assets.url = "git+https://gitlab.com/mecha-team-zero/bargman-assets.git";
     denton-glasses.url = "git+https://gitlab.com/mecha-team-zero/denton-glasses.git";
     personal-site = { url = "git+https://gitlab.com/mecha-team-zero/bargman-website.git"; };
-    LLM-CORE = { url = "git+https://gitlab.com/mecha-team-zero/llm-core.git"; };
+    # LLM-CORE: Disabled for overlord-I deployment — re-enable and test as part of overlord-II
+    # LLM-CORE = { url = "git+https://gitlab.com/mecha-team-zero/llm-core.git"; };
   };
-  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE }:
+  # LLM-CORE: Disabled for overlord-I deployment — re-enable and test as part of overlord-II
+  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site/*, LLM-CORE*/ }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
@@ -39,7 +41,7 @@
         inherit bargman-assets;
         inherit denton-glasses;
         inherit personal-site;
-        inherit LLM-CORE;
+        # inherit LLM-CORE;  # Disabled for overlord-I — re-enable as part of overlord-II
         pkgs_llm = import nixpkgs_llm { system = "x86_64-linux"; config.allowUnfree = true; config.permittedInsecurePackages = [ "nodejs-20.20.2" "nodejs-slim-20.20.2" ]; };
       };
       minecraft-curseforge-builder = nixpkgs.callPackage ./pkgs/minecraft-curseforge { };
@@ -544,7 +546,7 @@
             xlibre-overlay.nixosModules.nvidia-ignore-ABI
             denton-glasses.nixosModules.eye-tracking
             denton-glasses.nixosModules.voxtype
-            self.inputs.LLM-CORE.nixosModules.opencode-fleet
+            # self.inputs.LLM-CORE.nixosModules.opencode-fleet  # Disabled for overlord-I — re-enable as part of overlord-II
             {
               programs.ratty = {
                 enable = true;
@@ -568,7 +570,7 @@
           host = topoIp "remote-worker";
           extraModules = [
             ./users/build.nix
-            self.inputs.LLM-CORE.nixosModules.opencode-fleet
+            # self.inputs.LLM-CORE.nixosModules.opencode-fleet  # Disabled for overlord-I — re-enable as part of overlord-II
             {
               services.nginx = {
                 enable = true;

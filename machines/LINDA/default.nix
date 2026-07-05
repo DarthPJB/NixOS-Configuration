@@ -450,32 +450,34 @@
   };
 
   # secrix secret declarations for MCP tokens
-  secrix.system.secrets.github-PAT-token.encrypted.file =
-    "${self}/secrets/github-PAT-token";
-  secrix.system.secrets.gitlab-PAT-token.encrypted.file =
-    "${self}/secrets/gitlab-PAT-token";
+  # DISABLED for overlord-I — re-enable and test as part of overlord-II
+  # secrix.system.secrets.github-PAT-token.encrypted.file =
+  #   "${self}/secrets/github-PAT-token";
+  # secrix.system.secrets.gitlab-PAT-token.encrypted.file =
+  #   "${self}/secrets/gitlab-PAT-token";
 
   # OpenCode fleet configuration — full fleet with MCP servers
-  services.opencode-fleet = {
-    enable = true;
-    voyagerOnly = false; # Full fleet
-    mcp.git.enable = true;
-    mcp.filesystem.enable = true;
-    mcp.time.enable = true;
-    mcp.sqlite.enable = true;
-    mcp.playwright.enable = true;
-    mcp.github = {
-      enable = true;
-      tokenFile = config.secrix.system.secrets.github-PAT-token.decrypted.path;
-    };
-    mcp.gitlab = {
-      enable = true;
-      tokenFile = config.secrix.system.secrets.gitlab-PAT-token.decrypted.path;
-    };
-    mcp.prometheus = {
-      enable = true;
-      prometheusUrl = "http://10.88.127.3:8080";
-    };
-  };
+  # DISABLED for overlord-I — re-enable and test as part of overlord-II
+  # services.opencode-fleet = {
+  #   enable = true;
+  #   voyagerOnly = false; # Full fleet
+  #   mcp.git.enable = true;
+  #   mcp.filesystem.enable = true;
+  #   mcp.time.enable = true;
+  #   mcp.sqlite.enable = true;
+  #   mcp.playwright.enable = true;
+  #   mcp.github = {
+  #     enable = true;
+  #     tokenFile = config.secrix.system.secrets.github-PAT-token.decrypted.path;
+  #   };
+  #   mcp.gitlab = {
+  #     enable = true;
+  #     tokenFile = config.secrix.system.secrets.gitlab-PAT-token.decrypted.path;
+  #   };
+  #   mcp.prometheus = {
+  #     enable = true;
+  #     prometheusUrl = "http://10.88.127.3:8080";
+  #   };
+  # };
 
 }

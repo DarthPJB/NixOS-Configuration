@@ -108,10 +108,11 @@ in
   };
 
   # OpenCode fleet configuration
-  services.opencode-fleet = {
-    enable = true;
-    voyagerOnly = true; # Client machine — deploy Voyager only
-    user = "John88";
-  };
+  # DISABLED for overlord-I — re-enable and test as part of overlord-II
+  # services.opencode-fleet = {
+  #   enable = true;
+  #   voyagerOnly = true; # Client machine — deploy Voyager only
+  #   user = "John88";
+  # };
 
 }
