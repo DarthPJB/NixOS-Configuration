@@ -29,16 +29,18 @@ in
       download-buffer-size = lib.mkDefault 524288000;
       #  max-jobs = lib.mkDefault 10;
       cores = lib.mkDefault 0;
+      trusted-users = [ "build" ];
     };
     #nrBuildUsers = lib.mkDefault 10;
   };
+  services.openssh.settings.AllowUsers = [ "build" ];
   services.openssh.extraConfig = ''
     Match LocalPort 22 User build Address 10.88.127.0/24
       PermitRootLogin no
       PasswordAuthentication = no
 
     Match LocalPort 22
-      DenyUsers *
+      AllowUsers build
   '';
 
   services.openssh.listenAddresses = lib.mkIf (wgIp != null) [

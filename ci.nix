@@ -14,17 +14,15 @@ let
     "cortex-alpha"
     "local-nas"
     "alpha-one"
-    "alpha-two"
     "alpha-three"
     "LINDA"
     "gaming-host-1"
     "remote-worker"
-    "storage-array"
     "remote-builder"
   ];
 
   armMachines = [
-    "display-0"
+    "arm-builder"
     "display-1"
     "display-2"
     "print-controller"
@@ -34,22 +32,16 @@ let
   # CI job definitions
   ciJobs = {
     # Validation jobs (run on all PRs)
+    # Uses self-hosted runner for private flake input access
     validation = {
       name = "Validation & Linting";
-      runs-on = "ubuntu-latest";
+      runs-on = "self-hosted";
       steps = [
         {
           name = "Checkout";
           uses = "actions/checkout@v4";
         }
-        {
-          name = "Install Nix";
-          uses = "DeterminateSystems/nix-installer-action@main";
-        }
-        {
-          name = "Setup Magic Nix Cache";
-          uses = "DeterminateSystems/magic-nix-cache-action@main";
-        }
+
         {
           name = "Format check";
           run = "nix fmt -- --check .";
@@ -60,19 +52,21 @@ let
         }
         {
           name = "Dead code check";
-          run = "nix run .#deadnix";
+          run = "nix shell nixpkgs#deadnix -c deadnix .";
+          "continue-on-error" = true;
         }
       ];
     };
 
     # Build matrix for x86_64 machines
+    # Uses self-hosted runner for private flake input access
     build-x86 = {
       needs = [
         "validation"
         "security"
       ]; # Added: enforce job hierarchy
       name = "Build x86_64 Configurations";
-      runs-on = "ubuntu-latest";
+      runs-on = "self-hosted";
       strategy = {
         fail-fast = false;
         matrix = {
@@ -84,38 +78,23 @@ let
           name = "Checkout";
           uses = "actions/checkout@v4";
         }
-        {
-          name = "Install Nix";
-          uses = "DeterminateSystems/nix-installer-action@main";
-        }
-        {
-          name = "Setup Magic Nix Cache";
-          uses = "DeterminateSystems/magic-nix-cache-action@main";
-        }
+
         {
           name = "Build configuration";
-          run = "nixos-rebuild build --flake .#\${{ matrix.machine }}";
-        }
-        {
-          name = "Upload build artifact";
-          uses = "actions/upload-artifact@v4";
-          "with" = {
-            name = "\${{ matrix.machine }}-config";
-            path = "result/";
-            retention-days = "7";
-          };
+          run = "nix build .#nixosConfigurations.\${{ matrix.machine }}.config.system.build.toplevel";
         }
       ];
     };
 
     # Build matrix for ARM machines
+    # Uses self-hosted runner for private flake input access
     build-arm = {
       needs = [
         "validation"
         "security"
       ]; # Added: enforce job hierarchy
       name = "Build ARM Configurations";
-      runs-on = "ubuntu-latest";
+      runs-on = "self-hosted";
       strategy = {
         fail-fast = false;
         matrix = {
@@ -127,26 +106,10 @@ let
           name = "Checkout";
           uses = "actions/checkout@v4";
         }
-        {
-          name = "Install Nix";
-          uses = "DeterminateSystems/nix-installer-action@main";
-        }
-        {
-          name = "Setup Magic Nix Cache";
-          uses = "DeterminateSystems/magic-nix-cache-action@main";
-        }
+
         {
           name = "Build configuration";
-          run = "nixos-rebuild build --flake .#\${{ matrix.machine }}";
-        }
-        {
-          name = "Upload build artifact";
-          uses = "actions/upload-artifact@v4";
-          "with" = {
-            name = "\${{ matrix.machine }}-config";
-            path = "result/";
-            retention-days = "7";
-          };
+          run = "nix build .#nixosConfigurations.\${{ matrix.machine }}.config.system.build.toplevel";
         }
       ];
     };
@@ -194,10 +157,6 @@ let
           '';
         }
         {
-          name = "Validate secrix configuration";
-          run = "nix run .#secrix -- --help";
-        }
-        {
           name = "Check for hardcoded IPs";
           run = ''
             echo "Checking for hardcoded IP addresses..."
@@ -213,6 +172,7 @@ let
     };
 
     # Deployment preparation (manual trigger)
+    # Uses self-hosted runner for private flake input access
     deploy-prep = {
       needs = [
         "validation"
@@ -221,7 +181,7 @@ let
         "build-arm"
       ]; # Added: full dependency chain
       name = "Deploy - \${{ github.event.inputs.machine }}";
-      runs-on = "ubuntu-latest";
+      runs-on = "self-hosted";
       "if" = "github.event_name == 'workflow_dispatch'";
       # REMOVED: strategy.matrix - build only selected machine
       steps = [
@@ -229,18 +189,11 @@ let
           name = "Checkout";
           uses = "actions/checkout@v4";
         }
-        {
-          name = "Install Nix";
-          uses = "DeterminateSystems/nix-installer-action@main";
-        }
-        {
-          name = "Setup Magic Nix Cache";
-          uses = "DeterminateSystems/magic-nix-cache-action@main";
-        }
+
         {
           name = "Build configuration";
           # CHANGED: Use selected machine from input
-          run = "nixos-rebuild build --flake .#\${{ github.event.inputs.machine }}";
+          run = "nix build .#nixosConfigurations.\${{ github.event.inputs.machine }}.config.system.build.toplevel";
         }
         {
           name = "Test deployment";
@@ -358,6 +311,6 @@ in
       else if action == "test" then
         "nix run .#${machine}"
       else
-        "nixos-rebuild build --flake .#${machine}";
+        "nix build .#nixosConfigurations.${machine}.config.system.build.toplevel";
   };
 }

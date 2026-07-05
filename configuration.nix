@@ -39,12 +39,14 @@ in
     ./modifier_imports/hosts.nix
     ./modifier_imports/energy_saving.nix
     ./users/deployment.nix
+    ./users/inspect.nix
     ./locale/en_gb.nix
     ./locale/home_networks.nix
     ./environments/sshd.nix
     ./environments/tools.nix
     ./modules/nixos-deployment-exporter.nix
     ./modules/sysdiag.nix
+    ./environments/metrics.nix
   ];
   environment.systemPackages = with pkgs; [
     build-all-script
@@ -54,7 +56,6 @@ in
     pkgs.bottom
   ];
   networking.firewall.interfaces."wireg0".allowedTCPPorts = [
-    config.services.prometheus.exporters.node.port
     config.services.nixos-deployment-exporter.port
   ];
   services.nixos-deployment-exporter = {
@@ -90,22 +91,7 @@ in
   #   retentionCount = 20;
   # };
 
-  services.prometheus = {
-    exporters.node = {
-      enable = true;
-      port = 3100;
-      enabledCollectors = [
-        "systemd"
-        "hwmon"
-        "cpu"
-        "drm"
-        "ethtool"
-        "logind"
-        "wifi"
-      ];
-      disabledCollectors = [ "textfile" ];
-    };
-  };
+
   services.journald = {
     extraConfig = ''
       Storage=persistent
@@ -169,11 +155,8 @@ in
       ];
     };
   };
-  services.openssh.settings.AllowUsers = [
-    "John88"
-    "build"
-    "deploy"
-  ];
+  # AllowUsers is now per-user in each user module (build.nix, deployment.nix, inspect.nix)
+  # sshd.nix manages John88. NixOS module system merges all entries.
 
   services.kmscon = {
     #  Alright, I know what you are thinking; For real? All I have to do is grab a John-tech and enter tty?

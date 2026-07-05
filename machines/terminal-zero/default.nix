@@ -15,7 +15,7 @@
     ../../modifier_imports/bluetooth.nix
     ../../locale/home_networks.nix
     ../../environments/browsers.nix
-    ../../environments/i3wm.nix
+    ../../environments/i3wm_darthpjb.nix
     ../../environments/rtl-sdr.nix
     ../../environments/pio.nix
     ../../environments/code.nix
@@ -25,6 +25,7 @@
     ../../modules/enable-wg-topology.nix
     ../../lib/rclone-target.nix
     ../../modifier_imports/zram.nix
+    ../../services/gitlab-credentials.nix
   ];
   environment.systemPackages = with pkgs; [
     pkgs.moonlight-qt

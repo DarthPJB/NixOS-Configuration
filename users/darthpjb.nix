@@ -32,6 +32,7 @@
       "dialout"
       "disk"
       "networkManager"
+      "systemd-journal"
     ]; # Enable ‘sudo’ for the user.
   };
 }

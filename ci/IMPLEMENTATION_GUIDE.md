@@ -1,6 +1,13 @@
 # CI/CD Implementation Guide
 ## Exact Code Changes for Seven-of-Nine's Corrections
 
+> **Note:** As of 2026-06-30, third-party caching has been removed from CI
+> (DetSys magic-nix-cache, nix-installer-action on self-hosted jobs). Code
+> examples below reflect the original analysis and may reference steps that
+> are no longer present. See `ci.nix` for the current configuration and
+> `AGENTS.md` Build Philosophy for governing principles. An in-house binary
+> cache is planned; until operational, all builds run from source.
+
 ### Quick Reference Commands
 ```bash
 # After making changes:

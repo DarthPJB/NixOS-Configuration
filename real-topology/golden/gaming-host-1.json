@@ -119,17 +119,18 @@
   ],
   "machine": "gaming-host-1",
   "networking.firewall.allowedTCPPorts": [
+    80,
+    443,
     1108,
     2108,
     7777,
+    8080,
     25565
   ],
   "networking.firewall.allowedUDPPorts": [
     2108,
     7777,
-    7778,
-    27015,
-    27016
+    7778
   ],
   "networking.firewall.interfaces": {
     "wireg0": {
@@ -163,24 +164,33 @@
             "10.88.127.1/32",
             "10.88.127.0/24"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "lMo4Rf3nlXqd8rIX7rNMedygdsHTZqh+NLxre+vwYH8="
         }
       ]
     }
   },
-  "security.acme.certs": [],
+  "security.acme.certs": [
+    "gaming-host-1.johnbargman.net"
+  ],
+  "security.acme.defaults.email": "commander@johnbargman.net",
   "services.dnsmasq.enable": false,
   "services.dnsmasq.settings": {
     "server": []
   },
-  "services.nginx.enable": false,
+  "services.nginx.enable": true,
   "services.nginx.virtualHosts": {
-    "localhost": {
+    "gaming-host-1.johnbargman.net": {
       "enableACME": false,
-      "forceSSL": false,
+      "forceSSL": true,
       "listenAddresses": [],
-      "locations": {},
-      "useACMEHost": null
+      "locations": {
+        "/": {
+          "proxyPass": "http://127.0.0.1:8080",
+          "proxyWebsockets": true,
+          "root": null
+        }
+      },
+      "useACMEHost": "gaming-host-1.johnbargman.net"
     }
   },
   "services.prometheus.exporters.dnsmasq.enable": false,

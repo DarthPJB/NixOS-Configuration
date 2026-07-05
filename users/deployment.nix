@@ -19,6 +19,7 @@
   };
 
   services.openssh = {
+    settings.AllowUsers = [ "deploy" ];
     # Deploy user (1108 only)
     extraConfig = ''
       Match LocalPort 1108 User deploy Address 10.88.127.0/24
@@ -42,4 +43,7 @@
       ];
     }
   ];
+
+  # Required for nixos-rebuild to copy closures to remote targets
+  nix.settings.trusted-users = [ "deploy" ];
 }

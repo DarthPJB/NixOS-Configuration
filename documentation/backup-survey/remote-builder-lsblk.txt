@@ -1,0 +1,4 @@
+NAME    SIZE TYPE MOUNTPOINT
+sr0     482K rom  
+vda      40G disk 
+└─vda1   40G part /

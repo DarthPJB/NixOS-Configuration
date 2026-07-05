@@ -206,6 +206,59 @@ ssh -p 1108 deploy@10.88.127.52 "sudo systemctl restart mc-curseforge-all-the-mo
 ssh -p 1108 deploy@10.88.127.52 "systemctl show mc-curseforge-all-the-mons | grep -i limit"
 ```
 
+## Automated Monitoring Tools
+
+### Item Entity Monitor (`mc-item-monitor.sh`)
+
+**Location:** `snippets/minecraft/mc-item-monitor.sh`
+
+A passive RCON-based monitor that polls ground item entities and alerts when counts exceed a threshold. Performs chunk-grid scans to identify WHERE items are accumulating and WHAT types they are — useful for diagnosing lag caused by dropped item accumulation.
+
+**Usage:**
+```bash
+# Local (RCON accessible directly)
+./snippets/minecraft/mc-item-monitor.sh -H 10.88.127.52
+
+# Remote (RCON on localhost of gaming-host-1)
+./snippets/minecraft/mc-item-monitor.sh -s deploy@10.88.127.52 -S 1108
+```
+
+**Options:** `-H host` `-P port` `-p pass` `-s ssh_host` `-S ssh_port` `-i interval` `-t threshold` `-r radius` `-l logfile` `-j` (journal monitor)
+
+**Requires:** `mcrcon`, `bash`, `coreutils`, `grep`, `awk`, `openssh`
+
+### Item Clear Investigation (2026-06-16)
+
+**Root cause identified:** The "itemdata" sweep that players reported is **Crash Utilities** (`crashutilities-9.0.4.jar`) — a bundled ATM10 server utility mod.
+
+**How it works:**
+- Every 5 minutes, `ClearItemTask` counts all `EntityType.ITEM` entities (items on the ground)
+- If count ≥ 1000, broadcasts warnings at 20s and 5s, then kills ALL ground items
+- Config: `config/crashutilities-server.toml` — `timer=5`, `maximum=1000`, warnings at "5,20"
+
+**Two clearing mechanisms identified:**
+
+| Mechanism | Trigger | Behavior | Warning |
+|-----------|---------|----------|---------|
+| **Item Collectors** (`itemcollectors-1.1.10`) | Continuous | Auto-collects items within 5-7 block range into inventories | None |
+| **Simple Magnets** (`simplemagnets-1.1.12c`) | Player-held | Attracts items within 5-11 block range to player | None |
+| **Crash Utilities** (`crashutilities-9.0.4`) | Threshold (≥1000) | Kills ALL ground items server-wide | `[=== ITEMCLEAR IN 20 SECONDS ===]` |
+
+**Monitoring results (2026-06-16 18:35-18:45):**
+```
+Items: 73 → 72 → 71 → 5 → 20 → 77 → 120 → 147 → 12 → 68 → 144 → 165 → 189 → 241 → 263 → 261 → 257 → 255 → 263 → 259 → 192 → 184 → 192 → 191 → 182 → 180 → 167 → 160 → 161 → 188 → 189 → 200 → 180 → 185 → 186
+```
+
+**Pattern:**
+- Items accumulate at ~20-30 per 10-second poll (mob/Pokemon drops)
+- Rapid drops (71→5, 147→12) are Item Collectors/Magnets collecting, NOT Crash Utilities
+- Crash Utilities only fires when items reach 1000+ (not observed during monitoring window)
+- Items stabilize at 160-263 when collection rate matches drop rate
+
+**Item types observed:** Slimeballs, Bat Wings, Bones, Arrows, Eggs, Raw Chicken, Seagrass, Kelp — consistent with mob farm + Cobblemon Pokemon drops
+
+**Recommendation:** No config changes needed. The system is working as designed — Item Collectors handle routine cleanup, Crash Utilities is the safety net for runaway accumulation. If players want to reduce ITEMCLEAR events, increase the `maximum` threshold or add more Item Collectors near high-drop areas.
+
 ## Common Diagnostic Scenarios
 
 ### Players Report Lag / Server Unresponsive
@@ -247,7 +300,7 @@ services.minecraft-curseforge.all-the-mons = {
   enable = true;
   gamePort = 25565;       # client connection port
   rconPort = 25575;       # RCON (localhost only)
-  rconPassword = "allthemons";  # TODO: move to secrets
+  rconPassword = "allthemons";  # TODO: move to secrets (plaintext is intentional — exemplar/reference config, not production)
   maxMemory = "8G";
   minMemory = "4G";
   enableSquaremap = true;

@@ -12,6 +12,8 @@
     ./hardware-configuration.nix
     ../../services/ollama.nix
     ../../services/litellm.nix
+    ../../services/gitlab-credentials.nix
+    ../../services/github-runner-nixos-config.nix
     ../../modules/enable-wg-topology.nix
     ../../lib/rclone-target.nix
     ../../environments/i3wm_darthpjb.nix
@@ -27,11 +29,11 @@
     ../../environments/audio_visual_editing.nix
     ../../environments/general_fonts.nix
     ../../environments/video_call_streaming.nix
-    ../../environments/cloud_and_backup.nix
     ../../locale/tailscale.nix
     ../../locale/input-methods.nix
     ../../environments/rtl-sdr.nix
     ../../modifier_imports/bluetooth.nix
+    ../../environments/denton-glasses.nix
     ../../modifier_imports/memtest.nix
     ../../modifier_imports/hosts.nix
     ../../modifier_imports/zfs.nix
@@ -42,15 +44,104 @@
     ../../modifier_imports/remote-builder.nix
   ];
   enableWgTopology.enable = true;
+  programs.ssh.extraConfig = ''
+    Host hyperhyper
+      ControlMaster auto
+      ControlPath /run/ssh-mux/%r@%h:%p
+      ControlPersist 600
+  '';
   environment = {
     rclone-target = {
       enable = true;
       configFile = "${self}/secrets/rclone-config-file";
       targets = {
         obsidian-v3 = {
-          filePath = " /bulk-storage/88-DB-v3/";
+          filePath = "/bulk-storage/88-DB-v3/";
           remoteName = "minio:obsidian-v3";
           syncInterval = 60; # every minute
+        };
+        "88-FS-V3" = {
+          filePath = "/bulk-storage/88-FS-V3/";
+          remoteName = "minio:fs-v3-88";
+          mode = "copy";
+          calendar = "*-*-* 0/2:30:00"; # every 2 hours at half past
+          bwlimit = "10M";
+        };
+        bargman-tech = {
+          filePath = "/speed-storage/bargman-tech/";
+          remoteName = "minio:bargman-tech";
+          mode = "copy";
+          calendar = "*-*-* *:15:00"; # every hour at 15 past
+          bwlimit = "10M";
+        };
+        downloads = {
+          filePath = "/speed-storage/Downloads/";
+          remoteName = "minio:downloads";
+          mode = "copy";
+          calendar = "*-*-* 05:00:00"; # daily at 5AM
+          bwlimit = "10M";
+        };
+        home = {
+          filePath = "/home/pokej/";
+          remoteName = "minio:linda-home";
+          mode = "copy";
+          calendar = "*-*-* 0/6:00:00"; # every 6 hours
+          bwlimit = "10M";
+          filterRules = [
+            # Include Vivaldi browser data
+            "+ .config/vivaldi/Default/**"
+            "+ .config/vivaldi/Profile*/**"
+            "+ .config/vivaldi/Local State"
+            "+ .config/vivaldi/search_engines.json"
+            "+ .config/vivaldi/search_engines_prompt.json"
+            "- .config/vivaldi/**"
+            "- .config/**"
+            # Include essential directories
+            "+ .gnupg/**"
+            "+ .ssh/**"
+            "+ .mozilla/**"
+            "+ .thunderbird/**"
+            "+ Pictures/**"
+            "+ Monero/**"
+            # Exclude everything else
+            "- .cache/**"
+            "- .local/**"
+            "- .ollama/**"
+            "- Games/**"
+            "- .steam/**"
+            "- .minecraft/**"
+            "- .android/**"
+            "- .java/**"
+            "- .cargo/**"
+            "- .rustup/**"
+            "- .bun/**"
+            "- .conan2/**"
+            "- .dotnet/**"
+            "- .emacs.d/**"
+            "- .stack/**"
+            "- .venv/**"
+            "- .npm/**"
+            "- .nuget/**"
+            "- .platformio/**"
+            "- .pulsar/**"
+            "- .vscode/**"
+            "- .atom/**"
+            "- .gitkraken/**"
+            "- .gk/**"
+            "- result"
+            "- *.iso"
+            "- *.tar.zst"
+            "- *.tar.gz"
+            "- *.zip"
+            "- *.mp4"
+            "- *.bmp"
+            "- *.xcf"
+            "- Selection_*.bmp"
+            "- Workspaces_*.bmp"
+            "- y2mate.is*"
+            "- nixos-*.iso"
+            "- .bash_history-*"
+          ];
         };
       };
     };
@@ -161,6 +252,7 @@
   systemd.tmpfiles.rules = [
     "f /dev/shm/looking-glass 0660 John88 qemu-libvirtd -"
     "d /rendercache 0755 John88 users"
+    "d /run/ssh-mux 0755 John88 users"
   ];
   boot = {
     tmp.useTmpfs = false;
@@ -356,5 +448,36 @@
       interfaces = [ "wlp72s0" ];
     };
   };
+
+  # secrix secret declarations for MCP tokens
+  # DISABLED for overlord-I — re-enable and test as part of overlord-II
+  # secrix.system.secrets.github-PAT-token.encrypted.file =
+  #   "${self}/secrets/github-PAT-token";
+  # secrix.system.secrets.gitlab-PAT-token.encrypted.file =
+  #   "${self}/secrets/gitlab-PAT-token";
+
+  # OpenCode fleet configuration — full fleet with MCP servers
+  # DISABLED for overlord-I — re-enable and test as part of overlord-II
+  # services.opencode-fleet = {
+  #   enable = true;
+  #   voyagerOnly = false; # Full fleet
+  #   mcp.git.enable = true;
+  #   mcp.filesystem.enable = true;
+  #   mcp.time.enable = true;
+  #   mcp.sqlite.enable = true;
+  #   mcp.playwright.enable = true;
+  #   mcp.github = {
+  #     enable = true;
+  #     tokenFile = config.secrix.system.secrets.github-PAT-token.decrypted.path;
+  #   };
+  #   mcp.gitlab = {
+  #     enable = true;
+  #     tokenFile = config.secrix.system.secrets.gitlab-PAT-token.decrypted.path;
+  #   };
+  #   mcp.prometheus = {
+  #     enable = true;
+  #     prometheusUrl = "http://10.88.127.3:8080";
+  #   };
+  # };
 
 }

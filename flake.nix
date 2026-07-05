@@ -2,30 +2,32 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   inputs = {
-    carmelsite = { url = "git+ssh://git@gitlab.platonic.systems/john.bargman/carmelsite"; };
+    carmelsite = { url = "git+https://gitlab.com/mecha-team-zero/carmelsite.git"; };
     deadnix = { url = "github:astro/deadnix"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     hyprland.url = "github:hyprwm/Hyprland";
     lint-utils = { url = "github:homotopic/lint-utils"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
     secrix.url = "github:Platonic-Systems/secrix";
-    nixinate = { url = "github:DarthPJB/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
+    nixinate = { url = "github:Bargman-Tech/nixinate"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
     nixpkgs_llm.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
-    nix-mcp-servers.url = "github:cameronfyfe/nix-mcp-servers";
     nixos-hardware.url = "github:nixos/nixos-hardware";
     hype-train-claw.url = "github:marijanp/zeroclaw";
-    hype-train-outlaw.url = "git+ssh://git@gitlab.com/mecha-team-zero/macha-orchestration";
+    hype-train-outlaw.url = "git+https://gitlab.com/mecha-team-zero/macha-orchestration";
     star-citizen.url = "github:LovingMelody/nix-citizen";
     xlibre-overlay.url = "git+https://codeberg.org/takagemacoed/xlibre-overlay";
+    ratty.url = "github:DarthPJB/ratty/fix/nix-module-improvements";
     ikbaeb-th = { url = "github:DarthPJB/IKBAEB-th"; };
-    bargman-assets = {
-      url = "git+ssh://git@gitlab.com/mecha-team-zero/bargman-assets.git?ref=main";
-      inputs.nixpkgs.follows = "nixpkgs_stable";
-    };
+    bargman-assets.url = "git+https://gitlab.com/mecha-team-zero/bargman-assets.git";
+    denton-glasses.url = "git+https://gitlab.com/mecha-team-zero/denton-glasses.git";
+    personal-site = { url = "git+https://gitlab.com/mecha-team-zero/bargman-website.git"; };
+    # LLM-CORE: Disabled for overlord-I deployment — re-enable and test as part of overlord-II
+    # LLM-CORE = { url = "git+https://gitlab.com/mecha-team-zero/llm-core.git"; };
   };
-  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nix-mcp-servers, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ikbaeb-th, bargman-assets }:
+  # LLM-CORE: Disabled for overlord-I deployment — re-enable and test as part of overlord-II
+  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site/*, LLM-CORE*/ }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
@@ -37,20 +39,27 @@
         inherit self;
         inherit ikbaeb-th;
         inherit bargman-assets;
-        llm = import nixpkgs_llm { system = "x86_64-linux"; config.allowUnfree = true; };
+        inherit denton-glasses;
+        inherit personal-site;
+        # inherit LLM-CORE;  # Disabled for overlord-I — re-enable as part of overlord-II
+        pkgs_llm = import nixpkgs_llm { system = "x86_64-linux"; config.allowUnfree = true; config.permittedInsecurePackages = [ "nodejs-20.20.2" "nodejs-slim-20.20.2" ]; };
       };
       minecraft-curseforge-builder = nixpkgs.callPackage ./pkgs/minecraft-curseforge { };
+      prometheus-mcp-server-builder = nixpkgs.callPackage ./pkgs/prometheus-mcp-server { };
       commonModules = [
         secrix.nixosModules.default
+        ratty.nixosModules.default
         ./configuration.nix
         {
           programs.ssh.knownHosts = mkKnownHosts self.nixosConfigurations;
           nixpkgs.config.allowUnfree = true;
           nixpkgs.overlays = [
+            ratty.overlays.default
             (final: prev: {
               minecraft-curseforge = minecraft-curseforge-builder;
-              minecraft-curseforge-atm10 = self.packages.x86_64-linux.minecraft-curseforge-atm10;
-              minecraft-curseforge-atm10-to-the-sky = self.packages.x86_64-linux.minecraft-curseforge-atm10-to-the-sky;
+              prometheus-mcp-server = prometheus-mcp-server-builder;
+              # minecraft-curseforge-atm10 = self.packages.x86_64-linux.minecraft-curseforge-atm10;
+              # minecraft-curseforge-atm10-to-the-sky = self.packages.x86_64-linux.minecraft-curseforge-atm10-to-the-sky;
               minecraft-curseforge-all-the-mons = self.packages.x86_64-linux.minecraft-curseforge-all-the-mons;
               squaremap-neoforge = self.packages.x86_64-linux.squaremap-neoforge;
             })
@@ -139,18 +148,59 @@
           (name: mkUncompressedSdImage (builtins.getAttr name self.nixosConfigurations));
 
       mkKnownHosts = nixosConfigs:
-        lib.filterAttrs (name: value: value != null)
-          (lib.mapAttrs
-            (name: cfg:
+        let
+          # Combine active and dormant configs for key lookup
+          allConfigs = nixosConfigs // (self.dormantConfigurations or { });
+
+          # Get public key: secrix first, file fallback second
+          getPubKey = name:
+            let
+              fromConfig = allConfigs.${name}.config.secrix.hostPubKey or null;
+              fromFile =
+                let p = ./secrets/public_keys/host_keys/${name}.pub;
+                in if builtins.pathExists p then builtins.readFile p else null;
+            in
+            if fromConfig != null then fromConfig else fromFile;
+
+          # Build hostNames from topology: hostname + domain + all known IP routes
+          getHostNames = name:
+            let
+              entry = topo.${name} or null;
+              names = [ name "${name}.johnbargman.net" ];
+            in
+            if entry != null then
+              lib.unique
+                (names
+                  ++ lib.optionals (entry ? wireguard) [ entry.wireguard ]
+                  ++ lib.optionals (entry ? lan) (builtins.attrNames entry.lan)
+                  ++ lib.optionals (entry ? uplink) (builtins.attrNames entry.uplink)
+                )
+            else
+              names;
+
+          # Union of all known machines: topology + active configs + dormant configs
+          allMachines = lib.unique (
+            builtins.attrNames topo
+            ++ builtins.attrNames nixosConfigs
+            ++ builtins.attrNames (self.dormantConfigurations or { })
+          );
+
+          # Build entries, skipping machines without a known key
+          entries = builtins.listToAttrs (map
+            (name:
               let
-                hostPubKey = cfg.config.secrix.hostPubKey or null;
+                pubKey = getPubKey name;
               in
-              if hostPubKey != null then {
-                hostNames = [ name "${name}.johnbargman.net" ];
-                publicKey = hostPubKey;
-              } else null
+              lib.nameValuePair name (
+                if pubKey != null then {
+                  hostNames = getHostNames name;
+                  publicKey = pubKey;
+                } else null
+              )
             )
-            nixosConfigs);
+            allMachines);
+        in
+        lib.filterAttrs (name: value: value != null) entries;
 
       # CI/CD Configuration
       ci = import ./ci.nix { inherit self lib; pkgs = nixpkgs; };
@@ -356,12 +406,12 @@
       packages = {
         "x86_64-linux" = {
           lightdm-webkit2-greeter = nixpkgs.callPackage ./pkgs/lightdm-webkit2-greeter.nix { };
-          minecraft-curseforge-atm10 = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/atm10.nix {
-            minecraft-curseforge = minecraft-curseforge-builder;
-          };
-          minecraft-curseforge-atm10-to-the-sky = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/atm10-to-the-sky.nix {
-            minecraft-curseforge = minecraft-curseforge-builder;
-          };
+          # minecraft-curseforge-atm10 = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/atm10.nix {
+          #   minecraft-curseforge = minecraft-curseforge-builder;
+          # };
+          # minecraft-curseforge-atm10-to-the-sky = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/atm10-to-the-sky.nix {
+          #   minecraft-curseforge = minecraft-curseforge-builder;
+          # };
           minecraft-curseforge-all-the-mons = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/all-the-mons.nix {
             minecraft-curseforge = minecraft-curseforge-builder;
           };
@@ -371,9 +421,9 @@
         };
         "aarch64-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.print-controller
-          self.nixosConfigurations.display-0
           self.nixosConfigurations.display-1
-          self.nixosConfigurations.display-2
+          self.nixosConfigurations.arm-builder
+          self.nixosConfigurations.arm-bootstrap
         ];
         "armv7l-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.beta-one
@@ -401,15 +451,42 @@
           host = topoIp "display-2";
           extraModules = [ ./users/build.nix ];
         };
+        arm-builder = mkAarch64 "arm-builder" {
+          host = topoIp "arm-builder";
+          extraModules = [
+            ./users/deployment.nix
+            ./users/build.nix
+          ];
+        };
+        # Generic ARM bootstrap image — reusable for ALL ARM devices
+        # No WG, no device-specific config, open SSH on port 22
+        arm-bootstrap = nixpkgs_unstable.lib.nixosSystem {
+          system = "aarch64-linux";
+          modules = [
+            "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
+            nixos-hardware.nixosModules.raspberry-pi-4
+            secrix.nixosModules.default
+            ./machines/arm-bootstrap
+            {
+              nixpkgs.overlays = [
+                (final: super: {
+                  makeModulesClosure = x: super.makeModulesClosure (x // { allowMissing = true; });
+                })
+              ];
+              nixpkgs.hostPlatform = "aarch64-linux";
+              networking.hostName = "arm-bootstrap";
+              _module.args = globalArgs // {
+                hostname = "arm-bootstrap";
+                unstable = import nixpkgs_unstable { system = "aarch64-linux"; config.allowUnfree = true; };
+              };
+            }
+          ];
+        };
         print-controller = mkAarch64 "print-controller" {
           host = topoIp "print-controller";
           hardware = nixos-hardware.nixosModules.raspberry-pi-3;
           extraModules = [ ./server_services/klipper.nix ];
-        };
-        display-0 = mkAarch64 "display-0" {
-          host = topoIp "display-0";
-          hardware = nixos-hardware.nixosModules.raspberry-pi-3;
-          extraModules = [ ./modifier_imports/minimal.nix ./modifier_imports/pi-firmware.nix ];
         };
 
         terminal-zero = mkX86_64 "terminal-zero" {
@@ -467,7 +544,15 @@
             xlibre-overlay.nixosModules.overlay-xlibre-xserver
             xlibre-overlay.nixosModules.overlay-all-xlibre-drivers
             xlibre-overlay.nixosModules.nvidia-ignore-ABI
+            denton-glasses.nixosModules.eye-tracking
+            denton-glasses.nixosModules.voxtype
+            # self.inputs.LLM-CORE.nixosModules.opencode-fleet  # Disabled for overlord-I — re-enable as part of overlord-II
             {
+              programs.ratty = {
+                enable = true;
+                gpuBackend = "vulkan";
+                gpuAdapter = "RTX 3060";
+              };
               environment.systemPackages = [
                 parsecgaming.packages.x86_64-linux.parsecgaming
                 star-citizen.packages.x86_64-linux.rsi-launcher
@@ -485,6 +570,7 @@
           host = topoIp "remote-worker";
           extraModules = [
             ./users/build.nix
+            # self.inputs.LLM-CORE.nixosModules.opencode-fleet  # Disabled for overlord-I — re-enable as part of overlord-II
             {
               services.nginx = {
                 enable = true;
@@ -556,17 +642,14 @@
         storage-array = mkX86_64 "storage-array" {
           host = topoIp "storage-array";
         };
+        display-0 = mkAarch64 "display-0" {
+          host = topoIp "display-0";
+          hardware = nixos-hardware.nixosModules.raspberry-pi-3;
+          extraModules = [ ./modifier_imports/minimal.nix ./modifier_imports/pi-firmware.nix ];
+        };
       };
 
       checks."x86_64-linux" = {
-        deadnix = nixpkgs.writeShellApplication {
-          name = "run-deadnix";
-          meta.description = "runs deadnix on the flake source";
-          text = ''
-            nix run ${deadnix}#deadnix "${self}"
-          '';
-        };
-
         nixpkgs-fmt = lint-utils.linters.x86_64-linux.nixpkgs-fmt { src = self; };
 
         # Network topology golden check for cortex-alpha (manual run)
@@ -612,6 +695,13 @@
             };
           };
           resourceDir = ./tests/bargman-greeter-login/resources;
+        };
+
+        # Minecraft server lifecycle test:
+        # Boots VM, waits for "Done", verifies RCON, sends stop, checks clean exit
+        minecraft-server-test = nixpkgs.callPackage ./tests/minecraft-server/default.nix {
+          minecraft-curseforge-all-the-mons = self.packages.x86_64-linux.minecraft-curseforge-all-the-mons;
+          minecraft-curseforge-module = ./server_services/game_servers/minecraft-curseforge.nix;
         };
       };
 

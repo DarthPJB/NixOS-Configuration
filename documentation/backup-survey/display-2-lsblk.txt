@@ -1,0 +1,4 @@
+NAME         SIZE TYPE MOUNTPOINT
+mmcblk0     58.2G disk 
+├─mmcblk0p1   30M part 
+└─mmcblk0p2 58.2G part /

@@ -115,6 +115,9 @@
     "github-mcp-server",
     "mcp-server-git",
     "mcp-server-filesystem",
+    "voxtype",
+    "xclip",
+    "openface",
     "btop",
     "nano",
     "wget",
@@ -396,7 +399,7 @@
             "10.88.127.1/32",
             "10.88.127.0/24"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "lMo4Rf3nlXqd8rIX7rNMedygdsHTZqh+NLxre+vwYH8="
         }
       ]
     },
@@ -411,7 +414,7 @@
             "10.75.69.1/32",
             "10.75.69.0/24"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "7QjUnkXYwYBDDGXGJ4/WsmzkOJJnGAKFa4tEC64N6FE="
         }
       ]
     }

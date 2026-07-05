@@ -20,8 +20,10 @@ let
     "      iifname \"${iface}\" ${protocol} dport ${port} dnat to ${dest}";
 
   # Generate all DNAT rules
-  tcpRules = map (mkDnatRule "tcp") (topology.forwarding.tcp or [ ]);
-  udpRules = map (mkDnatRule "udp") (topology.forwarding.udp or [ ]);
+  # Section-level `or { }` fallback: if topology.forwarding is entirely absent,
+  # treat tcp/udp as empty lists instead of throwing an attr-not-found error.
+  tcpRules = map (mkDnatRule "tcp") ((topology.forwarding or { }).tcp or [ ]);
+  udpRules = map (mkDnatRule "udp") ((topology.forwarding or { }).udp or [ ]);
   allRules = lib.concatStringsSep "\n" (tcpRules ++ udpRules);
 in
 {

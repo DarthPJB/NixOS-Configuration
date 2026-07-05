@@ -1,0 +1,2 @@
+NAME       SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
+external  3.62T  3.46T   169G        -         -     3%    95%  1.00x    ONLINE  -

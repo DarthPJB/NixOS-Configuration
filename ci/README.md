@@ -1,23 +1,40 @@
 # CI/CD Implementation for NixOS Configuration
 
-This directory contains the CI/CD implementation for the NixOS configuration repository, with configuration generated from Nix evaluation.
+This directory contains the CI/CD implementation for the NixOS configuration
+repository, with configuration generated from Nix evaluation.
+
+## Security Posture
+
+**All builds execute on self-hosted runners within our own environment.**
+GitHub-hosted runners are inherently insecure — they have no place in
+professional netrunner infrastructure. Bargman-Tech production builds are
+siloed in closed infrastructure; GitHub is used only for public-facing projects.
+
+Third-party build caching and relay services have been **removed from CI**.
+No external cache (DetSys, Cachix, etc.) is configured. Builds complete from
+source within our controlled environment.
+
+**Planned: In-House Binary Cache.** We will operate our own Nix binary cache
+server, dogfooding our infrastructure capabilities. This will accelerate builds
+without compromising the closed-system principle. Until operational, all builds
+complete from source — slow but correct.
+
+**Correctness is non-negotiable.** If `nix flake check` takes four hours to
+evaluate all machines, that is acceptable — provided it guarantees correctness.
+Slow-and-correct obliterates fast-and-wrong.
 
 ## Overview
 
-The CI/CD pipeline is unique because it generates GitHub Actions workflow configuration directly from Nix evaluation. This ensures that CI configuration is always in sync with actual build requirements.
-
-## Key Features
-
-- **Configuration as Code**: CI pipeline defined in Nix, version controlled
-- **Reproducibility**: Same Nix evaluation produces same CI configuration
-- **Consistency**: CI tests exactly what you build locally
-- **Automation**: Workflow generation from machine definitions
-- **Validation**: CI configuration can be tested before deployment
+The CI/CD pipeline generates GitHub Actions workflow configuration directly
+from Nix evaluation. This ensures CI configuration is always in sync with
+actual build requirements.
 
 ## Files
 
-- `ci.nix` - Main CI module with job definitions
-- `generate-workflow.nix` - GitHub Actions workflow generator
+- `ci.nix` - Main CI module with job definitions and machine registry
+- `generate-workflow.nix` - Workflow generator (Nix → JSON → YAML via PyYAML)
+- `CORRECTION_PLAN.md` - Historical audit of CI issues (some items are
+  intentionally deferred — see Security Posture above)
 - `README.md` - This file
 
 ## Quick Start
@@ -87,28 +104,19 @@ This will output build warnings to stderr (normal for `nix run`) and the YAML wo
 
 ## Machine Matrix
 
-### x86_64 Machines (14)
-- terminal-zero
-- terminal-nx-01
-- cortex-alpha
-- local-nas
-- alpha-one
-- alpha-two
-- alpha-three
-- LINDA
-- gaming-host-1
-- remote-worker
-- storage-array
-- remote-builder
+### x86_64 Machines (12)
+- terminal-zero, terminal-nx-01, cortex-alpha, local-nas
+- alpha-one, alpha-two (dormant), alpha-three, LINDA
+- gaming-host-1, remote-worker, storage-array (dormant), remote-builder
 
 ### ARM Machines (5)
-- display-0
-- display-1
-- display-2
-- print-controller
-- **beta-one** (added - armv7l-linux)
+- display-0, display-1, display-2
+- print-controller (Raspberry Pi 3)
+- **beta-one** (armv7l-linux)
 
-**Total: 19 machines**
+**Total: 17 machines** (15 active + 2 dormant).
+Dormant machines are preserved in `dormantConfigurations` for golden tests
+but are not included in `nixosConfigurations` to prevent accidental deployment.
 
 ## Workflow Triggers
 
@@ -128,10 +136,11 @@ This will output build warnings to stderr (normal for `nix run`) and the YAML wo
 
 ### Prerequisites
 1. GitHub repository with Actions enabled
-2. GitHub runner connected to account
-3. Nix installed on runner
-4. VPN access for deployment
-5. Secret decryption keys
+2. **Self-hosted runner** registered and online (GitHub-hosted runners are not
+   used for proprietary builds — see Security Posture)
+3. Nix installed on runner with `nixos-rebuild` available
+4. VPN access (WireGuard) for deployment
+5. Secret decryption keys (via secrix)
 
 ### Deployment Steps
 1. Go to GitHub Actions tab
@@ -171,18 +180,13 @@ This will output build warnings to stderr (normal for `nix run`) and the YAML wo
 
 ## Monitoring
 
-### Build Status
-- GitHub Actions dashboard
-- Build status badges
-- Email notifications
-- Slack integration (optional)
+Build status is tracked on self-hosted runners. External monitoring (Slack,
+email, status badges) is secondary to system correctness. Correctness metrics
+are primary:
 
-### Performance Metrics
-- Build success rate
-- Average build time
-- Resource utilization
-- Cache hit rate
-- Failure patterns
+- Golden test pass/fail for hub machines
+- Build completion (not build speed)
+- Evaluation integrity (flake check passes fully)
 
 ## Troubleshooting
 

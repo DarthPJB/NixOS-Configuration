@@ -2,23 +2,28 @@
 
 This document explains how NixOS configurations are organized in this repository.
 
-> **Note:** For comprehensive DevOps-standard documentation with HTML formatting, see the [Documentation Hub](index.html).
+
+## Architecture Overview
+
+The repository uses a **topology-driven architecture** for network configuration. Network topology data lives in `real-topology/<machine>.nix` files, transformation functions in `lib/topology/` convert topology data to NixOS config, and golden tests in `real-topology/golden/` validate output. See `AGENTS.md` for full architecture details.
 
 ## Module Organization
 - **Flake-based**: All configurations use Nix flakes for reproducibility
 - **Modular imports**: Configurations import from `environments/`, `services/`, and `lib/`
 - **Machine-specific**: Each machine in `machines/` has its own config importing shared modules
+- **Topology-driven**: Network config derived from `real-topology/` via `lib/topology/` transformers
 
 ## File Patterns
 - **Options first**: Each module starts with `options` block defining configurable settings
 - **Config second**: Followed by `config` block implementing the logic
-- **Relative imports**: Use paths like `../../lib/enable-wg.nix` for local modules
+- **Relative imports**: Use paths like `../../modules/enable-wg-topology.nix` for local modules
 
 ## Key Conventions
 - **CamelCase variables**: For attribute names (e.g., `enableService`)
 - **Kebab-case files**: Filenames use hyphens (e.g., `nextcloud.nix`)
 - **Conditional logic**: Use `lib.mkIf` for optional configurations
 - **Default values**: Apply with `lib.mkDefault` for overridable settings
+- **Executable paths**: Always use `lib.getExe` for tool invocations (never bare command names)
 
 ## Common Patterns
 - **Package lists**: Group with `with pkgs; [ package1 package2 ]`
@@ -36,4 +41,4 @@ This document explains how NixOS configurations are organized in this repository
 - Keep modules focused on single responsibilities
 - Use descriptive names matching purpose
 - Validate with `nix flake check` before committing
-- Format code with `nix fmt` for consistency
+- **DO NOT** run `nix fmt` on the entire codebase without explicit permission (see AGENTS.md formatter constraints)

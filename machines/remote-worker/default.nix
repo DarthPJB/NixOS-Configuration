@@ -2,13 +2,18 @@
 
 { config
 , pkgs
+, lib
 , hostname
+, self
 , ...
 }:
+let
+  personal-site = self.inputs.personal-site;
+in
 {
   imports = [
     ./hardware-configuration.nix
-    ../../configuration.nix
+    # ../../configuration.nix — already in commonModules (flake.nix), do not duplicate
     ../../locale/tailscale.nix
     ../../server_services/nextcloud.nix
     ../../users/build.nix
@@ -48,6 +53,8 @@
           #proxyWebsockets = false; # needed if you need to use websocket
         };
       };
+      # johnbargman.com — split-horizon
+      # Public: serves existing webroot on all interfaces
       "johnbargman.com" = {
         enableACME = true;
         acmeRoot = null;
@@ -55,11 +62,25 @@
         listenAddresses = [ "0.0.0.0" ];
         locations."/" = {
           root = ../../webroot;
-          #proxyWebsockets = false; # needed if you need to use websocket
+        };
+      };
+      # WireGuard: serves personal-site on WG IP only
+      "johnbargman.com-wg" = {
+        serverName = "johnbargman.com";
+        enableACME = true;
+        acmeRoot = null;
+        forceSSL = true;
+        listenAddresses = [ "10.88.127.50" ];
+        locations."/" = {
+          root = personal-site.packages.${pkgs.system}.webroot;
         };
       };
     };
   };
+  # Virtual disk devices — smartctl/smartd not applicable
+  services.smartd.enable = lib.mkForce false;
+  services.prometheus.exporters.smartctl.enable = lib.mkForce false;
+
   enableWgTopology.enable = true;
 
   networking.hostId = "e3fabb5b";
@@ -83,6 +104,15 @@
     url = "https://nextcloud.johnbargman.net";
     username = "admin";
     passwordFile = config.secrix.system.secrets.nextcloud_password_file.decrypted.path;
+    user = "nextcloud";
   };
+
+  # OpenCode fleet configuration
+  # DISABLED for overlord-I — re-enable and test as part of overlord-II
+  # services.opencode-fleet = {
+  #   enable = true;
+  #   voyagerOnly = true; # Client machine — deploy Voyager only
+  #   user = "John88";
+  # };
 
 }

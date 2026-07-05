@@ -1,0 +1,22 @@
+Filesystem                       Size  Used Avail Use% Mounted on
+devtmpfs                         6.3G     0  6.3G   0% /dev
+tmpfs                             63G  667M   63G   2% /dev/shm
+tmpfs                             32G  9.1M   32G   1% /run
+none                             2.0G  525M  1.5G  26% /
+speed-storage/nix                1.1T  103G  963G  10% /nix
+speed-storage/var-log            980G   18G  963G   2% /var/log
+efivarfs                         128K   12K  112K  10% /sys/firmware/efi/efivars
+tmpfs                            1.0M     0  1.0M   0% /run/credentials/systemd-journald.service
+tmpfs                             63G  1.5M   63G   1% /run/wrappers
+/dev/nvme4n1p3                   487M  285M  202M  59% /boot
+speed-storage/tmp                964G  576M  963G   1% /tmp
+speed-storage/var-lib-tailscale  963G  512K  963G   1% /var/lib/tailscale
+speed-storage/etc-ssh            963G  128K  963G   1% /etc/ssh
+speed-storage/var-lib-libvirt    1.2T  200G  963G  18% /var/lib/libvirt
+/dev/nvme4n1p1                   284G  166G  105G  62% /home
+speed-storage                    2.4T  1.5T  963G  61% /speed-storage
+speed-storage/vm_disks           969G  5.9G  963G   1% /speed-storage/vm_disks
+speed-storage/LLM-JAIL           966G  2.5G  963G   1% /speed-storage/LLM-JAIL
+bulk-storage/88-FS-V3            5.4T  1.1T  4.4T  20% /bulk-storage
+tmpfs                             13G  4.2M   13G   1% /run/user/1108
+tmpfs                             13G   16K   13G   1% /run/user/1110

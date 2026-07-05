@@ -1,3 +1,80 @@
+## Build Philosophy
+
+This is professional netrunner infrastructure, not a hobby project.
+Every decision flows from these principles.
+
+### Correctness Over Speed
+Build-speed is valuable, but irrelevant if the build fails or the output is
+corrupt. The ONLY correct build is a build that completes. If evaluation takes
+four hours, that is acceptable — provided it *guarantees* correctness.
+
+### Closed-System Build Environment
+All builds run on **self-hosted runners** within our own environment.
+GitHub-hosted runners are inherently insecure and not acceptable for
+proprietary work. Bargman-Tech production infrastructure will be siloed in
+closed infrastructure. GitHub is used only for public-facing projects.
+
+### No Implicit Third-Party Intermediaries
+Third-party build caching, acceleration, or relay services that have access to
+source code or build artifacts must be explicitly reviewed and approved.
+Default-on caching (e.g., DetSys "magic nix cache") that may exfiltrate code
+is not acceptable without conscious authorization. Builds must complete from
+source within our controlled environment unless a specific exception is granted.
+
+**Planned: In-House Binary Cache.** We will operate our own Nix binary cache
+server within the closed environment, dogfooding our infrastructure
+capabilities. Until the cache is operational, builds complete from source.
+No third-party cache is configured in CI. See `ci/README.md` for status.
+
+### Golden Tests Are Ground Truth
+Golden tests represent the canonical correct state. If a golden test fails,
+the code is wrong — never the golden. Regeneration is only for intentional
+configuration changes, never for refactoring. Deployments are blocked on
+golden mismatch. See golden test section for operational details.
+
+### Simplicity Over Cleverness
+Embrace simplicity. Reject unnecessary complexity. If a Nix expression requires
+three paragraphs to explain, it needs rewriting. The topology engine,
+transformers, and generators exist to *reduce* cognitive load, not to
+demonstrate language prowess.
+
+### Phase Discipline
+Development proceeds in phases. Each phase builds on the previous. Do not
+jump ahead. Complete the current phase before beginning the next. WIP code
+is dead code until wired into a machine's config and validated against golden.
+
+---
+
+## Development Velocity
+
+Current development is phased. Each phase builds on the
+  previous.### Phase A: Backup Capabilities
+  1. ~~Create
+  backup
+  capabilities
+  proposal
+  and
+  report~~ ✅
+  (`documentation/backup-capacity-report.md`)
+  2. ~~
+  Implement
+  minimal
+  phase-1
+  backup~~ ✅
+  (`lib/rclone-target.nix` extended with `
+  mode`, `calendar`, `bwlimit`, `preExec`; example in `snippets/gaming-host-1-daily-backup.nix`)
+
+### Phase B: Complete Transformer Architecture
+1. Finish WIP transformers (`mkDnsSettings`, `mkFirewallSettings`, `mkNginxSettings`) with real data
+2. Wire `core-router-topology.nix` into cortex-alpha, validate golden tests match
+3. Include backup topology as first-draft WIP in `topology.nix`
+
+### Phase C: Library Split
+Split infrastructure into separate modular library components:
+- **Ketchup** — The open-source, freely distributable library (generic NixOS modules, topology engine, transformers, generators)
+- **Secret-Sauce** — The closed-source Bargman proprietary library (machine configs, secrets, service definitions, game servers)
+- **Mayo** — Helpers and utilities shared between both (shared functions, validation, common patterns)
+
 ## Architecture
 
 ### CRITICAL: Formatter Configuration
@@ -85,10 +162,10 @@ Public keys are read from `secrets/public_keys/wireguard/wg_${name}_pub` files u
 WireGuard private key is managed by secrix:
 ```nix
 secrix.services.wireguard-wireg0.secrets.cortex-alpha.encrypted.file =
-  ../../secrets/private_keys/wireguard/wg_cortex-alpha;
+../../secrets/private_keys/wireguard/wg_cortex-alpha;
 
 networking.wireguard.interfaces.wireg0.privateKeyFile =
-  config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
+config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
 ```
 
 ### CRITICAL: Golden Tests Must NEVER Be Changed by Restructuring
@@ -108,9 +185,9 @@ The production architecture uses per-machine topology files with direct transfor
 **Data Flow:**
 ```
 real-topology/<machine>.nix (per-machine topology data)
-         ↓
+↓
 lib/topology/*.nix (transformation functions: mkWireguardPeers, mkNginxProxies, mkDhcpDns, etc.)
-         ↓
+↓
 modules/core-router.nix (NixOS config generation)
 ```
 
@@ -127,27 +204,25 @@ modules/core-router.nix (NixOS config generation)
 - `lib/topology/validate.nix` - Topology validation
 - `lib/topology/utils.nix` - Shared utilities
 - `modules/core-router.nix` - Core router module (imported by cortex-alpha)
-- `modules/enable-wg.nix` - WireGuard client module
+- `modules/enable-wg-topology.nix` - WireGuard client module (deployed on 13 machines)
 
 **Currently Using Production Architecture:** cortex-alpha (via `machines/cortex-alpha/default.nix`)
 
 **Known Issues (Active):**
-- Inconsistent function signatures across transformers
-- `validate.nix` cross-reference validation not fully integrated
-- Hardcoded nginx listen addresses
+- Production transformers return heterogeneous shapes; WIP architecture (transformers → generators with uniform `{ warnings, errors, machines }` returns) solves this — migration pending (TG-003)
 
 ### WIP: Two-Layer Topology Architecture (Incremental Development)
 
-The WIP architecture introduces a **single topology source of truth** with a clear two-layer pattern: **Transformers** → **Generators**. This is under active development and NOT yet used by any machine.
+The WIP architecture introduces a **single topology source of truth** with a clear two-layer pattern: **Transformers** → **Generators**. The WireGuard client module (`enable-wg-topology.nix`) is deployed on 13 machines. The hub module (`core-router-topology.nix`) is not yet wired into cortex-alpha.
 
 **Architecture Pattern (WIP):**
 ```
 topology.nix (incremental — only models what it currently generates, NOT a complete network description)
-     ↓
+↓
 lib/topology/mk*Settings.nix (transformers: topology + files → flat pure data)
-     ↓
+↓
 lib/topology/gen*.nix (generators: settings + hostname → NixOS config)
-     ↓
+↓
 modules/core-router-topology.nix or modules/enable-wg-topology.nix
 ```
 
@@ -171,7 +246,7 @@ modules/core-router-topology.nix or modules/enable-wg-topology.nix
 - `modules/core-router-topology.nix` - Hub machine module (WIP)
 - `modules/enable-wg-topology.nix` - Unified WireGuard module (WIP)
 
-**Status:** WIP — not wired into any machine configuration. Will be integrated incrementally, one machine at a time, and MUST pass golden validation before deployment.
+**Status:** WIP — `enable-wg-topology.nix` is deployed on 13 client machines (replaces legacy `enable-wg.nix`). `core-router-topology.nix` is not yet wired into cortex-alpha. Will be integrated incrementally, one machine at a time, and MUST pass golden validation before deployment.
 
 ## Common Tasks
 
@@ -190,7 +265,7 @@ Validates that the current configuration matches the golden test for cortex-alph
 nix run .#check-network -- cortex-alpha
 nix run .#check-network -- cortex-beta
 nix run .#check-network -- cortex-gamma
-# ... for all 12 machines
+# ... for all 17 machines
 ```
 
 #### Generate New Golden File (Config Changes Only)
@@ -251,11 +326,9 @@ Automated visual regression test — boots the VM, waits for the greeter, takes 
 # (golden PNGs go in tests/bargman-greeter-login/resources/)
 ```
 
-### Legacy Architecture Tasks (Being Phased Out)
+### Golden Test Operations
 
-These tasks apply to machines still using the old per-file topology architecture.
-
-#### Generate Golden from Main (Legacy)
+#### Generate Golden from Main Branch
 ```bash
 git worktree add /tmp/nixos-main main
 mkdir -p /tmp/nixos-main/real-topology
@@ -267,8 +340,8 @@ git worktree remove /tmp/nixos-main --force
 ## Repository Structure
 - `real-topology/` - Topology data and golden tests
 - `lib/topology/` - Transformation functions
-- `modules/` - NixOS modules (core-router.nix, enable-wg.nix)
-- `documentation/` - Architecture docs and session status
+- `modules/` - NixOS modules (core-router.nix, enable-wg-topology.nix)
+- `documentation/` - Architecture docs and operational references
 - `scripts/` - Utility scripts (compare-configs.sh)
 - `secrets/` - Encrypted secrets (private keys) and public keys
 

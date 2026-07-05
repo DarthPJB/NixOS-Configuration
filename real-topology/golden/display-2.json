@@ -169,6 +169,7 @@
       "allowedTCPPorts": [
         22,
         3100,
+        3107,
         3111
       ],
       "allowedUDPPortRanges": [],
@@ -206,7 +207,7 @@
             "10.88.127.1/32",
             "10.88.127.0/24"
           ],
-          "publicKey": "<redacted>"
+          "publicKey": "lMo4Rf3nlXqd8rIX7rNMedygdsHTZqh+NLxre+vwYH8="
         }
       ]
     }

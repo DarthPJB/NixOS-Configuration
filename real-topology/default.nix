@@ -71,7 +71,7 @@ let
           peers = map
             (p: {
               inherit (p) allowedIPs;
-              publicKey = "<redacted>";
+              publicKey = p.publicKey;
             })
             (iface.peers or [ ]);
         })

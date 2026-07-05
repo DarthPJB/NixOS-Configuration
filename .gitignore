@@ -3,3 +3,4 @@ result
 .opencode
 *.qcow2
 documentation/logs/
+sqlite_mcp_server.db

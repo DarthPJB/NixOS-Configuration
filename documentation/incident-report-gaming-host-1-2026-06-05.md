@@ -154,18 +154,18 @@ The system was recovered via `nixos-install` from the nixos-installer environmen
 - All executable paths must use `lib.getExe` (now documented in AGENTS.md)
 - All systemd services need `StartLimitBurst` / `StartLimitIntervalSec`
 - Hardware configs must match actual filesystem state
-- Need automated backups (restic/ZFS snapshots)
-- Need emergency SSH not dependent on WireGuard
+- Need automated backups — ✅ infrastructure ready, see `snippets/gaming-host-1-daily-backup.nix` for deployment example
+- Emergency SSH: intentionally not implemented — physical access (serial/KVM) is the only fallback when WireGuard fails. This is by design.
 
 ### Long-Term Prevention
 
 | Task | Priority |
 |---|---|
 | Convert `/bulk-storage` to separate partition/ZFS dataset (use nvme1n1) | High |
-| Enable ZFS auto-snapshot or restic backup on gaming-host-1 | High |
+| Enable automated backup to local-nas via `lib/rclone-target.nix` (see `snippets/gaming-host-1-daily-backup.nix`) | ✅ Infrastructure ready — deploy snippet to activate |
 | Add Prometheus disk usage alerting | Medium |
-| Add emergency SSH not dependent on WireGuard | Medium |
-| Document backup/restore procedures | Medium |
+| ~~Add emergency SSH not dependent on WireGuard~~ | ~~Medium~~ Intentionally not implemented — physical-only fallback by design |
+| Document backup/restore procedures | Medium — see `backup-capacity-report.md` and `snippets/gaming-host-1-daily-backup.nix` |
 
 ## Related Commits
 

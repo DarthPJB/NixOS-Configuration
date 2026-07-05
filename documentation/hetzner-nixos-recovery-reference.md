@@ -253,7 +253,7 @@ kexec -e
 | No `StartLimitBurst` on systemd service | Unlimited restarts → 648 in 2.7 hours → filesystem corruption | Always set `StartLimitBurst = 5` and `StartLimitIntervalSec = 600` |
 | ext2 root filesystem | No journal → fsck required on every crash → blocks boot for hours | Use ext4 (or btrfs/zfs) with journaling |
 | Single root partition | No separate /var or /home → all data on one fs → full backup requires mounting entire root | Consider separate partitions for data |
-| No emergency SSH | WireGuard-only SSH access → if WG is down, only Hetzner console | Keep at least one non-WG SSH access path |
+| No emergency SSH | WireGuard-only SSH access → if WG is down, only Hetzner console | By design — physical access (serial/KVM/console) is the only fallback when WG fails |
 | Hardcoded `start.sh` path | Builder didn't create the file → ExecStart fails | Builder must create the symlink it references |
 
 ---

@@ -41,8 +41,8 @@
 
   };
   environment.systemPackages = [
-    self.inputs.nix-mcp-servers.packages.x86_64-linux.github-mcp-server
-    self.inputs.nix-mcp-servers.packages.x86_64-linux.mcp-server-git
-    self.inputs.nix-mcp-servers.packages.x86_64-linux.mcp-server-filesystem
+    # MCP servers now provided by opencode-fleet module
+    # Configure per-machine: services.opencode-fleet.mcp.<server>.enable = true;
+    pkgs.prometheus-mcp-server
   ];
 }

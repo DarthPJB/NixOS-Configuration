@@ -91,15 +91,17 @@ in
               "10.88.127.20:${toString self.nixosConfigurations.terminal-zero.config.services.prometheus.exporters.node.port}"
               "10.88.127.21:${toString self.nixosConfigurations.terminal-nx-01.config.services.prometheus.exporters.node.port}"
               "10.88.127.30:${toString self.nixosConfigurations.print-controller.config.services.prometheus.exporters.node.port}"
-              "10.88.127.40:${toString self.nixosConfigurations.display-0.config.services.prometheus.exporters.node.port}"
+              # display-0 moved to dormantConfigurations
               "10.88.127.50:${toString self.nixosConfigurations.remote-worker.config.services.prometheus.exporters.node.port}"
               "10.88.127.51:${toString self.nixosConfigurations.remote-builder.config.services.prometheus.exporters.node.port}"
-              "10.88.127.52:${toString self.nixosConfigurations.remote-builder.config.services.prometheus.exporters.node.port}"
+              "10.88.127.52:${toString self.nixosConfigurations.gaming-host-1.config.services.prometheus.exporters.node.port}"
               "10.88.127.88:${toString self.nixosConfigurations.LINDA.config.services.prometheus.exporters.node.port}"
               "10.88.127.41:${toString self.nixosConfigurations.display-1.config.services.prometheus.exporters.node.port}"
+              "10.88.127.42:${toString self.nixosConfigurations.display-2.config.services.prometheus.exporters.node.port}"
+              "10.88.127.43:${toString self.nixosConfigurations.arm-builder.config.services.prometheus.exporters.node.port}"
               "10.88.127.108:${toString self.nixosConfigurations.alpha-one.config.services.prometheus.exporters.node.port}"
               "10.88.127.107:${toString self.nixosConfigurations.alpha-three.config.services.prometheus.exporters.node.port}"
-              "10.88.127.42:${toString self.nixosConfigurations.display-2.config.services.prometheus.exporters.node.port}"
+              # display-0 dormant
             ];
           }
         ];
@@ -143,6 +145,32 @@ in
         static_configs = [
           {
             targets = deploymentTargets;
+          }
+        ];
+      }
+      {
+        job_name = "smartctl";
+        scrape_interval = "60s";
+        static_configs = [
+          {
+            targets = [
+              "10.88.127.3:${toString self.nixosConfigurations.local-nas.config.services.prometheus.exporters.smartctl.port}"
+              "10.88.127.1:${toString self.nixosConfigurations.cortex-alpha.config.services.prometheus.exporters.smartctl.port}"
+              "10.88.127.88:${toString self.nixosConfigurations.LINDA.config.services.prometheus.exporters.smartctl.port}"
+              "10.88.127.52:${toString self.nixosConfigurations.gaming-host-1.config.services.prometheus.exporters.smartctl.port}"
+              "10.88.127.50:${toString self.nixosConfigurations.remote-worker.config.services.prometheus.exporters.smartctl.port}"
+              "10.88.127.51:${toString self.nixosConfigurations.remote-builder.config.services.prometheus.exporters.smartctl.port}"
+              "10.88.127.20:${toString self.nixosConfigurations.terminal-zero.config.services.prometheus.exporters.smartctl.port}"
+              "10.88.127.21:${toString self.nixosConfigurations.terminal-nx-01.config.services.prometheus.exporters.smartctl.port}"
+              "10.88.127.108:${toString self.nixosConfigurations.alpha-one.config.services.prometheus.exporters.smartctl.port}"
+              "10.88.127.107:${toString self.nixosConfigurations.alpha-three.config.services.prometheus.exporters.smartctl.port}"
+              "10.88.127.30:${toString self.nixosConfigurations.print-controller.config.services.prometheus.exporters.smartctl.port}"
+              # display-0 moved to dormantConfigurations
+              "10.88.127.41:${toString self.nixosConfigurations.display-1.config.services.prometheus.exporters.smartctl.port}"
+              "10.88.127.42:${toString self.nixosConfigurations.display-2.config.services.prometheus.exporters.smartctl.port}"
+              "10.88.127.43:${toString self.nixosConfigurations.arm-builder.config.services.prometheus.exporters.smartctl.port}"
+              # display-0 dormant; arm-builder: smartctl not yet configured (USB-NVMe)
+            ];
           }
         ];
       }

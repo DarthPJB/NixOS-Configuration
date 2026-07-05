@@ -1,0 +1,6 @@
+NAME          SIZE TYPE MOUNTPOINT
+nvme0n1     238.5G disk 
+├─nvme0n1p1  84.8G part /speed-storage
+├─nvme0n1p2  29.8G part [SWAP]
+├─nvme0n1p3   123G part /
+└─nvme0n1p4   953M part /boot

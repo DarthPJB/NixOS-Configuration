@@ -21,7 +21,6 @@
     ../../environments/audio_visual_editing.nix
     ../../environments/general_fonts.nix
     ../../environments/video_call_streaming.nix
-    ../../environments/cloud_and_backup.nix
     ../../environments/rtl-sdr.nix
     ../../modifier_imports/bluetooth.nix
     ../../modifier_imports/hosts.nix

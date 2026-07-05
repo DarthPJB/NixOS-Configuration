@@ -7,7 +7,7 @@
 }:
 {
   imports = [
-    ../../configuration.nix
+    # ../../configuration.nix — already in commonModules (flake.nix), do not duplicate
     ../../server_services/gitolite.nix
     ./hardware-configuration.nix
     ../../modules/enable-wg-topology.nix

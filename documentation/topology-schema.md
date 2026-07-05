@@ -112,7 +112,6 @@ The following `lib/topology/*.nix` functions consume topology data to generate c
 - **`lib/topology/mkTailscaleConfig.nix`**: Generates Tailscale subnet router configuration from topology `tailscale` section
 - **`lib/topology/validate.nix`**: Validates topology structure and cross-references
 - **`lib/topology/utils.nix`**: Shared utility functions (IP validation, dedup, etc.)
-- **`lib/topology/default.nix`**: Re-exports all transformation functions for convenience
 
 Note: `lib/mkKnownHosts.nix` also exists at the top-level `lib/` directory for SSH known_hosts generation.
 
