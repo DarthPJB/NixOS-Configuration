@@ -67,12 +67,12 @@
         "rev": "9ca45626ac55a074e205b2e25373849274d43133",
         "revCount": 20,
         "type": "git",
-        "url": "ssh://git@gitlab.com/mecha-team-zero/bargman-assets.git"
+        "url": "https://gitlab.com/mecha-team-zero/bargman-assets.git"
       },
       "original": {
         "ref": "main",
         "type": "git",
-        "url": "ssh://git@gitlab.com/mecha-team-zero/bargman-assets.git"
+        "url": "https://gitlab.com/mecha-team-zero/bargman-assets.git"
       }
     },
     "carmelsite": {
@@ -87,11 +87,11 @@
         "rev": "4588254294534f39f5f56710fb53a9edf0774d98",
         "revCount": 39,
         "type": "git",
-        "url": "ssh://git@gitlab.com/mecha-team-zero/carmelsite.git"
+        "url": "https://gitlab.com/mecha-team-zero/carmelsite.git"
       },
       "original": {
         "type": "git",
-        "url": "ssh://git@gitlab.com/mecha-team-zero/carmelsite.git"
+        "url": "https://gitlab.com/mecha-team-zero/carmelsite.git"
       }
     },
     "crane": {
@@ -235,11 +235,11 @@
         "rev": "941f8251174fa1eadf03e9e3b1866205a800bbb5",
         "revCount": 37,
         "type": "git",
-        "url": "ssh://git@gitlab.com/mecha-team-zero/denton-glasses.git"
+        "url": "https://gitlab.com/mecha-team-zero/denton-glasses.git"
       },
       "original": {
         "type": "git",
-        "url": "ssh://git@gitlab.com/mecha-team-zero/denton-glasses.git"
+        "url": "https://gitlab.com/mecha-team-zero/denton-glasses.git"
       }
     },
     "determinate": {
@@ -735,11 +735,11 @@
         "rev": "8126867704e4f5abdef7d90f64bc8989932f66a8",
         "revCount": 84,
         "type": "git",
-        "url": "ssh://git@gitlab.com/mecha-team-zero/macha-orchestration"
+        "url": "https://gitlab.com/mecha-team-zero/macha-orchestration"
       },
       "original": {
         "type": "git",
-        "url": "ssh://git@gitlab.com/mecha-team-zero/macha-orchestration"
+        "url": "https://gitlab.com/mecha-team-zero/macha-orchestration"
       }
     },
     "hyprcursor": {
