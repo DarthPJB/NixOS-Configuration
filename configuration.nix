@@ -123,7 +123,9 @@ in
     gc = {
       automatic = true;
       dates = "daily";
-      options = "--delete-older-than 7d";
+      randomizedDelaySec = "2h";
+      persistent = true;
+      options = "--delete-older-than 30d --max-freed $((50 * 1024**3))";
     };
     settings = {
       experimental-features = [
