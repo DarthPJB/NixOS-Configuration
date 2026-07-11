@@ -24,8 +24,7 @@ let
     nixpkgsShortRev = self.inputs.nixpkgs_stable.shortRev or "dirty";
     flakeRevision = self.rev or "dirty";
     flakeShortRev = self.shortRev or "dirty";
-    derivationPath = builtins.unsafeDiscardStringContext (toString config.system.build.toplevel.drvPath);
-    outPath = builtins.unsafeDiscardStringContext (toString config.system.build.toplevel);
+    derivationPath = builtins.unsafeDiscardStringContext (toString self.outPath);
     hostname = config.networking.hostName;
     stateVersion = config.system.stateVersion;
   });
