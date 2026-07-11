@@ -184,7 +184,7 @@ The production architecture uses per-machine topology files with direct transfor
 
 **Data Flow:**
 ```
-real-topology/<machine>.nix (per-machine topology data)
+topology/<machine>.nix (per-machine topology data)
 ↓
 lib/topology/*.nix (transformation functions: mkWireguardPeers, mkNginxProxies, mkDhcpDns, etc.)
 ↓
@@ -192,9 +192,12 @@ modules/core-router.nix (NixOS config generation)
 ```
 
 **Active Files:**
-- `real-topology/<machine>.nix` - Per-machine topology data (DNS, nginx, firewall, WG, etc.)
-- `real-topology/default.nix` - Golden test generator
-- `real-topology/golden/<machine>.json` - Golden test references (sacrosanct)
+- `topology/<machine>.nix` - Per-machine topology data (DNS, nginx, firewall, WG, etc.)
+- `topology/shared.nix` - Shared topology data (WireGuard IPs, LAN IPs, hub relationships)
+- `topology/default.nix` - Entry point, imports shared + per-machine files
+- `goldens/<machine>.json` - Golden test references (sacrosanct)
+- `lib/golden_generator.nix` - Golden test generator
+- `lib/golden_coverage.nix` - Coverage tracking
 - `lib/topology/mkWireguardPeers.nix` - WireGuard peer transformation (requires `self`)
 - `lib/topology/mkTailscaleConfig.nix` - Tailscale configuration
 - `lib/topology/mkDhcpDns.nix` - DHCP/DNS configuration
@@ -217,7 +220,7 @@ The WIP architecture introduces a **single topology source of truth** with a cle
 
 **Architecture Pattern (WIP):**
 ```
-topology.nix (incremental — only models what it currently generates, NOT a complete network description)
+topology/shared.nix (shared topology data — WireGuard IPs, LAN IPs, hub relationships)
 ↓
 lib/topology/mk*Settings.nix (transformers: topology + files → flat pure data)
 ↓
@@ -227,13 +230,13 @@ modules/core-router-topology.nix or modules/enable-wg-topology.nix
 ```
 
 **Key Principles:**
-- `topology.nix` is **incremental** — it only models what it generates. Per-machine files (`real-topology/*.nix`) remain the complete data source.
+- `topology/shared.nix` is **incremental** — it only models what it generates. Per-machine files (`topology/*.nix`) remain the complete data source.
 - Transformers + generators must produce **identical output** to the production path when integrated. Golden tests enforce this.
 - Integration is done **one machine at a time**, not all at once.
 - Until wired into a machine's config, the WIP code is dead code. When wired, it MUST pass `check-network`.
 
 **WIP Files:**
-- `topology.nix` - Incremental network topology (WireGuard IPs, LAN IPs, peer relations only)
+- `topology/shared.nix` - Incremental network topology (WireGuard IPs, LAN IPs, peer relations only)
 - `lib/topology/mkWireguardSettings.nix` - WireGuard transformer
 - `lib/topology/genWireguard.nix` - WireGuard generator
 - `lib/topology/mkNginxSettings.nix` - Nginx transformer
@@ -270,15 +273,15 @@ nix run .#check-network -- cortex-gamma
 
 #### Generate New Golden File (Config Changes Only)
 ```bash
-nix run .#dump-config -- cortex-alpha | jq -S . > real-topology/golden/cortex-alpha.json
+nix run .#dump-config -- cortex-alpha | jq -S . > goldens/cortex-alpha.json
 ```
 **Only run this when making intentional configuration changes** (new ports, added hosts, changed IPs). Never run during restructuring.
 
 #### Add a New Machine to Production Topology (per-machine file)
-1. Create `real-topology/<machine-name>.nix` using `_template.nix`
+1. Create `topology/<machine-name>.nix` using `_template.nix`
 2. Create the machine's config in `flake.nix` (use `mkX86_64` or `mkAarch64`)
 3. Import `modules/core-router.nix` in the machine's config
-4. Generate golden: `nix run .#dump-config -- <machine-name> | jq -S . > real-topology/golden/<machine-name>.json`
+4. Generate golden: `nix run .#dump-config -- <machine-name> | jq -S . > goldens/<machine-name>.json`
 5. Validate: `nix run .#check-network -- <machine-name>`
 
 #### Dump Full Configuration
@@ -331,15 +334,17 @@ Automated visual regression test — boots the VM, waits for the greeter, takes 
 #### Generate Golden from Main Branch
 ```bash
 git worktree add /tmp/nixos-main main
-mkdir -p /tmp/nixos-main/real-topology
-cp real-topology/default.nix /tmp/nixos-main/real-topology/
-cd /tmp/nixos-main && nix eval --json --impure --expr '...' | jq -S . > golden.json
+mkdir -p /tmp/nixos-main/goldens
+cd /tmp/nixos-main && nix run .#dump-config -- cortex-alpha | jq -S . > goldens/cortex-alpha.json
 git worktree remove /tmp/nixos-main --force
 ```
 
 ## Repository Structure
-- `real-topology/` - Topology data and golden tests
+- `topology/` - Topology data (shared.nix, per-machine files, external/)
+- `goldens/` - Golden test files (sacrosanct)
 - `lib/topology/` - Transformation functions
+- `lib/golden_generator.nix` - Golden test generator
+- `lib/golden_coverage.nix` - Coverage tracking
 - `modules/` - NixOS modules (core-router.nix, enable-wg-topology.nix)
 - `documentation/` - Architecture docs and operational references
 - `scripts/` - Utility scripts (compare-configs.sh)
