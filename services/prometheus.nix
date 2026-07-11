@@ -15,7 +15,7 @@ let
   graphana-dn = "grafana.${fqdn}";
 
   # Import topology to generate scrape targets
-  topology = import ../topology.nix { inherit lib; };
+  topology = import ../topology/shared.nix { inherit lib; };
   deploymentExporterPort = toString config.services.nixos-deployment-exporter.port;
   deploymentTargets = map
     (name: "${topology.${name}.wireguard}:${deploymentExporterPort}")

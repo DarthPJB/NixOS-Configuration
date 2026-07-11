@@ -9,7 +9,7 @@
 
 let
   # Import topology (all machines)
-  topology = import ../topology.nix { inherit lib; };
+  topology = import ../topology/shared.nix { inherit lib; };
 
   # Compute settings for all services
   wireguardSettings = (import ../lib/topology/mkWireguardSettings.nix { inherit lib; }) topology;

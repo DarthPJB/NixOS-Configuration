@@ -32,7 +32,7 @@
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
       # Import topology to derive deployment IPs from single source of truth
-      topo = import ./topology.nix { inherit lib; };
+      topo = import ./topology/shared.nix { inherit lib; };
       # Get wireguard IP for a machine from topology
       topoIp = machineName: topo.${machineName}.wireguard;
       globalArgs = {
@@ -221,7 +221,7 @@
             text = ''
               if [ -z "$1" ]; then
                 echo "Usage: nix run .#generate-golden <machine-name>"
-                echo "Example: nix run .#generate-golden cortex-alpha > real-topology/golden/cortex-alpha.json"
+                echo "Example: nix run .#generate-golden cortex-alpha > goldens/cortex-alpha.json"
                 exit 1
               fi
               MACHINE="$1"
@@ -230,7 +230,7 @@
                   let
                     flake = builtins.getFlake (builtins.toString ./.);
                     lib = (import <nixpkgs> {}).lib;
-                    topology = import ./real-topology/default.nix { inherit lib; self = flake; };
+                    topology = import ./topology/default.nix { inherit lib; self = flake; };
                   in
                   topology.generateGolden "'"$MACHINE"'"
                 ' 2>/dev/null | jq -S .
@@ -250,12 +250,12 @@
               echo "Checking network config for $MACHINE..."
               nix run .#dump-config -- "$MACHINE" | jq -S . > /tmp/current-network.json
                 
-              if diff -u "${self}/real-topology/golden/$MACHINE.json" /tmp/current-network.json; then
+              if diff -u "${self}/goldens/$MACHINE.json" /tmp/current-network.json; then
                 echo "✓ Network config matches golden for $MACHINE"
               else
                 echo "✗ Network configuration has changed from golden!"
                 echo "If intentional, update with:"
-                echo "  nix run .#dump-config -- $MACHINE > real-topology/golden/$MACHINE.json"
+                echo "  nix run .#dump-config -- $MACHINE > goldens/$MACHINE.json"
                 exit 1
               fi
             '';
@@ -662,12 +662,12 @@
             nix run .#dump-config -- cortex-alpha | jq -S . > /tmp/current-network.json
 
             echo "Comparing with golden..."
-            if diff -u ${self}/real-topology/golden/cortex-alpha.json /tmp/current-network.json; then
+            if diff -u ${self}/goldens/cortex-alpha.json /tmp/current-network.json; then
               echo "✓ Network config matches golden for cortex-alpha"
             else
               echo "✗ Network configuration has changed from golden!"
               echo "If intentional, update with:"
-              echo "  nix run .#dump-config -- cortex-alpha > real-topology/golden/cortex-alpha.json"
+              echo "  nix run .#dump-config -- cortex-alpha > goldens/cortex-alpha.json"
               exit 1
             fi
           '';
@@ -675,7 +675,7 @@
 
         topology-coverage =
           let
-            coverage = import ./real-topology/coverage.nix { inherit self; };
+            coverage = import ./lib/golden_coverage.nix { inherit self; };
           in
           if !coverage.isComplete then
             throw "Topology coverage incomplete. Missing: ${builtins.toJSON coverage.missing}"

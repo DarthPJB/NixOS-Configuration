@@ -1,5 +1,5 @@
 # modules/core-router.nix
-# Consumes real-topology data and generates actual NixOS networking configuration
+# Consumes topology data and generates actual NixOS networking configuration
 { config
 , lib
 , pkgs
@@ -9,7 +9,7 @@
 
 let
   # Import topology (pure data, no arguments needed beyond the function signature)
-  topology = import ../real-topology/${config.networking.hostName}.nix { inherit lib self; };
+  topology = import ../topology/${config.networking.hostName}.nix { inherit lib self; };
 
   # Import and run validation
   validator = import ../lib/topology/validate.nix { inherit lib; };

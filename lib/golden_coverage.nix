@@ -1,11 +1,11 @@
 { self }:
 
 let
-  topology = import ../topology.nix { };
+  topology = import ../topology/shared.nix { };
   topologyMachines = builtins.attrNames topology;
   nixosMachines = builtins.attrNames (builtins.removeAttrs self.nixosConfigurations [ "beta-one" "display-0" "display-1" "display-2" "print-controller" "bargman-greeter-vm" "arm-bootstrap" ]);
 
-  goldenDir = ../real-topology/golden;
+  goldenDir = ../goldens;
   goldenFiles = builtins.readDir goldenDir;
   goldenMachines = builtins.map
     (name: builtins.substring 0 (builtins.stringLength name - 5) name)

@@ -6,7 +6,7 @@
 
 let
   # Import topology
-  topology = import ../real-topology/cortex-alpha.nix { inherit lib; self = { outPath = "/speed-storage/repo/DarthPJB/NixOS-Configuration"; }; };
+  topology = import ../topology/cortex-alpha.nix { inherit lib; self = { outPath = "/speed-storage/repo/DarthPJB/NixOS-Configuration"; }; };
 
   # Import transformers like core-router.nix does
   tailscaleLib = (import ../lib/topology/mkTailscaleConfig.nix { inherit lib; }) topology;
