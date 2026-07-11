@@ -193,7 +193,7 @@ in
     };
     provision.dashboards.settings.providers = [
       {
-        updateInterfalSeconds = 5;
+        updateIntervalSeconds = 5;
         options = {
           path = ./graphana_dashboards;
           foldersFromFilesStructure = true;
