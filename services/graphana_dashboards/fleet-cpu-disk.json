@@ -28,7 +28,7 @@
         "x": 0,
         "y": 0
       },
-      "id": 14,
+      "id": 100,
       "panels": [],
       "title": "Status",
       "type": "row"
@@ -167,7 +167,7 @@
         {
           "id": "renameByRegex",
           "options": {
-            "regex": "/(.*)10\\.88\\.127\\.3 .*/",
+            "regex": "/(.*)10\\.88\\.127\\.3.*/",
             "renamePattern": "$1 data-storage"
           }
         },
@@ -211,7 +211,7 @@
         "x": 0,
         "y": 7
       },
-      "id": 13,
+      "id": 101,
       "panels": [],
       "title": "Metrics",
       "type": "row"
@@ -604,7 +604,7 @@
         "x": 0,
         "y": 15
       },
-      "id": 9,
+      "id": 102,
       "panels": [],
       "title": "General View",
       "type": "row"
@@ -1063,6 +1063,19 @@
       "type": "heatmap"
     },
     {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "id": 103,
+      "panels": [],
+      "title": "CPU - General",
+      "type": "row"
+    },
+    {
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus01"
@@ -1086,7 +1099,7 @@
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 24
+        "y": 25
       },
       "id": 4,
       "options": {
@@ -1174,7 +1187,7 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 24
+        "y": 25
       },
       "id": 6,
       "options": {
@@ -1235,19 +1248,6 @@
       "title": "CPU - Local Systems",
       "transparent": true,
       "type": "heatmap"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 31
-      },
-      "id": 10,
-      "panels": [],
-      "title": "CPU - General",
-      "type": "row"
     },
     {
       "datasource": {
@@ -1675,19 +1675,23 @@
     }
   ],
   "preload": false,
-  "refresh": "5s",
+  "refresh": "30s",
   "schemaVersion": 42,
-  "tags": [],
+  "tags": [
+    "cpu",
+    "disk",
+    "fleet"
+  ],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "utc",
-  "title": "CPU-Monitor-disk regex-fix",
-  "uid": "jo5b5zx",
+  "title": "Fleet CPU & Disk Monitor",
+  "uid": "fleet-cpu-disk",
   "weekStart": "monday"
 }
