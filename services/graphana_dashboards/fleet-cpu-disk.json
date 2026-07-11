@@ -861,109 +861,6 @@
         "x": 12,
         "y": 16
       },
-      "id": 8,
-      "options": {
-        "calculate": false,
-        "cellGap": 0,
-        "color": {
-          "exponent": 0.5,
-          "fill": "dark-orange",
-          "mode": "scheme",
-          "reverse": false,
-          "scale": "exponential",
-          "scheme": "Spectral",
-          "steps": 64
-        },
-        "exemplars": {
-          "color": "rgba(255,0,255,0.7)"
-        },
-        "filterValues": {
-          "le": 1e-09
-        },
-        "legend": {
-          "show": false
-        },
-        "rowsFrame": {
-          "layout": "auto"
-        },
-        "tooltip": {
-          "mode": "single",
-          "showColorScale": false,
-          "yHistogram": false
-        },
-        "yAxis": {
-          "axisPlacement": "hidden",
-          "reverse": false
-        }
-      },
-      "pluginVersion": "12.3.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus01"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "exemplar": false,
-          "expr": "idelta(node_cpu_seconds_total{mode!=\"idle\", instance=\"10.88.127.50:9100\"}[5m])",
-          "fullMetaSearch": false,
-          "includeNullMetadata": false,
-          "instant": false,
-          "legendFormat": "{{instance}}",
-          "range": true,
-          "refId": "A",
-          "useBackend": false
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus01"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "exemplar": false,
-          "expr": "idelta(node_cpu_seconds_total{mode!=\"idle\", instance=\"10.88.127.51:9100\"}[5m])",
-          "fullMetaSearch": false,
-          "hide": false,
-          "includeNullMetadata": false,
-          "instant": false,
-          "legendFormat": "{{instance}}",
-          "range": true,
-          "refId": "B",
-          "useBackend": false
-        }
-      ],
-      "title": "CPU -  Remote Systems",
-      "transparent": true,
-      "type": "heatmap"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus01"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "scaleDistribution": {
-              "type": "linear"
-            }
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 12,
-        "x": 12,
-        "y": 20
-      },
       "id": 16,
       "options": {
         "calculate": false,
@@ -984,7 +881,7 @@
           "color": "rgba(255,0,255,0.7)"
         },
         "filterValues": {
-          "le": 1e-09
+          "le": 1E-9
         },
         "legend": {
           "show": false
@@ -1063,19 +960,6 @@
       "type": "heatmap"
     },
     {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 24
-      },
-      "id": 103,
-      "panels": [],
-      "title": "CPU - General",
-      "type": "row"
-    },
-    {
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus01"
@@ -1099,7 +983,7 @@
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 25
+        "y": 20
       },
       "id": 4,
       "options": {
@@ -1121,7 +1005,7 @@
           "color": "rgba(255,0,255,0.7)"
         },
         "filterValues": {
-          "le": 1e-09
+          "le": 1E-9
         },
         "legend": {
           "show": true
@@ -1187,7 +1071,7 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 25
+        "y": 20
       },
       "id": 6,
       "options": {
@@ -1206,7 +1090,7 @@
           "color": "rgba(255,0,255,0.7)"
         },
         "filterValues": {
-          "le": 1e-09
+          "le": 1E-9
         },
         "legend": {
           "show": false
@@ -1267,349 +1151,13 @@
             }
           }
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byFrameRefID"
-            },
-            "properties": []
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 12,
-        "x": 0,
-        "y": 32
-      },
-      "id": 3,
-      "options": {
-        "calculate": false,
-        "cellGap": 1,
-        "cellValues": {
-          "unit": "rothz"
-        },
-        "color": {
-          "exponent": 0.5,
-          "fill": "dark-red",
-          "mode": "scheme",
-          "reverse": false,
-          "scale": "exponential",
-          "scheme": "Spectral",
-          "steps": 64
-        },
-        "exemplars": {
-          "color": "rgba(255,0,255,0.7)"
-        },
-        "filterValues": {
-          "le": 1e-09
-        },
-        "legend": {
-          "show": false
-        },
-        "rowsFrame": {
-          "layout": "auto"
-        },
-        "tooltip": {
-          "mode": "single",
-          "showColorScale": false,
-          "yHistogram": false
-        },
-        "yAxis": {
-          "axisPlacement": "hidden",
-          "reverse": false,
-          "unit": ""
-        }
-      },
-      "pluginVersion": "12.3.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus01"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.1:9100\", job=\"node\"}",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "Core: {{cpu}}",
-          "range": true,
-          "refId": "A",
-          "useBackend": false
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus01"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "node_cpu_scaling_frequency_max_hertz{instance=\"10.88.127.1:9100\", job=\"node\"}",
-          "fullMetaSearch": false,
-          "hide": true,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "Core: {{cpu}}",
-          "range": true,
-          "refId": "B",
-          "useBackend": false
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus01"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "node_cpu_frequency_min_hertz{instance=\"10.88.127.1:9100\", job=\"node\"}",
-          "fullMetaSearch": false,
-          "hide": true,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "Core: {{cpu}}",
-          "range": true,
-          "refId": "C",
-          "useBackend": false
-        }
-      ],
-      "title": "CPU - cortex-alpha",
-      "transformations": [
-        {
-          "id": "configFromData",
-          "options": {
-            "applyTo": {
-              "id": "byType",
-              "options": "number"
-            },
-            "configRefId": "B",
-            "mappings": [
-              {
-                "fieldName": "Core: 0",
-                "handlerKey": "max",
-                "reducerId": "lastNotNull"
-              }
-            ]
-          }
-        },
-        {
-          "id": "configFromData",
-          "options": {
-            "configRefId": "C",
-            "mappings": [
-              {
-                "fieldName": "Core: 0",
-                "handlerKey": "min"
-              }
-            ]
-          }
-        }
-      ],
-      "transparent": true,
-      "type": "heatmap"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus01"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "scaleDistribution": {
-              "type": "linear"
-            }
-          }
-        },
         "overrides": []
       },
       "gridPos": {
         "h": 4,
         "w": 12,
         "x": 12,
-        "y": 32
-      },
-      "id": 2,
-      "options": {
-        "calculate": false,
-        "cellGap": 1,
-        "cellValues": {
-          "unit": "rothz"
-        },
-        "color": {
-          "exponent": 0.5,
-          "fill": "dark-red",
-          "mode": "scheme",
-          "reverse": false,
-          "scale": "exponential",
-          "scheme": "Spectral",
-          "steps": 64
-        },
-        "exemplars": {
-          "color": "rgba(255,0,255,0.7)"
-        },
-        "filterValues": {
-          "le": 1e-09
-        },
-        "legend": {
-          "show": false
-        },
-        "rowsFrame": {
-          "layout": "auto"
-        },
-        "tooltip": {
-          "mode": "single",
-          "showColorScale": false,
-          "yHistogram": false
-        },
-        "yAxis": {
-          "axisPlacement": "hidden",
-          "reverse": false,
-          "unit": ""
-        }
-      },
-      "pluginVersion": "12.3.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus01"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.20:9100\", job=\"node\"}",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "Core: {{cpu}}",
-          "range": true,
-          "refId": "A",
-          "useBackend": false
-        }
-      ],
-      "title": "CPU - Terminal-Zero",
-      "transparent": true,
-      "type": "heatmap"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus01"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "scaleDistribution": {
-              "type": "linear"
-            }
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 12,
-        "x": 0,
-        "y": 35
-      },
-      "id": 5,
-      "options": {
-        "calculate": false,
-        "cellGap": 1,
-        "cellValues": {
-          "unit": "rothz"
-        },
-        "color": {
-          "exponent": 0.5,
-          "fill": "dark-red",
-          "mode": "scheme",
-          "reverse": false,
-          "scale": "exponential",
-          "scheme": "Spectral",
-          "steps": 64
-        },
-        "exemplars": {
-          "color": "rgba(255,0,255,0.7)"
-        },
-        "filterValues": {
-          "le": 1e-09
-        },
-        "legend": {
-          "show": false
-        },
-        "rowsFrame": {
-          "layout": "auto"
-        },
-        "tooltip": {
-          "mode": "single",
-          "showColorScale": false,
-          "yHistogram": false
-        },
-        "yAxis": {
-          "axisPlacement": "hidden",
-          "reverse": false,
-          "unit": ""
-        }
-      },
-      "pluginVersion": "12.3.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus01"
-          },
-          "disableTextWrap": false,
-          "editorMode": "code",
-          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.21:9100\", job=\"node\"}",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "Core: {{cpu}}",
-          "range": true,
-          "refId": "A",
-          "useBackend": false
-        }
-      ],
-      "title": "CPU - terminal-nx-01",
-      "transparent": true,
-      "type": "heatmap"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus01"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "scaleDistribution": {
-              "type": "linear"
-            }
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 12,
-        "x": 12,
-        "y": 36
+        "y": 27
       },
       "id": 1,
       "options": {
@@ -1631,7 +1179,7 @@
           "color": "rgba(255,0,255,0.7)"
         },
         "filterValues": {
-          "le": 1e-09
+          "le": 1E-9
         },
         "legend": {
           "show": false

@@ -260,7 +260,7 @@
           "refId": "B"
         }
       ],
-      "title": "Disk Read",
+      "title": "Disk Write Activity",
       "transformations": [
         {
           "id": "renameByRegex",
@@ -419,7 +419,11 @@
   "preload": false,
   "refresh": "5s",
   "schemaVersion": 42,
-  "tags": [],
+  "tags": [
+    "systemd",
+    "failstate",
+    "fleet"
+  ],
   "templating": {
     "list": []
   },
@@ -430,6 +434,6 @@
   "timepicker": {},
   "timezone": "browser",
   "title": "Failstate-Overview",
-  "uid": "joctmbb",
+  "uid": "failstate-overview",
   "weekStart": ""
 }

@@ -390,12 +390,12 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "idelta(node_zfs_zpool_dataset_reads{instance=\"10.88.127.88:9100\"}[5m])",
+          "expr": "-idelta(node_zfs_zpool_dataset_writes{instance=\"10.88.127.88:9100\"}[5m])",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
           "instant": false,
-          "legendFormat": "{{instance}} {{dataset}}",
+          "legendFormat": "{{instance}} {{dataset}} write",
           "range": true,
           "refId": "B",
           "useBackend": false
@@ -408,7 +408,10 @@
   ],
   "preload": false,
   "schemaVersion": 41,
-  "tags": [],
+  "tags": [
+    "linda",
+    "system"
+  ],
   "templating": {
     "list": []
   },
@@ -418,6 +421,6 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Disk-usage",
-  "uid": "e5efb550-495f-46cb-8193-9be2759685a4"
+  "title": "LINDA System Metrics",
+  "uid": "linda-system"
 }
