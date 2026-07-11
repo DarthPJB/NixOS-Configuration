@@ -25,7 +25,7 @@
         PasswordAuthentication = false;
         LoginGraceTime = 30;
         MaxAuthTries = 3;
-        MaxSessions = 2;
+        MaxSessions = 20;  # Increased for SSH multiplexing
         X11Forwarding = false;
         AllowTcpForwarding = false;
         ClientAliveInterval = 300;
