@@ -93,7 +93,7 @@
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "smartctl_device_reallocated_sector_count", "legendFormat": "{{instance}} {{device}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "smartctl_device_attribute{attribute_name=\"Reallocated_Sector_Ct\", attribute_value_type=\"raw\"}", "legendFormat": "{{instance}} {{device}}", "refId": "A" }
       ],
       "title": "Reallocated Sectors",
       "type": "timeseries"
@@ -115,7 +115,7 @@
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "smartctl_device_current_pending_sector_count", "legendFormat": "{{instance}} {{device}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "smartctl_device_attribute{attribute_name=\"Current_Pending_Sector_Ct\", attribute_value_type=\"raw\"}", "legendFormat": "{{instance}} {{device}}", "refId": "A" }
       ],
       "title": "Pending Sectors",
       "type": "timeseries"
@@ -137,7 +137,7 @@
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "smartctl_device_offline_uncorrectable_sector_count", "legendFormat": "{{instance}} {{device}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "smartctl_device_attribute{attribute_name=\"Offline_Uncorrectable\", attribute_value_type=\"raw\"}", "legendFormat": "{{instance}} {{device}}", "refId": "A" }
       ],
       "title": "Offline Uncorrectable Sectors",
       "type": "timeseries"
@@ -189,7 +189,7 @@
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "smartctl_device_load_cycle_count", "legendFormat": "{{instance}} {{device}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "smartctl_device_attribute{attribute_name=\"Load_Cycle_Count\", attribute_value_type=\"raw\"}", "legendFormat": "{{instance}} {{device}}", "refId": "A" }
       ],
       "title": "Load Cycle Count",
       "type": "timeseries"
@@ -211,7 +211,7 @@
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "smartctl_device_start_stop_count", "legendFormat": "{{instance}} {{device}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "smartctl_device_attribute{attribute_name=\"Start_Stop_Count\", attribute_value_type=\"raw\"}", "legendFormat": "{{instance}} {{device}}", "refId": "A" }
       ],
       "title": "Start/Stop Count",
       "type": "timeseries"

@@ -129,9 +129,9 @@
       "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "vertical", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_systemd_unit_state{name=~\"docker.service|containerd.service\", state=\"active\"}", "legendFormat": "{{instance}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_systemd_unit_state{name=\"nix-daemon.service\", state=\"active\"}", "legendFormat": "{{instance}}", "refId": "A" }
       ],
-      "title": "Docker",
+      "title": "Nix Daemon",
       "type": "stat"
     },
     {
@@ -149,9 +149,9 @@
       "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "vertical", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_systemd_unit_state{name=~\"minio.service\", state=\"active\"}", "legendFormat": "{{instance}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_systemd_unit_state{name=\"wireguard-wireg0.service\", state=\"active\"}", "legendFormat": "{{instance}}", "refId": "A" }
       ],
-      "title": "Minio",
+      "title": "WireGuard",
       "type": "stat"
     },
     {
