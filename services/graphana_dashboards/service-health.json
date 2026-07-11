@@ -15,30 +15,8 @@
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "prometheus01" },
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "thresholds" },
-          "mappings": [
-            { "options": { "0": { "color": "red", "text": "NOT RUNNING" }, "1": { "color": "green", "text": "RUNNING" } }, "type": "value" }
-          ],
-          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
-        },
-        "overrides": []
-      },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 1 },
-      "id": 1,
-      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "pluginVersion": "12.3.0",
-      "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_systemd_unit_state{name=~\".*service.*\", state=\"active\"}", "legendFormat": "{{instance}} {{name}}", "refId": "A" }
-      ],
-      "title": "Active Services",
-      "type": "stat"
-    },
-    {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 1 },
       "id": 101,
       "panels": [],
       "title": "Failed Services",
@@ -56,7 +34,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 10 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 2 },
       "id": 2,
       "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "pluginVersion": "12.3.0",
@@ -68,10 +46,10 @@
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 },
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 10 },
       "id": 102,
       "panels": [],
-      "title": "Key Services",
+      "title": "Key Services (Failed)",
       "type": "row"
     },
     {
@@ -79,19 +57,21 @@
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "thresholds" },
-          "mappings": [],
-          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+          "mappings": [
+            { "options": { "0": { "color": "green", "text": "OK" }, "1": { "color": "red", "text": "FAILED" } }, "type": "value" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
         },
         "overrides": []
       },
-      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 19 },
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 11 },
       "id": 3,
       "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "vertical", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_systemd_unit_state{name=\"sshd.service\", state=\"active\"}", "legendFormat": "{{instance}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_systemd_unit_state{name=~\"sshd.service|sshd.socket\", state=\"failed\"}", "legendFormat": "{{instance}}", "refId": "A" }
       ],
-      "title": "SSH",
+      "title": "SSH (Failed)",
       "type": "stat"
     },
     {
@@ -104,14 +84,14 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 19 },
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 11 },
       "id": 4,
       "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "vertical", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_systemd_unit_state{name=~\"nginx.service|httpd.service\", state=\"active\"}", "legendFormat": "{{instance}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_systemd_unit_state{name=~\"nginx.service|httpd.service\", state=\"failed\"}", "legendFormat": "{{instance}}", "refId": "A" }
       ],
-      "title": "Web Server",
+      "title": "Web Server (Failed)",
       "type": "stat"
     },
     {
@@ -124,14 +104,14 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 19 },
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 11 },
       "id": 5,
       "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "vertical", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_systemd_unit_state{name=\"nix-daemon.service\", state=\"active\"}", "legendFormat": "{{instance}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_systemd_unit_state{name=\"nix-daemon.service\", state=\"failed\"}", "legendFormat": "{{instance}}", "refId": "A" }
       ],
-      "title": "Nix Daemon",
+      "title": "Nix Daemon (Failed)",
       "type": "stat"
     },
     {
@@ -144,14 +124,14 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 25 },
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 17 },
       "id": 6,
       "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "vertical", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_systemd_unit_state{name=\"wireguard-wireg0.service\", state=\"active\"}", "legendFormat": "{{instance}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_systemd_unit_state{name=\"wireguard-wireg0.service\", state=\"failed\"}", "legendFormat": "{{instance}}", "refId": "A" }
       ],
-      "title": "WireGuard",
+      "title": "WireGuard (Failed)",
       "type": "stat"
     },
     {
@@ -164,14 +144,14 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 25 },
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 17 },
       "id": 7,
       "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "vertical", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_systemd_unit_state{name=~\"postgresql.service\", state=\"active\"}", "legendFormat": "{{instance}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_systemd_unit_state{name=~\"postgresql.service\", state=\"failed\"}", "legendFormat": "{{instance}}", "refId": "A" }
       ],
-      "title": "PostgreSQL",
+      "title": "PostgreSQL (Failed)",
       "type": "stat"
     },
     {
@@ -184,19 +164,19 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 25 },
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 17 },
       "id": 8,
       "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "vertical", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_systemd_unit_state{name=~\"prometheus.service\", state=\"active\"}", "legendFormat": "{{instance}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_systemd_unit_state{name=~\"prometheus.service\", state=\"failed\"}", "legendFormat": "{{instance}}", "refId": "A" }
       ],
-      "title": "Prometheus",
+      "title": "Prometheus (Failed)",
       "type": "stat"
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 31 },
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
       "id": 103,
       "panels": [],
       "title": "Rclone Backup Services",
@@ -208,20 +188,20 @@
         "defaults": {
           "color": { "mode": "thresholds" },
           "mappings": [
-            { "options": { "0": { "color": "red", "text": "INACTIVE" }, "1": { "color": "green", "text": "ACTIVE" }, "2": { "color": "yellow", "text": "ACTIVATING" } }, "type": "value" }
+            { "options": { "0": { "color": "green", "text": "OK" }, "1": { "color": "red", "text": "FAILED" } }, "type": "value" }
           ],
-          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
         },
         "overrides": []
       },
-      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 32 },
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 24 },
       "id": 9,
       "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_systemd_unit_state{name=~\"rclone-sync-.*\", state=\"active\"}", "legendFormat": "{{instance}} {{name}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_systemd_unit_state{name=~\"rclone-sync-.*\", state=\"failed\"}", "legendFormat": "{{instance}} {{name}}", "refId": "A" }
       ],
-      "title": "Rclone Backup Status",
+      "title": "Rclone Backup Status (Failed)",
       "type": "stat"
     }
   ],

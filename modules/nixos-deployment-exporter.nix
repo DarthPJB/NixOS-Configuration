@@ -24,6 +24,8 @@ let
     nixpkgsShortRev = self.inputs.nixpkgs_stable.shortRev or "dirty";
     flakeRevision = self.rev or "dirty";
     flakeShortRev = self.shortRev or "dirty";
+    derivationPath = builtins.unsafeDiscardStringContext (toString config.system.build.toplevel.drvPath);
+    outPath = builtins.unsafeDiscardStringContext (toString config.system.build.toplevel);
     hostname = config.networking.hostName;
     stateVersion = config.system.stateVersion;
   });
@@ -136,7 +138,7 @@ let
     )
     flake_info = Gauge(
         'nixos_flake_info', 'Flake and nixpkgs metadata from build time',
-        ['flake_revision', 'nixpkgs_revision', 'hostname'], registry=registry,
+        ['flake_revision', 'nixpkgs_revision', 'hostname', 'derivation_path'], registry=registry,
     )
 
     # Generation tracking
@@ -191,6 +193,7 @@ let
                     flake_revision=meta.get('flakeRevision', 'unknown'),
                     nixpkgs_revision=meta.get('nixpkgsRevision', 'unknown'),
                     hostname=meta.get('hostname', 'unknown'),
+                    derivation_path=meta.get('derivationPath', 'unknown'),
                 ).set(1)
         except Exception:
             errors += 1

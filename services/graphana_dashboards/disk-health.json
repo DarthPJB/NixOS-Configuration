@@ -115,7 +115,7 @@
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "smartctl_device_attribute{attribute_name=\"Current_Pending_Sector_Ct\", attribute_value_type=\"raw\"}", "legendFormat": "{{instance}} {{device}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "smartctl_device_attribute{attribute_name=\"Current_Pending_Sector\", attribute_value_type=\"raw\"}", "legendFormat": "{{instance}} {{device}}", "refId": "A" }
       ],
       "title": "Pending Sectors",
       "type": "timeseries"

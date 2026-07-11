@@ -97,8 +97,34 @@
       "type": "table"
     },
     {
+      "datasource": { "type": "prometheus", "uid": "prometheus01" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "text" },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "instance" }, "properties": [{ "id": "custom.width", "value": 150 }] },
+          { "matcher": { "id": "byName", "options": "Value" }, "properties": [{ "id": "hidden", "value": true }] }
+        ]
+      },
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 16 },
+      "id": 8,
+      "options": { "showHeader": true, "cellHeight": "sm", "footer": { "show": false } },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "nixos_flake_info", "format": "table", "instant": true, "legendFormat": "", "refId": "A" }
+      ],
+      "title": "Derivation Path",
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true, "Value": true }, "renameByName": { "instance": "Machine", "derivation_path": "Derivation Path" } } }
+      ],
+      "type": "table"
+    },
+    {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 },
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 },
       "id": 102,
       "panels": [],
       "title": "Generation & Uptime",
@@ -116,7 +142,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 17 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 23 },
       "id": 4,
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
       "pluginVersion": "12.3.0",
@@ -138,7 +164,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 17 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 23 },
       "id": 5,
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
       "pluginVersion": "12.3.0",
@@ -160,7 +186,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 25 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 31 },
       "id": 6,
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
       "pluginVersion": "12.3.0",
@@ -172,7 +198,7 @@
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 33 },
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 39 },
       "id": 103,
       "panels": [],
       "title": "Kernel",
@@ -190,7 +216,7 @@
           { "matcher": { "id": "byName", "options": "Value" }, "properties": [{ "id": "hidden", "value": true }] }
         ]
       },
-      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 34 },
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 40 },
       "id": 7,
       "options": { "showHeader": true, "cellHeight": "sm", "footer": { "show": false } },
       "pluginVersion": "12.3.0",

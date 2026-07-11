@@ -31,8 +31,8 @@
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "rate(node_network_receive_bytes_total{device!~\"lo|veth.*|docker.*|br.*\"}[5m])", "legendFormat": "{{instance}} {{device}} RX", "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "-rate(node_network_transmit_bytes_total{device!~\"lo|veth.*|docker.*|br.*\"}[5m])", "legendFormat": "{{instance}} {{device}} TX", "refId": "B" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "rate(node_network_receive_bytes_total{device!~\"lo|veth.*|docker.*|br.*|wireg0\"}[5m])", "legendFormat": "{{instance}} {{device}} RX", "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "-rate(node_network_transmit_bytes_total{device!~\"lo|veth.*|docker.*|br.*|wireg0\"}[5m])", "legendFormat": "{{instance}} {{device}} TX", "refId": "B" }
       ],
       "title": "Interface Bandwidth",
       "type": "timeseries"
@@ -62,7 +62,7 @@
       "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
       "pluginVersion": "12.3.0",
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_network_up{device!~\"lo|veth.*|docker.*|br.*\"}", "legendFormat": "{{instance}} {{device}}", "refId": "A" }
+        { "datasource": { "type": "prometheus", "uid": "prometheus01" }, "expr": "node_network_up{device!~\"lo|veth.*|docker.*|br.*|wireg0\"} == 1", "legendFormat": "{{instance}} {{device}}", "refId": "A" }
       ],
       "title": "Interface Status",
       "type": "stat"
