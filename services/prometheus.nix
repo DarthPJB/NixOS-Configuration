@@ -179,7 +179,6 @@ in
   };
 
   services.grafana = {
-
     enable = true;
     settings = {
       server = {
@@ -191,23 +190,36 @@ in
       };
       analytics.reporting_enabled = false;
     };
-    provision.dashboards.settings.providers = [
-      {
-        updateInterfalSeconds = 5;
-        options = {
-          path = ./graphana_dashboards;
-          foldersFromFilesStructure = true;
-        };
-      }
-    ];
-    provision.datasources.settings.datasources = [
-      {
-        name = "prometheus";
-        type = "prometheus";
-        uid = "prometheus01";
-        url = config.services.prometheus.webExternalUrl;
-      }
-    ];
+    provision = {
+      enable = true;
+      dashboards.settings.providers = [
+        {
+          name = "default";
+          type = "file";
+          updateIntervalSeconds = 30;
+          allowUiUpdates = false;
+          disableDeletion = false;
+          options = {
+            path = ./graphana_dashboards;
+            foldersFromFilesStructure = true;
+          };
+        }
+      ];
+      datasources.settings = {
+        apiVersion = 1;
+        prune = true;
+        datasources = [
+          {
+            name = "prometheus";
+            type = "prometheus";
+            uid = "prometheus01";
+            access = "proxy";
+            editable = false;
+            url = config.services.prometheus.webExternalUrl;
+          }
+        ];
+      };
+    };
   };
   networking.firewall.allowedTCPPorts = [
     config.services.prometheus.port
