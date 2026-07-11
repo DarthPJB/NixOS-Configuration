@@ -248,14 +248,14 @@
             text = ''
               MACHINE="''${1:-cortex-alpha}"
               echo "Checking network config for $MACHINE..."
-              nix run .#generate-golden -- "$MACHINE" | jq -S . > /tmp/current-network.json
+              nix run .#dump-config -- "$MACHINE" | jq -S . > /tmp/current-network.json
                 
               if diff -u "${self}/real-topology/golden/$MACHINE.json" /tmp/current-network.json; then
                 echo "✓ Network config matches golden for $MACHINE"
               else
                 echo "✗ Network configuration has changed from golden!"
                 echo "If intentional, update with:"
-                echo "  nix run .#generate-golden -- $MACHINE > real-topology/golden/$MACHINE.json"
+                echo "  nix run .#dump-config -- $MACHINE > real-topology/golden/$MACHINE.json"
                 exit 1
               fi
             '';
@@ -659,7 +659,7 @@
           runtimeInputs = [ nixpkgs.jq ];
           text = ''
             echo "Generating current network config for cortex-alpha..."
-            nix run .#generate-golden -- cortex-alpha | jq -S . > /tmp/current-network.json
+            nix run .#dump-config -- cortex-alpha | jq -S . > /tmp/current-network.json
 
             echo "Comparing with golden..."
             if diff -u ${self}/real-topology/golden/cortex-alpha.json /tmp/current-network.json; then
@@ -667,7 +667,7 @@
             else
               echo "✗ Network configuration has changed from golden!"
               echo "If intentional, update with:"
-              echo "  nix run .#generate-golden -- cortex-alpha > real-topology/golden/cortex-alpha.json"
+              echo "  nix run .#dump-config -- cortex-alpha > real-topology/golden/cortex-alpha.json"
               exit 1
             fi
           '';
