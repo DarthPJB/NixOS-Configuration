@@ -196,7 +196,7 @@ in
         {
           name = "default";
           type = "file";
-          updateIntervalSeconds = 30;
+          updateIntervalSeconds = 300; # 5m — standard poll duration
           allowUiUpdates = false;
           disableDeletion = false;
           options = {

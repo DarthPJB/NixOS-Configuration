@@ -15,7 +15,7 @@
       }
     ]
   },
-  "editable": true,
+  "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
   "links": [],
@@ -1227,8 +1227,10 @@
   "schemaVersion": 42,
   "tags": [
     "cpu",
+    "declarative-2026-07-11",
     "disk",
-    "fleet"
+    "fleet",
+    "nix-provisioned"
   ],
   "templating": {
     "list": []
@@ -1241,5 +1243,7 @@
   "timezone": "utc",
   "title": "Fleet CPU & Disk Monitor",
   "uid": "fleet-cpu-disk",
-  "weekStart": "monday"
+  "weekStart": "monday",
+  "version": 1,
+  "id": null
 }

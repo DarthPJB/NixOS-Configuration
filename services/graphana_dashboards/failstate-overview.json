@@ -15,7 +15,7 @@
       }
     ]
   },
-  "editable": true,
+  "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "links": [],
@@ -358,7 +358,7 @@
           "color": "rgba(255,0,255,0.7)"
         },
         "filterValues": {
-          "le": 1e-09
+          "le": 1E-9
         },
         "legend": {
           "show": true
@@ -420,9 +420,11 @@
   "refresh": "5s",
   "schemaVersion": 42,
   "tags": [
-    "systemd",
+    "declarative-2026-07-11",
     "failstate",
-    "fleet"
+    "fleet",
+    "nix-provisioned",
+    "systemd"
   ],
   "templating": {
     "list": []
@@ -435,5 +437,7 @@
   "timezone": "browser",
   "title": "Failstate-Overview",
   "uid": "failstate-overview",
-  "weekStart": ""
+  "weekStart": "",
+  "version": 1,
+  "id": null
 }

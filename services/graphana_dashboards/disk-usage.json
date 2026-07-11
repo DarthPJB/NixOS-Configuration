@@ -15,7 +15,7 @@
       }
     ]
   },
-  "editable": true,
+  "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "links": [],
@@ -409,7 +409,9 @@
   "preload": false,
   "schemaVersion": 42,
   "tags": [
+    "declarative-2026-07-11",
     "linda",
+    "nix-provisioned",
     "system"
   ],
   "templating": {
@@ -422,5 +424,7 @@
   "timepicker": {},
   "timezone": "browser",
   "title": "LINDA System Metrics",
-  "uid": "linda-system"
+  "uid": "linda-system",
+  "version": 1,
+  "id": null
 }
