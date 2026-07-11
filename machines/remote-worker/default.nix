@@ -72,7 +72,7 @@ in
         forceSSL = true;
         listenAddresses = [ "10.88.127.50" ];
         locations."/" = {
-          root = personal-site.packages.${pkgs.system}.webroot;
+          root = personal-site.packages.${pkgs.stdenv.hostPlatform.system}.webroot;
         };
       };
     };
