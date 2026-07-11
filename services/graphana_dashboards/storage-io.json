@@ -510,7 +510,8 @@
               }
             ]
           },
-          "unit": "percent"
+          "unit": "percent",
+          "decimals": 1
         },
         "overrides": []
       },
@@ -523,15 +524,20 @@
       "id": 7,
       "options": {
         "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "minVizWidth": 0,
+        "minVizHeight": 16,
+        "namePlacement": "auto",
+        "sizing": "auto",
+        "valueMode": "color",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
           ],
           "fields": "",
           "values": false
-        },
-        "showThresholdLabels": true,
-        "showThresholdMarkers": true
+        }
       },
       "pluginVersion": "12.3.0",
       "targets": [
@@ -546,7 +552,7 @@
         }
       ],
       "title": "Filesystem Usage",
-      "type": "gauge"
+      "type": "bargauge"
     },
     {
       "collapsed": false,
@@ -628,12 +634,139 @@
       ],
       "title": "ZFS Pool Usage",
       "type": "gauge"
+    },
+    {
+      "id": 30,
+      "type": "gauge",
+      "title": "ZFS Deduplication Ratio",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 45
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 3,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1.0
+              },
+              {
+                "color": "yellow",
+                "value": 1.5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "auto",
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "expr": "zfs_pool_deduplication_ratio",
+          "legendFormat": "{{instance}} {{pool}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "type": "bargauge",
+      "title": "ZFS Pool Used %",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 45
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "expr": "(1 - zfs_pool_free_bytes / zfs_pool_size_bytes) * 100",
+          "legendFormat": "{{instance}} {{pool}}",
+          "refId": "A"
+        }
+      ]
     }
   ],
   "refresh": "30s",
   "schemaVersion": 42,
   "tags": [
     "declarative-2026-07-11",
+    "declarative-2026-07-11-reqfix",
     "disk",
     "io",
     "nix-provisioned",
@@ -650,5 +783,5 @@
   "timezone": "utc",
   "title": "Storage I/O",
   "uid": "storage-io",
-  "version": 2
+  "version": 3
 }

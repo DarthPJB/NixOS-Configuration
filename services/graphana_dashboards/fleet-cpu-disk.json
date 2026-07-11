@@ -628,7 +628,7 @@
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 100,
+            "fillOpacity": 15,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -644,7 +644,7 @@
             },
             "showPoints": "auto",
             "showValues": false,
-            "spanNulls": false,
+            "spanNulls": true,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -667,7 +667,7 @@
               }
             ]
           },
-          "unit": "decbytes"
+          "unit": "Bps"
         },
         "overrides": [
           {
@@ -745,67 +745,44 @@
             "type": "prometheus",
             "uid": "prometheus01"
           },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "idelta(node_zfs_zpool_dataset_reads[$__interval])",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "{{instance}} {{dataset}}",
-          "range": true,
-          "refId": "A",
-          "useBackend": false
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus01"
-          },
-          "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "-idelta(node_zfs_zpool_dataset_reads[$__interval])",
-          "fullMetaSearch": false,
-          "hide": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "{{instance}} {{dataset}}",
+          "expr": "rate(node_disk_read_bytes_total{device!~\"^(loop|ram|sr).*\"}[5m])",
+          "legendFormat": "{{instance}} {{device}} read",
           "range": true,
-          "refId": "B",
-          "useBackend": false
+          "refId": "A"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus01"
           },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "idelta(node_disk_read_bytes_total[$__interval])",
-          "fullMetaSearch": false,
-          "hide": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "C",
-          "useBackend": false
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus01"
-          },
-          "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "-idelta(node_disk_written_bytes_total[$__interval])",
-          "fullMetaSearch": false,
-          "hide": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "__auto",
+          "expr": "-rate(node_disk_written_bytes_total{device!~\"^(loop|ram|sr).*\"}[5m])",
+          "legendFormat": "{{instance}} {{device}} write",
           "range": true,
-          "refId": "D",
-          "useBackend": false
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "rate(node_zfs_zpool_dataset_nread[5m])",
+          "legendFormat": "{{instance}} {{dataset}} zfs-read",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "-rate(node_zfs_zpool_dataset_nwritten[5m])",
+          "legendFormat": "{{instance}} {{dataset}} zfs-write",
+          "range": true,
+          "refId": "D"
         }
       ],
       "title": "Disk RW Access",
@@ -881,7 +858,7 @@
           "color": "rgba(255,0,255,0.7)"
         },
         "filterValues": {
-          "le": 1E-9
+          "le": 1e-09
         },
         "legend": {
           "show": false
@@ -1005,7 +982,7 @@
           "color": "rgba(255,0,255,0.7)"
         },
         "filterValues": {
-          "le": 1E-9
+          "le": 1e-09
         },
         "legend": {
           "show": true
@@ -1090,7 +1067,7 @@
           "color": "rgba(255,0,255,0.7)"
         },
         "filterValues": {
-          "le": 1E-9
+          "le": 1e-09
         },
         "legend": {
           "show": false
@@ -1179,7 +1156,7 @@
           "color": "rgba(255,0,255,0.7)"
         },
         "filterValues": {
-          "le": 1E-9
+          "le": 1e-09
         },
         "legend": {
           "show": false
@@ -1220,6 +1197,170 @@
       "title": "CPU - Data-storage",
       "transparent": true,
       "type": "heatmap"
+    },
+    {
+      "id": 20,
+      "type": "timeseries",
+      "title": "CPU Usage % (all nodes)",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 31
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": {
+            "fillOpacity": 20,
+            "lineWidth": 2,
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\",job=\"node\"}[5m])))",
+          "legendFormat": "{{instance}}",
+          "range": true,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "type": "stat",
+      "title": "vCPU Count",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 31
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "orientation": "horizontal"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "count by (instance) (node_cpu_seconds_total{mode=\"idle\",job=\"node\"})",
+          "legendFormat": "{{instance}}",
+          "instant": true,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "type": "timeseries",
+      "title": "CPU Usage % (remote fleet)",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 39
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": {
+            "fillOpacity": 15,
+            "lineWidth": 2,
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\",job=\"node\",instance!~\"10.88.127.(3|88):9100\"}[5m])))",
+          "legendFormat": "{{instance}}",
+          "range": true,
+          "refId": "A"
+        }
+      ]
     }
   ],
   "preload": false,
@@ -1228,6 +1369,7 @@
   "tags": [
     "cpu",
     "declarative-2026-07-11",
+    "declarative-2026-07-11-reqfix",
     "disk",
     "fleet",
     "nix-provisioned"
@@ -1244,6 +1386,6 @@
   "title": "Fleet CPU & Disk Monitor",
   "uid": "fleet-cpu-disk",
   "weekStart": "monday",
-  "version": 1,
+  "version": 2,
   "id": null
 }

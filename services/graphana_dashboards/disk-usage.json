@@ -69,9 +69,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 24,
         "x": 0,
-        "y": 0
+        "y": 8
       },
       "id": 4,
       "options": {
@@ -213,8 +213,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
+        "w": 24,
+        "x": 0,
         "y": 0
       },
       "id": 3,
@@ -278,7 +278,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 8
+        "y": 16
       },
       "id": 2,
       "panels": [],
@@ -347,9 +347,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 24,
         "x": 0,
-        "y": 9
+        "y": 17
       },
       "id": 1,
       "options": {
@@ -404,14 +404,224 @@
       "title": "ZFS",
       "transparent": true,
       "type": "timeseries"
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "CPU Usage %",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 25
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": {
+            "fillOpacity": 25,
+            "lineWidth": 2
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\",instance=\"10.88.127.88:9100\"}[5m])))",
+          "legendFormat": "LINDA CPU %",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "bargauge",
+      "title": "Filesystem Usage",
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 35
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "expr": "(1 - node_filesystem_avail_bytes{instance=\"10.88.127.88:9100\",fstype!~\"tmpfs|devtmpfs|overlay|ramfs\"} / node_filesystem_size_bytes{instance=\"10.88.127.88:9100\",fstype!~\"tmpfs|devtmpfs|overlay|ramfs\"}) * 100",
+          "legendFormat": "{{mountpoint}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Load Average",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 47
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "expr": "node_load1{instance=\"10.88.127.88:9100\"}",
+          "legendFormat": "load1",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "expr": "node_load5{instance=\"10.88.127.88:9100\"}",
+          "legendFormat": "load5",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "expr": "node_load15{instance=\"10.88.127.88:9100\"}",
+          "legendFormat": "load15",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "Network Bandwidth",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 55
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "custom": {
+            "fillOpacity": 15
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "expr": "rate(node_network_receive_bytes_total{instance=\"10.88.127.88:9100\",device!~\"lo|veth.*|docker.*|br.*|wireg0\"}[5m])",
+          "legendFormat": "{{device}} rx",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "expr": "-rate(node_network_transmit_bytes_total{instance=\"10.88.127.88:9100\",device!~\"lo|veth.*|docker.*|br.*|wireg0\"}[5m])",
+          "legendFormat": "{{device}} tx",
+          "refId": "B"
+        }
+      ]
     }
   ],
   "preload": false,
   "schemaVersion": 42,
   "tags": [
     "declarative-2026-07-11",
+    "declarative-2026-07-11-reqfix",
     "linda",
     "nix-provisioned",
+    "portrait",
     "system"
   ],
   "templating": {
@@ -423,8 +633,8 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "LINDA System Metrics",
+  "title": "LINDA System Metrics (portrait)",
   "uid": "linda-system",
-  "version": 1,
+  "version": 2,
   "id": null
 }

@@ -378,22 +378,50 @@
           "expr": "nixos_flake_info",
           "format": "table",
           "instant": true,
-          "legendFormat": "",
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "expr": "nixos_system_info",
+          "format": "table",
+          "instant": true,
+          "refId": "B"
         }
       ],
-      "title": "Derivation Path",
+      "title": "Configuration Derivation / System Path",
       "transformations": [
+        {
+          "id": "seriesToColumns",
+          "options": {
+            "byField": "instance"
+          }
+        },
         {
           "id": "organize",
           "options": {
             "excludeByName": {
               "Time": true,
-              "Value": true
+              "Value": true,
+              "Value #A": true,
+              "Value #B": true,
+              "__name__": true,
+              "__name__ #A": true,
+              "__name__ #B": true,
+              "job": true,
+              "job #A": true,
+              "job #B": true
             },
             "renameByName": {
               "instance": "Machine",
-              "derivation_path": "Derivation Path"
+              "derivation_path": "System Path (flake_info)",
+              "system_path": "System Path",
+              "system_hash": "System Hash",
+              "hostname": "Hostname",
+              "flake_revision": "Flake Rev",
+              "generation": "Gen"
             }
           }
         }
@@ -544,15 +572,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "fillOpacity": 20,
-            "lineWidth": 2,
-            "spanNulls": false
-          },
-          "mappings": [],
+          "unit": "dateTimeAsIso",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -562,7 +582,7 @@
               }
             ]
           },
-          "unit": "s"
+          "mappings": []
         },
         "overrides": []
       },
@@ -574,15 +594,18 @@
       },
       "id": 6,
       "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
         },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
+        "textMode": "value_and_name"
       },
       "pluginVersion": "12.3.0",
       "targets": [
@@ -593,11 +616,12 @@
           },
           "expr": "nixos_activation_timestamp_seconds",
           "legendFormat": "{{instance}}",
+          "instant": true,
           "refId": "A"
         }
       ],
-      "title": "Last Activation (nixos-rebuild switch/test)",
-      "type": "timeseries"
+      "title": "Last Activation",
+      "type": "stat"
     },
     {
       "collapsed": false,
@@ -700,6 +724,7 @@
   "schemaVersion": 42,
   "tags": [
     "declarative-2026-07-11",
+    "declarative-2026-07-11-reqfix",
     "deployment",
     "fleet",
     "nix-provisioned"
@@ -715,5 +740,5 @@
   "timezone": "utc",
   "title": "Fleet Deployment Status",
   "uid": "fleet-deployment",
-  "version": 2
+  "version": 3
 }

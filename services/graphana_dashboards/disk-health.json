@@ -299,7 +299,9 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "none",
+          "noValue": "0",
+          "decimals": 0
         },
         "overrides": []
       },
@@ -328,7 +330,7 @@
             "type": "prometheus",
             "uid": "prometheus01"
           },
-          "expr": "smartctl_device_attribute{attribute_name=\"Current_Pending_Sector\", attribute_value_type=\"raw\"}",
+          "expr": "smartctl_device_attribute{attribute_name=~\"Current_Pending_Sector(_Ct)?\", attribute_value_type=\"raw\"}",
           "legendFormat": "{{instance}} {{device}}",
           "refId": "A"
         }
@@ -606,6 +608,7 @@
   "schemaVersion": 42,
   "tags": [
     "declarative-2026-07-11",
+    "declarative-2026-07-11-reqfix",
     "disk",
     "health",
     "nix-provisioned",
@@ -622,5 +625,5 @@
   "timezone": "utc",
   "title": "Disk Health (SMART)",
   "uid": "disk-health",
-  "version": 2
+  "version": 3
 }

@@ -421,26 +421,30 @@
             "mode": "thresholds"
           },
           "mappings": [],
-          "max": 100,
           "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "blue",
                 "value": null
               },
               {
-                "color": "yellow",
-                "value": 50
+                "color": "green",
+                "value": 1.0
               },
               {
-                "color": "red",
-                "value": 80
+                "color": "yellow",
+                "value": 1.5
+              },
+              {
+                "color": "orange",
+                "value": 2.0
               }
             ]
           },
-          "unit": "percent"
+          "unit": "none",
+          "decimals": 3
         },
         "overrides": []
       },
@@ -470,12 +474,12 @@
             "type": "prometheus",
             "uid": "prometheus01"
           },
-          "expr": "zfs_pool_deduplication_ratio * 100",
+          "expr": "zfs_pool_deduplication_ratio",
           "legendFormat": "{{instance}} {{pool}}",
           "refId": "A"
         }
       ],
-      "title": "Deduplication Ratio",
+      "title": "Deduplication Ratio (1.0 = none)",
       "type": "gauge"
     },
     {
@@ -563,6 +567,7 @@
   "schemaVersion": 42,
   "tags": [
     "declarative-2026-07-11",
+    "declarative-2026-07-11-reqfix",
     "nix-provisioned",
     "storage",
     "zfs"
@@ -578,5 +583,5 @@
   "timezone": "utc",
   "title": "ZFS Pool Health",
   "uid": "zfs-health",
-  "version": 2
+  "version": 3
 }

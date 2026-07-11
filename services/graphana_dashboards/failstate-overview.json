@@ -358,7 +358,7 @@
           "color": "rgba(255,0,255,0.7)"
         },
         "filterValues": {
-          "le": 1E-9
+          "le": 1e-09
         },
         "legend": {
           "show": true
@@ -421,6 +421,7 @@
   "schemaVersion": 42,
   "tags": [
     "declarative-2026-07-11",
+    "declarative-2026-07-11-reqfix",
     "failstate",
     "fleet",
     "nix-provisioned",
@@ -438,6 +439,6 @@
   "title": "Failstate-Overview",
   "uid": "failstate-overview",
   "weekStart": "",
-  "version": 1,
+  "version": 2,
   "id": null
 }
