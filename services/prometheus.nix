@@ -193,7 +193,11 @@ in
     };
     provision.dashboards.settings.providers = [
       {
+        name = "default";
+        type = "file";
         updateIntervalSeconds = 5;
+        allowUiUpdates = false;
+        disableDelete = false;
         options = {
           path = ./graphana_dashboards;
           foldersFromFilesStructure = true;
@@ -209,6 +213,7 @@ in
       }
     ];
   };
+
   networking.firewall.allowedTCPPorts = [
     config.services.prometheus.port
     config.services.grafana.settings.server.http_port
