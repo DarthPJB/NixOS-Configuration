@@ -11,10 +11,10 @@
     nixinate = { url = "github:Bargman-Tech/nixinate"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
-    nixpkgs_llm.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs_llm.url = "path:/speed-storage/bargman-tech/nixpkgs_llm";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
-    hype-train-claw.url = "github:marijanp/zeroclaw";
+    hype-train-claw.url = "path:/speed-storage/bargman-tech/zeroclaw";
     hype-train-outlaw.url = "git+https://gitlab.com/mecha-team-zero/macha-orchestration";
     star-citizen.url = "github:LovingMelody/nix-citizen";
     xlibre-overlay.url = "git+https://codeberg.org/takagemacoed/xlibre-overlay";

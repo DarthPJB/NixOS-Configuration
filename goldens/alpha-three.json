@@ -264,7 +264,7 @@
     "<derivation:wget-1.25.0>",
     "<derivation:git-2.51.2>",
     "<derivation:determinate-nixd-3.21.1>",
-    "<derivation:zeroclaw-0.1.7>",
+    "<derivation:zeroclaw-0.8.0>",
     "<derivation:nix-build-all>",
     "<derivation:tmux-3.6a>",
     "<derivation:progress-0.17>",

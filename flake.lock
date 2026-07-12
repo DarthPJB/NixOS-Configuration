@@ -670,17 +670,13 @@
         "nixpkgs": "nixpkgs_6"
       },
       "locked": {
-        "lastModified": 1773564392,
-        "narHash": "sha256-XUoAgq5HvmlpOJUzjnTMJSz6yUuHclF80SQ7W7pATtY=",
-        "owner": "marijanp",
-        "repo": "zeroclaw",
-        "rev": "7ebee417a7bacf151404fa37944134a14bec1ff9",
-        "type": "github"
+        "narHash": "sha256-VF4s2NZx8R8UYZiwXzM7z5ovACVAoQFBzN2uKBlo8Vc=",
+        "path": "/speed-storage/bargman-tech/zeroclaw",
+        "type": "path"
       },
       "original": {
-        "owner": "marijanp",
-        "repo": "zeroclaw",
-        "type": "github"
+        "path": "/speed-storage/bargman-tech/zeroclaw",
+        "type": "path"
       }
     },
     "hype-train-outlaw": {
@@ -1517,18 +1513,13 @@
     },
     "nixpkgs_llm": {
       "locked": {
-        "lastModified": 1781454065,
-        "narHash": "sha256-d2xfDjnfRuf/xYGdu9VVRHiav/2w5hDL/5cw2TuVAXw=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "9eac87a12312b8f60dd52e1c6e1a265f6fc7f5fc",
-        "type": "github"
+        "narHash": "sha256-DE+HMmXxS4veejVxWjF/h00qNRfHRVISW4ryUiuPXRc=",
+        "path": "/speed-storage/bargman-tech/nixpkgs_llm",
+        "type": "path"
       },
       "original": {
-        "owner": "NixOS",
-        "ref": "nixpkgs-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
+        "path": "/speed-storage/bargman-tech/nixpkgs_llm",
+        "type": "path"
       }
     },
     "nixpkgs_stable": {
