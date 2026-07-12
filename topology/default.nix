@@ -26,12 +26,4 @@ let
 in
 {
   inherit topology;
-
-  # Golden test generator — delegates to lib/golden_generator.nix
-  # This maintains backward compatibility with the generate-golden app
-  generateGolden = machineName:
-    let
-      generator = import ../lib/golden_generator.nix { inherit lib self; };
-    in
-    generator.generateGolden machineName;
 }

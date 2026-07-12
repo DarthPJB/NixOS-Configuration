@@ -222,33 +222,6 @@
     {
       formatter."x86_64-linux" = nixpkgs.nixpkgs-fmt;
       apps."x86_64-linux" = { secrix = secrix.secrix self; } // (nixinate.lib.genDeploy.x86_64-linux self) // {
-        # Network Reality Golden Generation
-        generate-golden = {
-          type = "app";
-          meta.description = "Generate golden network reality JSON for a machine (outputs to stdout)";
-          program = lib.getExe (nixpkgs.writeShellApplication {
-            name = "generate-golden";
-            runtimeInputs = [ nixpkgs.jq ];
-            text = ''
-              if [ -z "$1" ]; then
-                echo "Usage: nix run .#generate-golden <machine-name>"
-                echo "Example: nix run .#generate-golden cortex-alpha > goldens/cortex-alpha.json"
-                exit 1
-              fi
-              MACHINE="$1"
-              nix eval --json --impure \
-                --expr '
-                  let
-                    flake = builtins.getFlake (builtins.toString ./.);
-                    lib = (import <nixpkgs> {}).lib;
-                    topology = import ./topology/default.nix { inherit lib; self = flake; };
-                  in
-                  topology.generateGolden "'"$MACHINE"'"
-                ' 2>/dev/null | jq -S .
-            '';
-          });
-        };
-
         # Check network config against golden
         check-network = {
           type = "app";

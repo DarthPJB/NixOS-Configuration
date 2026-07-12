@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
+# scripts/validate-topology.sh
+# Validates that topology structure is correct and golden tests pass.
 set -uo pipefail
 
-PROJECT_ROOT="/speed-storage/repo/DarthPJB/NixOS-Configuration"
+# Resolve project root from script location (two levels up: scripts/../)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT" || { echo "Unable to enter project root: $PROJECT_ROOT" >&2; exit 1; }
 
-default_summary=()
 failures=0
 
 report() {
@@ -19,18 +22,18 @@ report() {
 }
 
 check_topology() {
-  echo "1/4 topology.nix existence and parse"
-  local topology_file="${PROJECT_ROOT}/topology.nix"
+  echo "1/4 topology/shared.nix existence and parse"
+  local topology_file="${PROJECT_ROOT}/topology/shared.nix"
   if [ ! -f "$topology_file" ]; then
-    echo "   FAIL: topology.nix is missing at $topology_file"
+    echo "   FAIL: topology/shared.nix is missing at $topology_file"
     failures=$((failures + 1))
     return
   fi
 
-  if nix --option builders '' eval --json --expr 'import ./topology.nix { }' >/dev/null 2>&1; then
-    echo "   PASS: topology.nix imported successfully"
+  if nix --option builders '' eval --json --impure --expr 'let lib = (import <nixpkgs> {}).lib; in import ./topology/shared.nix { inherit lib; }' >/dev/null 2>&1; then
+    echo "   PASS: topology/shared.nix imported successfully"
   else
-    echo "   FAIL: topology.nix failed to parse"
+    echo "   FAIL: topology/shared.nix failed to parse"
     failures=$((failures + 1))
   fi
 }
@@ -40,6 +43,12 @@ check_transformers() {
   local files=(
     "${PROJECT_ROOT}/lib/topology/mkWireguardSettings.nix"
     "${PROJECT_ROOT}/lib/topology/genWireguard.nix"
+    "${PROJECT_ROOT}/lib/topology/mkNginxSettings.nix"
+    "${PROJECT_ROOT}/lib/topology/genNginx.nix"
+    "${PROJECT_ROOT}/lib/topology/mkFirewallSettings.nix"
+    "${PROJECT_ROOT}/lib/topology/genFirewall.nix"
+    "${PROJECT_ROOT}/lib/topology/mkDnsSettings.nix"
+    "${PROJECT_ROOT}/lib/topology/genDns.nix"
   )
   for file in "${files[@]}"; do
     if [ -f "$file" ]; then
@@ -77,9 +86,11 @@ run_flake_check
 run_golden_test
 
 if [ "$failures" -eq 0 ]; then
-  echo "\nAll topology validation checks passed."
+  echo ""
+  echo "All topology validation checks passed."
 else
-  echo "\n${failures} topology validation check(s) failed."
+  echo ""
+  echo "${failures} topology validation check(s) failed."
 fi
 
 exit "$failures"
