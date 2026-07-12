@@ -52,7 +52,6 @@
         ./configuration.nix
         {
           programs.ssh.knownHosts = mkKnownHosts self.nixosConfigurations;
-          programs.ssh.matchBlocks = mkMultiplexConfig self.nixosConfigurations;
           nixpkgs.config.allowUnfree = true;
           nixpkgs.overlays = [
             ratty.overlays.default
@@ -68,10 +67,6 @@
           system.stateVersion = "25.11";
           secrix.defaultEncryptKeys.John88 = [
             (builtins.readFile ./secrets/public_keys/JOHN_BARGMAN_ED_25519.pub) # Four years ago matthew croughan said "why bother putting that there?" so... This is why.
-          ];
-          # SSH multiplexing socket directory
-          systemd.tmpfiles.rules = [
-            "d /run/user/%i/ssh-mux 0700 %u users -"
           ];
         }
       ];
@@ -206,31 +201,6 @@
             allMachines);
         in
         lib.filterAttrs (name: value: value != null) entries;
-
-      # SSH multiplexing config — generates matchBlocks from topology
-      mkMultiplexConfig = nixosConfigs:
-        let
-          allMachines = lib.unique (
-            builtins.attrNames topo
-            ++ builtins.attrNames nixosConfigs
-            ++ builtins.attrNames (self.dormantConfigurations or { })
-          );
-        in
-        builtins.listToAttrs (map (name:
-          let entry = topo.${name} or null;
-          in lib.nameValuePair name (
-            if entry != null && entry ? wireguard then {
-              hostname = entry.wireguard;
-              user = "deploy";
-              port = 1108;
-              controlMaster = "auto";
-              controlPath = "/run/user/%i/ssh-mux/%C";
-              controlPersist = "15m";
-              identitiesOnly = true;
-              identityFile = "~/.ssh/id_ed25519_master";
-            } else null
-          )
-        ) allMachines);
 
       # CI/CD Configuration
       ci = import ./ci.nix { inherit self lib; pkgs = nixpkgs; };
