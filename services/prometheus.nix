@@ -27,6 +27,7 @@ in
     enable = true;
     listenAddress = "${listen-addr}";
     port = 8080;
+    retentionTime = "0d";
     globalConfig.scrape_interval = "30s";
     scrapeConfigs = [
       {
