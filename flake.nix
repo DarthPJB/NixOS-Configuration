@@ -53,8 +53,8 @@
         {
           programs.ssh.knownHosts = mkKnownHosts self.nixosConfigurations;
           programs.ssh.extraConfig = ''
-            # Fleet-wide SSH multiplexing — all WireGuard hosts
-            Match exec "true"
+            # Fleet-wide SSH multiplexing
+            Host *
               ControlMaster auto
               ControlPath /run/ssh-mux/%r@%h:%p
               ControlPersist 15m
