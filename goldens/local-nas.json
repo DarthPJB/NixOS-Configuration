@@ -2793,7 +2793,7 @@
     },
     "remoteRead": [],
     "remoteWrite": [],
-    "retentionTime": null,
+    "retentionTime": "0d",
     "ruleFiles": [],
     "rules": [],
     "sachet": {
