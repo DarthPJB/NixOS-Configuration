@@ -33,7 +33,7 @@ Overlord-II successfully completed **topology rectification** and **fleet deploy
 | Phase C library split | **HIGH** | Not initiated — no Ketchup/Secret-Sauce/Mayo abstractions |
 | `generate-golden` app | **MEDIUM** | Produces different format than `dump-config` — would corrupt goldens if used |
 | Broken scripts | **MEDIUM** | `scripts/topology-report.sh` and `scripts/validate-new-architecture.sh` reference removed paths |
-| SSH multiplexing | **MEDIUM** | Reverted — `programs.ssh.matchBlocks` doesn't exist in nixpkgs 25.11 |
+| SSH multiplexing | **MEDIUM** | `programs.ssh.matchBlocks` not in nixpkgs 25.11 — needs custom module or `extraConfig` approach |
 | GitHub runner module | **MEDIUM** | Not started — Phase 2 custom module not built |
 | LLM-CORE re-enable | **LOW** | Not started — fully commented out |
 | Backup topology | **LOW** | Not started — no backup keys in topology |
@@ -67,9 +67,41 @@ Overlord-II successfully completed **topology rectification** and **fleet deploy
 | Goal | Status | Notes |
 |------|--------|-------|
 | Topology rectification | ✅ | `real-topology/` eliminated |
-| SSH multiplexing | ❌ | Reverted — option doesn't exist |
+| SSH multiplexing | ⚠️ | Needs custom module — `matchBlocks` not in nixpkgs |
 | GitHub runner module | ❌ | Not started |
 | LLM-CORE re-enable | ❌ | Not started |
+
+## Verified Corrections
+
+### `generate-golden` Format Mismatch — CONFIRMED
+
+The golden files were originally in `generate-golden` format (34 keys, flat: `networking.firewall.allowedTCPPorts`). Commit `db90b5d` regenerated them with `dump-config` format (25 keys, hierarchical: `networking.firewall`). The `check-network` app was then broken until fixed to use `dump-config`.
+
+**Timeline:**
+1. `ea80e81` — Golden files: 34 keys (generate-golden format)
+2. `db90b5d` — Golden files regenerated: 25 keys (dump-config format)
+3. `check-network` still used `generate-golden` — golden tests would FAIL
+4. `4f80255` — Fixed `check-network` to use `dump-config` — golden tests pass
+
+### `programs.ssh.matchBlocks` — Does Not Exist in Nixpkgs 25.11
+
+Verified against `/speed-storage/bargman-tech/nixpkgs_stable/nixos/modules/programs/ssh.nix`. The module defines: `extraConfig`, `knownHosts`, `knownHostsFiles`, `forwardX11`, `startAgent`, `agentTimeout`, `ciphers`, `macs`, `kexAlgorithms`, `hostKeyAlgorithms`, `pubkeyAcceptedKeyTypes`, `setXAuthLocation`, `systemd-ssh-proxy`, `askPassword`, `agentPKCS11Whitelist`, `package`.
+
+**No `matchBlocks` option exists.** However, this is Nix — we have full control. Options:
+1. Use `programs.ssh.extraConfig` with raw `Match` blocks
+2. Create a custom NixOS module that extends `programs.ssh` with `matchBlocks`
+3. Add `matchBlocks` directly to the nixpkgs fork
+
+## Structural Health
+
+| Check | Result |
+|-------|--------|
+| Dead code | ✅ Clean |
+| Orphaned files | ✅ None |
+| Import graph | ✅ Valid |
+| Circular dependencies | ✅ None |
+| Golden integrity | ✅ Preserved |
+| Documentation | ✅ Updated |
 
 ## Actionable Items
 
@@ -87,7 +119,7 @@ Overlord-II successfully completed **topology rectification** and **fleet deploy
 
 5. **Phase B: Wire core-router-topology.nix** — Test with cortex-alpha, validate golden output matches.
 
-6. **SSH multiplexing redesign** — Use `programs.ssh.extraConfig` instead of `matchBlocks`.
+6. **SSH multiplexing redesign** — Create custom module extending `programs.ssh` with `matchBlocks`, or use `extraConfig` approach.
 
 ### Medium-term
 
@@ -96,17 +128,6 @@ Overlord-II successfully completed **topology rectification** and **fleet deploy
 8. **GitHub runner custom module** — Build Phase 2 module that separates identity from config.
 
 9. **LLM-CORE re-enable** — Uncomment and test on LINDA and remote-worker.
-
-## Structural Health
-
-| Check | Result |
-|-------|--------|
-| Dead code | ✅ Clean |
-| Orphaned files | ✅ None |
-| Import graph | ✅ Valid |
-| Circular dependencies | ✅ None |
-| Golden integrity | ✅ Preserved |
-| Documentation | ✅ Updated |
 
 ## Conclusion
 
