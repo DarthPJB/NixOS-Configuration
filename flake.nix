@@ -52,6 +52,13 @@
         ./configuration.nix
         {
           programs.ssh.knownHosts = mkKnownHosts self.nixosConfigurations;
+          programs.ssh.extraConfig = ''
+            # Fleet-wide SSH multiplexing — all WireGuard hosts
+            Match exec "true"
+              ControlMaster auto
+              ControlPath /run/ssh-mux/%r@%h:%p
+              ControlPersist 15m
+          '';
           nixpkgs.config.allowUnfree = true;
           nixpkgs.overlays = [
             ratty.overlays.default
@@ -67,6 +74,10 @@
           system.stateVersion = "25.11";
           secrix.defaultEncryptKeys.John88 = [
             (builtins.readFile ./secrets/public_keys/JOHN_BARGMAN_ED_25519.pub) # Four years ago matthew croughan said "why bother putting that there?" so... This is why.
+          ];
+          # SSH multiplexing socket directory
+          systemd.tmpfiles.rules = [
+            "d /run/ssh-mux 0755 root root"
           ];
         }
       ];
