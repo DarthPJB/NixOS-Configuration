@@ -1,19 +1,47 @@
 { lib }:
-# mkDnsSettings: topology -> { machines, warnings, errors }
-# Returns DNS/DHCP settings for machines that have lan
+# mkDnsSettings: per-machine topology -> { machines, warnings, errors }
+# Extracts DNS/DHCP settings from per-machine topology data.
+# Consumes: topology.dns, topology.lan.hosts, topology.hostname
+# Must match production mkDhcpDns.nix data extraction.
 topology:
 let
-  # For each machine with lan, generate settings
+  utils = import ./utils.nix { inherit lib; };
+  inherit (utils) safeLookup;
+
   machines = lib.mapAttrs
     (hostname: machine:
-      if ! (machine ? lan) then null else
+      if !(machine ? dns) then null else
+      let
+        # DHCP hosts from topology.lan.hosts — format: "mac,ip,hostname,infinite"
+        # Must match production mkDhcpDns.nix mkDhcpHosts exactly (sorted)
+        dhcpHosts = builtins.sort (a: b: a < b) (
+          lib.filter (x: x != null) (
+            lib.mapAttrsToList
+              (_: host:
+                if host ? mac && host ? ip && host ? hostname
+                then "${host.mac},${host.ip},${host.hostname},infinite"
+                else null
+              )
+              (machine.lan.hosts or { })
+          )
+        );
+
+        # DNS static entries — format: "/domain/ip"
+        dnsEntries = map (entry: "/${entry.domain}/${entry.ip}") machine.dns.static;
+
+        # DHCP range with interface prefix — format: "interface,start,end,lease"
+        dhcpRange = "${machine.dns.interface},${machine.dns.dhcp.range}";
+
+        # Upstream DNS servers
+        upstreamServers = machine.dns.servers;
+
+        # Domain (hostname of the machine)
+        domain = machine.hostname;
+      in
       {
         inherit hostname;
-        interface = lib.head (builtins.attrValues machine.lan); # Assume one interface
-        dnsEntries = [ ]; # No static DNS in topology
-        dhcpHosts = [ ]; # No DHCP hosts in topology
-        dhcpRange = "10.89.128.100,10.89.128.200,24h"; # Example range
-        upstreamServers = [ "8.8.8.8" "1.1.1.1" ]; # Default
+        interface = machine.dns.interface;
+        inherit dnsEntries dhcpHosts dhcpRange upstreamServers domain;
       }
     )
     topology;

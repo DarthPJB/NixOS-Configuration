@@ -20,7 +20,7 @@ in
     ../../server_services/ldap.nix
     # ../../configuration.nix — already in commonModules (flake.nix), do not duplicate
     ../../locale/tailscale.nix
-    ../../modules/core-router.nix
+    ../../modules/core-router-topology.nix
     # NOTE: enable-wg.nix is for WireGuard CLIENTS, not the hub
     # The hub's WireGuard config comes from core-router.nix via topology
     ./hardware-configuration.nix
