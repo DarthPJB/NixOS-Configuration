@@ -30,8 +30,9 @@ let
       backend = if isLegacyFormat then proxyConfig else proxyConfig.backend;
       forceSSL' = if isLegacyFormat then true else (proxyConfig.forceSSL or true);
       websockets = if isLegacyFormat then true else (proxyConfig.websockets or false);
-      listenAddrs = if isLegacyFormat then s.defaultListenAddresses
-                    else (proxyConfig.listenAddresses or s.defaultListenAddresses);
+      listenAddrs =
+        if isLegacyFormat then s.defaultListenAddresses
+        else (proxyConfig.listenAddresses or s.defaultListenAddresses);
       extraConfig = proxyHeaders + (if websockets then websocketHeaders else "");
     in
     {
