@@ -277,6 +277,27 @@
         "url": "https://install.determinate.systems/determinate-nixd/tag/v3.21.2/x86_64-linux"
       }
     },
+    "disko": {
+      "inputs": {
+        "nixpkgs": [
+          "nixinate",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1781152676,
+        "narHash": "sha256-RxWs5ND31KzTG7wvMM+PMfUjyNpmIEr999lqNARaM5o=",
+        "owner": "nix-community",
+        "repo": "disko",
+        "rev": "ff8702b4de27f72b4c78573dfb89ec74e36abdf1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "disko",
+        "type": "github"
+      }
+    },
     "fenix": {
       "inputs": {
         "nixpkgs": [
@@ -670,13 +691,17 @@
         "nixpkgs": "nixpkgs_6"
       },
       "locked": {
-        "narHash": "sha256-VF4s2NZx8R8UYZiwXzM7z5ovACVAoQFBzN2uKBlo8Vc=",
-        "path": "/speed-storage/bargman-tech/zeroclaw",
-        "type": "path"
+        "lastModified": 1773564392,
+        "narHash": "sha256-XUoAgq5HvmlpOJUzjnTMJSz6yUuHclF80SQ7W7pATtY=",
+        "owner": "marijanp",
+        "repo": "zeroclaw",
+        "rev": "7ebee417a7bacf151404fa37944134a14bec1ff9",
+        "type": "github"
       },
       "original": {
-        "path": "/speed-storage/bargman-tech/zeroclaw",
-        "type": "path"
+        "owner": "marijanp",
+        "repo": "zeroclaw",
+        "type": "github"
       }
     },
     "hype-train-outlaw": {
@@ -1151,16 +1176,17 @@
     },
     "nixinate": {
       "inputs": {
+        "disko": "disko",
         "nixpkgs": [
           "nixpkgs_unstable"
         ]
       },
       "locked": {
-        "lastModified": 1782438152,
-        "narHash": "sha256-byMBQff7JQ3lsrk/f1bvtZ1cH/L4e7GHHkuX/jFxbkw=",
+        "lastModified": 1783850689,
+        "narHash": "sha256-OHQmFbpBFp9WPu6x2t687WERUOCVdxpcbhbCy8pwxf8=",
         "owner": "Bargman-Tech",
         "repo": "nixinate",
-        "rev": "4b3ac50924a8f814a67047518ab6f1c306864123",
+        "rev": "3aed79adabda41b6cca05d0746d044e01087c354",
         "type": "github"
       },
       "original": {
@@ -1513,13 +1539,16 @@
     },
     "nixpkgs_llm": {
       "locked": {
-        "narHash": "sha256-DE+HMmXxS4veejVxWjF/h00qNRfHRVISW4ryUiuPXRc=",
-        "path": "/speed-storage/bargman-tech/nixpkgs_llm",
-        "type": "path"
+        "lastModified": 1783703440,
+        "narHash": "sha256-O3/YajjWo001VUIgD8BwaRdSNLUFe7nZ1qV5TwhRBcw=",
+        "rev": "8f0500b9660505dc3cb647775fe9a978a74b5283",
+        "revCount": 1008950,
+        "type": "tarball",
+        "url": "https://api.flakehub.com/f/pinned/NixOS/nixpkgs/0.2605.1008950%2Brev-8f0500b9660505dc3cb647775fe9a978a74b5283/019f524e-086b-7663-9920-faf4fe5cefed/source.tar.gz"
       },
       "original": {
-        "path": "/speed-storage/bargman-tech/nixpkgs_llm",
-        "type": "path"
+        "type": "tarball",
+        "url": "https://flakehub.com/f/NixOS/nixpkgs/0"
       }
     },
     "nixpkgs_stable": {
@@ -1566,12 +1595,12 @@
     },
     "nixpkgs_unstable_2": {
       "locked": {
-        "lastModified": 1778458615,
-        "narHash": "sha256-cY07EsdhBJ8tFXPzDYevgqxRev9ZLxFonuq9wmq5kwg=",
-        "rev": "c6e5ca3c836a5f4dd9af9f2c1fc1c38f0fac988a",
-        "revCount": 995785,
+        "lastModified": 1782723713,
+        "narHash": "sha256-oPXCU/SSUokcGaJREHibG1CBX3+s/W7orDWQOZDsEeQ=",
+        "rev": "b5aa0fbd538984f6e3d201be0005b4463d8b09f8",
+        "revCount": 1024265,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/nixpkgs-weekly/0.1.995785%2Brev-c6e5ca3c836a5f4dd9af9f2c1fc1c38f0fac988a/019e1ade-fee0-7492-a2aa-51f76ee770f8/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/nixpkgs-weekly/0.1.1024265%2Brev-b5aa0fbd538984f6e3d201be0005b4463d8b09f8/019f3b54-a452-7bf0-9017-aa0cf4ad1907/source.tar.gz"
       },
       "original": {
         "type": "tarball",

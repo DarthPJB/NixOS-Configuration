@@ -12,7 +12,7 @@
 let
   # Safe top-level sections to extract
   # Each entry is: { path = [...]; skip = [...]; }
-  # skip = list of attr names to skip within that section
+  # skip = list of attr names to skip within that section (recursive at any depth)
   safeSections = [
     # Core networking
     { path = [ "networking" "hostName" ]; skip = [ ]; }
@@ -31,7 +31,7 @@ let
     { path = [ "services" "dnsmasq" ]; skip = [ "servers" ]; }
     { path = [ "services" "nginx" ]; skip = [ "proxyCache" "proxyCachePath" "statusPage" ]; }
     { path = [ "services" "openssh" ]; skip = [ ]; }
-    { path = [ "services" "prometheus" ]; skip = [ ]; }
+    { path = [ "services" "prometheus" ]; skip = [ "fail2ban" ]; }
     { path = [ "services" "openldap" ]; skip = [ ]; }
 
     # Boot
@@ -65,7 +65,7 @@ let
   globalSkip = [ "__functor" "override" "overrideDerivation" "extend" "passthru" ];
 
   # Serialize a value, handling special types
-  # skip = additional attr names to skip at this level
+  # skip = additional attr names to skip at any depth (recursive, like globalSkip)
   serializeValue = depth: skip: value:
     if depth > 15 then
       "<max-depth>"
@@ -100,7 +100,7 @@ let
                   name = n;
                   value =
                     if attrResult.success then
-                      serializeValue (depth + 1) [ ] attrResult.value
+                      serializeValue (depth + 1) skip attrResult.value
                     else
                       "<eval-error>";
                 };
