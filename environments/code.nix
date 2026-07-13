@@ -1,7 +1,7 @@
 { config
 , lib
 , pkgs
-, unstable
+, pkgs_llm
 , ...
 }:
 
@@ -40,7 +40,7 @@
     pkgs.inotify-tools
     pkgs.rsync
     pkgs.git
-    unstable.opencode
-    unstable.crush
+    pkgs_llm.opencode
+    pkgs_llm.crush
   ];
 }

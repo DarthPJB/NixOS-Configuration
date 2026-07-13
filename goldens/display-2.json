@@ -4,7 +4,7 @@
     "fs.inotify.max_user_watches": 524288,
     "kernel.kptr_restrict": 1,
     "kernel.pid_max": 4194304,
-    "kernel.poweroff_cmd": "<store>/k2s978i7i26km4cr56fvm64p2q6mpl02-systemd-260.2/sbin/poweroff",
+    "kernel.poweroff_cmd": "<store>/084z7x42nynj9znvqp3c38viqkqvkppx-systemd-260.1/sbin/poweroff",
     "kernel.printk": "7 7 7 7",
     "net.core.rmem_max": null,
     "net.core.wmem_max": null,
@@ -37,7 +37,7 @@
           "path": "/boot"
         }
       ],
-      "populateCmd": "<store>/asm0fgcbzvcprxrx84j4pl876v0al2vl-extlinux-conf-builder.sh -g 20 -t 5",
+      "populateCmd": "<store>/r2mr5f4617spxwrf9kxfi09a143fnik0-extlinux-conf-builder.sh -g 20 -t 5",
       "useGenerationDeviceTree": true
     },
     "grub": {
@@ -63,7 +63,7 @@
       "extraInstallCommands": "",
       "extraPerEntryConfig": "",
       "extraPrepareConfig": "",
-      "font": "<store>/isz8ngvrfq8fgx7lqsyr26iga00pxb0y-grub-2.12/share/grub/unicode.pf2",
+      "font": "<store>/4w7c4989av0cfkgn18fbxf1znf7jw7xs-grub-2.12/share/grub/unicode.pf2",
       "fontSize": null,
       "forceInstall": false,
       "forcei686": false,
@@ -78,7 +78,7 @@
         "params": []
       },
       "mirroredBoots": [],
-      "splashImage": "<store>/l0hgi1928j7j7ansspvrjmrvawsqxfqw-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png",
+      "splashImage": "<store>/5c4pg4wxz0qg0m1rpqylj35frhbmphhq-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png",
       "splashMode": "normal",
       "storePath": "/nix/store",
       "subEntryOptions": "--class nixos",
@@ -89,7 +89,7 @@
       "useOSProber": false,
       "users": {},
       "version": "<eval-error>",
-      "zfsPackage": "<derivation:zfs-user-2.4.3>",
+      "zfsPackage": "<derivation:zfs-user-2.4.1>",
       "zfsSupport": false
     },
     "gummiboot": {
@@ -110,11 +110,10 @@
       "enrollConfig": false,
       "extraConfig": "",
       "extraEntries": "",
-      "extraInstallCommands": "",
       "force": false,
       "forceMbr": false,
       "maxGenerations": null,
-      "package": "<derivation:limine-12.3.3>",
+      "package": "<derivation:limine-12.2.0>",
       "panicOnChecksumMismatch": false,
       "partitionIndex": null,
       "resolution": null,
@@ -156,7 +155,7 @@
         },
         "wallpaperStyle": "stretched",
         "wallpapers": [
-          "<store>/l0hgi1928j7j7ansspvrjmrvawsqxfqw-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png"
+          "<store>/5c4pg4wxz0qg0m1rpqylj35frhbmphhq-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png"
         ]
       },
       "validateChecksums": true
@@ -172,10 +171,6 @@
     },
     "supportsInitrdSecrets": false,
     "systemd-boot": {
-      "bootCounting": {
-        "enable": false,
-        "tries": 3
-      },
       "configurationLimit": null,
       "consoleMode": "keep",
       "editor": true,
@@ -212,11 +207,11 @@
   },
   "environment.systemPackages": [
     "<derivation:obsidian-1.12.7>",
-    "<derivation:vivaldi-8.0.4033.50>",
-    "<derivation:chromium-149.0.7827.200>",
-    "<derivation:brave-1.91.180>",
+    "<derivation:vivaldi-7.9.3970.64>",
+    "<derivation:chromium-148.0.7778.96>",
+    "<derivation:brave-1.90.121>",
     "<derivation:jq-1.8.1>",
-    "<derivation:ffmpeg-full-8.1.1>",
+    "<derivation:ffmpeg-full-8.0.1>",
     "<derivation:usbutils-019>",
     "<derivation:rtl-sdr-blog-1.3.5>",
     "<derivation:gqrx-2.17.7>",
@@ -235,61 +230,61 @@
     "<derivation:lxappearance-0.6.4>",
     "<derivation:arandr-0.1.11>",
     "<derivation:btop-1.4.7>",
-    "<derivation:nano-9.1>",
+    "<derivation:nano-9.0>",
     "<derivation:wget-1.25.0>",
-    "<derivation:git-2.54.0>",
+    "<derivation:git-2.53.0>",
     "<derivation:ranger-1.9.4-unstable-2026-04-26>",
     "<derivation:killall-psmisc-23.7>",
     "<derivation:magic-wormhole-0.24.0>",
-    "<derivation:bind-9.20.24>",
-    "<derivation:pciutils-3.15.0>",
+    "<derivation:bind-9.20.22>",
+    "<derivation:pciutils-3.14.0>",
     "<derivation:lshw-02.20>",
     "<derivation:usbutils-019>",
     "<derivation:nix-build-all>",
     "<derivation:tmux-3.6a>",
     "<derivation:progress-0.17>",
     "<derivation:parted-3.7>",
-    "<derivation:bottom-0.14.2>",
-    "<derivation:i3-4.25.1>",
+    "<derivation:bottom-0.12.3>",
+    "<derivation:i3-4.24>",
     "<derivation:betterlockscreen-4.4.0>",
     "<derivation:rofi-2.0.0>",
     "<derivation:i3status-2.15>",
     "<derivation:i3lock-2.15>",
-    "<derivation:adwaita-icon-theme-50.0>",
-    "<derivation:adwaita-icon-theme-50.0>",
+    "<derivation:adwaita-icon-theme-49.0>",
+    "<derivation:adwaita-icon-theme-49.0>",
     "<derivation:gnome-themes-extra-3.28>",
     "<derivation:nixos-version>",
-    "<derivation:nixos-rebuild-ng-26.11>",
+    "<derivation:nixos-rebuild-ng-26.05>",
     "<derivation:nixos-option>",
     "<derivation:nixos-install>",
     "<derivation:nixos-generate-config>",
     "<derivation:nixos-enter>",
     "<derivation:nixos-build-vms>",
-    "<derivation:lvm2-2.03.39>",
+    "<derivation:lvm2-2.03.38>",
     "<derivation:dosfstools-4.2>",
     "<derivation:mtools-4.0.49>",
-    "<derivation:e2fsprogs-1.47.4>",
+    "<derivation:e2fsprogs-1.47.3>",
     "<derivation:dosfstools-4.2>",
     "<derivation:cpupower-6.18.34-stable_20260609>",
     "<derivation:bcache-tools-1.1>",
-    "<derivation:systemd-260.2>",
+    "<derivation:systemd-260.1>",
     "<derivation:kmod-31>",
     "<derivation:kexec-tools-2.0.32>",
-    "<derivation:xorg-server-21.1.23>",
-    "<derivation:xrandr-1.5.4>",
+    "<derivation:xorg-server-21.1.22>",
+    "<derivation:xrandr-1.5.3>",
     "<derivation:xrdb-1.2.2>",
     "<derivation:setxkbmap-1.3.4>",
-    "<derivation:iceauth-1.0.11>",
+    "<derivation:iceauth-1.0.10>",
     "<derivation:xlsclients-1.1.5>",
     "<derivation:xset-1.2.5>",
     "<derivation:xsetroot-1.1.3>",
     "<derivation:xinput-1.6.4>",
     "<derivation:xprop-1.2.8>",
     "<derivation:xauth-1.1.5>",
-    "<derivation:xterm-410>",
+    "<derivation:xterm-407>",
     "<derivation:xf86-input-evdev-2.11.0>",
     "<derivation:lightdm-1.32.0>",
-    "<derivation:kmscon-10.0.0>",
+    "<derivation:kmscon-9.3.5>",
     "<derivation:nix-2.34.7>",
     "<derivation:nix-info>",
     "<derivation:nix-bash-completions-0.6.8>",
@@ -298,14 +293,14 @@
     "<derivation:wpa_supplicant-2.11>",
     "<derivation:wireguard-tools-1.0.20260223>",
     "<derivation:iptables-1.8.13>",
-    "<derivation:nixos-firewall-tool-26.11>",
-    "<derivation:dhcpcd-10.3.2>",
+    "<derivation:nixos-firewall-tool>",
+    "<derivation:dhcpcd-10.3.1>",
     "<derivation:nixos-icons-0-unstable-2025-06-28>",
     "<derivation:xdg-utils-1.2.1>",
     "<derivation:xf86-input-libinput-1.5.0>",
-    "<derivation:wireplumber-0.5.15>",
-    "<derivation:pipewire-1.6.5>",
-    "<derivation:accountsservice-26.13.3>",
+    "<derivation:wireplumber-0.5.14>",
+    "<derivation:pipewire-1.6.3>",
+    "<derivation:accountsservice-23.13.9>",
     "<derivation:speech-dispatcher-0.12.1>",
     "<derivation:sudo-1.9.17p2>",
     "<derivation:polkit-127>",
@@ -313,10 +308,12 @@
     "<derivation:linux-pam-1.7.1>",
     "<derivation:shadow-4.19.4>",
     "<derivation:bash-interactive-5.3p9>",
-    "<derivation:nano-9.1>",
+    "<derivation:nano-9.0>",
     "<derivation:less-692>",
     "<derivation:i3lock-2.15>",
     "<derivation:gnupg-2.4.9>",
+    "<derivation:fuse-2.9.9>",
+    "<derivation:fuse-3.17.4>",
     "<derivation:dconf-0.49.0>",
     "<derivation:rtl-sdr-blog-1.3.5>",
     "<derivation:xdg-desktop-portal-1.20.4>",
@@ -342,23 +339,23 @@
     "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
-    "<derivation:bind-9.20.24>",
+    "<derivation:bind-9.20.22>",
     "<derivation:hostname-hostname-debian-3.25>",
-    "<derivation:iproute2-7.0.0>",
+    "<derivation:iproute2-6.19.0>",
     "<derivation:iputils-20250605>",
     "<derivation:openssh-10.3p1>",
     "<derivation:acl-2.3.2>",
     "<derivation:attr-2.5.2>",
     "<derivation:bash-interactive-5.3p9>",
     "<derivation:bzip2-1.0.8>",
-    "<derivation:coreutils-full-9.11>",
+    "<derivation:coreutils-full-9.10>",
     "<derivation:cpio-2.15>",
-    "<derivation:curl-8.20.0>",
+    "<derivation:curl-8.19.0>",
     "<derivation:diffutils-3.12>",
     "<derivation:findutils-4.10.0>",
     "<derivation:gawk-5.4.0>",
-    "<derivation:getent-glibc-2.42-67>",
-    "<derivation:getconf-glibc-2.42-67>",
+    "<derivation:getent-glibc-2.42-61>",
+    "<derivation:getconf-glibc-2.42-61>",
     "<derivation:gnugrep-3.12>",
     "<derivation:patch-2.8>",
     "<derivation:gnused-4.9>",
@@ -376,9 +373,9 @@
     "<derivation:util-linux-2.42>",
     "<derivation:which-2.23>",
     "<derivation:zstd-1.5.7>",
-    "<derivation:glibc-2.42-67>",
+    "<derivation:glibc-2.42-61>",
     "<derivation:openresolv-3.17.0>",
-    "<derivation:glibc-locales-2.42-67>",
+    "<derivation:glibc-locales-2.42-61>",
     "<derivation:fontconfig-2.17.1>",
     "<derivation:kbd-2.9.0>"
   ],
@@ -517,8 +514,8 @@
     "checkRuleset": true,
     "checkRulesetRedirects": {
       "/etc/hosts": "<derivation:hosts>",
-      "/etc/protocols": "<store>/bjwcdygzs2gsbxqh9jyisisafqw7xlpd-iana-etc-20251215/etc/protocols",
-      "/etc/services": "<store>/bjwcdygzs2gsbxqh9jyisisafqw7xlpd-iana-etc-20251215/etc/services"
+      "/etc/protocols": "<store>/cn1rnclj8kc8c9qxs7c7m04az776j5ls-iana-etc-20251215/etc/protocols",
+      "/etc/services": "<store>/cn1rnclj8kc8c9qxs7c7m04az776j5ls-iana-etc-20251215/etc/services"
     },
     "enable": false,
     "extraDeletions": "",
@@ -620,7 +617,7 @@
     "configFile": "<derivation:dnsmasq.conf>",
     "enable": false,
     "extraConfig": "<eval-error>",
-    "package": "<derivation:dnsmasq-2.93>",
+    "package": "<derivation:dnsmasq-2.92>",
     "resolveLocalQueries": true,
     "settings": {
       "server": []
@@ -639,7 +636,7 @@
       "0.0.0.0",
       "[::0]"
     ],
-    "defaultMimeTypes": "<store>/7n510fjz9cxpqgp30b519gdrafcfk0fr-mailcap-2.1.54/etc/nginx/mime.types",
+    "defaultMimeTypes": "<store>/9s311si75lzly5b9ypx50qb4qcw65g4c-mailcap-2.1.54/etc/nginx/mime.types",
     "defaultSSLListenPort": 443,
     "enable": false,
     "enableQuicBPF": false,
@@ -656,15 +653,9 @@
     "group": "nginx",
     "httpConfig": "",
     "logError": "stderr",
-    "lua": {
-      "enable": false,
-      "extraPackages": {
-        "__functionArgs": {}
-      }
-    },
     "mapHashBucketSize": null,
     "mapHashMaxSize": null,
-    "package": "<derivation:nginx-1.30.3>",
+    "package": "<derivation:nginx-1.30.0>",
     "preStart": "",
     "prependConfig": "",
     "proxyResolveWhileRunning": false,
@@ -691,9 +682,12 @@
       "ECDHE-ECDSA-AES256-GCM-SHA384",
       "ECDHE-RSA-AES256-GCM-SHA384",
       "ECDHE-ECDSA-CHACHA20-POLY1305",
-      "ECDHE-RSA-CHACHA20-POLY1305"
+      "ECDHE-RSA-CHACHA20-POLY1305",
+      "DHE-RSA-AES128-GCM-SHA256",
+      "DHE-RSA-AES256-GCM-SHA384",
+      "DHE-RSA-CHACHA20-POLY1305"
     ],
-    "sslDhparam": "<eval-error>",
+    "sslDhparam": false,
     "sslProtocols": "TLSv1.2 TLSv1.3",
     "sso": {
       "configuration": {},
@@ -706,7 +700,7 @@
       "enable": false,
       "expectedTailnet": "",
       "group": "tailscale-nginx-auth",
-      "package": "<derivation:tailscale-nginx-auth-1.98.5>",
+      "package": "<derivation:tailscale-nginx-auth-1.98.0>",
       "socketPath": "/run/tailscale-nginx-auth/tailscale-nginx-auth.sock",
       "user": "tailscale-nginx-auth",
       "virtualHosts": []
@@ -789,7 +783,7 @@
     ],
     "enable": true,
     "enableRecommendedAlgorithms": true,
-    "extraConfig": "AddressFamily any\nPort 1108\nListenAddress 10.88.127.42:1108\nListenAddress 10.88.127.42:22\nXAuthLocation /nix/store/ybfiby0gg65rfvvf5vjm3ms56ffgkjmm-xauth-1.1.5/bin/xauth\nSubsystem sftp /nix/store/mk6ngc1zz5by9qycq2g187k324s0q3vb-openssh-10.3p1/libexec/sftp-server \nAuthorizedKeysFile %h/.ssh/authorized_keys /etc/ssh/authorized_keys.d/%u\nHostKey /etc/ssh/ssh_host_ed25519_key\nMatch LocalPort 1108 User inspect Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication no\n\nMatch LocalPort 1108 User deploy Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n\nMatch LocalPort 22 User build Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n\nMatch LocalPort 22\n  AllowUsers build\n",
+    "extraConfig": "AddressFamily any\nPort 1108\nListenAddress 10.88.127.42:1108\nListenAddress 10.88.127.42:22\nXAuthLocation /nix/store/lib8wfjgn5s5zkpaaj0qx9rbx5nb9mh3-xauth-1.1.5/bin/xauth\nSubsystem sftp /nix/store/0qxk3hs77yii0n71vzl2nnq8vgcycmiq-openssh-10.3p1/libexec/sftp-server \nAuthorizedKeysFile %h/.ssh/authorized_keys /etc/ssh/authorized_keys.d/%u\nHostKey /etc/ssh/ssh_host_ed25519_key\nMatch LocalPort 1108 User inspect Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication no\n\nMatch LocalPort 1108 User deploy Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n\nMatch LocalPort 22 User build Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n\nMatch LocalPort 22\n  AllowUsers build\n",
     "forwardX11": false,
     "gatewayPorts": "no",
     "generateHostKeys": true,
@@ -1032,7 +1026,7 @@
       "hmac-sha2-256-etm@openssh.com",
       "umac-128-etm@openssh.com"
     ],
-    "moduliFile": "<store>/mk6ngc1zz5by9qycq2g187k324s0q3vb-openssh-10.3p1/etc/ssh/moduli",
+    "moduliFile": "<store>/0qxk3hs77yii0n71vzl2nnq8vgcycmiq-openssh-10.3p1/etc/ssh/moduli",
     "openFirewall": true,
     "package": "<derivation:openssh-10.3p1>",
     "passwordAuthentication": false,
@@ -1092,7 +1086,7 @@
       "X11Forwarding": false
     },
     "sftpFlags": [],
-    "sftpServerExecutable": "<store>/mk6ngc1zz5by9qycq2g187k324s0q3vb-openssh-10.3p1/libexec/sftp-server",
+    "sftpServerExecutable": "<store>/0qxk3hs77yii0n71vzl2nnq8vgcycmiq-openssh-10.3p1/libexec/sftp-server",
     "startWhenNeeded": true,
     "useDns": false
   },
@@ -1244,7 +1238,7 @@
         ],
         "bindTimeout": "10s",
         "bindURI": "http://localhost:8053/",
-        "bindVersion": "json",
+        "bindVersion": "auto",
         "enable": false,
         "extraFlags": [],
         "firewallFilter": null,
@@ -1497,20 +1491,6 @@
         "prefix": "ecoflow",
         "scrapingInterval": 30,
         "user": "ecoflow-exporter"
-      },
-      "elasticsearch": {
-        "enable": false,
-        "environmentFile": null,
-        "extraFlags": [],
-        "firewallFilter": null,
-        "firewallRules": null,
-        "group": "elasticsearch-exporter",
-        "listenAddress": "0.0.0.0",
-        "openFirewall": false,
-        "package": "<derivation:elasticsearch_exporter-1.10.0>",
-        "port": 9114,
-        "url": "http://localhost:9200",
-        "user": "elasticsearch-exporter"
       },
       "exportarr-bazarr": {
         "apiKeyFile": null,
@@ -1833,7 +1813,7 @@
         "listenAddress": "0.0.0.0",
         "moonrakerApiKey": "",
         "openFirewall": false,
-        "package": "<derivation:prometheus-klipper-exporter-0.15.0>",
+        "package": "<derivation:prometheus-klipper-exporter-0.14.0>",
         "port": 9101,
         "user": "klipper-exporter"
       },
@@ -1891,44 +1871,6 @@
         "port": 9225,
         "telemetryPath": "/metrics",
         "user": "mail-exporter"
-      },
-      "mail-tlsa-check": {
-        "enable": false,
-        "extraFlags": [],
-        "firewallFilter": null,
-        "firewallRules": null,
-        "group": "mail-tlsa-check-exporter",
-        "listenAddress": "0.0.0.0",
-        "openFirewall": false,
-        "package": "<derivation:mail-tlsa-check-exporter-0-unstable-2025-06-12>",
-        "port": 19309,
-        "settings": {
-          "check": {
-            "timeout": 15000
-          },
-          "imap": {
-            "hostname": null,
-            "port": 143
-          },
-          "ipv4": {
-            "enabled": true
-          },
-          "ipv6": {
-            "enabled": true
-          },
-          "server": {
-            "port": 19309
-          },
-          "smtp": {
-            "client": "tlsa-smtp-synthetics-probe",
-            "hostname": null,
-            "port": 587
-          },
-          "tlsa": {
-            "record": "<eval-error>"
-          }
-        },
-        "user": "mail-tlsa-check-exporter"
       },
       "mailman3": {
         "enable": false,
@@ -2208,7 +2150,7 @@
         "logFormat": "logfmt",
         "logLevel": "info",
         "openFirewall": false,
-        "package": "<derivation:pgbouncer-exporter-0.12.1>",
+        "package": "<derivation:pgbouncer-exporter-0.12.0>",
         "pidFile": null,
         "port": 9127,
         "telemetryPath": "/metrics",
@@ -2434,6 +2376,18 @@
         "servers": [],
         "user": "sabnzbd-exporter"
       },
+      "scaphandre": {
+        "enable": false,
+        "extraFlags": [],
+        "firewallFilter": null,
+        "firewallRules": null,
+        "group": "scaphandre-exporter",
+        "listenAddress": "0.0.0.0",
+        "openFirewall": false,
+        "port": 8080,
+        "telemetryPath": "/metrics",
+        "user": "scaphandre-exporter"
+      },
       "script": {
         "enable": false,
         "extraFlags": [],
@@ -2502,19 +2456,6 @@
         "openFirewall": false,
         "port": 9116,
         "user": "snmp-exporter"
-      },
-      "speedtest": {
-        "enable": false,
-        "extraFlags": [],
-        "firewallFilter": null,
-        "firewallRules": null,
-        "group": "speedtest-exporter",
-        "listenAddress": "0.0.0.0",
-        "openFirewall": false,
-        "port": 9798,
-        "serverFallback": false,
-        "serverID": -1,
-        "user": "speedtest-exporter"
       },
       "sql": {
         "configFile": null,
@@ -2585,7 +2526,7 @@
         "group": "tailscale-exporter",
         "listenAddress": "0.0.0.0",
         "openFirewall": false,
-        "package": "<derivation:tailscale-exporter-0.6.0>",
+        "package": "<derivation:tailscale-exporter-0.5.0>",
         "port": 9250,
         "user": "tailscale-exporter"
       },
@@ -2648,7 +2589,7 @@
         },
         "loki": {
           "interval": "2m",
-          "pass": "file:///nix/store/sq7dvsysi26r6wjyxs3bqj6c96f9r0mf-unpoller-loki-default.password",
+          "pass": "file:///nix/store/bam2637h458wclx84rrjl5v8i1p05k9g-unpoller-loki-default.password",
           "tenant_id": "",
           "timeout": "10s",
           "url": "",
@@ -2674,7 +2615,7 @@
         },
         "loki": {
           "interval": "2m",
-          "pass": "file:///nix/store/sq7dvsysi26r6wjyxs3bqj6c96f9r0mf-unpoller-loki-default.password",
+          "pass": "file:///nix/store/bam2637h458wclx84rrjl5v8i1p05k9g-unpoller-loki-default.password",
           "tenant_id": "",
           "timeout": "10s",
           "url": "",
@@ -2738,23 +2679,6 @@
         "wireguardConfig": null,
         "withRemoteIp": false
       },
-      "xray": {
-        "enable": false,
-        "extraFlags": [],
-        "firewallFilter": null,
-        "firewallRules": null,
-        "group": "xray-exporter",
-        "listenAddress": "0.0.0.0",
-        "logPath": "/var/log/xray/access.log",
-        "logTimeWindow": 5,
-        "metricsPath": "/scrape",
-        "openFirewall": false,
-        "port": 9550,
-        "scrapeTimeout": 5,
-        "user": "xray-exporter",
-        "withUserMetrics": false,
-        "xrayEndpoint": "127.0.0.1:8080"
-      },
       "zfs": {
         "enable": false,
         "extraFlags": [],
@@ -2792,7 +2716,7 @@
       "scrape_timeout": null
     },
     "listenAddress": "0.0.0.0",
-    "package": "<derivation:prometheus-3.12.0>",
+    "package": "<derivation:prometheus-3.11.3>",
     "port": 9090,
     "pushgateway": {
       "enable": false,
@@ -2801,7 +2725,7 @@
         "format": null,
         "level": null
       },
-      "package": "<derivation:pushgateway-1.11.3>",
+      "package": "<derivation:pushgateway-1.11.2>",
       "persistMetrics": false,
       "persistence": {
         "interval": null
@@ -2847,7 +2771,7 @@
       "domain": "<eval-error>",
       "enable": false,
       "openFirewall": true,
-      "package": "<derivation:tailscale-1.98.5>",
+      "package": "<derivation:tailscale-1.98.0>",
       "port": 8010,
       "stunPort": 3478,
       "verifyClients": false
@@ -2860,7 +2784,7 @@
     "extraUpFlags": [],
     "interfaceName": "tailscale0",
     "openFirewall": false,
-    "package": "<derivation:tailscale-1.98.5>",
+    "package": "<derivation:tailscale-1.98.0>",
     "permitCertUid": null,
     "port": 41641,
     "serve": {
