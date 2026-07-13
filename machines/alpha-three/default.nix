@@ -46,17 +46,41 @@
   };
 
   # secrix secret declarations for MCP tokens
-  secrix.system.secrets.github-PAT-token.encrypted.file =
-    "${self}/secrets/github-PAT-token";
-  secrix.system.secrets.gitlab-PAT-token.encrypted.file =
-    "${self}/secrets/gitlab-PAT-token";
+  secrix.system.secretsDir = {
+    permissions = "0555";
+    user = "root";
+    group = "users";
+  };
+  secrix.system.secrets.github-PAT-token = {
+    encrypted.file = "${self}/secrets/github-PAT-token";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
+  secrix.system.secrets.gitlab-PAT-token = {
+    encrypted.file = "${self}/secrets/gitlab-PAT-token";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
 
   # OpenCode fleet configuration — full fleet with MCP servers
   services.opencode-fleet = {
     enable = true;
     voyagerOnly = false; # Full fleet
-    mcp.git.enable = true;
-    mcp.filesystem.enable = true;
+    user = "John88";
+    mcp.git = {
+      enable = true;
+      extraArgs = [ "--repository" "/home/pokej/NixOS-Configuration" ];
+    };
+    mcp.filesystem = {
+      enable = true;
+      paths = [ "/home/pokej" "/nix/store" "/home/pokej/NixOS-Configuration" ];
+    };
     mcp.time.enable = true;
     mcp.sqlite.enable = true;
     mcp.playwright.enable = true;

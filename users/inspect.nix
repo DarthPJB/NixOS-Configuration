@@ -27,7 +27,7 @@
   };
 
   systemd.tmpfiles.rules = [
-    "d /tmp/inspect 0755 inspect inspect -"
-    "Z /tmp/inspect 0755 inspect inspect - -"
+    "d /tmp/inspect 0755 inspect users -"
+    "Z /tmp/inspect 0755 inspect users - -"
   ];
 }
