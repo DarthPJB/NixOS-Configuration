@@ -301,6 +301,26 @@
     "disko": {
       "inputs": {
         "nixpkgs": [
+          "nixpkgs_unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1781152676,
+        "narHash": "sha256-RxWs5ND31KzTG7wvMM+PMfUjyNpmIEr999lqNARaM5o=",
+        "owner": "nix-community",
+        "repo": "disko",
+        "rev": "ff8702b4de27f72b4c78573dfb89ec74e36abdf1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "disko",
+        "type": "github"
+      }
+    },
+    "disko_2": {
+      "inputs": {
+        "nixpkgs": [
           "nixinate",
           "nixpkgs"
         ]
@@ -1236,17 +1256,17 @@
     },
     "nixinate": {
       "inputs": {
-        "disko": "disko",
+        "disko": "disko_2",
         "nixpkgs": [
           "nixpkgs_unstable"
         ]
       },
       "locked": {
-        "lastModified": 1783850689,
-        "narHash": "sha256-OHQmFbpBFp9WPu6x2t687WERUOCVdxpcbhbCy8pwxf8=",
+        "lastModified": 1783939427,
+        "narHash": "sha256-+i1Zh5YXJZseOan600ispFfZX3mMolp3KJXtJt1orJI=",
         "owner": "Bargman-Tech",
         "repo": "nixinate",
-        "rev": "3aed79adabda41b6cca05d0746d044e01087c354",
+        "rev": "151b976923aed6f0f5567a88686da0168f4c0c03",
         "type": "github"
       },
       "original": {
@@ -1801,6 +1821,7 @@
         "deadnix": "deadnix_3",
         "denton-glasses": "denton-glasses",
         "determinate": "determinate",
+        "disko": "disko",
         "hype-train-claw": "hype-train-claw",
         "hype-train-outlaw": "hype-train-outlaw",
         "hyprland": "hyprland",
