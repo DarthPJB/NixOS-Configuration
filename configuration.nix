@@ -168,21 +168,21 @@ in
     #    P.S. Thx to crash giving me wiregaurd, I look forward to your pinging my IPV4 range :)
     enable = true;
     hwRender = true; # Enable hardware rendering
-    extraConfig = ''
-      font-size=16
+   # extraConfig = ''
+     # font-size=16
       #xterm-resolution=1920x1080 # Set desired resolution
-      font-name=Source Code Pro # Clear, monospaced font
-      font-size=14 # Balanced size for readability
-      palette=linux # Standard Linux console colors
-      #scrollback=1000 # Scrollback buffer size
-      drm # Use DRM backend for Raspberry Pi
-    '';
-    fonts = [
-      {
-        name = "Source Code Pro";
-        package = pkgs.source-code-pro;
-      }
-    ];
+     # font-name=Source Code Pro # Clear, monospaced font
+     # font-size=14 # Balanced size for readability
+     # palette=linux # Standard Linux console colors
+     # #scrollback=1000 # Scrollback buffer size
+     # drm # Use DRM backend for Raspberry Pi
+   # '';
+ #   fonts = [
+ #     {
+ #       name = "Source Code Pro";
+ #       package = pkgs.source-code-pro;
+ #     }
+ #   ];
   };
   services.getty.autologinUser = "John88";
 }
