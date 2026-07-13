@@ -1,7 +1,6 @@
 { config
 , lib
 , pkgs
-, pkgs_llm
 , self
 , ...
 }:
@@ -24,7 +23,6 @@
 
   services.zeroclaw = {
     enable = true;
-    package = lib.mkForce pkgs_llm.zeroclaw; # v0.8.0 from nixpkgs_llm (upstream zeroclaw-labs)
     mutableConfig = false; # Critical: always regenerate from Nix
 
     channels.mattermost.secretFiles.bot_token =
