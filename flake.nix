@@ -7,8 +7,9 @@
     hyprland.url = "github:hyprwm/Hyprland";
     lint-utils = { url = "github:homotopic/lint-utils"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
+    disko = { url = "github:nix-community/disko"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
     secrix.url = "github:Platonic-Systems/secrix";
-    nixinate = { url = "github:Bargman-Tech/nixinate"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
+    nixinate = { url = "path:/speed-storage/bargman-tech/nixinate"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
     nixpkgs_llm.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
@@ -27,7 +28,7 @@
     # LLM-CORE = { url = "git+https://gitlab.com/mecha-team-zero/llm-core.git"; };
   };
   # LLM-CORE: Disabled for overlord-I deployment — re-enable and test as part of overlord-II
-  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site/*, LLM-CORE*/ }:
+  outputs = { self, deadnix, determinate, disko, hyprland, lint-utils, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site/*, LLM-CORE*/ }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
@@ -71,7 +72,7 @@
           ];
         }
       ];
-      mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108 }:
+      mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108, images ? {} }:
         nixpkgs_stable.lib.nixosSystem {
           system = "x86_64-linux";
           modules = commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
@@ -93,6 +94,7 @@
                 nixinate = {
                   inherit host sshUser buildOn;
                   port = sshPort;
+                  inherit images;
                 };
               };
             }
@@ -392,7 +394,7 @@
           squaremap-neoforge = nixpkgs.callPackage ./pkgs/minecraft-curseforge/squaremap.nix { };
           bargman-greeter-vm = self.nixosConfigurations.bargman-greeter-vm.config.system.build.vm;
           bargman-greeter-vm-bootloader = self.nixosConfigurations.bargman-greeter-vm.config.system.build.vmWithBootLoader;
-        };
+        } // (nixinate.lib.genImages.x86_64-linux self);
         "aarch64-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.print-controller
           self.nixosConfigurations.display-1
@@ -500,10 +502,20 @@
         };
         alpha-three = mkX86_64 "alpha-three" {
           host = topoIp "alpha-three";
+          images = {
+            raw = {
+              enable = true;
+              imageSize = "20G";
+              espSize = "1024M";
+              swapSize = "8G";
+            };
+            installer.enable = true;
+          };
           extraModules = [
             ./users/build.nix
             hype-train-claw.nixosModules.zeroclaw
             ./services/zeroclaw.nix
+            nixinate.nixosModules.image-gen
             {
               nixpkgs.config.nvidia.acceptLicense = true;
             }
