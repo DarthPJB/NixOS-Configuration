@@ -36,11 +36,13 @@ let
   dnsSettings = (import ../lib/topology/mkDnsSettings.nix { inherit lib; }) perMachineTopology;
   firewallSettings = (import ../lib/topology/mkFirewallSettings.nix { inherit lib; }) perMachineTopology;
   nginxSettings = (import ../lib/topology/mkNginxSettings.nix { inherit lib; }) perMachineTopology;
+  backupSettings = (import ../lib/topology/mkBackupSettings.nix { inherit lib; }) perMachineTopology;
 
   # --- WIP generators (settings + hostname -> NixOS config) ---
   dnsConfig = (import ../lib/topology/genDns.nix { inherit lib; }) dnsSettings hostname;
   firewallConfig = (import ../lib/topology/genFirewall.nix { inherit lib; }) firewallSettings hostname;
   nginxConfig = (import ../lib/topology/genNginx.nix { inherit lib; }) nginxSettings hostname;
+  backupConfig = (import ../lib/topology/genBackup.nix { inherit lib; }) backupSettings hostname;
 
   # --- Production transformers (used directly — no WIP pair needed) ---
   tailscaleLib = (import ../lib/topology/mkTailscaleConfig.nix { inherit lib; }) machineTopology;
@@ -52,13 +54,15 @@ let
     (lib.optionals (validation.warnings != [ ]) (map (w: "topology: ${w}") validation.warnings))
     ++ (lib.optionals (crossValidation.warnings != [ ]) (map (w: "cross-ref: ${w}") crossValidation.warnings))
     ++ nginxSettings.warnings
-    ++ dnsSettings.warnings;
+    ++ dnsSettings.warnings
+    ++ backupSettings.warnings;
   allErrors =
     (lib.optionals (!validation.valid) [ "Invalid topology: ${builtins.concatStringsSep "; " validation.errors}" ])
     ++ (lib.optionals (!crossValidation.valid) [ "Cross-ref failed: ${builtins.concatStringsSep "; " crossValidation.errors}" ])
     ++ nginxSettings.errors
     ++ firewallSettings.errors
-    ++ dnsSettings.errors;
+    ++ dnsSettings.errors
+    ++ backupSettings.errors;
 in
 {
   options.coreRouterTopology.enable = lib.mkOption {
@@ -149,6 +153,11 @@ in
     # --- Prometheus exporters configuration ---
     (lib.mkIf (config.coreRouterTopology.enable && machineTopology ? monitoring) {
       services.prometheus.exporters = lib.mkOverride 100 (monitoringLib.mkMonitoringConfig { });
+    })
+
+    # --- Backup configuration (rclone-target) ---
+    (lib.mkIf (config.coreRouterTopology.enable && machineTopology ? backup) {
+      environment.rclone-target = lib.mkOverride 100 backupConfig.environment.rclone-target;
     })
   ];
 }
