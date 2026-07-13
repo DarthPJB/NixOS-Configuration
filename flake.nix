@@ -514,7 +514,6 @@
             hype-train-claw.nixosModules.zeroclaw
             ./services/zeroclaw.nix
             LLM-CORE.nixosModules.opencode-fleet
-            nixinate.nixosModules.image-gen
             {
               nixpkgs.config.nvidia.acceptLicense = true;
             }
