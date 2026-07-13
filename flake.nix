@@ -9,7 +9,7 @@
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
     disko = { url = "github:nix-community/disko"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
     secrix.url = "github:Platonic-Systems/secrix";
-    nixinate = { url = "path:/speed-storage/bargman-tech/nixinate"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
+    nixinate = { url = "github:Bargman-Tech/nixinate"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
     nixpkgs_llm.url = "https://flakehub.com/f/NixOS/nixpkgs/0";

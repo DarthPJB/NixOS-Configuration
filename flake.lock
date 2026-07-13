@@ -1202,13 +1202,17 @@
         ]
       },
       "locked": {
-        "narHash": "sha256-iFS1z83CrCxQUpZ5bz14QiJakcbvvdKKmTNrkeFCrbM=",
-        "path": "/speed-storage/bargman-tech/nixinate",
-        "type": "path"
+        "lastModified": 1783939427,
+        "narHash": "sha256-+i1Zh5YXJZseOan600ispFfZX3mMolp3KJXtJt1orJI=",
+        "owner": "Bargman-Tech",
+        "repo": "nixinate",
+        "rev": "151b976923aed6f0f5567a88686da0168f4c0c03",
+        "type": "github"
       },
       "original": {
-        "path": "/speed-storage/bargman-tech/nixinate",
-        "type": "path"
+        "owner": "Bargman-Tech",
+        "repo": "nixinate",
+        "type": "github"
       }
     },
     "nixos-hardware": {
