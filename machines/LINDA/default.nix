@@ -96,13 +96,12 @@
             "+ .config/vivaldi/search_engines_prompt.json"
             "- .config/vivaldi/**"
             "- .config/**"
-            # Include essential directories
-            "+ .gnupg/**"
-            "+ .ssh/**"
-            "+ .mozilla/**"
-            "+ .thunderbird/**"
+            "- .gnupg/**"
+            "- .ssh/**"
+            "- .mozilla/**"
+            "- .thunderbird/**"
             "+ Pictures/**"
-            "+ Monero/**"
+            "0 Monero/**"
             # Exclude everything else
             "- .cache/**"
             "- .local/**"
@@ -266,7 +265,7 @@
     ];
     loader = {
       systemd-boot.enable = true;
-      systemd-boot.configurationLimit = 10;
+      systemd-boot.configurationLimit = 1;
       efi.canTouchEfiVariables = true;
     };
     initrd = {
@@ -278,7 +277,7 @@
         "usbhid"
         "uas"
         "sd_mod"
-        "nvidia-drm"
+	"nvidia-drm"
       ];
       kernelModules = [ ];
     };
