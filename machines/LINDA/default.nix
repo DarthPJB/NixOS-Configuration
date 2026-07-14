@@ -278,12 +278,9 @@
         "usbhid"
         "uas"
         "sd_mod"
+        "nvidia-drm"
       ];
-      kernelModules = [
-        "nvidia"
-        "nvidia_modeset"
-        "nvidia_drm"
-      ];
+      kernelModules = [ ];
     };
     #kernelPackages= pkgs.linuxPackages_5_18;
     kernelModules = [
@@ -359,7 +356,7 @@
       nvidiaSettings = true;
       open = false;
       modesetting.enable = true;
-      powerManagement.enable = true;
+      powerManagement.enable = false;
     };
   };
 
@@ -450,34 +447,56 @@
   };
 
   # secrix secret declarations for MCP tokens
-  # DISABLED for overlord-I — re-enable and test as part of overlord-II
-  # secrix.system.secrets.github-PAT-token.encrypted.file =
-  #   "${self}/secrets/github-PAT-token";
-  # secrix.system.secrets.gitlab-PAT-token.encrypted.file =
-  #   "${self}/secrets/gitlab-PAT-token";
+  secrix.system.secretsDir = {
+    permissions = "0555";
+    user = "root";
+    group = "users";
+  };
+  secrix.system.secrets.github-PAT-token = {
+    encrypted.file = "${self}/secrets/github-PAT-token";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
+  secrix.system.secrets.gitlab-PAT-token = {
+    encrypted.file = "${self}/secrets/gitlab-PAT-token";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
 
   # OpenCode fleet configuration — full fleet with MCP servers
-  # DISABLED for overlord-I — re-enable and test as part of overlord-II
-  # services.opencode-fleet = {
-  #   enable = true;
-  #   voyagerOnly = false; # Full fleet
-  #   mcp.git.enable = true;
-  #   mcp.filesystem.enable = true;
-  #   mcp.time.enable = true;
-  #   mcp.sqlite.enable = true;
-  #   mcp.playwright.enable = true;
-  #   mcp.github = {
-  #     enable = true;
-  #     tokenFile = config.secrix.system.secrets.github-PAT-token.decrypted.path;
-  #   };
-  #   mcp.gitlab = {
-  #     enable = true;
-  #     tokenFile = config.secrix.system.secrets.gitlab-PAT-token.decrypted.path;
-  #   };
-  #   mcp.prometheus = {
-  #     enable = true;
-  #     prometheusUrl = "http://10.88.127.3:8080";
-  #   };
-  # };
+  services.opencode-fleet = {
+    enable = true;
+    voyagerOnly = false; # Full fleet
+    user = "John88";
+    mcp.git = {
+      enable = true;
+      extraArgs = [ "--repository" "/home/pokej/NixOS-Configuration" ];
+    };
+    mcp.filesystem = {
+      enable = true;
+      paths = [ "/home/pokej" "/speed-storage" "/nix/store" "/home/pokej/NixOS-Configuration" ];
+    };
+    mcp.time.enable = true;
+    mcp.sqlite.enable = true;
+    mcp.playwright.enable = true;
+    mcp.github = {
+      enable = true;
+      tokenFile = config.secrix.system.secrets.github-PAT-token.decrypted.path;
+    };
+    mcp.gitlab = {
+      enable = true;
+      tokenFile = config.secrix.system.secrets.gitlab-PAT-token.decrypted.path;
+    };
+    mcp.prometheus = {
+      enable = true;
+      prometheusUrl = "http://10.88.127.3:8080";
+    };
+  };
 
 }

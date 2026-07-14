@@ -539,7 +539,7 @@
             xlibre-overlay.nixosModules.nvidia-ignore-ABI
             denton-glasses.nixosModules.eye-tracking
             denton-glasses.nixosModules.voxtype
-            # self.inputs.LLM-CORE.nixosModules.opencode-fleet  # Disabled for overlord-I — re-enable as part of overlord-II
+            LLM-CORE.nixosModules.opencode-fleet
             {
               programs.ratty = {
                 enable = true;
