@@ -117,6 +117,14 @@
               networking.hostName = hostname;
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;
               documentation = { dev.enable = false; man.enable = false; info.enable = false; enable = false; };
+              # Determinate Nix aarch64 deps live on install.determinate.systems, not cache.nixos.org
+              nix.settings = lib.mkIf dt {
+                extra-substituters = [ "https://install.determinate.systems" ];
+                extra-trusted-public-keys = [
+                  "cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM="
+                  "install.determinate.systems:a7GMGXFqz7lFjOE45sTRq1g/RX6KFHRKHXOHTi1uFhM="
+                ];
+              };
               disabledModules = [
                 "profiles/all-hardware.nix"
                 "profiles/base.nix"
