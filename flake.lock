@@ -8,11 +8,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1784048217,
-        "narHash": "sha256-2zDEH2azF0WwtHubzS6YcD05Qy8skEw7+//fs612J/I=",
+        "lastModified": 1784050163,
+        "narHash": "sha256-o4k1xusSl9U8feoLY95vwV4WnrlbhjmSuESoy/XlNn0=",
         "ref": "refs/heads/main",
-        "rev": "2e29c0869b7d1d2faefb8b64b0f3ac37c2a9ab01",
-        "revCount": 399,
+        "rev": "4433af7fb2790a747d7d8541fb693d60e10b1eef",
+        "revCount": 401,
         "type": "git",
         "url": "https://gitlab.com/mecha-team-zero/llm-core.git"
       },
