@@ -540,11 +540,10 @@
       enable = true;
       apiKeyFile = config.secrix.system.secrets.mimo-token-plan-ai-key.decrypted.path;
     };
-    # xAI provider — pending LLM-CORE module update (provider option not yet in flake)
-    # providers.xai = {
-    #   enable = true;
-    #   apiKeyFile = config.secrix.system.secrets.LINDA-xAI-token.decrypted.path;
-    # };
+    providers.xai = {
+      enable = true;
+      apiKeyFile = config.secrix.system.secrets.LINDA-xAI-token.decrypted.path;
+    };
   };
 
 }
