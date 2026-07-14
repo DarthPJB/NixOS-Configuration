@@ -67,6 +67,30 @@
       mode = "0440";
     };
   };
+  secrix.system.secrets.openrouter-master-token = {
+    encrypted.file = "${self}/secrets/openrouter-master-token";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
+  secrix.system.secrets.alpha-three-openCODE-token = {
+    encrypted.file = "${self}/secrets/alpha-three-openCODE-token";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
+  secrix.system.secrets.mimo-token-plan-ai-key = {
+    encrypted.file = "${self}/secrets/mimo-token-plan-ai-key";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
 
   # OpenCode fleet configuration — full fleet with MCP servers
   services.opencode-fleet = {
@@ -95,6 +119,18 @@
     mcp.prometheus = {
       enable = true;
       prometheusUrl = "http://10.88.127.3:8080";
+    };
+    providers.openrouter = {
+      enable = true;
+      apiKeyFile = config.secrix.system.secrets.openrouter-master-token.decrypted.path;
+    };
+    providers.opencode-go = {
+      enable = true;
+      apiKeyFile = config.secrix.system.secrets.alpha-three-openCODE-token.decrypted.path;
+    };
+    providers.xiaomi-token-plan-sgp = {
+      enable = true;
+      apiKeyFile = config.secrix.system.secrets.mimo-token-plan-ai-key.decrypted.path;
     };
   };
 }
