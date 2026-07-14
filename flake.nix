@@ -98,7 +98,7 @@
             }
           ];
         };
-      mkAarch64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? false, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
+      mkAarch64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
         nixpkgs_unstable.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
@@ -427,6 +427,7 @@
         };
         arm-builder = mkAarch64 "arm-builder" {
           host = topoIp "arm-builder";
+          dt = true; # Determinate Nix required — this machine IS the aarch64 remote builder
           extraModules = [
             ./users/deployment.nix
             ./users/build.nix
