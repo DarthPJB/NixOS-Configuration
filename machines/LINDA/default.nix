@@ -491,6 +491,14 @@
       mode = "0440";
     };
   };
+  secrix.system.secrets.mimo-token-plan-ai-key = {
+    encrypted.file = "${self}/secrets/mimo-token-plan-ai-key";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
 
   # OpenCode fleet configuration — full fleet with MCP servers
   services.opencode-fleet = {
@@ -532,6 +540,11 @@
       enable = true;
       apiKeyFile = config.secrix.system.secrets.mimo-token-plan-ai-key.decrypted.path;
     };
+    # xAI provider — pending LLM-CORE module update (provider option not yet in flake)
+    # providers.xai = {
+    #   enable = true;
+    #   apiKeyFile = config.secrix.system.secrets.LINDA-xAI-token.decrypted.path;
+    # };
   };
 
 }
