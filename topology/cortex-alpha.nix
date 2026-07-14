@@ -1,7 +1,7 @@
 # real-topology/cortex-alpha.nix
 # This file represents the physical network reality for cortex-alpha.
 # It is the single source of truth for all routing, addressing, and capabilities.
-{ lib, self, ... }:
+{ ... }:
 {
   domain = "johnbargman.net";
   hostname = "cortex-alpha";
@@ -656,20 +656,6 @@
         port = 3101;
         leasesPath = "/dev/null";
         dnsmasqListenAddress = "10.88.128.1:53";
-      };
-    };
-  };
-
-  backup = {
-    configFile = "${self}/secrets/rclone-config-file";
-    user = "John88";
-    targets = {
-      nixos-config = {
-        filePath = "/speed-storage/bargman-tech/NixOS-Configuration";
-        remoteName = "minio:bargman-tech";
-        calendar = "*-*-* *:15:00";
-        mode = "copy";
-        bwlimit = "10M";
       };
     };
   };

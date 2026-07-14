@@ -51,10 +51,4 @@ in
   ];
 
   networking.firewall.interfaces.wireg0.allowedTCPPorts = [ 22 ];
-
-  systemd.tmpfiles.rules = [
-    "d /tmp/nix-builder-1111 0755 build users -"
-    "d /tmp/nix-builder-1111/.ssh 0700 build users -"
-    "Z /tmp/nix-builder-1111 0755 build users - -"
-  ];
 }
