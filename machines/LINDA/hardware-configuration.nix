@@ -65,17 +65,6 @@
       what = "/speed-storage/tmp";
       options = "bind";
     }
-    {
-      #TODO: transition away from pool-per-state, and instead bind-per-state on a single filesystem
-      where = "/var/lib/blueman";
-      what = "/speed-storage/blueman";
-      options = "bind";
-    }
-    {
-      where = "/var/lib/bluetooth";
-      what = "/speed-storage/bluetooth";
-      options = "bind";
-    }
 
   ];
   fileSystems."/tmp" = {
@@ -99,6 +88,18 @@
   };
   fileSystems."/var/lib/libvirt" = {
     device = "speed-storage/var-lib-libvirt";
+    fsType = "zfs";
+    options = [ "nofail" ];
+  };
+
+  fileSystems."/var/lib/bluetooth" = {
+    device = "speed-storage/var-lib-bluetooth";
+    fsType = "zfs";
+    options = [ "nofail" ];
+  };
+
+  fileSystems."/var/lib/blueman" = {
+    device = "speed-storage/var-lib-blueman";
     fsType = "zfs";
     options = [ "nofail" ];
   };
