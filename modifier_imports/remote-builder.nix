@@ -54,7 +54,11 @@ in
     }
     {
       hostName = "10.88.127.43"; # arm-builder
-      protocol = "ssh-ng";
+      # Use ssh (not ssh-ng) to avoid the LocalCommand/started protocol leak.
+      # ssh-ng creates SSH masters (useMaster=true) which corrupt the handshake
+      # when the master dies and the command SSH falls back to direct connection.
+      # See: NixOS/nix#14132, documentation/incidents/2026-07-15-ssh-multiplex-ssh-ng-protocol-mismatch.md
+      protocol = "ssh";
       sshUser = "build";
       sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
       systems = [ "aarch64-linux" ];
