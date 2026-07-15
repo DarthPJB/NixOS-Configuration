@@ -1,8 +1,27 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
+let
+  # Dynamically collect builder hostnames for SSH exclusion
+  builderHosts = map (m: m.hostName) config.nix.buildMachines;
+in
 {
   secrix.services.nix-daemon.secrets.hyperhyper.encrypted.file = ../secrets/hyper_build_private_key;
   secrix.services.nix-daemon.secrets.personal-builder.encrypted.file = ../secrets/builder-key;
+
+  # Wire builder hosts into ssh-multiplex exclusion list.
+  # Nix-daemon's ssh-ng connections MUST NOT be multiplexed —
+  # ControlMaster corrupts the protocol handshake (NixOS/nix#14132).
+  sshMultiplex.exclusions = builderHosts;
+
+  # Belt-and-suspenders: explicit Host block for build user connections.
+  # Matches any host accessed as the build user, regardless of IP.
+  programs.ssh.extraConfig = ''
+    # Nix remote builder — disable multiplexing for ssh-ng protocol
+    Host build@*
+      ControlMaster no
+      ControlPath none
+  '';
+
   nix.buildMachines = [
     /*
       {

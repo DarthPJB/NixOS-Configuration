@@ -55,16 +55,42 @@ in
       default = "0755";
       description = "File mode for the SSH multiplexing socket directory.";
     };
+
+    exclusions = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      example = [ "10.88.127.43" "build@*" ];
+      description = ''
+        SSH host patterns to exclude from multiplexing.
+        Exclusion blocks are emitted before the topology match so that
+        SSH's first-match-wins ordering disables ControlMaster for
+        these hosts.  Useful for nix-daemon builder connections where
+        multiplexing corrupts the ssh-ng protocol handshake.
+      '';
+    };
   };
 
   config = lib.mkIf cfg.enable {
-    programs.ssh.extraConfig = ''
-      # Fleet-wide SSH multiplexing (ssh-multiplex module)
-      Host *
-        ControlMaster auto
-        ControlPath ${cfg.controlPath}
-        ControlPersist ${cfg.controlPersist}
-    '';
+    programs.ssh.extraConfig =
+      let
+        exclusionBlocks = lib.concatMapStringsSep "\n"
+          (host: ''
+            # Exclude from multiplexing (${host})
+            Host ${host}
+              ControlMaster no
+              ControlPath none
+          '')
+          cfg.exclusions;
+      in
+      ''
+        # Fleet-wide SSH multiplexing (ssh-multiplex module)
+        # Topology subnets only — external systems are NOT multiplexed.
+        ${exclusionBlocks}
+        Host 10.88.127.* 10.88.128.*
+          ControlMaster auto
+          ControlPath ${cfg.controlPath}
+          ControlPersist ${cfg.controlPersist}
+      '';
 
     systemd.tmpfiles.rules = [
       "d /run/ssh-mux ${cfg.socketDirMode} root root"
