@@ -33,8 +33,21 @@
   # hyperhyper is on an external Tailscale VPN — cortex-alpha is the only
   # WireGuard hub with a Tailscale connection, so all traffic for hyperhyper
   # must go through it.
-  # Uses localCommands (not networking.interfaces routes) because this system
-  # uses dhcpcd, not systemd-networkd.
+  #
+  # Two things needed:
+  # 1. WireGuard allowedIPs must include the Tailscale IP so the tunnel accepts it
+  # 2. A route must direct traffic for that IP through the tunnel
+  networking.wireguard.interfaces.wireg0.peers = lib.mkForce [
+    {
+      # cortex-alpha hub — extend allowedIPs to include hyperhyper Tailscale IP
+      publicKey = builtins.readFile "${self}/secrets/public_keys/wireguard/wg_cortex-alpha_pub";
+      allowedIPs = [ "10.88.127.0/24" "100.107.101.14/32" ];
+      endpoint = "cortex-alpha.johnbargman.net:2108";
+      persistentKeepalive = 25;
+    }
+  ];
+
+  # Route for hyperhyper through WireGuard tunnel (dhcpcd-compatible)
   networking.localCommands = ''
     ${pkgs.iproute2}/bin/ip route replace 100.107.101.14/32 via 10.88.127.1 dev wireg0 2>/dev/null || true
   '';
