@@ -393,3 +393,22 @@ Phase 6 (LLM-CORE) ────────────────────�
 | 5: SSH Multiplexing | ⬜ Pending | bellana-deepseek | mkMultiplexConfig |
 | 6: LLM-CORE | ⬜ Pending | bellana-deepseek | Re-enable input |
 | 7: Documentation | ⬜ Pending | bellana-deepseek | Update all docs |
+
+### remote-builder Hub (separate plan)
+
+> **Plan:** `documentation/plans/remote-builder-hub-2026-07-15.md`
+> **Status:** Phase 2/3 complete, BLOCKED on cortex-alpha Tailscale forwarding
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| 1: Clean up modifier_imports | ✅ Done | 5 commented-out builder blocks removed |
+| 2: Attach 300G disk + store migration | ✅ Done | `/dev/vdb` mounted at `/nix`, 267G available |
+| 3: Configure hub (max-jobs=0) | ✅ Done | `modifier_imports/remote-builder.nix` imported |
+| 3b: Route to hyperhyper | ⚠️ BLOCKED | WireGuard allowedIPs + static route done, but cortex-alpha Tailscale forwarding broken |
+| 4: Cache contribution | ⬜ Pending | Depends on Phase 3b |
+| 5: Verify and deploy | ⬜ Pending | Depends on Phase 3b |
+
+**BLOCKER:** cortex-alpha's Tailscale nftables rules (`ip filter` table with `ts-forward`
+and `ts-input`) were wiped by a `networking.nftables.ruleset` change. The change was
+reverted but Tailscale's rules were not restored. Need to restart Tailscale on
+cortex-alpha OR implement the forward rule correctly within the topology engine.
