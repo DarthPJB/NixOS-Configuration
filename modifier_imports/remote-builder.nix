@@ -1,8 +1,41 @@
+# Remote builder configuration — defines the build machines that importing hosts
+# dispatch to via nix-daemon ssh-ng protocol.
+#
+# The hub machine (remote-builder) imports this file and sets max-jobs = 0 to
+# force ALL builds through distribution. The hub itself is NOT a builder — it
+# is a coordinator that runs GitHub runners and pushes completed paths to cache.
+#
+# Active builders:
+#   hyperhyper (100.107.101.14) — x86_64-linux, 100+ cores, 1TB RAM
+#   arm-builder (10.88.127.43) — aarch64-linux, RPi 4
+#
+# See: documentation/plans/remote-builder-hub-2026-07-15.md
 { config, pkgs, lib, ... }:
 
 let
   # Dynamically collect builder hostnames for SSH exclusion
   builderHosts = map (m: m.hostName) config.nix.buildMachines;
+
+  # Build /etc/nix/machines manually with ?max-connections=1 in store URIs.
+  #
+  # WHY: max-connections is a per-store RemoteStoreConfig parameter, NOT a global
+  # nix.conf setting. Determinate Nix changed the default from 1 (upstream) to 64,
+  # which enables SSH master mode (-M -N) for ssh-ng remote builders and causes
+  # protocol mismatch errors when masters die and leave stale sockets.
+  #
+  # The NixOS nix.buildMachines module generates /etc/nix/machines but does not
+  # support store URI query params. StoreReference::parse (machines.cc) DOES parse
+  # ?key=value from the store URI, so we inject max-connections=1 there.
+  #
+  # See: documentation/incidents/2026-07-15-ssh-multiplex-ssh-ng-protocol-mismatch.md
+  # See: determinate/src/libstore/include/nix/store/remote-store.hh:29-30
+  # See: determinate/src/libstore/machines.cc:66-68
+  hyperhyperKey = config.secrix.services.nix-daemon.secrets.hyperhyper.decrypted.path;
+  armBuilderKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
+  machinesText = ''
+    ssh-ng://build@100.107.101.14?max-connections=1 x86_64-linux ${hyperhyperKey} 10 10 big-parallel,kvm - -
+    ssh-ng://build@10.88.127.43?max-connections=1 aarch64-linux ${armBuilderKey} 3 5 big-parallel - -
+  '';
 in
 {
   secrix.services.nix-daemon.secrets.hyperhyper.encrypted.file = ../secrets/hyper_build_private_key;
@@ -23,98 +56,44 @@ in
   '';
 
   nix.buildMachines = [
-    /*
-      {
-        hostName = "100.127.177.30";
-        protocol = "ssh-ng";
-        sshUser = "build";
-        sshKey = config.secrix.services.nix-daemon.secrets.hyperhyper.decrypted.path;
-        systems = [ "aarch64-darwin" ];
-        maxJobs = 10;
-        speedFactor = 10;
-        supportedFeatures = [ "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
-        mandatoryFeatures = [ ];
-      }
-    */
     {
-      # in nix.conf this reads:
-      #  builders = 'ssh://build@100.107.101.14 x86_64-linux /home/razvan/.ssh/??? 30 5 big-parallel,kvm,nixos-test,benchmark - c3NoLWVkMjU1MTkgQUFBQUMzTnphQzFsWkRJMU5URTVBQUFBSUV4N3B1QW1wQXJmNVBYa0k1d1JGa053cVFpdWxoSHh6ZUJFVnZDNTJJT0gK';
-      hostName = "100.107.101.14";
+      hostName = "100.107.101.14"; # hyperhyper
       protocol = "ssh-ng";
       sshUser = "build";
-      sshKey = config.secrix.services.nix-daemon.secrets.hyperhyper.decrypted.path;
+      sshKey = hyperhyperKey;
       systems = [ "x86_64-linux" ];
       maxJobs = 10;
       speedFactor = 10;
       supportedFeatures = [
         "big-parallel"
         "kvm"
-      ]; # "nixos-test" "benchmark"
+      ];
       mandatoryFeatures = [ ];
     }
     {
       hostName = "10.88.127.43"; # arm-builder
-      # Use ssh (not ssh-ng) to avoid the LocalCommand/started protocol leak.
-      # ssh-ng creates SSH masters (useMaster=true) which corrupt the handshake
-      # when the master dies and the command SSH falls back to direct connection.
-      # See: NixOS/nix#14132, documentation/incidents/2026-07-15-ssh-multiplex-ssh-ng-protocol-mismatch.md
-      protocol = "ssh";
+      protocol = "ssh-ng";
       sshUser = "build";
-      sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
+      sshKey = armBuilderKey;
       systems = [ "aarch64-linux" ];
       maxJobs = 3;
       speedFactor = 5;
       supportedFeatures = [ "big-parallel" ];
       mandatoryFeatures = [ ];
     }
-    # {
-    #   hostName = "10.88.127.41"; # Display-1 (kitchen wall display — not a builder)
-    #   protocol = "ssh-ng";
-    #   sshUser = "build";
-    #   sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
-    #   systems = [ "aarch64-linux" ];
-    #   maxJobs = 3;
-    #   speedFactor = 3;
-    #   supportedFeatures = [ ]; # "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
-    #   mandatoryFeatures = [ ];
-    # }
-    #   {
-    #      hostName = "10.88.127.50"; # "remote-worker.johnbargman.net"; # remote-builder
-    #      system = "x86_64-linux";
-    #      protocol = "ssh-ng";
-    #      sshUser = "build"; #
-    #      sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
-    #      systems = [ "x86_64-linux" ];
-    #      maxJobs = 3;
-    #      speedFactor = 2;
-    #      supportedFeatures = [ ]; # "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
-    #      mandatoryFeatures = [ ];
-    #    }
-    #    {
-    #      hostName = "10.88.127.51"; #"remote-builder.johnbargman.net";
-    #      system = "x86_64-linux";
-    #      protocol = "ssh-ng";
-    #      sshUser = "build"; #
-    #      sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
-    #      systems = [ "x86_64-linux" ];
-    #      maxJobs = 6;
-    #      speedFactor = 4;
-    #      supportedFeatures = [ ]; # "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
-    #      mandatoryFeatures = [ ];
-    #    }
-    #    {
-    #      hostName = "10.88.127.21"; #"nx-01.local";
-    #      system = "x86_64-linux";
-    #      protocol = "ssh-ng";
-    #      sshUser = "build"; #
-    #      sshKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
-    #      systems = [ "x86_64-linux" ];
-    #      maxJobs = 6;
-    #      speedFactor = 2;
-    #      supportedFeatures = [ ]; # "big-parallel" "kvm" ]; #   "nixos-test" "benchmark"
-    #      mandatoryFeatures = [ ];
-    #    }
   ];
+
+  # Override the NixOS-generated /etc/nix/machines to embed max-connections=1
+  # as a store URI query param. This is necessary because:
+  #   1. max-connections is a per-store RemoteStoreConfig param (not nix.conf)
+  #   2. NixOS nix.buildMachines doesn't support store URI query params
+  #   3. machines.cc only injects max-connections=1 for ssh:// (not ssh-ng)
+  #   4. StoreReference::parse DOES parse ?key=value from URIs
+  #
+  # mkForce on the text field overrides the NixOS module's types.lines
+  # concatenation (without mkForce, both texts merge into a broken file).
+  environment.etc."nix/machines".text = lib.mkForce machinesText;
+
   programs.ssh.knownHosts = {
     pompeii = {
       hostNames = [
