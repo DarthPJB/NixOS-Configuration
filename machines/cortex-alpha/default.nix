@@ -41,6 +41,10 @@ in
   security.acme = {
     defaults.email = "commander@johnbargman.net";
     certs."johnbargman.net" = {
+      # dnsProvider must be explicit — nginx module's mkOverride 2000 null
+      # overrides the inherited default. See acme_server.nix for rationale.
+      dnsProvider = "gandiv5";
+      environmentFile = config.secrix.system.secrets.dns01.decrypted.path;
       extraDomainNames = [ "*.johnbargman.net" ]; # johnbargman.com"];
     };
   };
