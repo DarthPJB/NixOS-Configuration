@@ -6,6 +6,12 @@
 , ...
 }:
 {
+  # MinIO is marked insecure (abandoned upstream, multiple CVEs).
+  # Required for S3-compatible storage on the local network.
+  nixpkgs.config.permittedInsecurePackages = [
+    "minio-2025-10-15T17-29-55Z"
+  ];
+
   imports = [
     # ../../configuration.nix — already in commonModules (flake.nix), do not duplicate
     ../../server_services/gitolite.nix

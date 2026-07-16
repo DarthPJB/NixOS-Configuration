@@ -179,9 +179,22 @@ in
     webExternalUrl = "https://${prometheus-dn}";
   };
 
+  # Grafana secret_key — encrypted via secrix, decrypted at runtime
+  secrix.system.secrets.grafana_secret_key = {
+    encrypted.file = ../secrets/grafana_secret_key;
+    decrypted = {
+      user = "grafana";
+      group = "grafana";
+      mode = "0400";
+    };
+  };
+
   services.grafana = {
     enable = true;
     settings = {
+      # secret_key is required since nixpkgs 26.05 — no default provided.
+      # Uses Grafana's file:// provider to read from secrix-managed secret.
+      security.secret_key = "file://${config.secrix.system.secrets.grafana_secret_key.decrypted.path}";
       server = {
         protocol = "http";
         http_addr = "10.88.127.3";
