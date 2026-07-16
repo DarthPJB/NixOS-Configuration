@@ -64,7 +64,8 @@ remote-builder (hub)
 **Goal:** Remove commented-out entries that conflate the hub with builders.
 
 **Work:**
-- Remove the 4 commented-out builder blocks:
+- Remove the 5 commented-out builder blocks:
+  - `100.127.177.30` (pompeii — aarch64-darwin, not in this fleet)
   - `10.88.127.41` (display-1 — kitchen wall display, not a builder)
   - `10.88.127.50` (remote-worker — web server, not a builder)
   - `10.88.127.51` (remote-builder — THIS machine, the hub, not a builder)
@@ -81,86 +82,31 @@ remote-builder (hub)
 **Files:** `modifier_imports/remote-builder.nix`
 
 **Exit criteria:** No commented-out builder entries remain; active entries unchanged;
-architecture comment present.
+architecture comment present; syntax valid.
 
 ---
 
-## Phase 2: Configure remote-builder Machine as Hub
-
-**Goal:** Configure the remote-builder machine to be a pure dispatch/runner/cache node.
-
-**Work:**
-
-### 2.1 Import `modifier_imports/remote-builder.nix`
-
-Currently `machines/remote-builder/default.nix` does NOT import this file. Add it to
-the imports list. This brings in:
-
-- `nix.buildMachines` — hyperhyper + arm-builder registration
-- `nix.distributedBuilds = true` — enables build distribution
-- `builders-use-substitutes = true` — builders fetch from caches before building
-- SSH known hosts for hyperhyper and pompeii
-- `sshMultiplex.exclusions` for builder hosts — prevents ControlMaster corruption
-  of the ssh-ng protocol handshake (NixOS/nix#14132)
-- The `build@*` SSH block disabling multiplexing for builder connections
-
-### 2.2 Set `nix.settings.max-jobs = 0`
-
-This forces the nix-daemon to NEVER build locally. All builds are dispatched to
-hyperhyper and arm-builder. The machine becomes a pure coordinator — it only
-receives completed paths back from the builders.
-
-### 2.3 Secrix Secrets (Already Handled)
-
-`modifier_imports/remote-builder.nix` declares two secrix secrets:
-
-| Secret | Secrix Path | Purpose | Encrypted Blob |
-|--------|-------------|---------|----------------|
-| hyper_build_private_key | `secrix.services.nix-daemon.secrets.hyperhyper` | SSH key for hyperhyper (build user) | `secrets/hyper_build_private_key` |
-| builder-key | `secrix.services.nix-daemon.secrets.personal-builder` | SSH key for arm-builder (build user) | `secrets/builder-key` |
-
-Both encrypted blobs already exist in the repo. When remote-builder imports the
-file, secrix will decrypt them to `/run/nix-daemon-keys/` at activation time.
-No new secrets needed for Phase 2.
-
-### 2.4 Keep Existing Runners
-
-`services/github_runners.nix` stays imported — the 3 existing runners (disgust,
-rat-infested, entropy-is-origin) continue working. Since all builds are distributed,
-the machine can handle unlimited runners. The `hate-filled` runner (NixOS-Configuration
-CI) stays on LINDA for now but could move here later.
-
-### 2.5 Verify Build User
-
-Already configured via `users/build.nix` (imported by `machines/remote-builder/default.nix`):
-- `build` user (uid 1111) with SSH authorized keys from `secrets/builder-key.pub`
-- `trusted-users = [ "build" ]` (from `configuration.nix`)
-- SSH listens on WireGuard IP, port 22
-- Firewall rule for port 22 on wireg0
-
-**Files:** `machines/remote-builder/default.nix`
-
-**Exit criteria:** `modifier_imports/remote-builder.nix` imported; `max-jobs = 0` set;
-secrix secrets declared; build user verified.
-
----
-
-## Phase 3: Attach External Storage for Nix Store
+## Phase 2: Attach External Storage for Nix Store
 
 **Goal:** Attach a 200+ GB OpenStack virtual disk to remote-builder and mount it
-as `/nix`. This provides sufficient storage for:
-- The full nix store (all closures for all machines)
-- Absorbing I/O from distributed builds (remote builders write back via ssh-ng)
-- Future cache hosting
+as `/nix`. This must happen BEFORE any configuration change so that the storage
+layer is stable and verified in isolation.
+
+> ⚠️ **Why this comes before Phase 3:** Deploying an altered nix-daemon configuration
+> (max-jobs=0, distributed builds) before the new disk is stable conflates two
+> potential failure points. If something fails after deploying both changes at once,
+> we cannot determine whether the failure was caused by the store migration or the
+> configuration change. The disk must be proven stable first. Phase 3 (hub config)
+> deploys only after Phase 2 (disk) is verified.
 
 **Work:**
 
-### 3.1 OpenStack Side
+### 2.1 OpenStack Side
 
 Attach a virtual disk (200+ GB NFS) to the remote-builder VM. This is an OpenStack
 operation, not a NixOS config change.
 
-### 3.2 NixOS Config
+### 2.2 NixOS Config
 
 Add filesystem declaration for the new disk:
 
@@ -171,7 +117,7 @@ fileSystems."/nix" = {
 };
 ```
 
-### 3.3 Store Migration
+### 2.3 Store Migration
 
 Reference: `operational_patterns.md` "Nix Store Migration" section.
 
@@ -190,17 +136,92 @@ Reference: `operational_patterns.md` "Nix Store Migration" section.
 - display-2 store migration (same document)
 - `operational_patterns.md` "Nix Store Migration" section
 
+### 2.4 Verify Storage in Isolation
+
+Before proceeding to Phase 3, confirm the new disk is stable:
+
+1. **Verify mount:** `df -h /nix` shows the new disk
+2. **Verify store integrity:** `nix store verify --no-contents /nix/store/...` on a
+   known path
+3. **Verify nix-daemon still works:** `nix build nixpkgs#hello --no-link` should
+   succeed (building locally, since max-jobs is not yet 0)
+4. **Monitor for I/O errors:** `journalctl -k | grep -i 'error\|offline'` — no
+   device offline or I/O errors
+
 **Files:** `machines/remote-builder/default.nix` (or `hardware-configuration.nix`), OpenStack API
 
 **Exit criteria:** 200+ GB disk attached; `/nix` mounted on new storage; store contents
-verified; NixOS config updated.
+verified; nix-daemon works normally; no I/O errors for 24h.
+
+---
+
+## Phase 3: Configure remote-builder Machine as Hub
+
+**Goal:** Configure the remote-builder machine to be a pure dispatch/runner/cache node.
+This phase deploys AFTER the new disk is stable (Phase 2), so any failures can be
+isolated to the configuration change alone.
+
+**Work:**
+
+### 3.1 Import `modifier_imports/remote-builder.nix`
+
+Currently `machines/remote-builder/default.nix` does NOT import this file. Add it to
+the imports list. This brings in:
+
+- `nix.buildMachines` — hyperhyper + arm-builder registration
+- `nix.distributedBuilds = true` — enables build distribution
+- `builders-use-substitutes = true` — builders fetch from caches before building
+- SSH known hosts for hyperhyper and pompeii
+- `sshMultiplex.exclusions` for builder hosts — prevents ControlMaster corruption
+  of the ssh-ng protocol handshake (NixOS/nix#14132)
+- The `build@*` SSH block disabling multiplexing for builder connections
+
+### 3.2 Set `nix.settings.max-jobs = 0`
+
+This forces the nix-daemon to NEVER build locally. All builds are dispatched to
+hyperhyper and arm-builder. The machine becomes a pure coordinator — it only
+receives completed paths back from the builders.
+
+### 3.3 Secrix Secrets (Already Handled)
+
+`modifier_imports/remote-builder.nix` declares two secrix secrets:
+
+| Secret | Secrix Path | Purpose | Encrypted Blob |
+|--------|-------------|---------|----------------|
+| hyper_build_private_key | `secrix.services.nix-daemon.secrets.hyperhyper` | SSH key for hyperhyper (build user) | `secrets/hyper_build_private_key` |
+| builder-key | `secrix.services.nix-daemon.secrets.personal-builder` | SSH key for arm-builder (build user) | `secrets/builder-key` |
+
+Both encrypted blobs already exist in the repo. When remote-builder imports the
+file, secrix will decrypt them to `/run/nix-daemon-keys/` at activation time.
+No new secrets needed for Phase 3.
+
+### 3.4 Keep Existing Runners
+
+`services/github_runners.nix` stays imported — the 3 existing runners (disgust,
+rat-infested, entropy-is-origin) continue working. Since all builds are distributed,
+the machine can handle unlimited runners. The `hate-filled` runner (NixOS-Configuration
+CI) stays on LINDA for now but could move here later.
+
+### 3.5 Verify Build User
+
+Already configured via `users/build.nix` (imported by `machines/remote-builder/default.nix`):
+- `build` user (uid 1111) with SSH authorized keys from `secrets/builder-key.pub`
+- `trusted-users = [ "build" ]` (from `configuration.nix`)
+- SSH listens on WireGuard IP, port 22
+- Firewall rule for port 22 on wireg0
+
+**Files:** `machines/remote-builder/default.nix`
+
+**Exit criteria:** `modifier_imports/remote-builder.nix` imported; `max-jobs = 0` set;
+secrix secrets declared; build user verified; nix-daemon dispatches to hyperhyper/arm-builder.
 
 ---
 
 ## Phase 4: Configure Cache Contribution
 
 **Goal:** Configure remote-builder to push built paths to `cache.platonic.systems`
-using the Infrastructure-2 post-build hook pattern.
+using the Infrastructure-2 post-build hook pattern. This phase deploys AFTER the
+hub configuration is active (Phase 3).
 
 **Reference (IMMUTABLE):** `/speed-storage/repo/platonic.systems/infrastructure-2/services/cache-push.nix`
 
@@ -215,10 +236,10 @@ using the Infrastructure-2 post-build hook pattern.
 
 ### Why It Works for the Hub
 
-Even with `max-jobs = 0`, the hub's nix-daemon receives completed paths from the
-remote builders via ssh-ng. When those paths arrive, the post-build-hook triggers,
-signs them, and pushes them to the cache. The hub becomes a cache contributor without
-ever building anything itself.
+Even with `max-jobs = 0` (set in Phase 3), the hub's nix-daemon receives completed
+paths from the remote builders via ssh-ng. When those paths arrive, the post-build-hook
+triggers, signs them, and pushes them to the cache. The hub becomes a cache contributor
+without ever building anything itself.
 
 ### Work
 
@@ -262,6 +283,7 @@ nix run .#secrix encrypt secrets/nix-ci-cache-ssh-key -- --all-users -s remote-b
 #### 4.3 Import Cache-Push Module
 
 Add `../../services/cache-push.nix` to `machines/remote-builder/default.nix` imports.
+This is additive to the imports added in Phase 3.
 
 #### 4.4 Enable Cache Verification Fleet-Wide
 
@@ -351,9 +373,9 @@ secrix secrets present; post-build-hook pushes to cache; golden test passes.
 
 | Phase | File | Change |
 |-------|------|--------|
-| 1 | `modifier_imports/remote-builder.nix` | Remove 4 commented-out builder blocks; add architecture comment |
-| 2 | `machines/remote-builder/default.nix` | Import `modifier_imports/remote-builder.nix`; set `nix.settings.max-jobs = 0` |
-| 3 | `machines/remote-builder/default.nix` | Add `fileSystems."/nix"` for 200+ GB external disk |
+| 1 | `modifier_imports/remote-builder.nix` | Remove 5 commented-out builder blocks; add architecture comment |
+| 2 | `machines/remote-builder/default.nix` | Add `fileSystems."/nix"` for 200+ GB external disk; store migration |
+| 3 | `machines/remote-builder/default.nix` | Import `modifier_imports/remote-builder.nix`; set `nix.settings.max-jobs = 0` |
 | 4 | `services/cache-push.nix` (new) | Post-build hook: sign + push to `cache.platonic.systems` |
 | 4 | `machines/remote-builder/default.nix` | Import `services/cache-push.nix` |
 | 4 | `configuration.nix` | Uncomment `cache.platonic.systems` trusted-public-key |

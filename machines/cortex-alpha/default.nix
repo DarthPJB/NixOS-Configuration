@@ -111,6 +111,19 @@ in
     };
   };
 
+  # WireGuard → Tailscale forwarding for remote-builder → hyperhyper
+  # This is a specific, authorized external connection. remote-builder needs
+  # to reach hyperhyper (100.107.101.14) which is on the external Tailscale VPN.
+  # cortex-alpha is the only WireGuard hub with a Tailscale connection.
+  networking.nftables.ruleset = ''
+    table inet nixos-fw-tailscale-forward {
+      chain forward {
+        type filter hook forward priority filter + 1; policy accept;
+        iifname "wireg0" ip saddr 10.88.127.51 ip daddr 100.107.101.14 accept comment "remote-builder → hyperhyper via Tailscale"
+      }
+    }
+  '';
+
   # TODO: lift to common (modifier_imports/tailscale-udp-gro.nix) if needed later
   # This fix only applies to cortex-alpha for now
   environment.systemPackages = [ pkgs.ethtool ];

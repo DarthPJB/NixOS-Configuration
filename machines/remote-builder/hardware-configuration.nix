@@ -28,8 +28,14 @@
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
 
-  # Filesystems are handled dynamically by OpenStack module
-  # No manual filesystem definitions needed - OpenStack config module handles this
+  # 300GB virtual disk for /nix store (OpenStack-attached)
+  # UUID: f6cfb652-67b5-4b0e-8354-3bbf038dc63c
+  # Live-migrated from /dev/vda1 on 2026-07-16
+  fileSystems."/nix" = {
+    device = "/dev/disk/by-label/nix-store";
+    fsType = "ext4";
+  };
+
   swapDevices = [ ];
 
   networking.useDHCP = lib.mkDefault true;
