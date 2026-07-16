@@ -33,11 +33,9 @@
   # hyperhyper is on an external Tailscale VPN — cortex-alpha is the only
   # WireGuard hub with a Tailscale connection, so all traffic for hyperhyper
   # must go through it.
-  networking.interfaces.wireg0.ipv4.routes = [
-    {
-      address = "100.107.101.14";
-      prefixLength = 32;
-      via = "10.88.127.1";
-    }
-  ];
+  # Uses localCommands (not networking.interfaces routes) because this system
+  # uses dhcpcd, not systemd-networkd.
+  networking.localCommands = ''
+    ${pkgs.iproute2}/bin/ip route replace 100.107.101.14/32 via 10.88.127.1 dev wireg0 2>/dev/null || true
+  '';
 }
