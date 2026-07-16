@@ -30,11 +30,13 @@ in
     # overrides the inherited default. See acme_server.nix for rationale.
     dnsProvider = "gandiv5";
     environmentFile = config.secrix.system.secrets.dns01.decrypted.path;
+    webroot = null;
     extraDomainNames = [ "*.johnbargman.net" ]; # johnbargman.com"];
   };
   security.acme.certs."johnbargman.com" = {
     dnsProvider = "gandiv5";
     environmentFile = config.secrix.system.secrets.dns01.decrypted.path;
+    webroot = null;
     extraDomainNames = [ "*.johnbargman.com" ]; # johnbargman.com"];
   };
 

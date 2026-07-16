@@ -19,6 +19,9 @@ in
     # A plain assignment here (priority 100) beats mkOverride 2000.
     dnsProvider = "gandiv5";
     environmentFile = config.secrix.system.secrets.dns01.decrypted.path;
+    # webroot MUST be null when using dnsProvider — the ACME module asserts
+    # exactly one of dnsProvider/webroot/listenHTTP/s3Bucket is non-null.
+    webroot = null;
     extraDomainNames = [ ]; # "johnbargman.com"];
     group = "nginx";
   };
