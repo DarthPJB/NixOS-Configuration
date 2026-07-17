@@ -214,8 +214,24 @@
         in
         lib.filterAttrs (name: value: value != null) entries;
 
+      # Parallelism control for CI build jobs
+      # x86_64 builds are parallelised; aarch64 builds are constrained
+      # Override per-system or per-machine as needed
+      ciParallelism = {
+        default = {
+          max-jobs = "auto";
+          cores = "0";
+        };
+        perSystem = {
+          aarch64-linux = {
+            max-jobs = "2";
+            cores = "2";
+          };
+        };
+      };
+
       # CI/CD Configuration
-      ci = import ./ci.nix { inherit self lib; pkgs = nixpkgs; };
+      ci = import ./ci.nix { inherit self lib; pkgs = nixpkgs; parallelism = ciParallelism; };
 
       # CI Generator Scripts
       ci-generator = import ./ci/generate-workflow.nix { inherit self lib; pkgs = nixpkgs; };
@@ -241,6 +257,28 @@
                 echo "✗ Network configuration has changed from golden!"
                 echo "If intentional, update with:"
                 echo "  nix run .#dump-config -- $MACHINE > goldens/$MACHINE.json"
+                exit 1
+              fi
+            '';
+          });
+        };
+
+        # Check CI config against golden
+        check-ci = {
+          type = "app";
+          meta.description = "Check CI config against golden file";
+          program = lib.getExe (nixpkgs.writeShellApplication {
+            name = "check-ci";
+            runtimeInputs = [ nixpkgs.jq nixpkgs.diffutils nixpkgs.coreutils ];
+            text = ''
+              ${lib.getExe' nixpkgs.coreutils "echo"} "Checking CI configuration against golden..."
+              nix eval --json .#ci.ci.github-actions 2>/dev/null | ${lib.getExe nixpkgs.jq} -S . > /tmp/current-ci.json
+              if ${lib.getExe' nixpkgs.diffutils "diff"} -u "${self}/goldens/ci.json" /tmp/current-ci.json; then
+                ${lib.getExe' nixpkgs.coreutils "echo"} "CI config matches golden"
+              else
+                ${lib.getExe' nixpkgs.coreutils "echo"} "CI configuration has changed from golden!"
+                ${lib.getExe' nixpkgs.coreutils "echo"} "If intentional, update with:"
+                ${lib.getExe' nixpkgs.coreutils "echo"} "  nix eval --json .#ci.ci.github-actions | jq -S . > goldens/ci.json"
                 exit 1
               fi
             '';

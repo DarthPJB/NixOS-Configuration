@@ -24,7 +24,7 @@ let
     import yaml
 
     data = json.load(sys.stdin)
-    print(yaml.dump(data, default_flow_style=False, sort_keys=False))
+    print(yaml.dump(data, default_flow_style=False, sort_keys=True))
   '';
 
   # Create script to generate workflow
@@ -41,7 +41,7 @@ let
       # Generate workflow from Nix evaluation and convert to YAML
       # Only stdout contains the JSON, stderr contains warnings (which we ignore)
       # Strip any 'warning' field that leaks from nix eval
-      nix eval --json .#ci.ci.github-actions 2>/dev/null | jq 'del(.warning)' | json2yaml
+      nix eval --json .#ci.ci.github-actions | jq '{name, on, permissions, jobs}' | json2yaml
     '';
   };
 

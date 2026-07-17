@@ -3,6 +3,7 @@
 { self
 , lib
 , pkgs
+, parallelism ? { }
 , ...
 }:
 
@@ -28,6 +29,32 @@ let
     "print-controller"
     "beta-one" # Added: armv7l-linux machine
   ];
+
+  # Nix parallelism settings — per-machine > per-system > default
+  resolveNixSettings = machine: system: parallelism:
+    let
+      pm = parallelism.perMachine or { };
+      ps = parallelism.perSystem or { };
+      base = parallelism.default or { };
+      merged = base // (ps.${system} or { }) // (pm.${machine} or { });
+    in
+    merged;
+
+  formatNixOptions = machine: system: parallelism:
+    let
+      settings = resolveNixSettings machine system parallelism;
+      maxJobs = settings.max-jobs or null;
+      cores = settings.cores or null;
+    in
+    lib.concatStringsSep " " (lib.filter (s: s != "") [
+      "--option builders ''"
+      (if maxJobs != null then "--option max-jobs ${toString maxJobs}" else "")
+      (if cores != null then "--option cores ${toString cores}" else "")
+    ]);
+
+  # Pre-computed nix options per system type
+  x86NixOptions = formatNixOptions "x86-default" "x86_64-linux" parallelism;
+  armNixOptions = formatNixOptions "arm-default" "aarch64-linux" parallelism;
 
   # CI job definitions
   ciJobs = {
@@ -81,7 +108,7 @@ let
 
         {
           name = "Build configuration";
-          run = "nix build .#nixosConfigurations.\${{ matrix.machine }}.config.system.build.toplevel";
+          run = "nix build ${x86NixOptions} .#nixosConfigurations.\${{ matrix.machine }}.config.system.build.toplevel";
         }
       ];
     };
@@ -109,7 +136,7 @@ let
 
         {
           name = "Build configuration";
-          run = "nix build .#nixosConfigurations.\${{ matrix.machine }}.config.system.build.toplevel";
+          run = "nix build ${armNixOptions} .#nixosConfigurations.\${{ matrix.machine }}.config.system.build.toplevel";
         }
       ];
     };
@@ -192,8 +219,7 @@ let
 
         {
           name = "Build configuration";
-          # CHANGED: Use selected machine from input
-          run = "nix build .#nixosConfigurations.\${{ github.event.inputs.machine }}.config.system.build.toplevel";
+          run = "MACHINE=\${{ github.event.inputs.machine }}\nARM_MACHINES=\"arm-builder display-1 display-2 print-controller beta-one\"\nif echo \"\$ARM_MACHINES\" | grep -qw \"\$MACHINE\"; then\n  NIX_OPTS=\"${armNixOptions}\"\nelse\n  NIX_OPTS=\"${x86NixOptions}\"\nfi\nnix build \$NIX_OPTS .#nixosConfigurations.\$MACHINE.config.system.build.toplevel";
         }
         {
           name = "Test deployment";
