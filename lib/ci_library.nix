@@ -57,15 +57,16 @@ let
     merged;
 
   # Format nix settings as --option flags for CLI injection.
-  # Always includes --option builders '' per Prime Directive 17.
+  # Only emits options that are explicitly configured — no defaults injected.
   formatNixOptions = machine: system: parallelism:
     let
       settings = resolveNixSettings machine system parallelism;
       maxJobs = settings.max-jobs or null;
       cores = settings.cores or null;
+      builders = settings.builders or null;
     in
     lib.concatStringsSep " " (lib.filter (s: s != "") [
-      "--option builders ''"
+      (if builders != null then "--option builders ${toString builders}" else "")
       (if maxJobs != null then "--option max-jobs ${toString maxJobs}" else "")
       (if cores != null then "--option cores ${toString cores}" else "")
     ]);

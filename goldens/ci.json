@@ -14,7 +14,7 @@
         },
         {
           "name": "Build configuration",
-          "run": "nix build --option builders '' --option max-jobs 2 --option cores 2 .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
+          "run": "nix build --option max-jobs 2 --option cores 2 .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
         }
       ],
       "strategy": {
@@ -44,7 +44,7 @@
         },
         {
           "name": "Build configuration",
-          "run": "nix build --option builders '' --option max-jobs auto --option cores 0 .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
+          "run": "nix build --option max-jobs auto --option cores 0 .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
         }
       ],
       "strategy": {
@@ -82,7 +82,7 @@
         },
         {
           "name": "Build configuration",
-          "run": "MACHINE=${{ github.event.inputs.machine }}\nARM_MACHINES=\"arm-builder display-1 display-2 print-controller beta-one\"\nif echo \"$ARM_MACHINES\" | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"--option builders '' --option max-jobs 2 --option cores 2\"\nelse\n  NIX_OPTS=\"--option builders '' --option max-jobs auto --option cores 0\"\nfi\nnix build $NIX_OPTS .#nixosConfigurations.$MACHINE.config.system.build.toplevel"
+          "run": "MACHINE=${{ github.event.inputs.machine }}\nARM_MACHINES=\"arm-builder display-1 display-2 print-controller beta-one\"\nif echo \"$ARM_MACHINES\" | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"--option max-jobs 2 --option cores 2\"\nelse\n  NIX_OPTS=\"--option max-jobs auto --option cores 0\"\nfi\nnix build $NIX_OPTS .#nixosConfigurations.$MACHINE.config.system.build.toplevel"
         },
         {
           "if": "github.event.inputs.action == 'test'",
