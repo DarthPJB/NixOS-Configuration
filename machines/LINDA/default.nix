@@ -276,7 +276,7 @@
         "usbhid"
         "uas"
         "sd_mod"
-	"nvidia-drm"
+        "nvidia-drm"
       ];
       kernelModules = [ ];
     };
