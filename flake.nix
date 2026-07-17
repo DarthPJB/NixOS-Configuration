@@ -223,13 +223,13 @@
         default = {
           max-jobs = "auto";
           cores = "0";
-          max-parallel = 10;           # GitHub Actions: concurrent matrix jobs
+          max-parallel = 10; # GitHub Actions: concurrent matrix jobs
         };
         perSystem = {
           aarch64-linux = {
             max-jobs = "2";
             cores = "2";
-            max-parallel = 2;          # ARM: only 2 concurrent builds
+            max-parallel = 2; # ARM: only 2 concurrent builds
           };
         };
       };
