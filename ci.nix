@@ -37,6 +37,12 @@ let
   x86NixOptions = ciLib.formatNixOptions "x86-default" "x86_64-linux" parallelism;
   armNixOptions = ciLib.formatNixOptions "arm-default" "aarch64-linux" parallelism;
 
+  # Pre-computed GitHub Actions max-parallel per system
+  x86Settings = ciLib.resolveNixSettings "x86-default" "x86_64-linux" parallelism;
+  armSettings = ciLib.resolveNixSettings "arm-default" "aarch64-linux" parallelism;
+  x86MaxParallel = x86Settings.max-parallel or null;
+  armMaxParallel = armSettings.max-parallel or null;
+
   # CI job definitions
   ciJobs = {
     # Validation jobs (run on all PRs)
@@ -66,60 +72,24 @@ let
       ];
     };
 
-    # Build matrix for x86_64 machines
-    # Uses self-hosted runner for private flake input access
-    build-x86 = {
-      needs = [
-        "validation"
-        "security"
-      ]; # Added: enforce job hierarchy
+    # Build matrix for x86_64 machines — all-at-once for shared derivation benefit
+    build-x86 = ciLib.mkMatrixJob {
       name = "Build x86_64 Configurations";
-      runs-on = "self-hosted";
-      strategy = {
-        fail-fast = false;
-        matrix = {
-          machine = x86Machines;
-        };
-      };
-      steps = [
-        {
-          name = "Checkout";
-          uses = "actions/checkout@v4";
-        }
-
-        {
-          name = "Build configuration";
-          run = "nix build ${x86NixOptions} .#nixosConfigurations.\${{ matrix.machine }}.config.system.build.toplevel";
-        }
-      ];
+      machines = x86Machines;
+      system = "x86_64-linux";
+      nixOptions = x86NixOptions;
+      maxParallel = x86MaxParallel;
+      needs = [ "validation" "security" ];
     };
 
-    # Build matrix for ARM machines
-    # Uses self-hosted runner for private flake input access
-    build-arm = {
-      needs = [
-        "validation"
-        "security"
-      ]; # Added: enforce job hierarchy
+    # Build matrix for ARM machines — constrained concurrency for RPi memory
+    build-arm = ciLib.mkMatrixJob {
       name = "Build ARM Configurations";
-      runs-on = "self-hosted";
-      strategy = {
-        fail-fast = false;
-        matrix = {
-          machine = armMachines;
-        };
-      };
-      steps = [
-        {
-          name = "Checkout";
-          uses = "actions/checkout@v4";
-        }
-
-        {
-          name = "Build configuration";
-          run = "nix build ${armNixOptions} .#nixosConfigurations.\${{ matrix.machine }}.config.system.build.toplevel";
-        }
-      ];
+      machines = armMachines;
+      system = "aarch64-linux";
+      nixOptions = armNixOptions;
+      maxParallel = armMaxParallel;
+      needs = [ "validation" "security" ];
     };
 
     # Security scan

@@ -20,6 +20,7 @@ jobs:
         - display-2
         - print-controller
         - beta-one
+      max-parallel: 2
   build-x86:
     name: Build x86_64 Configurations
     needs:
@@ -46,6 +47,7 @@ jobs:
         - gaming-host-1
         - remote-worker
         - remote-builder
+      max-parallel: 10
   deploy-prep:
     if: github.event_name == 'workflow_dispatch'
     name: Deploy - ${{ github.event.inputs.machine }}

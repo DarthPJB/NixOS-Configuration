@@ -27,7 +27,8 @@
             "print-controller",
             "beta-one"
           ]
-        }
+        },
+        "max-parallel": 2
       }
     },
     "build-x86": {
@@ -62,7 +63,8 @@
             "remote-worker",
             "remote-builder"
           ]
-        }
+        },
+        "max-parallel": 10
       }
     },
     "deploy-prep": {

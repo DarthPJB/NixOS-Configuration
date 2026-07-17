@@ -23,6 +23,7 @@ let
     , machines
     , system ? "x86_64-linux"
     , nixOptions ? ""
+    , maxParallel ? null    # GitHub Actions: max concurrent matrix jobs
     , needs ? [ ]
     , runs-on ? "self-hosted"
     , fail-fast ? false
@@ -30,6 +31,7 @@ let
       inherit name needs runs-on;
       strategy = {
         inherit fail-fast;
+      } // (if maxParallel != null then { "max-parallel" = maxParallel; } else { }) // {
         matrix.machine = machines;
       };
       steps = [

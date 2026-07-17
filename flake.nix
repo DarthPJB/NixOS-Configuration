@@ -214,18 +214,22 @@
         in
         lib.filterAttrs (name: value: value != null) entries;
 
-      # Parallelism control for CI build jobs
-      # x86_64 builds are parallelised; aarch64 builds are constrained
-      # Override per-system or per-machine as needed
+      # Parallelism control for CI build jobs — two axes:
+      #   Nix-level: max-jobs, cores, builders per derivation
+      #   GitHub Actions-level: max-parallel concurrent matrix jobs
+      # x86: all-at-once (shared derivations benefit from full concurrency)
+      # ARM: constrained (RPi memory limits)
       ciParallelism = {
         default = {
           max-jobs = "auto";
           cores = "0";
+          max-parallel = 10;           # GitHub Actions: concurrent matrix jobs
         };
         perSystem = {
           aarch64-linux = {
             max-jobs = "2";
             cores = "2";
+            max-parallel = 2;          # ARM: only 2 concurrent builds
           };
         };
       };
