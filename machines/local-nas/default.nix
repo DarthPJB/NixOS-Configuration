@@ -41,6 +41,7 @@
   boot.kernel.sysctl = {
     "fs.inotify.max_user_watches" = "1048576"; # 128 times the default 8192
   };
+  boot.zfs.forceImportRoot = lib.mkForce true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.extraPools = [

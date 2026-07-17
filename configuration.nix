@@ -58,6 +58,7 @@ in
   networking.firewall.interfaces."wireg0".allowedTCPPorts = [
     config.services.nixos-deployment-exporter.port
   ];
+  boot.zfs.forceImportRoot = lib.mkDefault false;
   services.nixos-deployment-exporter = {
     enable = true;
     port = 3111;

@@ -29,6 +29,7 @@
   enableWgTopology.enable = true;
   services.xserver.videoDrivers = [ "nvidia" ];
   services.xserver.desktopManager.cinnamon.enable = true;
+  networking.networkmanager.enable = lib.mkForce false;
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
