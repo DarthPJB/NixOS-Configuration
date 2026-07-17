@@ -130,9 +130,6 @@ name: NixOS CI/CD
     - '**.nix'
     - flake.lock
   push:
-    branches:
-    - main
-    - jb/ai/overlord-8
     paths:
     - '**.nix'
     - flake.lock

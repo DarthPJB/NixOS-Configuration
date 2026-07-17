@@ -201,10 +201,6 @@ let
     name = "NixOS CI/CD";
     on = {
       push = {
-        branches = [
-          "main"
-          "jb/ai/overlord-8"
-        ];
         paths = [
           "**.nix"
           "flake.lock"
