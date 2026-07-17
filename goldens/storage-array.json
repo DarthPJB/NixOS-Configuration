@@ -4,11 +4,10 @@
     "fs.inotify.max_user_watches": 524288,
     "kernel.kptr_restrict": 1,
     "kernel.pid_max": 4194304,
-    "kernel.poweroff_cmd": "<store>/d0y2xi6x65npxy2rh3jp1x7p31c9gk83-systemd-258.7/sbin/poweroff",
+    "kernel.poweroff_cmd": "<store>/rd05syhv5v5999907a2n1r37sgi19vpd-systemd-260.2/sbin/poweroff",
     "kernel.printk": "7 7 7 7",
     "net.core.rmem_max": null,
     "net.core.wmem_max": null,
-    "net.ipv4.conf.all.forwarding": false,
     "net.ipv4.conf.enp1s0f0.proxy_arp": false,
     "net.ipv4.conf.enp1s0f1.proxy_arp": false,
     "net.ipv4.conf.enp2s0f0.proxy_arp": false,
@@ -21,9 +20,7 @@
     "net.ipv6.conf.enp1s0f1.use_tempaddr": "2",
     "net.ipv6.conf.enp2s0f0.use_tempaddr": "2",
     "net.ipv6.conf.enp2s0f1.use_tempaddr": "2",
-    "vm.max_map_count": 1048576,
-    "vm.mmap_rnd_bits": 32,
-    "vm.mmap_rnd_compat_bits": 16
+    "vm.max_map_count": 1048576
   },
   "boot.loader": {
     "efi": {
@@ -72,7 +69,7 @@
       "extraInstallCommands": "",
       "extraPerEntryConfig": "",
       "extraPrepareConfig": "",
-      "font": "<store>/l51k5cj1rn307bii984mdpgzr21yp32p-grub-2.12/share/grub/unicode.pf2",
+      "font": "<store>/hnh5fn8q6g7fsb3ivqyj4h1v19m47xxg-grub-2.12/share/grub/unicode.pf2",
       "fontSize": null,
       "forceInstall": false,
       "forcei686": false,
@@ -87,7 +84,7 @@
         "params": []
       },
       "mirroredBoots": [],
-      "splashImage": "<store>/5mv8zpzf7c9fbdq3xmh27z6q9njvfyl8-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png",
+      "splashImage": "<store>/9qhcl1sms7bxa5pcf9k4fj9wvq7fjh1r-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png",
       "splashMode": "normal",
       "storePath": "/nix/store",
       "subEntryOptions": "--class nixos",
@@ -98,7 +95,7 @@
       "useOSProber": false,
       "users": {},
       "version": "<eval-error>",
-      "zfsPackage": "<derivation:zfs-user-2.3.6>",
+      "zfsPackage": "<derivation:zfs-user-2.4.2>",
       "zfsSupport": true
     },
     "gummiboot": {
@@ -122,11 +119,19 @@
       "force": false,
       "forceMbr": false,
       "maxGenerations": null,
-      "package": "<derivation:limine-10.8.5>",
+      "package": "<derivation:limine-12.4.0>",
       "panicOnChecksumMismatch": false,
       "partitionIndex": null,
+      "resolution": null,
       "secureBoot": {
-        "createAndEnrollKeys": false,
+        "autoEnrollKeys": {
+          "enable": false,
+          "extraArgs": [
+            "--microsoft",
+            "--firmware-builtin"
+          ]
+        },
+        "autoGenerateKeys": false,
         "enable": false,
         "sbctl": "<derivation:sbctl-0.18>"
       },
@@ -149,12 +154,14 @@
         "interface": {
           "branding": null,
           "brandingColor": null,
+          "helpColor": null,
+          "helpColorBright": null,
           "helpHidden": false,
           "resolution": null
         },
         "wallpaperStyle": "stretched",
         "wallpapers": [
-          "<store>/5mv8zpzf7c9fbdq3xmh27z6q9njvfyl8-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png"
+          "<store>/9qhcl1sms7bxa5pcf9k4fj9wvq7fjh1r-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png"
         ]
       },
       "validateChecksums": true
@@ -206,105 +213,106 @@
     "zfs": true
   },
   "environment.systemPackages": [
-    "<derivation:ffmpeg-full-8.0>",
+    "<derivation:ffmpeg-full-8.1.1>",
     "<derivation:mplayer-1.5-unstable-2024-12-21>",
     "<derivation:vlc-3.0.23-2>",
     "<derivation:pcmanfm-1.4.0>",
-    "<derivation:ffmpegthumbnailer-2.2.3>",
-    "<derivation:kdenlive-25.08.3>",
-    "<derivation:shotcut-25.08.16>",
-    "<derivation:shutter-0.99.2>",
+    "<derivation:ffmpegthumbnailer-2.3.0>",
+    "<derivation:kdenlive-26.04.3>",
+    "<derivation:shotcut-26.2.26>",
+    "<derivation:shutter-0.99.7>",
     "<derivation:gpp-2.25>",
-    "<derivation:entr-5.7>",
-    "<derivation:platformio-6.1.18>",
-    "<derivation:nix-top-0.3.0>",
+    "<derivation:entr-5.8>",
+    "<derivation:platformio-6.1.19>",
+    "<derivation:nix-top-0.4.0>",
     "<derivation:lite-xl-2.1.8>",
-    "<derivation:neovim-0.11.7>",
+    "<derivation:neovim-0.12.4>",
     "<derivation:progress-0.17>",
-    "<derivation:bind-9.20.21>",
+    "<derivation:bind-9.20.23>",
     "<derivation:openssl-3.6.2>",
     "<derivation:tmate-unstable-2022-08-07>",
     "<derivation:terminator-2.1.5>",
     "<derivation:terminology-1.14.0>",
-    "<derivation:conky-1.22.2>",
+    "<derivation:conky-1.22.3>",
     "<derivation:cmatrix-2.0>",
     "<derivation:nms-1.0.1>",
-    "<derivation:chafa-1.18.0>",
+    "<derivation:chafa-1.18.2>",
     "<derivation:lolcat-100.0.1>",
     "<derivation:figlet-2.2.5>",
     "<derivation:cowsay-3.8.4>",
-    "<derivation:nmap-7.98>",
-    "<derivation:tree-2.2.1>",
+    "<derivation:nmap-7.99>",
+    "<derivation:tree-2.3.2>",
     "<derivation:ripgrep-15.1.0>",
-    "<derivation:bubblewrap-0.11.0>",
+    "<derivation:bubblewrap-0.11.2>",
     "<derivation:inotify-tools-4.25.9.0>",
-    "<derivation:rsync-3.4.1>",
-    "<derivation:git-2.51.2>",
+    "<derivation:rsync-3.4.4>",
+    "<derivation:git-2.54.0>",
     "<derivation:opencode-1.15.10>",
     "<derivation:crush-0.70.0>",
     "<derivation:emacs-30.2>",
-    "<derivation:nix-top-0.3.0>",
-    "<derivation:neovim-0.11.7>",
-    "<derivation:btop-1.4.5>",
-    "<derivation:nano-8.7>",
+    "<derivation:nix-top-0.4.0>",
+    "<derivation:neovim-0.12.4>",
+    "<derivation:btop-1.4.7>",
+    "<derivation:nano-9.1>",
     "<derivation:wget-1.25.0>",
-    "<derivation:git-2.51.2>",
-    "<derivation:ranger-1.9.3-unstable-2025-11-14>",
+    "<derivation:git-2.54.0>",
+    "<derivation:ranger-1.9.4-unstable-2026-04-26>",
     "<derivation:killall-psmisc-23.7>",
     "<derivation:magic-wormhole-0.24.0>",
-    "<derivation:bind-9.20.21>",
-    "<derivation:pciutils-3.14.0>",
+    "<derivation:bind-9.20.23>",
+    "<derivation:pciutils-3.15.0>",
     "<derivation:lshw-02.20>",
-    "<derivation:usbutils-018>",
+    "<derivation:usbutils-019>",
     "<derivation:fdupes-2.4.0>",
-    "<derivation:determinate-nixd-3.21.1>",
+    "<derivation:determinate-nixd-3.21.5>",
     "<derivation:nix-build-all>",
     "<derivation:tmux-3.6a>",
     "<derivation:progress-0.17>",
-    "<derivation:parted-3.6>",
-    "<derivation:bottom-0.12.2>",
+    "<derivation:parted-3.7>",
+    "<derivation:bottom-0.14.2>",
     "<derivation:nixos-version>",
-    "<derivation:nixos-rebuild-ng-25.11>",
+    "<derivation:nixos-rebuild-ng-26.05>",
     "<derivation:nixos-option>",
     "<derivation:nixos-install>",
     "<derivation:nixos-generate-config>",
     "<derivation:nixos-enter>",
     "<derivation:nixos-build-vms>",
-    "<derivation:lvm2-2.03.35>",
-    "<derivation:zfs-user-2.3.6>",
+    "<derivation:lvm2-2.03.39>",
+    "<derivation:zfs-user-2.4.2>",
     "<derivation:zfstools-0.3.6>",
-    "<derivation:zfs-user-2.3.6>",
+    "<derivation:zfs-user-2.4.2>",
     "<derivation:dosfstools-4.2>",
     "<derivation:mtools-4.0.49>",
-    "<derivation:e2fsprogs-1.47.3>",
     "<derivation:dosfstools-4.2>",
-    "<derivation:cpupower-6.12.87>",
+    "<derivation:cpupower-6.18.38>",
     "<derivation:bcache-tools-1.1>",
-    "<derivation:systemd-258.7>",
+    "<derivation:systemd-260.2>",
     "<derivation:kmod-31>",
     "<derivation:kexec-tools-2.0.32>",
-    "<derivation:determinate-nix-3.21.1>",
+    "<derivation:kmscon-9.3.5>",
+    "<derivation:determinate-nix-3.21.5>",
     "<derivation:nix-info>",
     "<derivation:nix-bash-completions-0.6.8>",
-    "<derivation:dbus-1.14.10>",
-    "<derivation:wireguard-tools-1.0.20250521>",
-    "<derivation:iptables-1.8.11>",
+    "<derivation:dbus-1.16.2>",
+    "<derivation:dbus-broker-37>",
+    "<derivation:wireguard-tools-1.0.20260223>",
+    "<derivation:iptables-1.8.13>",
     "<derivation:nixos-firewall-tool>",
-    "<derivation:dhcpcd-10.2.4>",
-    "<derivation:rsyslog-8.2510.0>",
-    "<derivation:udisks-2.10.2>",
+    "<derivation:dhcpcd-10.3.1>",
+    "<derivation:rsyslog-8.2512.0>",
+    "<derivation:udisks-2.11.1>",
     "<derivation:tumbler-4.20.1>",
-    "<derivation:gvfs-1.58.4>",
+    "<derivation:gvfs-1.60.1>",
     "<derivation:sudo-1.9.17p2>",
-    "<derivation:polkit-126>",
-    "<derivation:polkit-126>",
+    "<derivation:polkit-127>",
+    "<derivation:polkit-127>",
     "<derivation:linux-pam-1.7.1>",
     "<derivation:xfconf-4.20.0>",
-    "<derivation:thunar-4.20.6>",
-    "<derivation:shadow-4.18.0>",
-    "<derivation:bash-interactive-5.3p3>",
-    "<derivation:nano-8.7>",
-    "<derivation:less-679>",
+    "<derivation:thunar-4.20.8>",
+    "<derivation:shadow-4.19.4>",
+    "<derivation:bash-interactive-5.3p9>",
+    "<derivation:nano-9.1>",
+    "<derivation:less-692>",
     "<derivation:gnupg-2.4.9>",
     "<derivation:fuse-2.9.9>",
     "<derivation:fuse-3.17.4>",
@@ -316,62 +324,62 @@
     "<derivation:sound-theme-freedesktop-0.8>",
     "<derivation:shared-mime-info-2.4>",
     "<derivation:hicolor-icon-theme-0.18>",
-    "<derivation:bash-interactive-5.3p3>",
-    "<derivation:bash-interactive-5.3p3>",
-    "<derivation:shadow-4.18.0>",
-    "<derivation:bash-interactive-5.3p3>",
-    "<derivation:shadow-4.18.0>",
-    "<derivation:shadow-4.18.0>",
-    "<derivation:shadow-4.18.0>",
-    "<derivation:shadow-4.18.0>",
-    "<derivation:shadow-4.18.0>",
-    "<derivation:bash-interactive-5.3p3>",
-    "<derivation:shadow-4.18.0>",
-    "<derivation:shadow-4.18.0>",
-    "<derivation:shadow-4.18.0>",
-    "<derivation:shadow-4.18.0>",
-    "<derivation:shadow-4.18.0>",
-    "<derivation:shadow-4.18.0>",
-    "<derivation:bind-9.20.21>",
-    "<derivation:hostname-debian-3.25>",
-    "<derivation:iproute2-6.17.0>",
+    "<derivation:bash-interactive-5.3p9>",
+    "<derivation:bash-interactive-5.3p9>",
+    "<derivation:shadow-4.19.4>",
+    "<derivation:bash-interactive-5.3p9>",
+    "<derivation:shadow-4.19.4>",
+    "<derivation:shadow-4.19.4>",
+    "<derivation:shadow-4.19.4>",
+    "<derivation:shadow-4.19.4>",
+    "<derivation:shadow-4.19.4>",
+    "<derivation:bash-interactive-5.3p9>",
+    "<derivation:shadow-4.19.4>",
+    "<derivation:shadow-4.19.4>",
+    "<derivation:shadow-4.19.4>",
+    "<derivation:shadow-4.19.4>",
+    "<derivation:shadow-4.19.4>",
+    "<derivation:shadow-4.19.4>",
+    "<derivation:bind-9.20.23>",
+    "<derivation:hostname-hostname-debian-3.25>",
+    "<derivation:iproute2-7.0.0>",
     "<derivation:iputils-20250605>",
     "<derivation:openssh-10.3p1>",
     "<derivation:acl-2.3.2>",
     "<derivation:attr-2.5.2>",
-    "<derivation:bash-interactive-5.3p3>",
+    "<derivation:bash-interactive-5.3p9>",
     "<derivation:bzip2-1.0.8>",
-    "<derivation:coreutils-full-9.8>",
+    "<derivation:coreutils-full-9.11>",
     "<derivation:cpio-2.15>",
-    "<derivation:curl-8.19.0>",
+    "<derivation:curl-8.20.0>",
     "<derivation:diffutils-3.12>",
     "<derivation:findutils-4.10.0>",
-    "<derivation:gawk-5.3.2>",
-    "<derivation:getent-glibc-2.40-224>",
-    "<derivation:getconf-glibc-2.40-224>",
+    "<derivation:gawk-5.4.0>",
+    "<derivation:getent-glibc-2.42-67>",
+    "<derivation:getconf-glibc-2.42-67>",
     "<derivation:gnugrep-3.12>",
     "<derivation:patch-2.8>",
     "<derivation:gnused-4.9>",
     "<derivation:gnutar-1.35>",
     "<derivation:gzip-1.14>",
     "<derivation:xz-5.8.3>",
-    "<derivation:less-679>",
+    "<derivation:less-692>",
     "<derivation:libcap-2.77>",
-    "<derivation:ncurses-6.5>",
+    "<derivation:ncurses-6.6>",
     "<derivation:libressl-4.2.1>",
-    "<derivation:mkpasswd-5.6.5>",
-    "<derivation:procps-4.0.4>",
-    "<derivation:shadow-4.18.0>",
-    "<derivation:time-1.9>",
-    "<derivation:util-linux-2.41.4>",
+    "<derivation:mkpasswd-5.6.6>",
+    "<derivation:procps-4.0.6>",
+    "<derivation:shadow-4.19.4>",
+    "<derivation:time-1.10>",
+    "<derivation:util-linux-2.42>",
     "<derivation:which-2.23>",
     "<derivation:zstd-1.5.7>",
-    "<derivation:glibc-2.40-224>",
-    "<derivation:perl-5.40.0>",
-    "<derivation:rsync-3.4.1>",
-    "<derivation:strace-6.18>",
+    "<derivation:glibc-2.42-67>",
+    "<derivation:perl-5.42.0>",
+    "<derivation:rsync-3.4.4>",
+    "<derivation:strace-7.1>",
     "<derivation:openresolv-3.17.0>",
-    "<derivation:glibc-locales-2.40-224>",
+    "<derivation:glibc-locales-2.42-67>",
     "<derivation:fontconfig-2.17.1>",
     "<derivation:kbd-2.9.0>"
   ],
@@ -436,11 +444,11 @@
         "allowedUDPPorts": []
       }
     },
-    "logRefusedConnections": true,
+    "logRefusedConnections": false,
     "logRefusedPackets": false,
     "logRefusedUnicastsOnly": true,
     "logReversePathDrops": false,
-    "package": "<derivation:iptables-1.8.11>",
+    "package": "<derivation:iptables-1.8.13>",
     "pingLimit": null,
     "rejectPackets": false,
     "trustedInterfaces": [
@@ -653,8 +661,8 @@
     "checkRuleset": true,
     "checkRulesetRedirects": {
       "/etc/hosts": "<derivation:hosts>",
-      "/etc/protocols": "<store>/75pp3hj82iirdfl7c153akl56kpffn1z-iana-etc-20250505/etc/protocols",
-      "/etc/services": "<store>/75pp3hj82iirdfl7c153akl56kpffn1z-iana-etc-20250505/etc/services"
+      "/etc/protocols": "<store>/d8jrr4rj6827s0d5b9baqxrsyafqk6zd-iana-etc-20251215/etc/protocols",
+      "/etc/services": "<store>/d8jrr4rj6827s0d5b9baqxrsyafqk6zd-iana-etc-20251215/etc/services"
     },
     "enable": false,
     "extraDeletions": "",
@@ -716,7 +724,6 @@
     "certs": {},
     "defaults": {
       "credentialFiles": {},
-      "credentialsFile": null,
       "dnsPropagationCheck": true,
       "dnsProvider": null,
       "dnsResolver": null,
@@ -736,7 +743,7 @@
       "renewInterval": "daily",
       "renewJitter": "24h",
       "server": "https://acme-v02.api.letsencrypt.org/directory",
-      "validMinDays": 30,
+      "validMinDays": null,
       "webroot": null
     },
     "directory": "<eval-error>",
@@ -757,7 +764,7 @@
     "configFile": "<derivation:dnsmasq.conf>",
     "enable": false,
     "extraConfig": "<eval-error>",
-    "package": "<derivation:dnsmasq-2.92rel2>",
+    "package": "<derivation:dnsmasq-2.93>",
     "resolveLocalQueries": true,
     "settings": {
       "server": []
@@ -776,7 +783,7 @@
       "0.0.0.0",
       "[::0]"
     ],
-    "defaultMimeTypes": "<store>/7g2rwy25wdndxy3zr7q8d49bxyjbzcw0-mailcap-2.1.54/etc/nginx/mime.types",
+    "defaultMimeTypes": "<store>/xakkd7mhg6dindq35ji8smr4j9ypwpn7-mailcap-2.1.54/etc/nginx/mime.types",
     "defaultSSLListenPort": 443,
     "enable": false,
     "enableQuicBPF": false,
@@ -795,7 +802,7 @@
     "logError": "stderr",
     "mapHashBucketSize": null,
     "mapHashMaxSize": null,
-    "package": "<derivation:nginx-1.28.3>",
+    "package": "<derivation:nginx-1.30.3>",
     "preStart": "",
     "prependConfig": "",
     "proxyResolveWhileRunning": false,
@@ -816,8 +823,18 @@
     "serverNamesHashBucketSize": null,
     "serverNamesHashMaxSize": null,
     "serverTokens": false,
-    "sslCiphers": "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-CHACHA20-POLY1305",
-    "sslDhparam": null,
+    "sslCiphers": [
+      "ECDHE-ECDSA-AES128-GCM-SHA256",
+      "ECDHE-RSA-AES128-GCM-SHA256",
+      "ECDHE-ECDSA-AES256-GCM-SHA384",
+      "ECDHE-RSA-AES256-GCM-SHA384",
+      "ECDHE-ECDSA-CHACHA20-POLY1305",
+      "ECDHE-RSA-CHACHA20-POLY1305",
+      "DHE-RSA-AES128-GCM-SHA256",
+      "DHE-RSA-AES256-GCM-SHA384",
+      "DHE-RSA-CHACHA20-POLY1305"
+    ],
+    "sslDhparam": false,
     "sslProtocols": "TLSv1.2 TLSv1.3",
     "sso": {
       "configuration": {},
@@ -830,7 +847,7 @@
       "enable": false,
       "expectedTailnet": "",
       "group": "tailscale-nginx-auth",
-      "package": "<derivation:tailscale-nginx-auth-1.90.9>",
+      "package": "<derivation:tailscale-nginx-auth-1.98.5>",
       "socketPath": "/run/tailscale-nginx-auth/tailscale-nginx-auth.sock",
       "user": "tailscale-nginx-auth",
       "virtualHosts": []
@@ -881,8 +898,12 @@
     "enable": false,
     "group": "openldap",
     "mutableConfig": false,
-    "package": "<derivation:openldap-2.6.9>",
-    "settings": "<eval-error>",
+    "package": "<derivation:openldap-2.6.13>",
+    "settings": {
+      "attrs": {},
+      "children": {},
+      "includes": []
+    },
     "urlList": [
       "ldap:///"
     ],
@@ -897,7 +918,7 @@
       "/etc/ssh/authorized_keys.d/%u"
     ],
     "authorizedKeysInHomedir": true,
-    "banner": null,
+    "banner": "<eval-error>",
     "challengeResponseAuthentication": false,
     "ciphers": [
       "chacha20-poly1305@openssh.com",
@@ -908,9 +929,11 @@
       "aes128-ctr"
     ],
     "enable": true,
-    "extraConfig": "Banner none\nAddressFamily any\nPort 1108\nListenAddress 10.88.127.4:1108\nSubsystem sftp /nix/store/mgfwhb595pw7g7649jb89i1xdc8x2431-openssh-10.3p1/libexec/sftp-server \nAuthorizedKeysFile %h/.ssh/authorized_keys /etc/ssh/authorized_keys.d/%u\nHostKey /etc/ssh/ssh_host_ed25519_key\nMatch LocalPort 1108 User inspect Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication no\n\nMatch LocalPort 1108 User deploy Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n",
+    "enableRecommendedAlgorithms": true,
+    "extraConfig": "AddressFamily any\nPort 1108\nListenAddress 10.88.127.4:1108\nSubsystem sftp /nix/store/ww2wf5b928m0b53dp2bdifpgqqyfshvb-openssh-10.3p1/libexec/sftp-server \nAuthorizedKeysFile %h/.ssh/authorized_keys /etc/ssh/authorized_keys.d/%u\nHostKey /etc/ssh/ssh_host_ed25519_key\nMatch LocalPort 1108 User inspect Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication no\n\nMatch LocalPort 1108 User deploy Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n",
     "forwardX11": false,
     "gatewayPorts": "no",
+    "generateHostKeys": true,
     "hostKeys": [
       {
         "path": "/etc/ssh/ssh_host_ed25519_key",
@@ -1146,7 +1169,7 @@
       "hmac-sha2-256-etm@openssh.com",
       "umac-128-etm@openssh.com"
     ],
-    "moduliFile": "<store>/mgfwhb595pw7g7649jb89i1xdc8x2431-openssh-10.3p1/etc/ssh/moduli",
+    "moduliFile": "<store>/ww2wf5b928m0b53dp2bdifpgqqyfshvb-openssh-10.3p1/etc/ssh/moduli",
     "openFirewall": true,
     "package": "<derivation:openssh-10.3p1>",
     "passwordAuthentication": false,
@@ -1155,6 +1178,7 @@
       1108
     ],
     "settings": {
+      "AcceptEnv": null,
       "AllowGroups": null,
       "AllowTcpForwarding": false,
       "AllowUsers": [
@@ -1163,6 +1187,7 @@
         "John88"
       ],
       "AuthorizedPrincipalsFile": "none",
+      "Banner": null,
       "Ciphers": [
         "chacha20-poly1305@openssh.com",
         "aes256-gcm@openssh.com",
@@ -1203,7 +1228,7 @@
       "X11Forwarding": false
     },
     "sftpFlags": [],
-    "sftpServerExecutable": "<store>/mgfwhb595pw7g7649jb89i1xdc8x2431-openssh-10.3p1/libexec/sftp-server",
+    "sftpServerExecutable": "<store>/ww2wf5b928m0b53dp2bdifpgqqyfshvb-openssh-10.3p1/libexec/sftp-server",
     "startWhenNeeded": true,
     "useDns": false
   },
@@ -1221,7 +1246,7 @@
       "logFormat": null,
       "logLevel": "warn",
       "openFirewall": false,
-      "package": "<derivation:alertmanager-0.29.0>",
+      "package": "<derivation:alertmanager-0.31.1>",
       "port": 9093,
       "user": "<eval-error>",
       "webExternalUrl": null
@@ -1288,7 +1313,7 @@
       "enable": false,
       "extraFlags": [],
       "package": "<derivation:alertmanager-irc-relay-0.5.1>",
-      "settings": "<eval-error>"
+      "settings": null
     },
     "alertmanagerNotificationQueueCapacity": 10000,
     "alertmanagerTimeout": "<eval-error>",
@@ -1335,6 +1360,10 @@
         "user": "artifactory-exporter"
       },
       "assertions": [
+        {
+          "assertion": true,
+          "message": "The option definition `rspamd' in  no longer has any effect; please remove it.\nThe Rspamd exporter has been removed. You can use the Rspamd /metrics endpoint directly instead:\nhttps://docs.rspamd.com/developers/protocol#controller-http-endpoints\n\n"
+        },
         {
           "assertion": true,
           "message": "The option definition `tor' in  no longer has any effect; please remove it.\nThe Tor exporter has been removed, as it was broken and unmaintained.\n\n"
@@ -1432,7 +1461,7 @@
         "openFirewall": false,
         "port": 9876,
         "queues": null,
-        "tokenPath": "<eval-error>",
+        "tokenPath": null,
         "user": "buildkite-agent-exporter"
       },
       "chrony": {
@@ -1585,12 +1614,12 @@
       },
       "ecoflow": {
         "debug": "0",
-        "ecoflowAccessKeyFile": "<path>",
-        "ecoflowDevicesFile": "<path>",
-        "ecoflowDevicesPrettyNamesFile": "<path>",
-        "ecoflowEmailFile": "<path>",
-        "ecoflowPasswordFile": "<path>",
-        "ecoflowSecretKeyFile": "<path>",
+        "ecoflowAccessKeyFile": "/etc/ecoflow-access-key",
+        "ecoflowDevicesFile": "/etc/ecoflow-devices",
+        "ecoflowDevicesPrettyNamesFile": "/etc/ecoflow-devices-pretty-names",
+        "ecoflowEmailFile": "/etc/ecoflow-email",
+        "ecoflowPasswordFile": "/etc/ecoflow-password",
+        "ecoflowSecretKeyFile": "/etc/ecoflow-secret-key",
         "enable": false,
         "exporterType": "rest",
         "extraFlags": [],
@@ -1604,6 +1633,20 @@
         "prefix": "ecoflow",
         "scrapingInterval": 30,
         "user": "ecoflow-exporter"
+      },
+      "elasticsearch": {
+        "enable": false,
+        "environmentFile": null,
+        "extraFlags": [],
+        "firewallFilter": null,
+        "firewallRules": null,
+        "group": "elasticsearch-exporter",
+        "listenAddress": "0.0.0.0",
+        "openFirewall": false,
+        "package": "<derivation:elasticsearch_exporter-1.10.0>",
+        "port": 9114,
+        "url": "http://localhost:9200",
+        "user": "elasticsearch-exporter"
       },
       "exportarr-bazarr": {
         "apiKeyFile": null,
@@ -1710,7 +1753,7 @@
       },
       "flow": {
         "asn": "<eval-error>",
-        "brokers": "<eval-error>",
+        "brokers": [],
         "enable": false,
         "extraFlags": [],
         "firewallFilter": null,
@@ -1732,7 +1775,12 @@
         "listenAddress": "0.0.0.0",
         "openFirewall": false,
         "port": 9787,
-        "settings": "<eval-error>",
+        "settings": {
+          "devices": [],
+          "listen_address": "0.0.0.0",
+          "log_level": "INFO",
+          "port": 9787
+        },
         "user": "fritz-exporter"
       },
       "fritzbox": {
@@ -1755,7 +1803,7 @@
         "extraFlags": [],
         "firewallFilter": null,
         "firewallRules": null,
-        "group": "frrtty",
+        "group": "frrvty",
         "listenAddress": "0.0.0.0",
         "openFirewall": false,
         "port": 9342,
@@ -1889,7 +1937,7 @@
         "user": "kafka-exporter"
       },
       "kea": {
-        "controlSocketPaths": "<eval-error>",
+        "controlSocketPaths": [],
         "enable": false,
         "extraFlags": [],
         "firewallFilter": null,
@@ -1898,7 +1946,7 @@
         "listenAddress": "0.0.0.0",
         "openFirewall": false,
         "port": 9547,
-        "targets": "<eval-error>",
+        "targets": [],
         "user": "kea-exporter"
       },
       "keylight": {
@@ -1921,7 +1969,7 @@
         "listenAddress": "0.0.0.0",
         "moonrakerApiKey": "",
         "openFirewall": false,
-        "package": "<derivation:prometheus-klipper-exporter-0.13.0>",
+        "package": "<derivation:prometheus-klipper-exporter-0.14.0>",
         "port": 9101,
         "user": "klipper-exporter"
       },
@@ -2192,7 +2240,7 @@
         "includeGlobs": [],
         "listenAddress": "0.0.0.0",
         "openFirewall": false,
-        "paths": "<eval-error>",
+        "paths": [],
         "port": 9141,
         "user": "acme"
       },
@@ -2222,6 +2270,23 @@
         "port": 9835,
         "user": "nvidia-gpu-exporter"
       },
+      "opnsense": {
+        "apiKeyFile": null,
+        "apiSecretFile": null,
+        "disabledExporter": [],
+        "enable": false,
+        "enabledExporter": [],
+        "extraFlags": [],
+        "firewallFilter": null,
+        "firewallRules": null,
+        "group": "opnsense",
+        "listenAddress": "0.0.0.0",
+        "openFirewall": false,
+        "opnsenseServerAddress": "192.168.1.1",
+        "opnsenseServerProtocol": "https",
+        "port": 9144,
+        "user": "opnsense"
+      },
       "pgbouncer": {
         "assertions": [
           {
@@ -2241,7 +2306,7 @@
         "logFormat": "logfmt",
         "logLevel": "info",
         "openFirewall": false,
-        "package": "<derivation:pgbouncer-exporter-0.11.0>",
+        "package": "<derivation:pgbouncer-exporter-0.12.0>",
         "pidFile": null,
         "port": 9127,
         "telemetryPath": "/metrics",
@@ -2311,7 +2376,7 @@
         "listenAddress": "0.0.0.0",
         "logfilePath": "/var/log/postfix_exporter_input.log",
         "openFirewall": false,
-        "package": "<derivation:postfix_exporter-0.17.0>",
+        "package": "<derivation:postfix_exporter-0.20.0>",
         "port": 9154,
         "showqPath": "/var/lib/postfix/queue/public/showq",
         "systemd": {
@@ -2371,7 +2436,7 @@
         "group": "pve-exporter",
         "listenAddress": "0.0.0.0",
         "openFirewall": false,
-        "package": "<derivation:prometheus_pve_exporter-3.5.5>",
+        "package": "<derivation:prometheus_pve_exporter-3.8.3>",
         "port": 9221,
         "server": {
           "certFile": null,
@@ -2440,28 +2505,7 @@
         "repositoryFile": null,
         "user": "restic-exporter"
       },
-      "rspamd": {
-        "assertions": [
-          {
-            "assertion": true,
-            "message": "The option definition `url' in  no longer has any effect; please remove it.\nThis option was removed. The URL of the rspamd metrics endpoint\nmust now be provided to the exporter by prometheus via the url\nparameter `target'.\n\nIn prometheus a scrape URL would look like this:\n\n  http://some.rspamd-exporter.host:7980/probe?target=http://some.rspamd.host:11334/stat\n\nFor more information, take a look at the official documentation\n(https://github.com/prometheus-community/json_exporter) of the json_exporter.\n\n"
-          }
-        ],
-        "enable": false,
-        "extraFlags": [],
-        "extraLabels": {
-          "host": "storage-array"
-        },
-        "firewallFilter": null,
-        "firewallRules": null,
-        "group": "rspamd-exporter",
-        "listenAddress": "0.0.0.0",
-        "openFirewall": false,
-        "port": 7980,
-        "url": "<eval-error>",
-        "user": "rspamd-exporter",
-        "warnings": []
-      },
+      "rspamd": "<eval-error>",
       "rtl_433": {
         "channels": [],
         "enable": false,
@@ -2485,7 +2529,7 @@
         "listenAddress": "0.0.0.0",
         "openFirewall": false,
         "port": 9387,
-        "servers": "<eval-error>",
+        "servers": [],
         "user": "sabnzbd-exporter"
       },
       "scaphandre": {
@@ -2544,7 +2588,7 @@
         "firewallFilter": null,
         "firewallRules": null,
         "group": "smokeping-exporter",
-        "hosts": "<eval-error>",
+        "hosts": [],
         "listenAddress": "0.0.0.0",
         "openFirewall": false,
         "pingInterval": "1s",
@@ -2568,6 +2612,19 @@
         "openFirewall": false,
         "port": 9116,
         "user": "snmp-exporter"
+      },
+      "speedtest": {
+        "enable": false,
+        "extraFlags": [],
+        "firewallFilter": null,
+        "firewallRules": null,
+        "group": "speedtest-exporter",
+        "listenAddress": "0.0.0.0",
+        "openFirewall": false,
+        "port": 9798,
+        "serverFallback": false,
+        "serverID": -1,
+        "user": "speedtest-exporter"
       },
       "sql": {
         "configFile": null,
@@ -2638,7 +2695,7 @@
         "group": "tailscale-exporter",
         "listenAddress": "0.0.0.0",
         "openFirewall": false,
-        "package": "<derivation:tailscale-exporter-0.2.5>",
+        "package": "<derivation:tailscale-exporter-0.6.0>",
         "port": 9250,
         "user": "tailscale-exporter"
       },
@@ -2701,7 +2758,7 @@
         },
         "loki": {
           "interval": "2m",
-          "pass": "file:///nix/store/rqpff653c2vbr49d0rgpjfz8y8wbp5p4-unpoller-loki-default.password",
+          "pass": "file:///nix/store/7f6gqg68ki7i05b4n24wvsgfmaf21f47-unpoller-loki-default.password",
           "tenant_id": "",
           "timeout": "10s",
           "url": "",
@@ -2727,7 +2784,7 @@
         },
         "loki": {
           "interval": "2m",
-          "pass": "file:///nix/store/rqpff653c2vbr49d0rgpjfz8y8wbp5p4-unpoller-loki-default.password",
+          "pass": "file:///nix/store/7f6gqg68ki7i05b4n24wvsgfmaf21f47-unpoller-loki-default.password",
           "tenant_id": "",
           "timeout": "10s",
           "url": "",
@@ -2803,6 +2860,20 @@
         "port": 3102,
         "telemetryPath": "/metrics",
         "user": "zfs-exporter"
+      },
+      "zfs-siebenmann": {
+        "depth": 1,
+        "enable": false,
+        "extraFlags": [],
+        "firewallFilter": null,
+        "firewallRules": null,
+        "fullPath": false,
+        "group": "zfs-siebenmann-exporter",
+        "listenAddress": "0.0.0.0",
+        "openFirewall": false,
+        "pools": [],
+        "port": 9700,
+        "user": "zfs-siebenmann-exporter"
       }
     },
     "extraFlags": [],
@@ -2814,7 +2885,7 @@
       "scrape_timeout": null
     },
     "listenAddress": "0.0.0.0",
-    "package": "<derivation:prometheus-3.7.2>",
+    "package": "<derivation:prometheus-3.12.0>",
     "port": 9090,
     "pushgateway": {
       "enable": false,
@@ -2869,7 +2940,7 @@
       "domain": "<eval-error>",
       "enable": false,
       "openFirewall": true,
-      "package": "<derivation:tailscale-1.90.9>",
+      "package": "<derivation:tailscale-1.98.5>",
       "port": 8010,
       "stunPort": 3478,
       "verifyClients": false
@@ -2882,9 +2953,14 @@
     "extraUpFlags": [],
     "interfaceName": "tailscale0",
     "openFirewall": false,
-    "package": "<derivation:tailscale-1.90.9>",
+    "package": "<derivation:tailscale-1.98.5>",
     "permitCertUid": null,
     "port": 41641,
+    "serve": {
+      "configFile": null,
+      "enable": false,
+      "services": {}
+    },
     "useRoutingFeatures": "none"
   },
   "systemd.services.tailscale-udp-gro": null,
