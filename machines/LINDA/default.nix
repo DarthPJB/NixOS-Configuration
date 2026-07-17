@@ -13,7 +13,6 @@
     ../../services/ollama.nix
     ../../services/litellm.nix
     ../../services/gitlab-credentials.nix
-    ../../services/github-runner-nixos-config.nix
     ../../modules/enable-wg-topology.nix
     ../../lib/rclone-target.nix
     ../../environments/i3wm_darthpjb.nix

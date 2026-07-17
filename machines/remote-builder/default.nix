@@ -15,6 +15,8 @@
     ../../environments/tools.nix
     ../../services/dynamic_domain_gandi.nix
     ../../services/github_runners.nix
+    ../../services/github-runner-nixos-config.nix
+    ../../services/gitlab-credentials.nix
     ../../modifier_imports/remote-builder.nix
     ../../users/build.nix
     ../../modules/enable-wg-topology.nix
