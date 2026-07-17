@@ -8,6 +8,9 @@
 }:
 
 let
+  # Import ketchup CI library for generic functions
+  ciLib = import ./lib/ci_library.nix { inherit lib pkgs; };
+
   # Machine categories for CI matrix
   x86Machines = [
     "terminal-zero"
@@ -30,31 +33,9 @@ let
     "beta-one" # Added: armv7l-linux machine
   ];
 
-  # Nix parallelism settings — per-machine > per-system > default
-  resolveNixSettings = machine: system: parallelism:
-    let
-      pm = parallelism.perMachine or { };
-      ps = parallelism.perSystem or { };
-      base = parallelism.default or { };
-      merged = base // (ps.${system} or { }) // (pm.${machine} or { });
-    in
-    merged;
-
-  formatNixOptions = machine: system: parallelism:
-    let
-      settings = resolveNixSettings machine system parallelism;
-      maxJobs = settings.max-jobs or null;
-      cores = settings.cores or null;
-    in
-    lib.concatStringsSep " " (lib.filter (s: s != "") [
-      "--option builders ''"
-      (if maxJobs != null then "--option max-jobs ${toString maxJobs}" else "")
-      (if cores != null then "--option cores ${toString cores}" else "")
-    ]);
-
   # Pre-computed nix options per system type
-  x86NixOptions = formatNixOptions "x86-default" "x86_64-linux" parallelism;
-  armNixOptions = formatNixOptions "arm-default" "aarch64-linux" parallelism;
+  x86NixOptions = ciLib.formatNixOptions "x86-default" "x86_64-linux" parallelism;
+  armNixOptions = ciLib.formatNixOptions "arm-default" "aarch64-linux" parallelism;
 
   # CI job definitions
   ciJobs = {
@@ -245,8 +226,8 @@ let
     };
   };
 
-  # Generate GitHub Actions YAML
-  generateGitHubActions = {
+  # Assemble workflow using ketchup generator with Bargman-specific data
+  generateGitHubActions = ciLib.generateGitHubActions {
     name = "NixOS CI/CD";
     on = {
       push = {
@@ -289,12 +270,10 @@ let
         };
       };
     };
-
     permissions = {
       contents = "read";
       deployments = "write";
     };
-
     jobs = ciJobs;
   };
 
@@ -314,29 +293,5 @@ in
 
     # Job definitions
     jobs = ciJobs;
-  };
-
-  # Helper functions for CI
-  ciHelpers = {
-    # Generate matrix for a specific machine type
-    mkMatrix = machines: {
-      inherit machines;
-      include = map
-        (machine: {
-          inherit machine;
-          system = if builtins.elem machine armMachines then "aarch64-linux" else "x86_64-linux";
-        })
-        machines;
-    };
-
-    # Generate deployment command
-    mkDeployCommand =
-      machine: action:
-      if action == "deploy" then
-        "nix run .#${machine} -- switch"
-      else if action == "test" then
-        "nix run .#${machine}"
-      else
-        "nix build .#nixosConfigurations.${machine}.config.system.build.toplevel";
   };
 }
