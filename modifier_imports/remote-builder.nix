@@ -33,7 +33,7 @@ let
   hyperhyperKey = config.secrix.services.nix-daemon.secrets.hyperhyper.decrypted.path;
   armBuilderKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
   machinesText = ''
-    ssh-ng://build@100.107.101.14?max-connections=1 x86_64-linux ${hyperhyperKey} 10 10 big-parallel,kvm - -
+    ssh-ng://build@100.107.101.14?max-connections=1 x86_64-linux ${hyperhyperKey} 10 10 big-parallel,kvm,nixos-test - -
     ssh-ng://build@10.88.127.43?max-connections=1 aarch64-linux ${armBuilderKey} 3 5 big-parallel - -
   '';
 in
@@ -67,6 +67,7 @@ in
       supportedFeatures = [
         "big-parallel"
         "kvm"
+        "nixos-test"
       ];
       mandatoryFeatures = [ ];
     }
