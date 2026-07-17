@@ -1,7 +1,8 @@
 # Overlord-II Deployment Status
 
 > **Generated:** 2026-07-12
-> **Branch:** `overlord-II-exec` (10 commits ahead of `overlord-II`)
+> **Updated:** 2026-07-17 — validated via code inspection
+> **Branch:** `overlord-II`
 > **Deployment method:** `nix run .#<machine> -- switch`
 > **Status:** ✅ DEPLOYMENT PHASE SUCCESSFUL
 
@@ -50,9 +51,9 @@ Affects: cortex-alpha, local-nas (observed during this session).
 
 Root cause: The activation script reads the system path before the symlink is fully updated during `--test` and `--switch`. This is a pre-existing bug in the exporter module, not caused by overlord-II changes.
 
-### `programs.ssh.matchBlocks` Does Not Exist
+### ~~`programs.ssh.matchBlocks` Does Not Exist~~ — RESOLVED
 
-The SSH multiplexing plan (`ssh-multiplex-topology-2026-07-03.md`) assumed `programs.ssh.matchBlocks` was a valid NixOS option. It does not exist in nixpkgs 25.11. Plan needs redesign using `programs.ssh.extraConfig`.
+SSH multiplexing has been implemented using `programs.ssh.extraConfig` in `modules/ssh-multiplex.nix`. The module is active fleet-wide with exclusions for builder hosts.
 
 ## Changes Deployed
 

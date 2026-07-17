@@ -383,32 +383,41 @@ Phase 6 (LLM-CORE) ────────────────────�
 
 ## Progress Tracking
 
-| Phase | Status | Agent | Notes |
-|-------|--------|-------|-------|
-| 0: Pre-flight | ⬜ Pending | bellana-deepseek | Verify golden baseline |
-| 1: Directory Structure | ⬜ Pending | bellana-deepseek | Create topology/, goldens/ |
-| 2: Update Imports | ⬜ Pending | bellana-deepseek | Point consumers at new paths |
-| 3: Cleanup | ⬜ Pending | bellana-deepseek | Remove real-topology/ |
-| 4: GitHub Runner | ⬜ Pending | bellana-deepseek | Custom module |
-| 5: SSH Multiplexing | ⬜ Pending | bellana-deepseek | mkMultiplexConfig |
-| 6: LLM-CORE | ⬜ Pending | bellana-deepseek | Re-enable input |
-| 7: Documentation | ⬜ Pending | bellana-deepseek | Update all docs |
-
-### remote-builder Hub (separate plan)
-
-> **Plan:** `documentation/plans/remote-builder-hub-2026-07-15.md`
-> **Status:** Phase 2/3 complete, BLOCKED on cortex-alpha Tailscale forwarding
+> **Last validated:** 2026-07-17 — code inspection, not documentation trust
 
 | Phase | Status | Notes |
 |-------|--------|-------|
-| 1: Clean up modifier_imports | ✅ Done | 5 commented-out builder blocks removed |
-| 2: Attach 300G disk + store migration | ✅ Done | `/dev/vdb` mounted at `/nix`, 267G available |
-| 3: Configure hub (max-jobs=0) | ✅ Done | `modifier_imports/remote-builder.nix` imported |
-| 3b: Route to hyperhyper | ⚠️ BLOCKED | WireGuard allowedIPs + static route done, but cortex-alpha Tailscale forwarding broken |
-| 4: Cache contribution | ⬜ Pending | Depends on Phase 3b |
-| 5: Verify and deploy | ⬜ Pending | Depends on Phase 3b |
+| 0: Pre-flight | ✅ Done | |
+| 1: Directory Structure | ✅ Done | `topology/`, `goldens/` created |
+| 2: Update Imports | ✅ Done | All consumers point at new paths |
+| 3: Cleanup | ✅ Done | `real-topology/` removed |
+| 4: GitHub Runner | ✅ Done | Custom override deployed, hate-filled on remote-builder |
+| 5: SSH Multiplexing | ✅ Done | `ssh-multiplex.nix` module using `extraConfig` (not `matchBlocks`) |
+| 6: LLM-CORE | ✅ Done | Enabled in flake inputs, `opencode-fleet` active on LINDA |
+| 7: Documentation | ✅ Done | |
 
-**BLOCKER:** cortex-alpha's Tailscale nftables rules (`ip filter` table with `ts-forward`
-and `ts-input`) were wiped by a `networking.nftables.ruleset` change. The change was
-reverted but Tailscale's rules were not restored. Need to restart Tailscale on
-cortex-alpha OR implement the forward rule correctly within the topology engine.
+### Phase B: Transformer Architecture
+
+> **Plan:** `documentation/phase-b-completion-plan.md`
+
+| Step | Status | Notes |
+|------|--------|-------|
+| 1-3: Core-router wiring + validation | ✅ Done | `core-router-topology.nix` wired into cortex-alpha |
+| 4: genBackup.nix | ✅ Done | Generator exists at `lib/topology/genBackup.nix` |
+| 5: Backup topology in cortex-alpha.nix | ❌ Not done | No `backup` section in `topology/cortex-alpha.nix` |
+| 6: Wire backup into core-router-topology.nix | ❌ Not done | No `mkBackupSettings`/`genBackup` calls in module |
+| 7: Final validation | ⬜ Pending | Depends on Steps 5-6 |
+
+### remote-builder Hub
+
+> **Plan:** `documentation/plans/remote-builder-hub-2026-07-15.md`
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| 1: Clean up modifier_imports | ✅ Done | |
+| 2: Attach 300G disk + store migration | ✅ Done | |
+| 3: Configure hub (max-jobs=0) | ✅ Done | |
+| 3b: Route to hyperhyper | ✅ Done | CI can contact hyperhyper |
+| 3c: Move hate-filled runner + netrc | ✅ Done | Committed `d723f05` |
+| 4: Cache contribution | ⬜ Pending | Post-build hook → cache.platonic.systems |
+| 5: Verify and deploy | ⬜ Pending | End-to-end validation |

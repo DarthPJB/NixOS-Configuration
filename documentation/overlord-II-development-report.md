@@ -91,13 +91,17 @@ The golden files from `v1.9-Golden` tag are byte-identical to the current `golde
 
 ## Outstanding Items
 
+> **Last validated:** 2026-07-17 — code inspection
+
 | Item | Status | Notes |
 |------|--------|-------|
 | Topology rectification | ✅ Complete | `real-topology/` eliminated |
-| SSH multiplexing | ❌ Blocked | `matchBlocks` doesn't exist; needs redesign with `extraConfig` |
-| GitHub runner module | ⬜ Pending | Phase 4, independent |
-| LLM-CORE re-enable | ⬜ Pending | Phase 6, independent |
-| Documentation update | ✅ Complete | AGENTS.md, file_structure.md, code_structure.md updated |
+| SSH multiplexing | ✅ Complete | `ssh-multiplex.nix` module using `extraConfig` approach |
+| GitHub runner module | ✅ Complete | Override deployed, hate-filled on remote-builder |
+| LLM-CORE re-enable | ✅ Complete | Enabled in flake inputs, `opencode-fleet` active on LINDA |
+| Documentation update | ✅ Complete | |
+| Phase B: Backup topology | ❌ Not done | `genBackup.nix` exists but not wired into `core-router-topology.nix` |
+| remote-builder cache push | ⬜ Pending | Phase 4 of hub plan |
 
 ## Recommendations
 

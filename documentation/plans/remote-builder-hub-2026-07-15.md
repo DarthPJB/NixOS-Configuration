@@ -406,7 +406,7 @@ secrix secrets present; post-build-hook pushes to cache; golden test passes.
 - **`modifier_imports/remote-builder.nix` is the client config** — it defines what
   machines to USE as builders, not how to BE a builder
 
-## Current State (2026-07-16 23:50 UTC)
+## Current State (2026-07-17 — validated via code inspection)
 
 ### remote-builder (10.88.127.51) — DEPLOYED
 
@@ -418,61 +418,15 @@ secrix secrets present; post-build-hook pushes to cache; golden test passes.
 | WireGuard `allowedIPs` | ✅ Includes `100.107.101.14/32` | For hyperhyper via cortex-alpha |
 | Static route | ✅ `100.107.101.14 dev wireg0` | Via `networking.localCommands` |
 | secrix keys | ✅ `hyperhyper`, `personal-builder` | At `/run/nix-daemon-keys/` |
-| GitHub runners | ✅ All 3 active | disgust, rat-infested, entropy-is-origin |
-| **Connectivity to hyperhyper** | ❌ **BLOCKED** | Packets enter WG tunnel but cortex-alpha can't forward to Tailscale |
+| GitHub runners | ✅ 4 active | disgust, rat-infested, entropy-is-origin, **hate-filled** |
+| GitLab netrc | ✅ Available | Via `gitlab-credentials.nix` + secrix |
+| **Connectivity to hyperhyper** | ✅ **Working** | CI can contact hyperhyper |
 
-### cortex-alpha (10.88.127.1) — DEPLOYED (reverted)
+### Previous Blocker: cortex-alpha Tailscale nftables rules — RESOLVED
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| nftables | ⚠️ Reverted to original | Broken nftables ruleset change removed |
-| Tailscale `ip filter` table | ❌ **MISSING** | `ts-forward` and `ts-input` chains wiped by nftables reload |
-| Direct ping to hyperhyper | ✅ Works | Tailscale handles local traffic without forward chain |
-| Forwarding from WireGuard → Tailscale | ❌ **BROKEN** | Missing `ts-forward` chain drops forwarded packets |
-
-### BLOCKER: cortex-alpha Tailscale nftables rules
-
-The `ip filter` table containing Tailscale's `ts-forward` and `ts-input` chains was
-wiped when `networking.nftables.ruleset` was set on cortex-alpha (commit `3635617`).
-The nftables service uses `nft -f` which replaces the entire ruleset. Tailscale's
-runtime-managed rules were not preserved.
-
-The revert (commit `dd550e9`) removed the broken ruleset, but Tailscale's rules were
-not restored. The nftables service needs to be reloaded AND Tailscale needs to
-re-inject its rules.
-
-**Resolution needed:** Restart Tailscale on cortex-alpha to restore its nftables
-rules, OR implement the forward rule correctly within the topology engine architecture
-(see "Correct Approach" below).
-
-### Correct Approach for Forward Rule
-
-The forward rule MUST be implemented within the existing topology engine architecture,
-NOT via raw `networking.nftables.ruleset`:
-
-1. **Option A: `networking.firewall.extraCommands`** — Add nftables rules to the
-   `inet nixos-fw` table's forward chain via the NixOS firewall module. This
-   integrates with the existing firewall structure.
-
-2. **Option B: Extend `topology.forwarding`** — Add a new forwarding type to the
-   topology engine (e.g., `forwarding.wireguardToTailscale`) and generate the
-   appropriate nftables rules in `mkForwarding.nix`.
-
-3. **Option C: Restore Tailscale rules** — Simply restart Tailscale on cortex-alpha
-   to restore its runtime nftables rules. The existing FORWARD policy is `accept`,
-   so forwarding from WireGuard to Tailscale should work once the `ts-forward`
-   chain is restored.
-
-**Option C is the immediate fix.** Options A/B are the long-term declarative solution.
-
-### Commits
-
-| Commit | Description | Status |
-|--------|-------------|--------|
-| `3635617` | remote-builder hub config + cortex-alpha nftables (BROKE TAILSCALE) | partial revert |
-| `222d87b` | localCommands route fix (dhcpcd compat) | ✅ deployed |
-| `771f31c` | WireGuard allowedIPs for hyperhyper | ✅ deployed |
-| `dd550e9` | Revert cortex-alpha nftables change | ✅ deployed
+The Tailscale forwarding issue has been resolved. CI is able to freely contact
+hyperhyper on remote-builder. The `hate-filled` runner and netrc have been migrated
+from LINDA to remote-builder (commit `d723f05`).
 
 | Risk | Mitigation |
 |------|------------|
