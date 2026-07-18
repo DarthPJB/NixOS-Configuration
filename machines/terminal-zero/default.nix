@@ -125,4 +125,10 @@
     ];
   };
 
+  # OpenCode fleet — Voyager only (client machine)
+  services.opencode-fleet = {
+    enable = true;
+    shipOverride = [ "voyager" ];
+  };
+
 }

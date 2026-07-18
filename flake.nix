@@ -522,6 +522,7 @@
           extraModules = [
             ./modifier_imports/central-builder.nix
             nixos-hardware.nixosModules.lenovo-thinkpad-x220
+            LLM-CORE.nixosModules.opencode-fleet
             #   { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; }
           ];
         };
