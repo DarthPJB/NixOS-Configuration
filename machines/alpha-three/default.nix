@@ -95,7 +95,6 @@
   # OpenCode fleet configuration — full fleet with MCP servers
   services.opencode-fleet = {
     enable = true;
-    voyagerOnly = false; # Full fleet
     user = "John88";
     mcp.git = {
       enable = true;
