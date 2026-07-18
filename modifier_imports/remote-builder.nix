@@ -16,12 +16,15 @@ let
   # Dynamically collect builder hostnames for SSH exclusion
   builderHosts = map (m: m.hostName) config.nix.buildMachines;
 
-  # Build /etc/nix/machines manually with ?max-connections=1 in store URIs.
+  # Build /etc/nix/machines manually with store URI query params.
   #
   # WHY: max-connections is a per-store RemoteStoreConfig parameter, NOT a global
   # nix.conf setting. Determinate Nix changed the default from 1 (upstream) to 64,
   # which enables SSH master mode (-M -N) for ssh-ng remote builders and causes
   # protocol mismatch errors when masters die and leave stale sockets.
+  #
+  # arm-builder (RPi 4) needs max-connections=1 — limited resources can't handle
+  # concurrent SSH masters. hyperhyper (100+ cores, 1TB RAM) uses the default.
   #
   # The NixOS nix.buildMachines module generates /etc/nix/machines but does not
   # support store URI query params. StoreReference::parse (machines.cc) DOES parse
@@ -33,7 +36,7 @@ let
   hyperhyperKey = config.secrix.services.nix-daemon.secrets.hyperhyper.decrypted.path;
   armBuilderKey = config.secrix.services.nix-daemon.secrets.personal-builder.decrypted.path;
   machinesText = ''
-    ssh-ng://build@100.107.101.14?max-connections=1 x86_64-linux ${hyperhyperKey} 10 10 big-parallel,kvm,nixos-test - -
+    ssh-ng://build@100.107.101.14 x86_64-linux ${hyperhyperKey} 10 10 big-parallel,kvm,nixos-test - -
     ssh-ng://build@10.88.127.43?max-connections=1 aarch64-linux ${armBuilderKey} 3 5 big-parallel - -
   '';
 in

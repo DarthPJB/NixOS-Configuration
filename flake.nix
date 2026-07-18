@@ -61,6 +61,11 @@
         ratty.nixosModules.default
         ./configuration.nix
         ./modules/ssh-multiplex.nix
+        # Skip nix test suite — OOMs on remote builders during source build.
+        # The forked nix (darthpjb/nix-src) builds from source, not from cache.
+        ({ pkgs, lib, ... }: {
+          nix.package = lib.mkForce (determinate.inputs.nix.packages.${pkgs.system}.default.overrideAttrs (old: { doCheck = false; }));
+        })
         {
           programs.ssh.knownHosts = mkKnownHosts self.nixosConfigurations;
           nixpkgs.config.allowUnfree = true;
