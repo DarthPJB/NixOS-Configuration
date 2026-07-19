@@ -447,7 +447,10 @@
           minecraft-curseforge-all-the-mons = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/all-the-mons.nix {
             minecraft-curseforge = minecraft-curseforge-builder;
           };
-          squaremap-neoforge = nixpkgs.callPackage ./pkgs/minecraft-curseforge/squaremap.nix { };
+          squaremap-neoforge = nixpkgs.callPackage ./pkgs/minecraft-curseforge/squaremap.nix {
+            moonrise-neoforge = self.packages.x86_64-linux.moonrise-neoforge;
+          };
+          moonrise-neoforge = nixpkgs.callPackage ./pkgs/minecraft-curseforge/moonrise.nix { };
           bargman-greeter-vm = self.nixosConfigurations.bargman-greeter-vm.config.system.build.vm;
           bargman-greeter-vm-bootloader = self.nixosConfigurations.bargman-greeter-vm.config.system.build.vmWithBootLoader;
         } // (nixinate.lib.genImages.x86_64-linux self);

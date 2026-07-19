@@ -19,6 +19,7 @@
 , git
 , lib
 , jdk21
+, moonrise-neoforge
 }:
 
 let
@@ -46,6 +47,39 @@ let
     buildInputs = [ git ];
 
     buildPhase = ''
+      # ── Patch out CurseForge dependencies before Gradle runs ──────────
+      sed -i '/setupSubproject("paper")/d' settings.gradle.kts
+      sed -i '/include(":squaremap-paper:folia")/d' settings.gradle.kts
+      sed -i '/setupSubproject("fabric")/d' settings.gradle.kts
+      sed -i '/setupSubproject("sponge")/d' settings.gradle.kts
+
+      # Replace cursemaven repository with local Maven repo containing
+      # the moonrise JAR built from source (Tuinity/Moonrise on GitHub).
+      # This preserves Loom's mod remapping since it uses Maven coordinates.
+      LOCAL_MAVEN=$TMPDIR/local-maven
+      mkdir -p "$LOCAL_MAVEN/curse/maven/moonrise-1096335/5815098"
+      find ${moonrise-neoforge} -name '*.jar' -not -name '*-sources.jar' -not -name '*-dev*' \
+        -exec cp {} "$LOCAL_MAVEN/curse/maven/moonrise-1096335/5815098/moonrise-1096335-5815098.jar" \;
+      cat > "$LOCAL_MAVEN/curse/maven/moonrise-1096335/5815098/moonrise-1096335-5815098.pom" << 'POMEOF'
+      <?xml version="1.0" encoding="UTF-8"?>
+      <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+        xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <modelVersion>4.0.0</modelVersion>
+        <groupId>curse.maven</groupId>
+        <artifactId>moonrise-1096335</artifactId>
+        <version>5815098</version>
+      </project>
+      POMEOF
+
+      # Replace cursemaven URL with local Maven repo
+      sed -i 's|maven("https://cursemaven.com")|maven("'"$LOCAL_MAVEN"'")|' \
+        build-logic/src/main/kotlin/squaremap.base-conventions.gradle.kts
+      # Fix the content filter to match any group
+      sed -i '/includeGroup("curse.maven")/d' \
+        build-logic/src/main/kotlin/squaremap.base-conventions.gradle.kts
+
+      # ── Standard build steps ──────────────────────────────────────────
       # Squaremap build uses net.kyori.indra.git to embed commit hash.
       # Source from fetchFromGitHub has no .git — create a minimal one.
       git init
@@ -78,7 +112,7 @@ let
 
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
-    outputHash = "sha256-GHUaZ0cGcwNp7IYf2gqcUfS8OjL1R0qz8eql59wYxfo=";
+    outputHash = "sha256-/h0E7RRg1RWce63SVRKEu1z3vNTQuhXTwJbeO+z31GI=";
 
     # FOD caches are unmodified binary artifacts — skip fixup
     dontFixup = true;
@@ -93,6 +127,7 @@ stdenv.mkDerivation {
   nativeBuildInputs = [ jdk21 git ];
 
   # Ensure the patch applied correctly — guards against source drift
+  # Also strip Fabric/Paper/Sponge subprojects and replace CurseForge Maven
   postPatch = ''
     grep -q 'return Colors.rgb(state.getMapColor(EmptyBlockGetter.INSTANCE, BlockPos.ZERO));' \
       common/src/main/java/xyz/jpenilla/squaremap/common/data/MapWorldInternal.java \
@@ -100,6 +135,33 @@ stdenv.mkDerivation {
         echo "ERROR: squaremap NPE patch did not apply — MapWorldInternal.java missing expected fix" >&2
         exit 1
       }
+
+    sed -i '/setupSubproject("paper")/d' settings.gradle.kts
+    sed -i '/include(":squaremap-paper:folia")/d' settings.gradle.kts
+    sed -i '/setupSubproject("fabric")/d' settings.gradle.kts
+    sed -i '/setupSubproject("sponge")/d' settings.gradle.kts
+
+    # Replace cursemaven with local Maven repo containing moonrise built from source
+    LOCAL_MAVEN="$PWD/local-maven"
+    mkdir -p "$LOCAL_MAVEN/curse/maven/moonrise-1096335/5815098"
+    find ${moonrise-neoforge} -name '*.jar' -not -name '*-sources.jar' -not -name '*-dev*' \
+      -exec cp {} "$LOCAL_MAVEN/curse/maven/moonrise-1096335/5815098/moonrise-1096335-5815098.jar" \;
+    cat > "$LOCAL_MAVEN/curse/maven/moonrise-1096335/5815098/moonrise-1096335-5815098.pom" << 'POMEOF'
+    <?xml version="1.0" encoding="UTF-8"?>
+    <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+      xmlns="http://maven.apache.org/POM/4.0.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <modelVersion>4.0.0</modelVersion>
+      <groupId>curse.maven</groupId>
+      <artifactId>moonrise-1096335</artifactId>
+      <version>5815098</version>
+    </project>
+    POMEOF
+
+    sed -i 's|maven("https://cursemaven.com")|maven("'"$LOCAL_MAVEN"'")|' \
+      build-logic/src/main/kotlin/squaremap.base-conventions.gradle.kts
+    sed -i '/includeGroup("curse.maven")/d' \
+      build-logic/src/main/kotlin/squaremap.base-conventions.gradle.kts
   '';
 
   buildPhase = ''
