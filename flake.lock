@@ -1808,11 +1808,11 @@
         "nixpkgs": "nixpkgs_15"
       },
       "locked": {
-        "lastModified": 1782235606,
-        "narHash": "sha256-NNDOtvkGB4sue6ihQ/BH3ZbnvLag/58P0f2aMWYPySI=",
+        "lastModified": 1784473301,
+        "narHash": "sha256-/P4dCXKR/X2bbzkXcbE1XJP4wDKUqb+VU8eh71gmStU=",
         "owner": "DarthPJB",
         "repo": "ratty",
-        "rev": "47c7d3be5f1e07682e18c7cf28853a21dabb2d82",
+        "rev": "8c2e36828a1a6bae59e798b84f5c3dc5e3c44774",
         "type": "github"
       },
       "original": {
