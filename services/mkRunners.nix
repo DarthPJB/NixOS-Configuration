@@ -34,7 +34,7 @@ in
     namePrefix = "hate-filled";
     url = "https://github.com/DarthPJB/NixOS-Configuration";
     tokenFile = config.secrix.system.secrets.hate-filled-generator.decrypted.path;
-    count = 5;
+    count = 3;
     extraLabels = [ "self-hosted" ];
     extraEnvironment = { GIT_ASKPASS = "${gitlabAskpass}"; };
     gitlabNetrcPath = gitlabNetrcPath;
