@@ -18,8 +18,8 @@
 let
   mkRunner = import ../lib/mkRunner.nix { inherit config lib pkgs self pkgs_llm; };
 
-  # GitLab netrc path (system secret, decrypted at boot)
-  gitlabNetrcPath = config.secrix.system.secrets.gitlab_netrc.decrypted.path;
+  # GitLab netrc — user-readable copy from gitlab-credentials.nix
+  gitlabNetrcPath = "/run/gitlab-netrc";
 
   # GIT_ASKPASS script — runner uses DynamicUser, doesn't inherit session variables
   gitlabAskpass = pkgs.writeShellScript "gitlab-askpass" ''
