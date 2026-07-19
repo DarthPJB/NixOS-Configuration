@@ -17,6 +17,17 @@
 }:
 let
   mkRunner = import ../lib/mkRunner.nix { inherit config lib pkgs self pkgs_llm; };
+
+  # GitLab netrc path (system secret, decrypted at boot)
+  gitlabNetrcPath = config.secrix.system.secrets.gitlab_netrc.decrypted.path;
+
+  # GIT_ASKPASS script — runner uses DynamicUser, doesn't inherit session variables
+  gitlabAskpass = pkgs.writeShellScript "gitlab-askpass" ''
+    case "$1" in
+      *Username*) exec ${pkgs.gnused}/bin/sed -n 's/^login[[:space:]]*//p' "${gitlabNetrcPath}" ;;
+      *Password*) exec ${pkgs.gnused}/bin/sed -n 's/^password[[:space:]]*//p' "${gitlabNetrcPath}" ;;
+    esac
+  '';
 in
 {
   services.github-runners = mkRunner {
@@ -25,7 +36,8 @@ in
     tokenFile = config.secrix.system.secrets.hate-filled-generator.decrypted.path;
     count = 5;
     extraLabels = [ "self-hosted" ];
-    gitlabNetrcPath = config.secrix.system.secrets.gitlab_netrc.decrypted.path;
+    extraEnvironment = { GIT_ASKPASS = "${gitlabAskpass}"; };
+    gitlabNetrcPath = gitlabNetrcPath;
   };
 
   # PAT for runner registration — system secret (decrypted at boot to /run/system-keys/)
