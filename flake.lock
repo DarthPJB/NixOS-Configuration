@@ -1425,11 +1425,11 @@
     },
     "nixpkgs_15": {
       "locked": {
-        "lastModified": 1777954456,
-        "narHash": "sha256-hGdgeU2Nk87RAuZyYjyDjFL6LK7dAZN5RE9+hrDTkDU=",
+        "lastModified": 1784356753,
+        "narHash": "sha256-12KrbMiWLcf8m7pCvAtZh1ZrgF85ZXDXvfR/fWTKy84=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "549bd84d6279f9852cae6225e372cc67fb91a4c1",
+        "rev": "61b7c44c4073f0b827768aff0049561b5110ea5a",
         "type": "github"
       },
       "original": {
@@ -1766,11 +1766,11 @@
         "nixpkgs": "nixpkgs_14"
       },
       "locked": {
-        "lastModified": 1783231853,
-        "narHash": "sha256-gU7SeyrU13iqw8GMtqm+gaHtcQ660zTq9aiA7oCQamA=",
+        "lastModified": 1784474605,
+        "narHash": "sha256-kKWL5QwK9w3M05eZuZzTtwMe00M9JEt4dDYzHgbhQKc=",
         "ref": "refs/heads/main",
-        "rev": "79769c8c6af7293efd1ca328b48d2683f7e10a3e",
-        "revCount": 46,
+        "rev": "d8cf00bb36c541324e4cb08e291bca9e697d57cd",
+        "revCount": 57,
         "type": "git",
         "url": "https://gitlab.com/mecha-team-zero/bargman-website.git"
       },
@@ -1808,11 +1808,11 @@
         "nixpkgs": "nixpkgs_15"
       },
       "locked": {
-        "lastModified": 1784473301,
-        "narHash": "sha256-/P4dCXKR/X2bbzkXcbE1XJP4wDKUqb+VU8eh71gmStU=",
+        "lastModified": 1784474541,
+        "narHash": "sha256-LOVHDXQH2aRlGzvl1sD24YCdhUHT2mOvYZAEvWt0RNY=",
         "owner": "DarthPJB",
         "repo": "ratty",
-        "rev": "8c2e36828a1a6bae59e798b84f5c3dc5e3c44774",
+        "rev": "dc12d5e19052879b6fec73cc3d4e90ca456ce629",
         "type": "github"
       },
       "original": {
