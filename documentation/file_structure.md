@@ -24,8 +24,9 @@ This document describes the directory layout of the NixOS-Configuration reposito
   - `gen*.nix` - Generators (settings → NixOS config)
   - `validate.nix` - Topology validation
   - `utils.nix` - Shared utilities
-- `lib/golden_generator.nix` - Golden test generator
-- `lib/golden_coverage.nix` - Coverage tracking
+- `lib/serialize-config.nix` - The one config serializer (used by `dump-config` and `checks.network-config-*`)
+- `lib/golden_coverage.nix` - Coverage audit (separate tool; checks if every machine has a golden)
+- (Note: `lib/golden_generator.nix` is dead code from 2026-07-11 and should be deleted.)
 - `modules/` - NixOS modules
   - `core-router.nix` - Hub machine module (production architecture)
   - `enable-wg-topology.nix` - WireGuard client module (deployed on 13 machines)

@@ -196,8 +196,8 @@ modules/core-router.nix (NixOS config generation)
 - `topology/shared.nix` - Shared topology data (WireGuard IPs, LAN IPs, hub relationships)
 - `topology/default.nix` - Entry point, imports shared + per-machine files
 - `goldens/<machine>.json` - Golden test references (sacrosanct)
-- `lib/golden_generator.nix` - Golden test generator
-- `lib/golden_coverage.nix` - Coverage tracking
+- `lib/serialize-config.nix` - The one config serializer (used by `dump-config` and the `checks.network-config-*` derivations)
+- `lib/golden_coverage.nix` - Coverage tracking (audit tool)
 - `lib/topology/mkWireguardPeers.nix` - WireGuard peer transformation (requires `self`)
 - `lib/topology/mkTailscaleConfig.nix` - Tailscale configuration
 - `lib/topology/mkDhcpDns.nix` - DHCP/DNS configuration
@@ -343,8 +343,8 @@ git worktree remove /tmp/nixos-main --force
 - `topology/` - Topology data (shared.nix, per-machine files, external/)
 - `goldens/` - Golden test files (sacrosanct)
 - `lib/topology/` - Transformation functions
-- `lib/golden_generator.nix` - Golden test generator
-- `lib/golden_coverage.nix` - Coverage tracking
+- `lib/serialize-config.nix` - The one config serializer (used by `dump-config` and the `checks.network-config-*` derivations)
+- `lib/golden_coverage.nix` - Coverage tracking (audit tool)
 - `modules/` - NixOS modules (core-router.nix, enable-wg-topology.nix)
 - `documentation/` - Architecture docs and operational references
 - `scripts/` - Utility scripts (compare-configs.sh)

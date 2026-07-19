@@ -43,8 +43,8 @@ and serialization. No machine-specific data, no secrets, no proprietary config.
 **Core utilities:**
 - `lib/topology/utils.nix` — Shared utilities (safeLookup, dedupPreserveOrder, etc.)
 - `lib/topology/validate.nix` — Topology validation
-- `lib/serialize-config.nix` — Config serializer (for golden tests)
-- `lib/golden_coverage.nix` — Coverage tracking
+- `lib/serialize-config.nix` — The one config serializer (used by `dump-config` and the `checks.network-config-*` derivations). `serializeConfig :: Config -> JSON`.
+- `lib/golden_coverage.nix` — Coverage audit (separate from the serializer; checks if every machine in `nixosConfigurations` has a golden)
 
 **NixOS modules:**
 - `modules/core-router-topology.nix` — WIP two-layer router module
@@ -83,8 +83,8 @@ Functions and utilities shared between Ketchup and Secret-Sauce.
 - `lib/topology/utils.nix` — Core utilities (also exported by Ketchup)
 - `lib/mkKnownHosts.nix` — SSH known hosts generator
 - `lib/network-interfaces.nix` — Network interface helpers
-- `lib/golden_generator.nix` — Old golden generator (reference only)
 - `lib/make-storeless-image.nix` — Image builder utility
+- (Note: `lib/golden_generator.nix` is dead code from the 2026-07-11 `real-topology/` rename; it is not used anywhere and should be deleted. The actual generator is `lib/serialize-config.nix`.)
 
 ## API Design
 
