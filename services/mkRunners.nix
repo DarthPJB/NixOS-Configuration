@@ -4,7 +4,7 @@
 # Generates N concurrent runners for the NixOS-Configuration CI pipeline.
 # All runners share the nix-daemon and store — builds dispatch to hyperhyper/arm-builder.
 #
-# GitLab auth is handled by gitlab-credentials.nix (system secret, global GIT_ASKPASS).
+# GitLab auth: system secret from gitlab-credentials.nix, passed to mkRunner as runtime path.
 #
 # See: lib/mkRunner.nix for the factory function
 # See: documentation/mkrunner-PLAN.md for design rationale
@@ -22,12 +22,13 @@ in
   services.github-runners = mkRunner {
     namePrefix = "hate-filled";
     url = "https://github.com/DarthPJB/NixOS-Configuration";
-    tokenFile = config.secrix.services.github-runner-hate-filled.secrets.hate-filled-generator.decrypted.path;
+    tokenFile = config.secrix.system.secrets.hate-filled-generator.decrypted.path;
     count = 5;
     extraLabels = [ "self-hosted" ];
+    gitlabNetrcPath = config.secrix.system.secrets.gitlab_netrc.decrypted.path;
   };
 
-  # PAT for runner registration (shared by all instances)
-  secrix.services.github-runner-hate-filled.secrets.hate-filled-generator.encrypted.file =
+  # PAT for runner registration — system secret (decrypted at boot to /run/system-keys/)
+  secrix.system.secrets.hate-filled-generator.encrypted.file =
     "${self}/secrets/hate-filled-generator";
 }
