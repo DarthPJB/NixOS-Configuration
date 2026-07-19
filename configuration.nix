@@ -185,5 +185,7 @@ in
     #     }
     #   ];
   };
+  # Required for kmscon hwaccel (unstable nixpkgs assertion)
+  hardware.graphics.enable = lib.mkDefault true;
   services.getty.autologinUser = "John88";
 }
