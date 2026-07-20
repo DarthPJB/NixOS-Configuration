@@ -87,10 +87,12 @@ let
         "advertised_tailscale_routes"
         "coordinate"
         "default_response"
+        "exporters"
         "hostname"
         "hub_of"
         "public_key_file"
         "trust"
+        "vhosts"
       ];
     in
     {

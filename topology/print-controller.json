@@ -17,5 +17,8 @@
   ],
   "hostname": "print-controller",
   "public_key_file": "secrets/public_keys/wireguard/wg_print-controller_pub",
-  "trust": 3
+  "trust": 3,
+  "exporters": {
+    "smartctl": {}
+  }
 }
