@@ -10,8 +10,5 @@
   ],
   "hostname": "remote-builder",
   "public_key_file": "secrets/public_keys/wireguard/wg_remote-builder_pub",
-  "trust": 3,
-  "exporters": {
-    "smartctl": {}
-  }
+  "trust": 3
 }

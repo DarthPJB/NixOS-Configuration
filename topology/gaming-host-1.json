@@ -21,6 +21,5 @@
         }
       }
     ]
-  },
-  "default_response": "404-or-drop"
+  }
 }

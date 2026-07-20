@@ -26,7 +26,8 @@
     ],
     "code.johnbargman.net": [
       {
-        "proxy_to": "10.88.127.3:80"
+        "proxy_to": "10.88.127.3:80",
+        "regex_prefix": true
       }
     ]
   }

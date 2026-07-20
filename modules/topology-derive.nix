@@ -22,7 +22,7 @@ let
   inherit (builtins)
     fromJSON readFile pathExists match elemAt
     toString attrNames filter head tail genList length
-    attrValues listToAttrs;
+    attrValues listToAttrs removeAttrs;
 
   inherit (lib)
     hasPrefix hasSuffix optional optionals mapAttrs mapAttrs'
@@ -106,17 +106,25 @@ let
   # ── Exporter configuration ────────────────────────────────
   # Each exporter entry in topology.exporters becomes:
   #   services.prometheus.exporters.<name>
-  #     = { enable = true; port = ...; listenAddress = ...; }
+  #     = { enable = true; port = ...; listenAddress = ...; extra... }
+  #
+  # Supports per-entry overrides:
+  #   - port: override the default port
+  #   - listenAddress: override the default firstIP listen address
+  #   - any other fields passed through as-is (e.g. leasesPath, dnsmasqListenAddress)
   exporterConfig = if hasTopology && topology ? exporters then
     mapAttrs' (name: settings:
       let
         port = settings.port or defaultPorts.${name} or 9100;
+        addr = settings.listenAddress or firstIP;
+        # Pass through all other exporter-specific options unchanged
+        extra = removeAttrs settings [ "port" "listenAddress" ];
       in
-      nameValuePair name {
+      nameValuePair name ({
         enable = true;
         inherit port;
-        listenAddress = firstIP;
-      }
+        listenAddress = addr;
+      } // extra)
     ) topology.exporters
   else { };
 
@@ -133,22 +141,70 @@ let
       isDefault     = entry.default or false;
       serverNameOpt = entry.server_name or null;
 
-      # ACME config
-      acmeEnable = (entry.acme or { }).enable or false;
-      acmeHost   = (entry.acme or { }).host or null;
+      # Vhost type detection
+      isProxy      = entry ? proxy_to;
+      isReturn     = entry ? return;
+      isStatic     = entry ? static;
+      # Location key: "~/" (regex prefix) when regex_prefix is true, "/" (exact) otherwise
+      regexPrefix  = entry.regex_prefix or false;
 
-      # Location block -- only one type per entry
+      # ACME config from per-entry
+      perEntryAcmeEnable = (entry.acme or { }).enable or false;
+      perEntryAcmeHost   = (entry.acme or { }).host or null;
+
+      # Global default ACME host (used for proxy vhosts sharing a wildcard cert).
+      # Only applies to PROXY vhosts, not return/static vhosts.
+      globalAcmeHost = if isProxy then (topology.acme_host or null) else null;
+
+      # Effective useACMEHost:
+      #   - If per-entry acme.host is set AND differs from vhost name, OR
+      #     per-entry acme.host is set AND enableACME is NOT true (reference),
+      #     use per-entry value.
+      #   - If per-entry acme.host is set AND equals vhost name AND
+      #     enableACME is true (self-managed cert), don't set useACMEHost.
+      #   - If no per-entry acme and vhost is a proxy, use global acme_host.
+      effectiveUseACMEHost =
+        if perEntryAcmeHost != null then (
+          if perEntryAcmeEnable && perEntryAcmeHost == vhostName then null
+          else perEntryAcmeHost
+        ) else globalAcmeHost;
+
+      # addSSL for proxy vhosts using global ACME host (matching genNginx).
+      # Per-entry acme.host does NOT auto-set addSSL (matches golden/baseline).
+      addSSLProxy = isProxy && globalAcmeHost != null && perEntryAcmeHost == null;
+
+      # enableACME only when explicitly set in per-entry
+      enableACMEEffective = perEntryAcmeEnable;
+
+      # Standard proxy headers (matching genNginx legacy production output)
+      proxyHeaders = ''
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+      '';
+
+      # Location key: regex prefix ("~/") or exact ("/")
+      locKey = if isProxy && regexPrefix then "~/" else "/";
+
+      # Location block -- varies by type
       locations =
         # Return-type vhost (e.g., catch-all return "444")
-        if entry ? return then {
-          "/" = { return = entry.return; };
+        if isReturn then {
+          "${locKey}" = { return = entry.return; };
         }
-        # Proxy-type vhost (e.g., print-controller -> backend)
-        else if entry ? proxy_to then {
-          "/" = { proxyPass = "http://${entry.proxy_to}"; };
+        # Proxy-type vhost: with proxyWebsockets, extra proxy headers, proxy_pass
+        else if isProxy then {
+          "${locKey}" = {
+            proxyPass       = "http://${entry.proxy_to}";
+            proxyWebsockets = true;
+            extraConfig     = proxyHeaders;
+          };
         }
         # Static-type vhost (e.g., serve files from a root)
-        else if entry ? static then {
+        else if isStatic then {
           "/" = { root = entry.static.root; };
         }
         else { };
@@ -160,14 +216,18 @@ let
 
       # ACME attributes
       acmeConfig = { }
-        // (if acmeEnable then { enableACME = true; } else { })
-        // (if acmeHost != null then { useACMEHost = acmeHost; } else { });
+        // (if enableACMEEffective then { enableACME = true; } else { })
+        // (if effectiveUseACMEHost != null then { useACMEHost = effectiveUseACMEHost; } else { });
+
+      # Proxy-specific attrset (addSSL when using global ACME host)
+      extraProxyCfg = if addSSLProxy then { addSSL = true; } else { };
 
     in
     {
       ${vhostName} = { }
         // (if isDefault then { default = true; } else { })
         // { inherit locations forceSSL; }
+        // extraProxyCfg
         // serverNameConfig
         // acmeConfig;
     };
