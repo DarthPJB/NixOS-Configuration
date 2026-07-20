@@ -1,7 +1,8 @@
 { lib }:
 # genDnsmasqHorizons: horizon -> dnsmasq settings attrset
 #
-# Phase B: Dead code stub. No callers.
+# Phase B stub. Called by genDns.nix when the new schema (dns.planes) is present.
+# Currently no machine has dns.planes, so this path is dormant.
 #
 # Takes horizon settings (output of mkHorizons) and produces a dnsmasq
 # configuration attrset with per-subnet auth-server directives.
