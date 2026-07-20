@@ -42,12 +42,14 @@ let
   # --- WIP transformers (from per-machine topology) ---
   dnsSettings = (import ../lib/topology/mkDnsSettings.nix { inherit lib; }) perMachineTopology;
   firewallSettings = (import ../lib/topology/mkFirewallSettings.nix { inherit lib; }) perMachineTopology;
-  nginxSettings = (import ../lib/topology/mkNginxSettings.nix { inherit lib; }) perMachineTopology;
+  # TOPOLOGY-DERIVED: see topology/<hostname>.json vhosts
+  # nginxSettings = (import ../lib/topology/mkNginxSettings.nix { inherit lib; }) perMachineTopology;
 
   # --- WIP generators (settings + hostname -> NixOS config) ---
   dnsConfig = (import ../lib/topology/genDns.nix { inherit lib; }) dnsSettings hostname;
   firewallConfig = (import ../lib/topology/genFirewall.nix { inherit lib; }) firewallSettings hostname;
-  nginxConfig = (import ../lib/topology/genNginx.nix { inherit lib; }) nginxSettings hostname;
+  # TOPOLOGY-DERIVED: see topology/<hostname>.json vhosts
+  # nginxConfig = (import ../lib/topology/genNginx.nix { inherit lib; }) nginxSettings hostname;
 
   # --- Production transformers (used directly — no WIP pair needed) ---
   tailscaleLib = (import ../lib/topology/mkTailscaleConfig.nix { inherit lib; }) machineTopology;
@@ -58,12 +60,14 @@ let
   allWarnings =
     (lib.optionals (validation.warnings != [ ]) (map (w: "topology: ${w}") validation.warnings))
     ++ (lib.optionals (crossValidation.warnings != [ ]) (map (w: "cross-ref: ${w}") crossValidation.warnings))
-    ++ nginxSettings.warnings
+    # TOPOLOGY-DERIVED: nginx warnings handled by topology-derive
+    # ++ nginxSettings.warnings
     ++ dnsSettings.warnings;
   allErrors =
     (lib.optionals (!validation.valid) [ "Invalid topology: ${builtins.concatStringsSep "; " validation.errors}" ])
     ++ (lib.optionals (!crossValidation.valid) [ "Cross-ref failed: ${builtins.concatStringsSep "; " crossValidation.errors}" ])
-    ++ nginxSettings.errors
+    # TOPOLOGY-DERIVED: nginx errors handled by topology-derive
+    # ++ nginxSettings.errors
     ++ firewallSettings.errors
     ++ dnsSettings.errors;
 in
@@ -155,17 +159,19 @@ in
       networking.nftables.ruleset = lib.mkOverride 100 forwardingLib.nftablesRuleset;
     })
 
+    # TOPOLOGY-DERIVED: nginx config handled by topology-derive from JSON
     # --- Nginx reverse proxy configuration (if proxies exist) ---
-    (lib.mkIf (config.coreRouterTopology.enable && machineTopology ? nginx && (machineTopology.nginx.proxies or { }) != { }) {
-      services.nginx.enable = lib.mkOverride 100 true;
-      services.nginx.virtualHosts = lib.mkOverride 100 nginxConfig.services.nginx.virtualHosts;
-      # Ensure nginx can read ACME certificates
-      users.users.nginx.extraGroups = [ "acme" ];
-    })
+    # (lib.mkIf (config.coreRouterTopology.enable && machineTopology ? nginx && (machineTopology.nginx.proxies or { }) != { }) {
+    #   services.nginx.enable = lib.mkOverride 100 true;
+    #   services.nginx.virtualHosts = lib.mkOverride 100 nginxConfig.services.nginx.virtualHosts;
+    #   # Ensure nginx can read ACME certificates
+    #   users.users.nginx.extraGroups = [ "acme" ];
+    # })
 
+    # TOPOLOGY-DERIVED: exporters config handled by topology-derive from JSON
     # --- Prometheus exporters configuration ---
-    (lib.mkIf (config.coreRouterTopology.enable && machineTopology ? monitoring) {
-      services.prometheus.exporters = lib.mkOverride 100 (monitoringLib.mkMonitoringConfig { });
-    })
+    # (lib.mkIf (config.coreRouterTopology.enable && machineTopology ? monitoring) {
+    #   services.prometheus.exporters = lib.mkOverride 100 (monitoringLib.mkMonitoringConfig { });
+    # })
   ];
 }
