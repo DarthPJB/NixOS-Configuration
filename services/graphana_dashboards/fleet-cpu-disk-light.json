@@ -407,7 +407,7 @@
             "lastNotNull"
           ],
           "fields": "",
-          "values": false
+          "values": true
         },
         "textMode": "value_and_name",
         "orientation": "horizontal"
@@ -1043,6 +1043,58 @@
         }
       ],
       "type": "bargauge"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 35 },
+      "id": 104,
+      "panels": [],
+      "title": "ZFS",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus01" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent", "min": 0, "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 70 },
+              { "color": "red", "value": 85 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 36 },
+      "id": 8,
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "namePlacement": "auto",
+        "sizing": "auto",
+        "valueMode": "color",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus01" },
+          "editorMode": "code",
+          "expr": "(1 - zfs_pool_free_bytes / zfs_pool_size_bytes) * 100",
+          "legendFormat": "{{instance}} {{pool}}",
+          "instant": true, "refId": "A"
+        }
+      ],
+      "title": "ZFS Pool Usage",
+      "transformations": [
+        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.88:(.*)/", "renamePattern": "LINDA:$1" } },
+        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.1:(.*)/", "renamePattern": "cortex-alpha:$1" } },
+        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.3:(.*)/", "renamePattern": "local-nas:$1" } }
+      ],
+      "type": "gauge"
     }
   ],
   "refresh": "30s",
@@ -1054,6 +1106,7 @@
     "memory",
     "disk",
     "filesystem",
+    "zfs",
     "nix-provisioned"
   ],
   "templating": {

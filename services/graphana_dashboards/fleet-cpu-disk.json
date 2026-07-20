@@ -400,7 +400,7 @@
             "lastNotNull"
           ],
           "fields": "",
-          "values": false
+          "values": true
         },
         "textMode": "value_and_name",
         "orientation": "horizontal"
@@ -512,7 +512,7 @@
           }
         }
       ],
-      "type": "stat"
+      "type": "gauge"
     },
     {
       "datasource": {
@@ -1876,15 +1876,12 @@
       "id": 8,
       "options": {
         "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showThresholdLabels": true,
-        "showThresholdMarkers": true
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "namePlacement": "auto",
+        "sizing": "auto",
+        "valueMode": "color",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
       },
       "targets": [
         {

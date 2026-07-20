@@ -9,11 +9,11 @@
         "opencode-flake": "opencode-flake"
       },
       "locked": {
-        "lastModified": 1784400840,
-        "narHash": "sha256-Z9sJ4eQl4UeD38ZUw+Ngpv62RwFVqPVURqhBs70pzdA=",
+        "lastModified": 1784556734,
+        "narHash": "sha256-DxGzeCvbDZtgtCkbvrYv4bgpvUX8MOh+yGL05szMbro=",
         "ref": "refs/heads/main",
-        "rev": "9019d61de19db2beb993db8e0b7a81df4e9d69bf",
-        "revCount": 417,
+        "rev": "e26422ac1dde3fa3201aa5002c27f0490a2782a8",
+        "revCount": 423,
         "type": "git",
         "url": "https://gitlab.com/mecha-team-zero/llm-core.git"
       },
@@ -732,11 +732,11 @@
         "star-beam": "star-beam"
       },
       "locked": {
-        "lastModified": 1780570485,
-        "narHash": "sha256-6KMwohPxcwl9AvBO1vS6tWKiZOe3795/tQQfI/mt3ZI=",
+        "lastModified": 1784053616,
+        "narHash": "sha256-xspLMIP/pdOgIY8d9ofG0zRGto2otC6A80u90/H9Fao=",
         "ref": "refs/heads/main",
-        "rev": "8126867704e4f5abdef7d90f64bc8989932f66a8",
-        "revCount": 84,
+        "rev": "b51fa711a6cfeb570f7453376450ac5b3cc2f0a5",
+        "revCount": 93,
         "type": "git",
         "url": "https://gitlab.com/mecha-team-zero/macha-orchestration"
       },
@@ -1899,11 +1899,11 @@
         "nixpkgs": "nixpkgs_9"
       },
       "locked": {
-        "lastModified": 1777599510,
-        "narHash": "sha256-8VPg5tgujlQmUuOEmWVSi1Hlto5nAOIgXlG5tjAbwzs=",
+        "lastModified": 1777888375,
+        "narHash": "sha256-NjAVR4Ta2QWOOImATee+Pz7CXwqyhuqpaKNCB41/nPo=",
         "ref": "refs/heads/master",
-        "rev": "3fb2249b85369b1043752bfc51098ee165520929",
-        "revCount": 48,
+        "rev": "a869a5adb2d0f6c2404f7e48d6b962f7878dfe01",
+        "revCount": 51,
         "type": "git",
         "url": "ssh://git@gitlab.platonic.systems/operation/star-beam.git"
       },
