@@ -221,6 +221,252 @@ let
       pass = actual == expected;
     };
 
+  # ── Synthetic registries for requires_routes tests ──────────────
+
+  # Test 1: Valid hub — hub-host sits on both via_subnet and to_subnet
+  hubSatisfiedRegistry = {
+    hosts = {
+      test-host = {
+        hostname = "test-host";
+        coordinate = [
+          { plane_name = "p1"; subnet = "10.0.1.0/24"; peer_id = 1; trust = 1; interface = "eth0"; }
+        ];
+        requires_routes = [
+          { via_subnet = "10.0.1.0/24"; to_subnet = "10.0.2.0/24"; reason = "test: need route to office"; }
+        ];
+      };
+      hub-host = {
+        hostname = "hub-host";
+        trust = 5;
+        hub_of = [
+          { plane_name = "p1"; subnet = "10.0.1.0/24"; }
+          { plane_name = "p2"; subnet = "10.0.2.0/24"; }
+        ];
+        coordinate = [
+          { plane_name = "p1"; subnet = "10.0.1.0/24"; peer_id = 2; trust = 1; interface = "eth0"; }
+          { plane_name = "p2"; subnet = "10.0.2.0/24"; peer_id = 1; trust = 1; interface = "eth1"; }
+        ];
+      };
+    };
+  };
+
+  # Test 2: No hub, no BFS path — isolated subnets
+  noHubRegistry = {
+    hosts = {
+      test-host = {
+        hostname = "test-host";
+        coordinate = [
+          { plane_name = "p1"; subnet = "10.0.1.0/24"; peer_id = 1; trust = 1; interface = "eth0"; }
+        ];
+        requires_routes = [
+          { via_subnet = "10.0.1.0/24"; to_subnet = "10.0.3.0/24"; reason = "test: no hub exists"; }
+        ];
+      };
+      other-host = {
+        hostname = "other-host";
+        coordinate = [
+          { plane_name = "p3"; subnet = "10.0.3.0/24"; peer_id = 1; trust = 1; interface = "eth0"; }
+        ];
+      };
+    };
+  };
+
+  # Test 3: Valid BFS — relay-b connects from_subnet to to_subnet via chain
+  bfsSatisfiedRegistry = {
+    hosts = {
+      leaf-a = {
+        hostname = "leaf-a";
+        coordinate = [
+          { plane_name = "p1"; subnet = "10.0.1.0/24"; peer_id = 1; trust = 1; interface = "eth0"; }
+        ];
+        requires_routes = [
+          { via_subnet = "10.0.1.0/24"; to_subnet = "10.0.3.0/24"; reason = "test: BFS route needed"; }
+        ];
+      };
+      relay-b = {
+        hostname = "relay-b";
+        coordinate = [
+          { plane_name = "p1"; subnet = "10.0.1.0/24"; peer_id = 2; trust = 1; interface = "eth0"; }
+          { plane_name = "p2"; subnet = "10.0.2.0/24"; peer_id = 1; trust = 1; interface = "eth1"; }
+        ];
+      };
+      leaf-c = {
+        hostname = "leaf-c";
+        coordinate = [
+          { plane_name = "p2"; subnet = "10.0.2.0/24"; peer_id = 2; trust = 1; interface = "eth0"; }
+          { plane_name = "p3"; subnet = "10.0.3.0/24"; peer_id = 1; trust = 1; interface = "eth1"; }
+        ];
+      };
+    };
+  };
+
+  # Test 4: No BFS — subnets exist but no connectivity between them
+  noBfsRegistry = {
+    hosts = {
+      leaf-a = {
+        hostname = "leaf-a";
+        coordinate = [
+          { plane_name = "p1"; subnet = "10.0.1.0/24"; peer_id = 1; trust = 1; interface = "eth0"; }
+        ];
+        requires_routes = [
+          { via_subnet = "10.0.1.0/24"; to_subnet = "10.0.4.0/24"; reason = "test: no path at all"; }
+        ];
+      };
+      isolated-host = {
+        hostname = "isolated-host";
+        coordinate = [
+          { plane_name = "p3"; subnet = "10.0.4.0/24"; peer_id = 1; trust = 1; interface = "eth0"; }
+        ];
+      };
+    };
+  };
+
+  # ── requires_routes tests ──────────────────────────────────────
+
+  testRequiresRoutesValidHub = {
+    name = "requires_routes_valid_hub";
+    pass =
+      let
+        h = mkHorizons { registry = hubSatisfiedRegistry; hostname = "test-host"; };
+      in
+      h.errors == [ ];
+    detail =
+      let
+        h = mkHorizons { registry = hubSatisfiedRegistry; hostname = "test-host"; };
+      in
+      { errors = h.errors; };
+  };
+
+  testRequiresRoutesNoHub = {
+    name = "requires_routes_no_hub";
+    pass =
+      let
+        h = mkHorizons { registry = noHubRegistry; hostname = "test-host"; };
+      in
+      (length h.errors) > 0
+      && lib.any (e: lib.hasInfix "no route path exists" e) h.errors;
+    detail =
+      let
+        h = mkHorizons { registry = noHubRegistry; hostname = "test-host"; };
+      in
+      { errors = h.errors; };
+  };
+
+  testRequiresRoutesValidBfs = {
+    name = "requires_routes_valid_bfs";
+    pass =
+      let
+        h = mkHorizons { registry = bfsSatisfiedRegistry; hostname = "leaf-a"; };
+      in
+      h.errors == [ ];
+    detail =
+      let
+        h = mkHorizons { registry = bfsSatisfiedRegistry; hostname = "leaf-a"; };
+      in
+      { errors = h.errors; };
+  };
+
+  testRequiresRoutesNoBfs = {
+    name = "requires_routes_no_bfs";
+    pass =
+      let
+        h = mkHorizons { registry = noBfsRegistry; hostname = "leaf-a"; };
+      in
+      (length h.errors) > 0
+      && lib.any (e: lib.hasInfix "no route path exists" e) h.errors;
+    detail =
+      let
+        h = mkHorizons { registry = noBfsRegistry; hostname = "leaf-a"; };
+      in
+      { errors = h.errors; };
+  };
+
+  # ── Missing required fields test ───────────────────────────────
+
+  testRequiresRoutesMissingFields = {
+    name = "requires_routes_missing_fields";
+    pass =
+      let
+        missingRegistry = {
+          hosts = {
+            test-host = {
+              hostname = "test-host";
+              coordinate = [
+                { plane_name = "p1"; subnet = "10.0.1.0/24"; peer_id = 1; trust = 1; interface = "eth0"; }
+              ];
+              requires_routes = [
+                { via_subnet = "10.0.1.0/24"; reason = "missing to_subnet"; }
+              ];
+            };
+          };
+        };
+        h = mkHorizons { registry = missingRegistry; hostname = "test-host"; };
+      in
+      (length h.errors) > 0
+      && lib.any (e: lib.hasInfix "missing required fields" e) h.errors;
+    detail =
+      let
+        missingRegistry = {
+          hosts = {
+            test-host = {
+              hostname = "test-host";
+              coordinate = [
+                { plane_name = "p1"; subnet = "10.0.1.0/24"; peer_id = 1; trust = 1; interface = "eth0"; }
+              ];
+              requires_routes = [
+                { via_subnet = "10.0.1.0/24"; reason = "missing to_subnet"; }
+              ];
+            };
+          };
+        };
+        h = mkHorizons { registry = missingRegistry; hostname = "test-host"; };
+      in
+      { errors = h.errors; };
+  };
+
+  testRequiresRoutesLocalSubnet = {
+    name = "requires_routes_local_subnet";
+    pass =
+      let
+        # Host already on to_subnet — R2 shortcut should give 0 errors
+        localRegistry = {
+          hosts = {
+            test-host = {
+              hostname = "test-host";
+              coordinate = [
+                { plane_name = "p1"; subnet = "10.0.1.0/24"; peer_id = 1; trust = 1; interface = "eth0"; }
+                { plane_name = "p2"; subnet = "10.0.2.0/24"; peer_id = 2; trust = 1; interface = "eth1"; }
+              ];
+              requires_routes = [
+                { via_subnet = "10.0.1.0/24"; to_subnet = "10.0.2.0/24"; reason = "test: already local"; }
+              ];
+            };
+          };
+        };
+        h = mkHorizons { registry = localRegistry; hostname = "test-host"; };
+      in
+      h.errors == [ ];
+    detail =
+      let
+        localRegistry = {
+          hosts = {
+            test-host = {
+              hostname = "test-host";
+              coordinate = [
+                { plane_name = "p1"; subnet = "10.0.1.0/24"; peer_id = 1; trust = 1; interface = "eth0"; }
+                { plane_name = "p2"; subnet = "10.0.2.0/24"; peer_id = 2; trust = 1; interface = "eth1"; }
+              ];
+              requires_routes = [
+                { via_subnet = "10.0.1.0/24"; to_subnet = "10.0.2.0/24"; reason = "test: already local"; }
+              ];
+            };
+          };
+        };
+        h = mkHorizons { registry = localRegistry; hostname = "test-host"; };
+      in
+      { errors = h.errors; };
+  };
+
   # Aggregate checks
   checks = [
     testUnknownHost
@@ -234,6 +480,12 @@ let
     testRemoteWorkerIcmpInterface
     testDlyonCoordinateCount
     testLINDACoordinateCount
+    testRequiresRoutesValidHub
+    testRequiresRoutesNoHub
+    testRequiresRoutesValidBfs
+    testRequiresRoutesNoBfs
+    testRequiresRoutesMissingFields
+    testRequiresRoutesLocalSubnet
   ];
 
   passed = all (c: c.pass) checks;
