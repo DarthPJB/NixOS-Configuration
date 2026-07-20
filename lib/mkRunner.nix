@@ -39,7 +39,12 @@ let
       extraLabels = extraLabels ++ [ "runner-${toString i}" ];
       extraEnvironment = extraEnvironment;
       serviceOverrides = {
-        BindReadOnlyPaths = lib.optional (gitlabNetrcPath != null) gitlabNetrcPath;
+        # Baremetal runner on trusted VPN — share host's nix store
+        PrivateMounts = false;
+        DynamicUser = false;
+        User = "build";
+        ProtectSystem = false;
+        BindReadOnlyPaths = [ "/nix" ] ++ lib.optional (gitlabNetrcPath != null) gitlabNetrcPath;
       } // extraServiceOverrides;
     };
   };
