@@ -9,11 +9,11 @@
         "opencode-flake": "opencode-flake"
       },
       "locked": {
-        "lastModified": 1784556734,
-        "narHash": "sha256-DxGzeCvbDZtgtCkbvrYv4bgpvUX8MOh+yGL05szMbro=",
+        "lastModified": 1784563343,
+        "narHash": "sha256-LT4a8Mi+ffIO0Edl3FqhWGLyOXyPdIKU/08blFoZMI0=",
         "ref": "refs/heads/main",
-        "rev": "e26422ac1dde3fa3201aa5002c27f0490a2782a8",
-        "revCount": 423,
+        "rev": "9d4cc4ca8bf0ce0da8a4f6d7a4c980e40b9a390b",
+        "revCount": 425,
         "type": "git",
         "url": "https://gitlab.com/mecha-team-zero/llm-core.git"
       },
