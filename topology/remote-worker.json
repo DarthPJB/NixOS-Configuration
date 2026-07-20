@@ -13,15 +13,16 @@
   "trust": 3,
   "exporters": {
     "nextcloud": {
-      "port": 3106
+      "port": 3106,
+      "listenAddress": "0.0.0.0"
     },
     "nginx": {
-      "port": 3105
-    },
-    "smartctl": {}
+      "port": 3105,
+      "listenAddress": "0.0.0.0"
+    }
   },
   "vhosts": {
-    "_": [
+    "default": [
       {
         "default": true,
         "return": "444"
@@ -33,8 +34,7 @@
           "root": "../../webroot"
         },
         "acme": {
-          "enable": true,
-          "host": "johnbargman.net"
+          "enable": true
         },
         "forceSSL": true
       }
@@ -59,13 +59,11 @@
           "root": "../../personal-site"
         },
         "acme": {
-          "enable": true,
-          "host": "johnbargman.com"
+          "enable": true
         },
         "forceSSL": true,
         "server_name": "johnbargman.com"
       }
     ]
-  },
-  "default_response": "444"
+  }
 }

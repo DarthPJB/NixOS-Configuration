@@ -23,7 +23,18 @@
         },
         "acme": {
           "enable": true,
-          "host": "secure.johnbargman.net"
+          "host": "johnbargman.net"
+        },
+        "forceSSL": true
+      }
+    ],
+    "apps.johnbargman.net": [
+      {
+        "static": {
+          "root": "../webroot"
+        },
+        "acme": {
+          "host": "johnbargman.net"
         },
         "forceSSL": true
       }

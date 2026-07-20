@@ -220,15 +220,30 @@ let
   testF2ProxyPass = {
     name = "f2_proxy_vhost_proxyPass";
     expected = "http://10.88.127.3:80";
-    actual = f2Vhosts."code.johnbargman.net".locations."/".proxyPass or null;
-    pass = (f2Vhosts."code.johnbargman.net".locations."/".proxyPass or null) == "http://10.88.127.3:80";
+    actual = f2Vhosts."code.johnbargman.net".locations."~/".proxyPass or null;
+    pass = (f2Vhosts."code.johnbargman.net".locations."~/".proxyPass or null) == "http://10.88.127.3:80";
   };
 
   testF2ProxyNoReturn = {
     name = "f2_proxy_vhost_no_return";
     expected = true;
-    actual = !(f2Vhosts."code.johnbargman.net".locations."/" ? return);
-    pass = !(f2Vhosts."code.johnbargman.net".locations."/" ? return);
+    actual = !(f2Vhosts."code.johnbargman.net".locations."~/" ? return);
+    pass = !(f2Vhosts."code.johnbargman.net".locations."~/" ? return);
+  };
+
+  # ── New tests for proxy vhost enhancements ────────────────
+  testF2ProxyWebsockets = {
+    name = "f2_proxy_vhost_proxyWebsockets";
+    expected = true;
+    actual = f2Vhosts."code.johnbargman.net".locations."~/".proxyWebsockets or false;
+    pass = f2Vhosts."code.johnbargman.net".locations."~/".proxyWebsockets or false;
+  };
+
+  testF2ProxyExtraConfig = {
+    name = "f2_proxy_vhost_extra_config_has_proxy_set_header";
+    expected = true;
+    actual = f2Vhosts."code.johnbargman.net".locations."~/".extraConfig or "";
+    pass = builtins.match ".*proxy_set_header Host.*" (f2Vhosts."code.johnbargman.net".locations."~/".extraConfig or "") != null;
   };
 
   # ── Test 5: Static vhost ──────────────────────────────────
@@ -316,33 +331,64 @@ let
     pass = f3Exporters.node.enable or false;
   };
 
-  # ── Test 10: ACME configuration ────────────────────────────
-  testF3HasAcmeVhost = {
-    name = "f3_has_acme_vhost";
+  # ── Test 10: ACME configuration — self-managed cert ────────
+  # secure.johnbargman.net has acme.enable=true + acme.host="johnbargman.net"
+  # (different from vhost name) → should set enableACME=true + useACMEHost
+  testF3SelfManagedVhost = {
+    name = "f3_has_self_managed_vhost";
     expected = true;
     actual = f3Vhosts ? "secure.johnbargman.net";
     pass = f3Vhosts ? "secure.johnbargman.net";
   };
 
-  testF3AcmeEnable = {
-    name = "f3_acme_enableACME_true";
+  testF3SelfManagedAcmeEnable = {
+    name = "f3_self_managed_enableACME";
     expected = true;
     actual = f3Vhosts."secure.johnbargman.net".enableACME or false;
     pass = f3Vhosts."secure.johnbargman.net".enableACME or false;
   };
 
-  testF3AcmeHost = {
-    name = "f3_acme_useACMEHost";
-    expected = "secure.johnbargman.net";
+  testF3SelfManagedUseACMEHost = {
+    name = "f3_self_managed_useACMEHost";
+    expected = "johnbargman.net";
     actual = f3Vhosts."secure.johnbargman.net".useACMEHost or null;
-    pass = (f3Vhosts."secure.johnbargman.net".useACMEHost or null) == "secure.johnbargman.net";
+    pass = (f3Vhosts."secure.johnbargman.net".useACMEHost or null) == "johnbargman.net";
   };
 
-  testF3ForceSSL = {
-    name = "f3_acme_vhost_forceSSL";
+  testF3SelfManagedForceSSL = {
+    name = "f3_self_managed_forceSSL";
     expected = true;
     actual = f3Vhosts."secure.johnbargman.net".forceSSL or false;
     pass = f3Vhosts."secure.johnbargman.net".forceSSL or false;
+  };
+
+  # ── Test 11: ACME configuration — shared cert (no enableACME, just useACMEHost) ──
+  testF3SharedVhost = {
+    name = "f3_has_shared_cert_vhost";
+    expected = true;
+    actual = f3Vhosts ? "apps.johnbargman.net";
+    pass = f3Vhosts ? "apps.johnbargman.net";
+  };
+
+  testF3SharedNoEnableACME = {
+    name = "f3_shared_cert_no_enableACME";
+    expected = false;
+    actual = f3Vhosts."apps.johnbargman.net".enableACME or false;
+    pass = !(f3Vhosts."apps.johnbargman.net".enableACME or false);
+  };
+
+  testF3SharedUseACMEHost = {
+    name = "f3_shared_cert_useACMEHost";
+    expected = "johnbargman.net";
+    actual = f3Vhosts."apps.johnbargman.net".useACMEHost or null;
+    pass = (f3Vhosts."apps.johnbargman.net".useACMEHost or null) == "johnbargman.net";
+  };
+
+  testF3SharedForceSSL = {
+    name = "f3_shared_cert_forceSSL";
+    expected = true;
+    actual = f3Vhosts."apps.johnbargman.net".forceSSL or false;
+    pass = f3Vhosts."apps.johnbargman.net".forceSSL or false;
   };
 
   testF3ExporterListenAddress = {
@@ -412,6 +458,8 @@ let
     testF2HasProxyVhost
     testF2ProxyPass
     testF2ProxyNoReturn
+    testF2ProxyWebsockets
+    testF2ProxyExtraConfig
 
     # ── Test 5: Static vhost ───────────────────────────
     testF2HasStaticVhost
@@ -434,11 +482,18 @@ let
     testF3NodeExporterPortOverride
     testF3NodeExporterEnabled
 
-    # ── Test 10: ACME configuration ────────────────────
-    testF3HasAcmeVhost
-    testF3AcmeEnable
-    testF3AcmeHost
-    testF3ForceSSL
+    # ── Test 10: ACME configuration — self-managed ────
+    testF3SelfManagedVhost
+    testF3SelfManagedAcmeEnable
+    testF3SelfManagedUseACMEHost
+    testF3SelfManagedForceSSL
+
+    # ── Test 11: ACME configuration — shared cert ─────
+    testF3SharedVhost
+    testF3SharedNoEnableACME
+    testF3SharedUseACMEHost
+    testF3SharedForceSSL
+
     testF3ExporterListenAddress
 
     # ── Test 9: No topology JSON ───────────────────────

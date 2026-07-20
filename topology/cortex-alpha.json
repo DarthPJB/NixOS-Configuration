@@ -57,9 +57,14 @@
     "10.88.128.248/32",
     "10.88.128.247/32"
   ],
+  "acme_host": "johnbargman.net",
   "default_response": "404-or-drop",
   "exporters": {
-    "dnsmasq": {}
+    "dnsmasq": {
+      "listenAddress": "10.88.127.1",
+      "leasesPath": "/dev/null",
+      "dnsmasqListenAddress": "10.88.128.1:53"
+    }
   },
   "vhosts": {
     "_": [
@@ -93,32 +98,38 @@
     ],
     "print-controller.johnbargman.net": [
       {
-        "proxy_to": "10.88.127.30:80"
+        "proxy_to": "10.88.127.30:80",
+        "regex_prefix": true
       }
     ],
     "code.johnbargman.net": [
       {
-        "proxy_to": "10.88.127.3:80"
+        "proxy_to": "10.88.127.3:80",
+        "regex_prefix": true
       }
     ],
     "git.johnbargman.net": [
       {
-        "proxy_to": "10.88.127.3:80"
+        "proxy_to": "10.88.127.3:80",
+        "regex_prefix": true
       }
     ],
     "prometheus.johnbargman.net": [
       {
-        "proxy_to": "10.88.127.3:8080"
+        "proxy_to": "10.88.127.3:8080",
+        "regex_prefix": true
       }
     ],
     "grafana.johnbargman.net": [
       {
-        "proxy_to": "10.88.127.3:3101"
+        "proxy_to": "10.88.127.3:3101",
+        "regex_prefix": true
       }
     ],
     "ap.johnbargman.net": [
       {
-        "proxy_to": "10.88.128.2:80"
+        "proxy_to": "10.88.128.2:80",
+        "regex_prefix": true
       }
     ]
   }
