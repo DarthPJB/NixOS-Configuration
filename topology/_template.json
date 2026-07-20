@@ -1,0 +1,35 @@
+{
+  "_": "Schema template for topology/<machine>.json. Operators copy this file, rename it, and fill in the fields. See documentation/2026-07-18-MULTI-HORIZON-GATEWAY-PLAN.md §3 for full schema. The data is the source of truth; the generator is pure.",
+
+  "hostname": "<MACHINE_NAME>",
+  "role": "leaf | hub | sub-hub | workstation | server | bastion | ap | iot | client",
+  "trust": 3,
+
+  "coordinate": [
+    {
+      "plane_name": "<PLANE_NAME>",
+      "subnet": "<SUBNET_CIDR>",
+      "peer_id": 0,
+      "trust": 0,
+      "interface": "<INTERFACE>",
+      "parent": null
+    }
+  ],
+
+  "hub_of": [],
+
+  "icmp_defaults": { "pmtud": true, "ping": false },
+  "icmp_override": {},
+
+  "routes": [],
+
+  "requires_routes": [],
+
+  "vhost_planes": {},
+
+  "default_response": "404-or-drop",
+
+  "public_key_file": "secrets/public_keys/wireguard/wg_<MACHINE_NAME>_pub",
+
+  "advertised_tailscale_routes": []
+}

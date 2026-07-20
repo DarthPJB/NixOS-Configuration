@@ -18,8 +18,15 @@
 let
   hostname = config.networking.hostName;
 
-  # --- Per-machine topology (detailed — all data for this machine) ---
-  machineTopology = import ../topology/${hostname}.nix { inherit lib self; };
+  # --- Per-machine topology: read from registry (new) or .nix file (legacy) ---
+  machineTopology =
+    if (config.topology.useNewPipeline or false) then
+      let
+        registry = import ../lib/topology/mkRegistry.nix { inherit lib self; };
+      in
+        registry.hosts.${hostname} or { }
+    else
+      import ../topology/${hostname}.nix { inherit lib self; };
 
   # Wrap per-machine topology for transformer iteration pattern: { ${hostname} = topology; }
   perMachineTopology = { ${hostname} = machineTopology; };
@@ -61,10 +68,21 @@ let
     ++ dnsSettings.errors;
 in
 {
-  options.coreRouterTopology.enable = lib.mkOption {
-    type = lib.types.bool;
-    default = true;
-    description = "Enable topology-driven configuration using WIP two-layer generators";
+  options = {
+    topology = {
+      useNewPipeline = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "When true, the registry (lib/topology/mkRegistry.nix) is the source of truth for machine topology. When false, the original .nix file in topology/ is used. Default is false (legacy).";
+      };
+    };
+    coreRouterTopology = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Enable topology-driven configuration using WIP two-layer generators";
+      };
+    };
   };
 
   config = lib.mkMerge [
