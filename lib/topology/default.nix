@@ -22,4 +22,7 @@
   mkForwarding = import ./mkForwarding.nix { inherit lib; };
   validate = import ./validate.nix { inherit lib; };
   utils = import ./utils.nix { inherit lib; };
+
+  # Phase A: Horizon transformer (per-machine, consumes registry)
+  mkHorizons = import ./mkHorizons.nix { inherit lib; };
 }

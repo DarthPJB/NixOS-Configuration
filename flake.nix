@@ -40,6 +40,11 @@
       lib = nixpkgs_stable.lib;
       # Import topology to derive deployment IPs from single source of truth
       topo = import ./topology/shared.nix { inherit lib; };
+      # Dormant topology registry — consumed in Phase 2+ (see planar-topology plan)
+      topology-registry = import ./lib/topology/mkRegistry.nix { inherit lib; };
+      # Pipeline gating flag — when true, the registry is the source of truth;
+      # when false (default), the original .nix files are the source of truth.
+      useNewPipeline = false;
       # Get wireguard IP for a machine from topology
       topoIp = machineName: topo.${machineName}.wireguard;
       globalArgs = {
@@ -218,6 +223,8 @@
       ci-generator = import ./ci/generate-workflow.nix { inherit self lib; pkgs = nixpkgs; };
     in
     {
+      # Dormant topology registry — accessible for evaluation but not wired into any machine config
+      inherit topology-registry;
       formatter."x86_64-linux" = nixpkgs.nixpkgs-fmt;
       apps."x86_64-linux" = { secrix = secrix.secrix self; } // (nixinate.lib.genDeploy.x86_64-linux self) // {
         # Check network config against golden
@@ -645,26 +652,28 @@
       checks."x86_64-linux" = {
         nixpkgs-fmt = lint-utils.linters.x86_64-linux.nixpkgs-fmt { src = self; };
 
-        # Network topology golden check for cortex-alpha (manual run)
-        network-config-cortex-alpha = nixpkgs.writeShellApplication {
-          name = "network-config-cortex-alpha";
-          meta.description = "Check network config against golden file";
-          runtimeInputs = [ nixpkgs.jq ];
-          text = ''
-            echo "Generating current network config for cortex-alpha..."
-            nix run .#dump-config -- cortex-alpha | jq -S . > /tmp/current-network.json
+        # Network topology golden check for all machines (generalized)
+        network-config = lib.genAttrs (builtins.attrNames self.nixosConfigurations) (machine:
+          nixpkgs.writeShellApplication {
+            name = "network-config-${machine}";
+            meta.description = "Verify network config against golden for ${machine}";
+            runtimeInputs = [ nixpkgs.jq nixpkgs.diffutils ];
+            text = ''
+              echo "Generating current network config for ${machine}..."
+              nix run .#dump-config -- ${machine} | jq -S . > /tmp/current-network.json
 
-            echo "Comparing with golden..."
-            if diff -u ${self}/goldens/cortex-alpha.json /tmp/current-network.json; then
-              echo "✓ Network config matches golden for cortex-alpha"
-            else
-              echo "✗ Network configuration has changed from golden!"
-              echo "If intentional, update with:"
-              echo "  nix run .#dump-config -- cortex-alpha > goldens/cortex-alpha.json"
-              exit 1
-            fi
-          '';
-        };
+              echo "Comparing with golden..."
+              if diff -u ${self}/goldens/${machine}.json /tmp/current-network.json; then
+                echo "✓ Network config matches golden for ${machine}"
+              else
+                echo "✗ Network configuration has changed from golden for ${machine}!"
+                echo "If intentional, update with:"
+                echo "  nix run .#dump-config -- ${machine} > goldens/${machine}.json"
+                exit 1
+              fi
+            '';
+          }
+        );
 
         topology-coverage =
           let

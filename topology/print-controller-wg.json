@@ -1,0 +1,34 @@
+{
+  "_legacy": {
+    "_comment": "Phase -1 source data (preserved for reference)",
+    "_dhcp_hostname": "print-controller-wg",
+    "_file_origin": "cortex-alpha.nix::lan.hosts.print-controller-wg",
+    "_ip_in_topology": "10.88.127.30",
+    "_mac_in_topology": null,
+    "_routing_legacy": {
+      "tailscale": false,
+      "wireguard": true
+    },
+    "_services_legacy": [],
+    "_wireguard_peer_id": null
+  },
+  "coordinate": [
+    {
+      "interface": null,
+      "peer_id": 30,
+      "plane_name": "cortex-alpha.lan",
+      "subnet": "10.88.128.0/24",
+      "trust": 1
+    },
+    {
+      "interface": "wireg0",
+      "peer_id": 0,
+      "plane_name": "wg",
+      "subnet": "10.88.127.0/24",
+      "trust": 3
+    }
+  ],
+  "hostname": "print-controller-wg",
+  "public_key_file": null,
+  "trust": 3
+}

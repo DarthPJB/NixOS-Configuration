@@ -1,0 +1,24 @@
+{
+  "_legacy": {
+    "_comment": "Phase -1 source data (preserved for reference)",
+    "_dhcp_hostname": "ap",
+    "_file_origin": "cortex-alpha.nix::lan.hosts.ap",
+    "_ip_in_topology": "10.88.128.2",
+    "_mac_in_topology": "14:cc:20:46:f8:ab",
+    "_routing_legacy": null,
+    "_services_legacy": null,
+    "_wireguard_peer_id": null
+  },
+  "coordinate": [
+    {
+      "plane_name": "cortex-alpha.lan",
+      "subnet": "10.88.128.0/24",
+      "peer_id": 2,
+      "trust": 1,
+      "interface": null
+    }
+  ],
+  "hostname": "ap",
+  "public_key_file": null,
+  "trust": 3
+}

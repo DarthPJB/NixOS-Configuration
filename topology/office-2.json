@@ -1,0 +1,23 @@
+{
+  "_legacy": {
+    "_comment": "Phase -1 source data (preserved for reference)",
+    "_file_origin": "shared.nix::office-2",
+    "_hub_in_shared": "building-b",
+    "_lan_in_shared": null,
+    "_peers_in_shared": null,
+    "_uplink_in_shared": null,
+    "_wireguard_peer_id_in_shared": "10.88.127.102"
+  },
+  "coordinate": [
+    {
+      "interface": "wireg0",
+      "peer_id": 102,
+      "plane_name": "wg",
+      "subnet": "10.88.127.0/24",
+      "trust": 3
+    }
+  ],
+  "hostname": "office-2",
+  "public_key_file": null,
+  "trust": 3
+}
