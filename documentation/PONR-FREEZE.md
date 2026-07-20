@@ -34,5 +34,5 @@ git checkout <parent-sha>   # or git revert <ponr-sha>
 
 ## SHA
 
-**PONR commit:** `4e2d55d5a05ebbb95cdf29f45b7d8ecfcf1dbd6e`
+**PONR commit:** `7afc568 (includes freeze note; parent feature 4e2d55d)`
 
