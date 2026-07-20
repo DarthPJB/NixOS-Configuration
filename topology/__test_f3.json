@@ -1,0 +1,32 @@
+{
+  "hostname": "__test_f3",
+  "trust": 3,
+  "coordinate": [
+    {
+      "plane_name": "cortex-alpha.lan",
+      "subnet": "10.88.128.0/24",
+      "peer_id": 242,
+      "trust": 1,
+      "interface": "lan0"
+    }
+  ],
+  "exporters": {
+    "node": {
+      "port": 9101
+    }
+  },
+  "vhosts": {
+    "secure.johnbargman.net": [
+      {
+        "static": {
+          "root": "../webroot"
+        },
+        "acme": {
+          "enable": true,
+          "host": "secure.johnbargman.net"
+        },
+        "forceSSL": true
+      }
+    ]
+  }
+}

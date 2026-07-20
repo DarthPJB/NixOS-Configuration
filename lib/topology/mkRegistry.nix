@@ -24,7 +24,7 @@ let
   inherit (lib)
     removeSuffix hasSuffix attrValues toInt flatten unique
     concatStringsSep optionals optional filterAttrs mapAttrs
-    hasInfix;
+    hasInfix hasPrefix;
 
   # ── Paths ────────────────────────────────────────────────────
   # The topology directory is ../topology relative to this file
@@ -37,8 +37,9 @@ let
   jsonFileNames = filter (n: hasSuffix ".json" n) allFileNames;
 
   # Special files excluded from per-host parsing
-  specialFiles = [ "shared.json" "_template.json" ];
-  hostFileNames = filter (n: !(builtins.elem n specialFiles)) jsonFileNames;
+  specialFiles = [ "shared.json" ];
+  # Exclude files starting with "_" (template, test fixtures)
+  hostFileNames = filter (n: !(builtins.elem n specialFiles) && !(hasPrefix "_" n)) jsonFileNames;
 
   # ── JSON parsing ─────────────────────────────────────────────
   parseJSON = name: fromJSON (readFile (topologyDir + "/${name}"));
