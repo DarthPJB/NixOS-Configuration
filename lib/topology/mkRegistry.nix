@@ -459,6 +459,21 @@ let
       )
       (attrNames wgPeers));
 
+  # ── Validator: exporters shape ───────────────────────────────
+  vExportersShape =
+    flatten (map
+      (host:
+        let
+          exp = host.exporters or null;
+        in
+        if exp == null then
+          [ ]  # absent is fine
+        else if !isAttrs exp then
+          [ "ERROR: ${host.hostname}: exporters must be an attrset, got ${builtins.typeOf exp}" ]
+        else
+          [ ])
+      (attrValues hosts));
+
   # ── Aggregate results ────────────────────────────────────────
   allErrors = flatten [
     vFilenameBinding
@@ -472,6 +487,7 @@ let
     vDanglingCoordinates
     vPeerIdUniqueness
     vSubnetSizes
+    vExportersShape
   ];
 
   allWarnings = flatten [
