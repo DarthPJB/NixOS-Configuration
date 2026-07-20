@@ -14,18 +14,11 @@
   },
   "coordinate": [
     {
-      "interface": null,
+      "interface": "enp0s31f6",
       "peer_id": 151,
       "plane_name": "cortex-alpha.lan",
       "subnet": "10.88.128.0/24",
       "trust": 1
-    },
-    {
-      "interface": "wireg0",
-      "peer_id": 0,
-      "plane_name": "wg",
-      "subnet": "10.88.127.0/24",
-      "trust": 3
     }
   ],
   "hostname": "linda-lan",

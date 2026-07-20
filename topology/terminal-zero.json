@@ -24,6 +24,13 @@
       "plane_name": "cortex-alpha.lan",
       "subnet": "10.88.128.0/24",
       "trust": 1
+    },
+    {
+      "interface": null,
+      "peer_id": 21,
+      "plane_name": "cortex-alpha.lan",
+      "subnet": "10.88.128.0/24",
+      "trust": 1
     }
   ],
   "hostname": "terminal-zero",
