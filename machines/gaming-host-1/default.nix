@@ -63,7 +63,12 @@
   environment.systemPackages = with pkgs; [ ];
 
   # TOPOLOGY-DERIVED: see topology/gaming-host-1.json vhosts
-  # Preserve: recommendedProxySettings, recommendedTlsSettings
+  # Nginx-level settings NOT managed by topology-derive — preserved here
+  services.nginx = {
+    recommendedProxySettings = true;
+    recommendedTlsSettings = true;
+    # enable and virtualHosts come from topology-derive
+  };
   # ── Nginx reverse proxy for squaremap ──────────────────────────────
   # services.nginx = {
   #   enable = true;

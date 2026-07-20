@@ -60,6 +60,7 @@
       commonModules = [
         secrix.nixosModules.default
         ratty.nixosModules.default
+        ./modules/topology-derive.nix
         ./configuration.nix
         ./modules/ssh-multiplex.nix
         {
@@ -570,40 +571,39 @@
           extraModules = [
             ./users/build.nix
             # self.inputs.LLM-CORE.nixosModules.opencode-fleet  # Disabled for overlord-I — re-enable as part of overlord-II
-            {
-              services.nginx = {
-                enable = true;
-                virtualHosts = {
-                  "csfinancialconsulting.com" = {
-                    forceSSL = true;
-                    enableACME = true;
-                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
-                    locations."/" = {
-                      root = carmelsite.packages.x86_64-linux.default;
-                      #proxywebsockets = false; # needed if you need to use websocket
-                    };
-                  };
-                  "csfincon.us" = {
-                    forceSSL = true;
-                    enableACME = true;
-                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
-                    locations."/" = {
-                      root = carmelsite.packages.x86_64-linux.default;
-                      #proxywebsockets = false; # needed if you need to use websocket
-                    };
-                  };
-                  "carmel-staging.johnbargman.net" = {
-                    useACMEHost = "johnbargman.net";
-                    forceSSL = true;
-                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
-                    locations."/" = {
-                      root = carmelsite.packages.x86_64-linux.default;
-                      #proxywebsockets = false; # needed if you need to use websocket
-                    };
-                  };
-                };
-              };
-            }
+            # TOPOLOGY-DERIVED: see topology/remote-worker.json vhosts
+            # Inline nginx config neutralized — vhosts come from topology-derive
+            # {
+            #   services.nginx = {
+            #     enable = true;
+            #     virtualHosts = {
+            #       "csfinancialconsulting.com" = {
+            #         forceSSL = true;
+            #         enableACME = true;
+            #         listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
+            #         locations."/" = {
+            #           root = carmelsite.packages.x86_64-linux.default;
+            #         };
+            #       };
+            #       "csfincon.us" = {
+            #         forceSSL = true;
+            #         enableACME = true;
+            #         listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
+            #         locations."/" = {
+            #           root = carmelsite.packages.x86_64-linux.default;
+            #         };
+            #       };
+            #       "carmel-staging.johnbargman.net" = {
+            #         useACMEHost = "johnbargman.net";
+            #         forceSSL = true;
+            #         listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
+            #         locations."/" = {
+            #           root = carmelsite.packages.x86_64-linux.default;
+            #         };
+            #       };
+            #     };
+            #   };
+            # }
           ];
 
         };

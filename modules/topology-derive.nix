@@ -176,38 +176,58 @@ let
       # enableACME only when explicitly set in per-entry
       enableACMEEffective = perEntryAcmeEnable;
 
-      # Standard proxy headers (matching genNginx legacy production output)
-      proxyHeaders = ''
+      # Proxy headers — enabled by per-entry proxy_headers flag.
+      # When true, adds standard reverse-proxy headers to the location.
+      # The golden for some machines (e.g. cortex-alpha) expects these
+      # per-location headers from the old genNginx generator.
+      proxyHeadersVal = if entry.proxy_headers or false then ''
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
-      '';
+      '' else null;
 
       # Location key: regex prefix ("~/") or exact ("/")
       locKey = if isProxy && regexPrefix then "~/" else "/";
 
       # Location block -- varies by type
+      locationExtraConfig = if proxyHeadersVal != null then
+        { extraConfig = proxyHeadersVal; }
+      else { };
+
       locations =
         # Return-type vhost (e.g., catch-all return "444")
         if isReturn then {
           "${locKey}" = { return = entry.return; };
         }
-        # Proxy-type vhost: with proxyWebsockets, extra proxy headers, proxy_pass
+        # Proxy-type vhost: with proxyWebsockets, optional extraConfig, proxy_pass
         else if isProxy then {
           "${locKey}" = {
             proxyPass       = "http://${entry.proxy_to}";
             proxyWebsockets = true;
-            extraConfig     = proxyHeaders;
-          };
+          } // locationExtraConfig;
         }
         # Static-type vhost (e.g., serve files from a root)
-        else if isStatic then {
-          "/" = { root = entry.static.root; };
+        # Resolve relative root paths (from JSON, relative to topology/ dir)
+        # to absolute Nix paths so the serializer produces <path> not <eval-error>.
+        # Formula: ./../topology + "/" + staticRoot = absolute path from module dir
+        else if isStatic then
+        let
+          staticRoot = entry.static.root;
+          absRoot = if hasPrefix "/" staticRoot
+            then staticRoot
+            else ./../topology + ("/${staticRoot}");
+        in {
+          "/" = { root = absRoot; };
         }
         else { };
+
+      # Listen addresses per-vhost override (when entry has explicit listenAddresses)
+      listenAddressesConfig = if entry ? listenAddresses then
+        { listenAddresses = entry.listenAddresses; }
+      else { };
 
       # Server name override (when vhost key differs from server_name)
       serverNameConfig = if serverNameOpt != null then
@@ -229,6 +249,7 @@ let
         // { inherit locations forceSSL; }
         // extraProxyCfg
         // serverNameConfig
+        // listenAddressesConfig
         // acmeConfig;
     };
 
@@ -314,7 +335,9 @@ in
     warnings = registryWarnings ++ pubkeyWarnings;
 
     # ── B. Interfaces + Addresses ─────────────────────────
-    networking.interfaces = interfaceConfig;
+    # DISABLED: WireGuard/Tailscale interfaces are out-of-scope for PONR.
+    # LAN interface addresses not present in goldens — enables in later phase.
+    # networking.interfaces = interfaceConfig;
 
     # ── C. Exporters ──────────────────────────────────────
     services.prometheus.exporters = exporterConfig;
