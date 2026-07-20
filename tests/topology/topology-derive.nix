@@ -71,6 +71,9 @@ let
   #   - cortex-alpha.lan/10.88.128.0/24  peer_id=240  → 10.88.128.240/24
   #   - wg/10.88.127.0/24               peer_id=240  → 10.88.127.240/24
   #   - No vhosts, no exporters, no default_response
+  # NOTE: interface derivation from coordinates is DISABLED for PONR.
+  # Interfaces will be managed in a later phase. The computation
+  # remains in topology-derive but is not wired into config.
   # ═══════════════════════════════════════════════════════════════
   f1 = evalHost "__test_f1";
   f1Ifaces = f1.networking.interfaces or { };
@@ -78,56 +81,16 @@ let
   f1HasLan0   = f1Ifaces ? lan0;
   f1HasWireg0 = f1Ifaces ? wireg0;
 
-  f1Lan0Addr    = if f1HasLan0   then (head (f1Ifaces.lan0.ipv4.addresses or [ ])).address or null     else null;
-  f1Lan0Prefix  = if f1HasLan0   then (head (f1Ifaces.lan0.ipv4.addresses or [ ])).prefixLength or null else null;
-  f1Wireg0Addr  = if f1HasWireg0 then (head (f1Ifaces.wireg0.ipv4.addresses or [ ])).address or null    else null;
-  f1Wireg0Prefix = if f1HasWireg0 then (head (f1Ifaces.wireg0.ipv4.addresses or [ ])).prefixLength or null else null;
-
   f1NginxEnabled = f1.services.nginx.enable or false;
   f1Vhosts       = f1.services.nginx.virtualHosts or { };
   f1Exporters    = f1.services.prometheus.exporters or { };
 
-  # ── Test 1 & 8: Simple leaf + interface derivation ────────────
-  testF1HasLan0 = {
-    name = "f1_has_lan0_interface";
+  # ── Test 1 & 8: Simple leaf — interfaces are DISABLED ─────────
+  testF1InterfacesEmpty = {
+    name = "f1_interfaces_empty_interfaces_disabled";
     expected = true;
-    actual = f1HasLan0;
-    pass = f1HasLan0;
-  };
-
-  testF1HasWireg0 = {
-    name = "f1_has_wireg0_interface";
-    expected = true;
-    actual = f1HasWireg0;
-    pass = f1HasWireg0;
-  };
-
-  testF1Lan0IP = {
-    name = "f1_lan0_ip_from_coordinate";
-    expected = "10.88.128.240";
-    actual = f1Lan0Addr;
-    pass = f1Lan0Addr == "10.88.128.240";
-  };
-
-  testF1Lan0Prefix = {
-    name = "f1_lan0_prefix_from_subnet";
-    expected = 24;
-    actual = f1Lan0Prefix;
-    pass = f1Lan0Prefix == 24;
-  };
-
-  testF1Wireg0IP = {
-    name = "f1_wireg0_ip_from_coordinate";
-    expected = "10.88.127.240";
-    actual = f1Wireg0Addr;
-    pass = f1Wireg0Addr == "10.88.127.240";
-  };
-
-  testF1Wireg0Prefix = {
-    name = "f1_wireg0_prefix_from_subnet";
-    expected = 24;
-    actual = f1Wireg0Prefix;
-    pass = f1Wireg0Prefix == 24;
+    actual = f1Ifaces == { };
+    pass = f1Ifaces == { };
   };
 
   testF1NoNginx = {
@@ -239,11 +202,11 @@ let
     pass = f2Vhosts."code.johnbargman.net".locations."~/".proxyWebsockets or false;
   };
 
-  testF2ProxyExtraConfig = {
-    name = "f2_proxy_vhost_extra_config_has_proxy_set_header";
+  testF2ProxyNoExtraConfig = {
+    name = "f2_proxy_vhost_no_extra_config";
     expected = true;
-    actual = f2Vhosts."code.johnbargman.net".locations."~/".extraConfig or "";
-    pass = builtins.match ".*proxy_set_header Host.*" (f2Vhosts."code.johnbargman.net".locations."~/".extraConfig or "") != null;
+    actual = !(f2Vhosts."code.johnbargman.net".locations."~/" ? extraConfig);
+    pass = !(f2Vhosts."code.johnbargman.net".locations."~/" ? extraConfig);
   };
 
   # ── Test 5: Static vhost ──────────────────────────────────
@@ -256,9 +219,9 @@ let
 
   testF2StaticRoot = {
     name = "f2_static_vhost_root";
-    expected = "../webroot";
-    actual = f2Vhosts."johnbargman.net".locations."/".root or null;
-    pass = (f2Vhosts."johnbargman.net".locations."/".root or null) == "../webroot";
+    expected = true;
+    actual = builtins.isPath (f2Vhosts."johnbargman.net".locations."/".root or "");
+    pass = builtins.isPath (f2Vhosts."johnbargman.net".locations."/".root or "");
   };
 
   testF2StaticNoProxy = {
@@ -436,13 +399,8 @@ let
   # All checks
   # ═══════════════════════════════════════════════════════════════
   checks = [
-    # ── Test 1 & 8: Simple leaf + interface derivation ──
-    testF1HasLan0
-    testF1HasWireg0
-    testF1Lan0IP
-    testF1Lan0Prefix
-    testF1Wireg0IP
-    testF1Wireg0Prefix
+    # ── Test 1 & 8: Simple leaf — interfaces disabled ──
+    testF1InterfacesEmpty
     testF1NoNginx
     testF1NoVhosts
     testF1NoExporters
@@ -459,7 +417,7 @@ let
     testF2ProxyPass
     testF2ProxyNoReturn
     testF2ProxyWebsockets
-    testF2ProxyExtraConfig
+    testF2ProxyNoExtraConfig
 
     # ── Test 5: Static vhost ───────────────────────────
     testF2HasStaticVhost

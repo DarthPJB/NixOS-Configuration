@@ -10,18 +10,17 @@
   };
 
   inputs = {
-    carmelsite.url = "git+https://gitlab.com/mecha-team-zero/carmelsite.git";
-    deadnix.url = "https://flakehub.com/f/astro/deadnix/1";
-    determinate = {
-      url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
-      inputs.nix.url = "github:darthpjb/nix-src/fix/ssh-master-localcommand-protocol-leak";
-    };
-    disko = { url = "https://flakehub.com/f/nix-community/disko/1"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
+    carmelsite = { url = "git+https://gitlab.com/mecha-team-zero/carmelsite.git"; };
+    deadnix = { url = "github:astro/deadnix"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
+    hyprland.url = "github:hyprwm/Hyprland";
+    lint-utils = { url = "github:homotopic/lint-utils"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
+    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
+    disko = { url = "github:nix-community/disko"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
     secrix.url = "github:Platonic-Systems/secrix";
     nixinate = { url = "github:Bargman-Tech/nixinate"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
-    nixpkgs_llm.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
+    nixpkgs_llm.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
     hype-train-claw.url = "github:marijanp/zeroclaw";
@@ -33,9 +32,9 @@
     bargman-assets.url = "git+https://gitlab.com/mecha-team-zero/bargman-assets.git";
     denton-glasses.url = "git+https://gitlab.com/mecha-team-zero/denton-glasses.git";
     personal-site = { url = "git+https://gitlab.com/mecha-team-zero/bargman-website.git"; };
-    LLM-CORE = { url = "gitlab:mecha-team-zero/llm-core"; inputs.nixpkgs.follows = "nixpkgs_llm"; inputs.nix-mcp-servers.inputs.nixpkgs.follows = "nixpkgs_stable"; };
+    LLM-CORE = { url = "git+https://gitlab.com/mecha-team-zero/llm-core.git"; inputs.nixpkgs.follows = "nixpkgs_llm"; inputs.nix-mcp-servers.inputs.nixpkgs.follows = "nixpkgs_llm"; };
   };
-  outputs = { self, deadnix, determinate, disko, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE }:
+  outputs = { self, deadnix, determinate, disko, hyprland, lint-utils, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
@@ -54,20 +53,16 @@
         inherit denton-glasses;
         inherit personal-site;
         inherit LLM-CORE;
-        pkgs_llm = nixpkgs_llm.legacyPackages.x86_64-linux;
+        pkgs_llm = import nixpkgs_llm { system = "x86_64-linux"; config.allowUnfree = true; config.permittedInsecurePackages = [ "nodejs-20.20.2" "nodejs-slim-20.20.2" ]; };
       };
       minecraft-curseforge-builder = nixpkgs.callPackage ./pkgs/minecraft-curseforge { };
       prometheus-mcp-server-builder = nixpkgs.callPackage ./pkgs/prometheus-mcp-server { };
       commonModules = [
         secrix.nixosModules.default
         ratty.nixosModules.default
+        ./modules/topology-derive.nix
         ./configuration.nix
         ./modules/ssh-multiplex.nix
-        # Skip nix test suite — OOMs on remote builders during source build.
-        # The forked nix (darthpjb/nix-src) builds from source, not from cache.
-        ({ pkgs, lib, ... }: {
-          nix.package = lib.mkForce (determinate.inputs.nix.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: { doCheck = false; }));
-        })
         {
           programs.ssh.knownHosts = mkKnownHosts self.nixosConfigurations;
           nixpkgs.config.allowUnfree = true;
@@ -90,6 +85,7 @@
       ];
       mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108, images ? { } }:
         nixpkgs_stable.lib.nixosSystem {
+          system = "x86_64-linux";
           modules = commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${hostname}
             {
@@ -105,7 +101,7 @@
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;
               _module.args = globalArgs // {
                 inherit hostname;
-                unstable = import nixpkgs_unstable { localSystem = "x86_64-linux"; config.allowUnfree = true; };
+                unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
                 nixinate = {
                   inherit host sshUser buildOn;
                   port = sshPort;
@@ -117,6 +113,7 @@
         };
       mkAarch64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
         nixpkgs_unstable.lib.nixosSystem {
+          system = "aarch64-linux";
           modules = [
             "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
@@ -139,7 +136,7 @@
               ];
               _module.args = globalArgs // {
                 inherit hostname;
-                unstable = import nixpkgs_unstable { localSystem = "aarch64-linux"; config.allowUnfree = true; };
+                unstable = import nixpkgs_unstable { system = "aarch64-linux"; config.allowUnfree = true; };
                 nixinate = {
                   inherit host sshUser;
                   buildOn = "local";
@@ -219,21 +216,8 @@
         in
         lib.filterAttrs (name: value: value != null) entries;
 
-      # Parallelism control for CI build jobs
-      # Only GitHub Actions-level max-parallel — machines use their own nix.conf
-      ciParallelism = {
-        default = {
-          max-parallel = 10;
-        };
-        perSystem = {
-          aarch64-linux = {
-            max-parallel = 2;
-          };
-        };
-      };
-
       # CI/CD Configuration
-      ci = import ./ci.nix { inherit lib; pkgs = nixpkgs; parallelism = ciParallelism; };
+      ci = import ./ci.nix { inherit self lib; pkgs = nixpkgs; };
 
       # CI Generator Scripts
       ci-generator = import ./ci/generate-workflow.nix { inherit self lib; pkgs = nixpkgs; };
@@ -261,28 +245,6 @@
                 echo "✗ Network configuration has changed from golden!"
                 echo "If intentional, update with:"
                 echo "  nix run .#dump-config -- $MACHINE > goldens/$MACHINE.json"
-                exit 1
-              fi
-            '';
-          });
-        };
-
-        # Check CI config against golden
-        check-ci = {
-          type = "app";
-          meta.description = "Check CI config against golden file";
-          program = lib.getExe (nixpkgs.writeShellApplication {
-            name = "check-ci";
-            runtimeInputs = [ nixpkgs.jq nixpkgs.diffutils nixpkgs.coreutils ];
-            text = ''
-              ${lib.getExe' nixpkgs.coreutils "echo"} "Checking CI configuration against golden..."
-              nix eval --json .#ci.ci.github-actions 2>/dev/null | ${lib.getExe nixpkgs.jq} -S . > /tmp/current-ci.json
-              if ${lib.getExe' nixpkgs.diffutils "diff"} -u "${self}/goldens/ci.json" /tmp/current-ci.json; then
-                ${lib.getExe' nixpkgs.coreutils "echo"} "CI config matches golden"
-              else
-                ${lib.getExe' nixpkgs.coreutils "echo"} "CI configuration has changed from golden!"
-                ${lib.getExe' nixpkgs.coreutils "echo"} "If intentional, update with:"
-                ${lib.getExe' nixpkgs.coreutils "echo"} "  nix eval --json .#ci.ci.github-actions | jq -S . > goldens/ci.json"
                 exit 1
               fi
             '';
@@ -442,10 +404,7 @@
           minecraft-curseforge-all-the-mons = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/all-the-mons.nix {
             minecraft-curseforge = minecraft-curseforge-builder;
           };
-          squaremap-neoforge = nixpkgs.callPackage ./pkgs/minecraft-curseforge/squaremap.nix {
-            moonrise-neoforge = self.packages.x86_64-linux.moonrise-neoforge;
-          };
-          moonrise-neoforge = nixpkgs.callPackage ./pkgs/minecraft-curseforge/moonrise.nix { };
+          squaremap-neoforge = nixpkgs.callPackage ./pkgs/minecraft-curseforge/squaremap.nix { };
           bargman-greeter-vm = self.nixosConfigurations.bargman-greeter-vm.config.system.build.vm;
           bargman-greeter-vm-bootloader = self.nixosConfigurations.bargman-greeter-vm.config.system.build.vmWithBootLoader;
         } // (nixinate.lib.genImages.x86_64-linux self);
@@ -462,12 +421,12 @@
 
       nixosConfigurations = {
         beta-one = nixpkgs_unstable.lib.nixosSystem {
+          system = "armv7l-linux";
           modules = [
             "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
             "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
             ./machines/beta/1.nix
             {
-              nixpkgs.hostPlatform = "armv7l-linux";
               _module.args = globalArgs // { hostname = "beta-one"; };
             }
           ];
@@ -492,6 +451,7 @@
         # Generic ARM bootstrap image — reusable for ALL ARM devices
         # No WG, no device-specific config, open SSH on port 22
         arm-bootstrap = nixpkgs_unstable.lib.nixosSystem {
+          system = "aarch64-linux";
           modules = [
             "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
@@ -508,7 +468,7 @@
               networking.hostName = "arm-bootstrap";
               _module.args = globalArgs // {
                 hostname = "arm-bootstrap";
-                unstable = import nixpkgs_unstable { localSystem = "aarch64-linux"; config.allowUnfree = true; };
+                unstable = import nixpkgs_unstable { system = "aarch64-linux"; config.allowUnfree = true; };
               };
             }
           ];
@@ -552,7 +512,7 @@
         };
         alpha-one = mkX86_64 "alpha-one" {
           host = topoIp "alpha-one";
-          extraModules = [ ./users/build.nix LLM-CORE.nixosModules.opencode-fleet { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
+          extraModules = [ ./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
         };
         alpha-three = mkX86_64 "alpha-three" {
           host = topoIp "alpha-three";
@@ -611,39 +571,39 @@
           extraModules = [
             ./users/build.nix
             # self.inputs.LLM-CORE.nixosModules.opencode-fleet  # Disabled for overlord-I — re-enable as part of overlord-II
-            {
-              services.nginx = {
-                enable = true;
-                virtualHosts = {
-                  "csfinancialconsulting.com" = {
-                    forceSSL = true;
-                    enableACME = true;
-                    # External IP 193.16.42.101 NATs to 10.0.1.42 (ens3)
-                    listenAddresses = [ "10.0.1.42" ];
-                    locations."/" = {
-                      root = carmelsite.packages.x86_64-linux.default;
-                    };
-                  };
-                  "csfincon.us" = {
-                    forceSSL = true;
-                    enableACME = true;
-                    # External IP 193.16.42.101 NATs to 10.0.1.42 (ens3)
-                    listenAddresses = [ "10.0.1.42" ];
-                    locations."/" = {
-                      root = carmelsite.packages.x86_64-linux.default;
-                    };
-                  };
-                  # "carmel-staging.johnbargman.net" = {
-                  #   useACMEHost = "johnbargman.net";
-                  #   forceSSL = true;
-                  #   listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
-                  #   locations."/" = {
-                  #     root = carmelsite.packages.x86_64-linux.default;
-                  #   };
-                  # };
-                };
-              };
-            }
+            # TOPOLOGY-DERIVED: see topology/remote-worker.json vhosts
+            # Inline nginx config neutralized — vhosts come from topology-derive
+            # {
+            #   services.nginx = {
+            #     enable = true;
+            #     virtualHosts = {
+            #       "csfinancialconsulting.com" = {
+            #         forceSSL = true;
+            #         enableACME = true;
+            #         listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
+            #         locations."/" = {
+            #           root = carmelsite.packages.x86_64-linux.default;
+            #         };
+            #       };
+            #       "csfincon.us" = {
+            #         forceSSL = true;
+            #         enableACME = true;
+            #         listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
+            #         locations."/" = {
+            #           root = carmelsite.packages.x86_64-linux.default;
+            #         };
+            #       };
+            #       "carmel-staging.johnbargman.net" = {
+            #         useACMEHost = "johnbargman.net";
+            #         forceSSL = true;
+            #         listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
+            #         locations."/" = {
+            #           root = carmelsite.packages.x86_64-linux.default;
+            #         };
+            #       };
+            #     };
+            #   };
+            # }
           ];
 
         };
@@ -653,6 +613,7 @@
         };
 
         bargman-greeter-vm = nixpkgs_stable.lib.nixosSystem {
+          system = "x86_64-linux";
           modules = [
             ./environments/i3wm_darthpjb.nix
             ./environments/bargman-greeter-vm.nix
@@ -688,16 +649,7 @@
       };
 
       checks."x86_64-linux" = {
-        formatting = nixpkgs.runCommand "check-formatting"
-          { buildInputs = [ nixpkgs.nixpkgs-fmt ]; }
-          "nixpkgs-fmt --check ${self} && touch $out";
-
-        deadnix = nixpkgs.writeShellApplication {
-          name = "run-deadnix";
-          meta.description = "Detect dead Nix code";
-          runtimeInputs = [ deadnix.packages.x86_64-linux.default ];
-          text = ''exec deadnix --no-lambda-pattern-names "${self}"'';
-        };
+        nixpkgs-fmt = lint-utils.linters.x86_64-linux.nixpkgs-fmt { src = self; };
 
         # Network topology golden check for all machines (generalized)
         network-config = lib.genAttrs (builtins.attrNames self.nixosConfigurations) (machine:
