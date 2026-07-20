@@ -10,11 +10,11 @@
 # in its topology data (useNewPipeline = true in Phase 6).
 settings: hostname:
 if settings ? dns && settings.dns ? planes then
-  # New schema: per-subnet auth-server via genDnsmasqHorizons.
-  # The generator reads coordinate from settings to derive listen-addresses
-  # and dns.planes.<plane>.zones for auth-server entries (Phase 5 C populates
-  # the zones).  The raw dnsmasq settings from the generator are wrapped
-  # in the services.dnsmasq.settings attrset expected by the NixOS module.
+# New schema: per-subnet auth-server via genDnsmasqHorizons.
+# The generator reads coordinate from settings to derive listen-addresses
+# and dns.planes.<plane>.zones for auth-server entries (Phase 5 C populates
+# the zones).  The raw dnsmasq settings from the generator are wrapped
+# in the services.dnsmasq.settings attrset expected by the NixOS module.
   let
     generator = import ./genDnsmasqHorizons.nix { inherit lib; };
     dnsmasqSettings = generator settings;
@@ -26,8 +26,8 @@ if settings ? dns && settings.dns ? planes then
     };
   }
 else
-  # Legacy path (unchanged): read per-machine flat DNS settings
-  # from settings.machines.${hostname}.
+# Legacy path (unchanged): read per-machine flat DNS settings
+# from settings.machines.${hostname}.
   let
     machineSettings = settings.machines.${hostname} or null;
   in

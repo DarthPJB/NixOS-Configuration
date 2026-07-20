@@ -7,7 +7,7 @@
 # Architecture: §4.4 of the planar topology plan (rev 8).
 
 let
-  pkgs = import <nixpkgs> {};
+  pkgs = import <nixpkgs> { };
   lib = pkgs.lib;
 
   # Sample horizon with WG, LAN, and WAN coordinates plus hub_of entries
@@ -22,7 +22,7 @@ let
       { plane_name = "wg"; subnet = "10.88.127.0/24"; }
     ];
     effective_icmp = { wireg0 = { pmtud = true; ping = false; }; enp3s0 = { pmtud = true; ping = true; }; };
-    vhostPlanes = {};
+    vhostPlanes = { };
   };
 
   result = (import /tmp/nixos-planar-topology/lib/topology/genNftablesMatrix.nix { inherit lib; }) horizon;
@@ -47,8 +47,9 @@ in
   passed = isString && hasPmtud && hasWanIf && hasMasquerade && hasInputChain && hasForwardChain
     && hasPreroutingChain && hasPostroutingChain && hasNatTable && hasFilterTable;
   total = 1;
-  failed = if isString && hasPmtud && hasWanIf && hasMasquerade && hasInputChain && hasForwardChain
-    && hasPreroutingChain && hasPostroutingChain && hasNatTable && hasFilterTable then 0 else 1;
+  failed =
+    if isString && hasPmtud && hasWanIf && hasMasquerade && hasInputChain && hasForwardChain
+      && hasPreroutingChain && hasPostroutingChain && hasNatTable && hasFilterTable then 0 else 1;
   checks = [
     { name = "is_string"; expected = true; actual = isString; pass = isString; }
     { name = "has_pmtud_rule"; expected = true; actual = hasPmtud; pass = hasPmtud; }

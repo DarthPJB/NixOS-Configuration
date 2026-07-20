@@ -43,9 +43,9 @@ let
   #  Link-local: 169.254/16).
   isPrivateSubnet = subnet:
     let
-      ip    = elemAt (splitString "/" subnet) 0;
-      oct1  = elemAt (splitString "." ip) 0;
-      oct2  = elemAt (splitString "." ip) 1;
+      ip = elemAt (splitString "/" subnet) 0;
+      oct1 = elemAt (splitString "." ip) 0;
+      oct2 = elemAt (splitString "." ip) 1;
     in
     # RFC1918: 10.0.0.0/8
     oct1 == "10"
@@ -55,10 +55,24 @@ let
     || (oct1 == "100" && oct2 == "64")
     # RFC1918: 172.16.0.0/12
     || (oct1 == "172"
-        && elem oct2 [
-          "16" "17" "18" "19" "20" "21" "22" "23" "24"
-          "25" "26" "27" "28" "29" "30" "31"
-        ])
+    && elem oct2 [
+      "16"
+      "17"
+      "18"
+      "19"
+      "20"
+      "21"
+      "22"
+      "23"
+      "24"
+      "25"
+      "26"
+      "27"
+      "28"
+      "29"
+      "30"
+      "31"
+    ])
     # RFC1918: 192.168.0.0/16
     || oct1 == "192"
     # Link-local: 169.254.0.0/16
@@ -66,25 +80,29 @@ let
 
   # ── Inputs from horizon ───────────────────────────────────────────
 
-  coordinate        = horizon.coordinate or [];
-  hub_of            = horizon.hub_of or [];
-  effectiveIcmp     = horizon.effective_icmp or {};
-  applicableRoutes  = horizon.applicable_routes or [];
+  coordinate = horizon.coordinate or [ ];
+  hub_of = horizon.hub_of or [ ];
+  effectiveIcmp = horizon.effective_icmp or { };
+  applicableRoutes = horizon.applicable_routes or [ ];
 
   # All interface names from coordinate entries
   interfaceList = map (c: c.interface) coordinate;
 
   # Build interface  → subnet  lookup (for ping rules, etc.)
-  ifaceSubnetMap = listToAttrs (map (c: {
-    name  = c.interface;
-    value = c.subnet;
-  }) coordinate);
+  ifaceSubnetMap = listToAttrs (map
+    (c: {
+      name = c.interface;
+      value = c.subnet;
+    })
+    coordinate);
 
   # Build subnet → interface lookup (for route composition)
-  subnetIfaceMap = listToAttrs (map (c: {
-    name  = c.subnet;
-    value = c.interface;
-  }) coordinate);
+  subnetIfaceMap = listToAttrs (map
+    (c: {
+      name = c.subnet;
+      value = c.interface;
+    })
+    coordinate);
 
   # Determine WAN interfaces: coordinate entries whose subnet is NOT private
   wanIfaces = map (c: c.interface) (
@@ -105,12 +123,14 @@ let
     "ip protocol icmp icmp type { destination-unreachable, time-exceeded, parameter-problem } accept";
 
   # Per-interface ICMP echo — only if effective_icmp[iface].ping is true.
-  pingRules = concatLists (map (iface:
-    if effectiveIcmp.${iface}.ping or false then
-      [ "iifname \"${iface}\" ip protocol icmp icmp type { echo-request, echo-reply } accept" ]
-    else
-      [ ]
-  ) interfaceList);
+  pingRules = concatLists (map
+    (iface:
+      if effectiveIcmp.${iface}.ping or false then
+        [ "iifname \"${iface}\" ip protocol icmp icmp type { echo-request, echo-reply } accept" ]
+      else
+        [ ]
+    )
+    interfaceList);
 
   # Per-subnet allow rules for services (ssh, http, https, etc.).
   # Phase B: empty.  No per-host JSON files have "services" yet.
@@ -121,16 +141,18 @@ let
   # becomes:  iifname "<iface-A>" oifname "<iface-B>" accept
   #
   # Phase B: applicable_routes is empty (no "routes" in per-host JSON yet).
-  forwardRules = concatLists (map (route:
-    let
-      fromIface = subnetIfaceMap.${route.from_subnet} or null;
-      toIface   = subnetIfaceMap.${route.to_subnet} or null;
-    in
-    if fromIface != null && toIface != null then
-      [ "iifname \"${fromIface}\" oifname \"${toIface}\" accept" ]
-    else
-      [ ]
-  ) applicableRoutes);
+  forwardRules = concatLists (map
+    (route:
+      let
+        fromIface = subnetIfaceMap.${route.from_subnet} or null;
+        toIface = subnetIfaceMap.${route.to_subnet} or null;
+      in
+      if fromIface != null && toIface != null then
+        [ "iifname \"${fromIface}\" oifname \"${toIface}\" accept" ]
+      else
+        [ ]
+    )
+    applicableRoutes);
 
   # ── 3. nat table rules ────────────────────────────────────────────
 
@@ -140,16 +162,21 @@ let
 
   # Masquerade rules: for each WAN interface, masquerade each private
   # hub subnet going out.
-  masqueradeRules = concatLists (map (wanIface:
-    map (subnet:
-      "oifname \"${wanIface}\" ip saddr ${subnet} masquerade"
-    ) privateHubSubnets
-  ) wanIfaces);
+  masqueradeRules = concatLists (map
+    (wanIface:
+      map
+        (subnet:
+          "oifname \"${wanIface}\" ip saddr ${subnet} masquerade"
+        )
+        privateHubSubnets
+    )
+    wanIfaces);
 
   # ── Output assembly ───────────────────────────────────────────────
 
   inputChainRules = concatStringsSep "\n      " (
-    [ "ct state established,related accept"
+    [
+      "ct state established,related accept"
       "iif \"lo\" accept"
       pmtudRule
     ]
@@ -177,27 +204,27 @@ let
 
 in
 ''
-table inet filter {
-  chain input {
-    type filter hook input priority 0; policy drop;
-    ${inputChainRules}
+  table inet filter {
+    chain input {
+      type filter hook input priority 0; policy drop;
+      ${inputChainRules}
+    }
+
+    chain forward {
+      type filter hook forward priority 0; policy drop;
+      ${forwardChainRules}
+    }
   }
 
-  chain forward {
-    type filter hook forward priority 0; policy drop;
-    ${forwardChainRules}
-  }
-}
+  table ip nat {
+    chain prerouting {
+      type nat hook prerouting priority dstnat; policy accept;
+      ${natPreroutingRules}
+    }
 
-table ip nat {
-  chain prerouting {
-    type nat hook prerouting priority dstnat; policy accept;
-    ${natPreroutingRules}
+    chain postrouting {
+      type nat hook postrouting priority srcnat; policy accept;
+      ${natPostroutingRules}
+    }
   }
-
-  chain postrouting {
-    type nat hook postrouting priority srcnat; policy accept;
-    ${natPostroutingRules}
-  }
-}
 ''

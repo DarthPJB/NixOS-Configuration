@@ -7,7 +7,7 @@
 # Architecture: §4.4 of the planar topology plan (rev 8).
 
 let
-  pkgs = import <nixpkgs> {};
+  pkgs = import <nixpkgs> { };
   lib = pkgs.lib;
 
   # Sample horizon with two coordinate entries (wg + lan)
@@ -16,9 +16,9 @@ let
       { plane_name = "wg"; subnet = "10.88.127.0/24"; peer_id = 1; trust = 3; interface = "wireg0"; }
       { plane_name = "cortex-alpha.lan"; subnet = "10.88.128.0/24"; peer_id = 1; trust = 1; interface = "enp3s0"; }
     ];
-    hub_of = [];
-    effective_icmp = {};
-    vhostPlanes = {};
+    hub_of = [ ];
+    effective_icmp = { };
+    vhostPlanes = { };
   };
 
   result = (import /tmp/nixos-planar-topology/lib/topology/genDnsmasqHorizons.nix { inherit lib; }) horizon;
@@ -29,9 +29,9 @@ let
   hasLocaliseQueries = result ? localise-queries;
   hasAuthServer = result ? auth-server;
   hasServer = result ? server;
-  listenCount = builtins.length (result.listen-address or []);
-  hasWgAddr = builtins.elem "10.88.127.1" (result.listen-address or []);
-  hasLanAddr = builtins.elem "10.88.128.1" (result.listen-address or []);
+  listenCount = builtins.length (result.listen-address or [ ]);
+  hasWgAddr = builtins.elem "10.88.127.1" (result.listen-address or [ ]);
+  hasLanAddr = builtins.elem "10.88.128.1" (result.listen-address or [ ]);
   bindIsTrue = result.bind-interfaces or false == true;
   localiseIsTrue = result.localise-queries or false == true;
 

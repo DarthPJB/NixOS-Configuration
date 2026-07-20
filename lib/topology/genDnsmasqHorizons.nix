@@ -31,16 +31,16 @@ let
   # For subnet "10.88.128.0/24" and peer_id 1 → "10.88.128.1"
   subnetPeerToIP = subnet: peer_id:
     let
-      parts   = splitString "/" subnet;
-      ip      = elemAt parts 0;                        # "10.88.128.0"
-      octets  = splitString "." ip;
-      prefix  = concatStringsSep "." (init octets);    # "10.88.128"
+      parts = splitString "/" subnet;
+      ip = elemAt parts 0; # "10.88.128.0"
+      octets = splitString "." ip;
+      prefix = concatStringsSep "." (init octets); # "10.88.128"
     in
-      "${prefix}.${toString peer_id}";
+    "${prefix}.${toString peer_id}";
 
   # ── Inputs ──────────────────────────────────────────────────
 
-  coordinate = horizon.coordinate or [];
+  coordinate = horizon.coordinate or [ ];
 
   # ── Listen addresses ────────────────────────────────────────
   # Listen on every IP address this host has (one per coordinate entry).
@@ -50,13 +50,13 @@ let
   # Phase B: Empty.  No topology files have dns.zones yet.
   # Phase 5 (C) will collect zones from topology data and emit:
   #   auth-server = [ "<zone>,<plane-ip>" ... ];
-  authServers = [];
+  authServers = [ ];
 
 in
 {
-  listen-address  = listenAddresses;
+  listen-address = listenAddresses;
   bind-interfaces = true;
   localise-queries = true;
-  auth-server     = authServers;
-  server          = [ "8.8.8.8" "1.0.0.1" ];
+  auth-server = authServers;
+  server = [ "8.8.8.8" "1.0.0.1" ];
 }
