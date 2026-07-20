@@ -2,7 +2,7 @@
 # Run with: nix --option builders '' eval --impure --json --expr 'import /tmp/nixos-planar-topology/tests/topology/genNginx.nix'
 #
 # These tests verify that genNginx produces correct NixOS nginx config
-# from a sample horizon settings input (new schema vhostPlanes path).
+# from a sample horizon settings input (new schema vhosts path).
 #
 # Architecture: §4.4 of the planar topology plan (rev 8).
 
@@ -17,7 +17,7 @@ let
     ];
     hub_of = [ ];
     effective_icmp = { wireg0 = { pmtud = true; ping = false; }; };
-    vhostPlanes = {
+    vhosts = {
       "code.johnbargman.net" = [
         { subnet = "10.88.127.0/24"; reason = "Gitea on WG"; proxy_to = "10.88.127.3:80"; }
       ];

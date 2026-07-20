@@ -18,7 +18,7 @@ let
     ];
     hub_of = [ ];
     effective_icmp = { };
-    vhostPlanes = { };
+    vhosts = { };
   };
 
   result = (import /tmp/nixos-planar-topology/lib/topology/genDnsmasqHorizons.nix { inherit lib; }) horizon;

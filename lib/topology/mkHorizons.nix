@@ -9,7 +9,7 @@
 #   effective_icmp    — Resolved per-interface ICMP settings
 #                       (icmp_override[iface] ?? icmp_defaults ?? {pmtud=true, ping=false})
 #   applicable_routes — Routes where this host sits on both from_subnet and to_subnet
-#   vhostPlanes       — Passthrough of the host's vhostPlanes attrset
+#   vhosts            — Passthrough of the host's vhosts attrset
 #   errors            — Validation errors
 #   warnings          — Validation warnings
 #
@@ -171,7 +171,10 @@ let
       applicable_routes = filter routeApplies allRegistryRoutes;
 
       # ── 5. Vhost planes (passthrough) ───────────────────────────────
-      vhostPlanes = if hostExists then (host.vhostPlanes or { }) else { };
+      vhosts = if hostExists then (host.vhosts or { }) else { };
+
+      # ── 5b. Exporters (passthrough) ────────────────────────────────
+      exporters = if hostExists then (host.exporters or { }) else { };
 
       # ── 6. Validation errors ────────────────────────────────────────
       errors =
@@ -284,7 +287,7 @@ let
 
     in
     {
-      inherit coordinate hub_of effective_icmp applicable_routes vhostPlanes errors warnings;
+      inherit coordinate hub_of effective_icmp applicable_routes vhosts exporters errors warnings;
     };
 
 in

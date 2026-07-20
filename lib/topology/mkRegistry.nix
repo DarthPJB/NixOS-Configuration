@@ -294,6 +294,7 @@ let
 
   # ── Validator 8: Coordinate requirements ─────────────────────
   # Every coordinate must have plane_name, subnet, peer_id, trust, interface.
+  # interface is REQUIRED and must be non-null.
   vCoordinateRequirements =
     let
       results = flatten (map
@@ -303,9 +304,14 @@ let
               let
                 required = [ "plane_name" "subnet" "peer_id" "trust" "interface" ];
                 missing = filter (f: !hasAttr f coord) required;
+                # Specifically check for null interface field
+                interfaceMissingOrNull =
+                  !(hasAttr "interface" coord) || coord.interface == null;
               in
               if missing != [ ] then
                 "ERROR: ${host.hostname}: coordinate missing fields [${concatStringsSep ", " missing}]"
+              else if interfaceMissingOrNull then
+                "ERROR: ${host.hostname}: coordinate '${coord.plane_name}/${coord.subnet}' missing required 'interface' field"
               else
                 null
             )

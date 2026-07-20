@@ -4,8 +4,8 @@
 # Must match production mkNginxProxies.nix data consumption.
 # The generator (genNginx.nix) replicates mkNginxProxies.nix output logic.
 #
-# Phase 5 (C): Per-machine vhostPlanes support. If a machine has
-# vhostPlanes (the new schema), the function delegates to genNginx.nix
+# Phase 5 (C): Per-machine vhosts support. If a machine has
+# vhosts (the new schema), the function delegates to genNginx.nix
 # for per-subnet vhost stanzas. Otherwise, the original extraction logic
 # is used (backward compatible).
 topology:
@@ -19,15 +19,15 @@ let
   # s: single machine's topology data
   # hostname: the machine's hostname
   mkPerMachine = s: hostname:
-    # Phase 5 (C): vhostPlanes path — per-subnet stanzas from new schema.
-    # When vhostPlanes is present, pass the raw data through for the
+    # Phase 5 (C): vhosts path — per-subnet stanzas from new schema.
+    # When vhosts is present, pass the raw data through for the
     # generator (genNginx.nix) to consume.
-    # This path is dormant until a machine has vhostPlanes in its topology.
-    if s ? vhostPlanes then
+    # This path is dormant until a machine has vhosts in its topology.
+    if s ? vhosts then
       {
         inherit hostname;
-        # Raw vhostPlanes data for downstream generators
-        vhostPlanes = s.vhostPlanes;
+        # Raw vhosts data for downstream generators
+        vhosts = s.vhosts;
       }
     # Legacy path (unchanged behaviour)
     else if !(s ? nginx) then null

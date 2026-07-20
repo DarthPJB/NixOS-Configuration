@@ -15,7 +15,7 @@
       "trust": 1
     },
     {
-      "interface": null,
+      "interface": "tailscale0",
       "peer_id": 88,
       "plane_name": "tailscale-platonic",
       "subnet": "100.64.0.0/10",

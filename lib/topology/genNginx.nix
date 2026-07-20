@@ -5,8 +5,8 @@
 # Called as: (import ./genNginx.nix { inherit lib; }) settings hostname
 #
 # Supports two paths:
-#   1. New schema: if settings has `vhostPlanes` (camelCase), produce per-subnet
-#      vhost stanzas from the vhostPlanes attrset. Each vhost name maps to a list
+#   1. New schema: if settings has `vhosts`, produce per-subnet
+#      vhost stanzas from the vhosts attrset. Each vhost name maps to a list
 #      of { subnet, reason, proxy_to? } entries. Proxy entries emit proxyPass;
 #      static entries emit an empty locations."/" block.
 #   2. Legacy schema: if settings has `machines.${hostname}`, produce virtualHosts
@@ -18,12 +18,12 @@
 # or {} if no config exists for the host.
 settings: hostname:
 let
-  # ── New schema path (vhostPlanes) ──────────────────────────
-  hasVhostPlanes = settings ? vhostPlanes;
+  # ── New schema path (vhosts) ───────────────────────────────
+  hasVhosts = settings ? vhosts;
 
-  vhostPlanesConfig =
+  vhostsConfig =
     let
-      vhostPlanes = settings.vhostPlanes or { };
+      vhosts = settings.vhosts or { };
     in
     lib.mapAttrs
       (vhostName: entries:
@@ -43,7 +43,7 @@ let
             locations."/" = { };
           }
       )
-      vhostPlanes;
+      vhosts;
 
   # ── Legacy path (machines.${hostname}) ─────────────────────
   machineSettings = settings.machines.${hostname} or null;
@@ -122,11 +122,11 @@ let
       users.users.nginx.extraGroups = [ "acme" ];
     };
 in
-if hasVhostPlanes then
+if hasVhosts then
   {
     services.nginx = {
       enable = true;
-      virtualHosts = vhostPlanesConfig;
+      virtualHosts = vhostsConfig;
     };
     users.users.nginx.extraGroups = [ "acme" ];
   }
