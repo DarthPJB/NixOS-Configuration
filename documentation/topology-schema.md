@@ -177,7 +177,7 @@
   ]
   ```
 
-### `vhost_planes` (optional, default `{}`)
+### `vhostPlanes` (optional, default `{}`)
 
 - **Type:** Object keyed by vhost name (string), values are arrays of plane entries
 - **Description:** Declares which planes each virtual host (vhost) is served on. Each
@@ -193,7 +193,7 @@
     Nix config).
 - **Example:**
   ```json
-  "vhost_planes": {
+  "vhostPlanes": {
     "code.johnbargman.net": [
       { "plane_name": "cortex-alpha.lan", "subnet": "10.88.128.0/24", "proxy_to": "10.88.127.3:80", "reason": "Gitea on LAN" },
       { "plane_name": "wg",               "subnet": "10.88.127.0/24", "proxy_to": "10.88.127.3:80", "reason": "Gitea on WG" }

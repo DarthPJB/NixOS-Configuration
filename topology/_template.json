@@ -1,8 +1,5 @@
 {
-  "_": "Schema template for topology/<machine>.json. Operators copy this file, rename it, and fill in the fields. See documentation/2026-07-18-MULTI-HORIZON-GATEWAY-PLAN.md §3 for full schema. The data is the source of truth; the generator is pure.",
-
   "hostname": "<MACHINE_NAME>",
-  "role": "leaf | hub | sub-hub | workstation | server | bastion | ap | iot | client",
   "trust": 3,
 
   "coordinate": [
@@ -25,7 +22,9 @@
 
   "requires_routes": [],
 
-  "vhost_planes": {},
+  "vhostPlanes": {},
+
+  "_legacy": {},
 
   "default_response": "404-or-drop",
 
