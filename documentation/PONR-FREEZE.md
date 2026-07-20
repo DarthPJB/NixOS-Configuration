@@ -34,4 +34,5 @@ git checkout <parent-sha>   # or git revert <ponr-sha>
 
 ## SHA
 
-Filled at freeze commit time in the commit message body.
+**PONR commit:** `4e2d55d5a05ebbb95cdf29f45b7d8ecfcf1dbd6e`
+
