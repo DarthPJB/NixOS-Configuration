@@ -41,10 +41,9 @@
       # Import topology to derive deployment IPs from single source of truth
       topo = import ./topology/shared.nix { inherit lib; };
       # Dormant topology registry — consumed in Phase 2+ (see planar-topology plan)
+      # The runtime gate is the NixOS option `topology.useNewPipeline` in
+      # modules/core-router-topology.nix (default false).
       topology-registry = import ./lib/topology/mkRegistry.nix { inherit lib; };
-      # Pipeline gating flag — when true, the registry is the source of truth;
-      # when false (default), the original .nix files are the source of truth.
-      useNewPipeline = false;
       # Get wireguard IP for a machine from topology
       topoIp = machineName: topo.${machineName}.wireguard;
       globalArgs = {
