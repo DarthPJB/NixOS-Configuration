@@ -1,17 +1,4 @@
 {
-  "_legacy": {
-    "_comment": "Phase -1 source data (preserved for reference)",
-    "_dhcp_hostname": "LINDA-lan",
-    "_file_origin": "cortex-alpha.nix::lan.hosts.linda-lan",
-    "_ip_in_topology": "10.88.128.151",
-    "_mac_in_topology": "60:66:82:42:b1:c8",
-    "_routing_legacy": {
-      "tailscale": false,
-      "wireguard": true
-    },
-    "_services_legacy": [],
-    "_wireguard_peer_id": null
-  },
   "coordinate": [
     {
       "interface": "enp0s31f6",

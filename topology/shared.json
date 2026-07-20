@@ -1,7 +1,4 @@
 {
-  "_legacy": {
-    "_": "Phase -1 rough attempt. Cross-host data only. Per-host data is in topology/<machine>.json files. The `lan_dhcp` block is the DHCP server's range and interface — it lives at the hub. TODO Phase A+: integrate with the registry."
-  },
   "lan_dhcp": {
     "range": "10.88.128.128,10.88.128.254,24h",
     "interface": "enp3s0"

@@ -1,14 +1,4 @@
 {
-  "_legacy": {
-    "_comment": "Phase -1 source data (preserved for reference)",
-    "_dhcp_hostname": "michel-wifi",
-    "_file_origin": "cortex-alpha.nix::lan.hosts.michel-wifi-247",
-    "_ip_in_topology": "10.88.128.247",
-    "_mac_in_topology": "60:45:2e:9d:42:ac",
-    "_routing_legacy": null,
-    "_services_legacy": null,
-    "_wireguard_peer_id": null
-  },
   "coordinate": [
     {
       "plane_name": "cortex-alpha.lan",
