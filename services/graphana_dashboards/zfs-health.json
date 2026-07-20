@@ -566,11 +566,11 @@
   "refresh": "30s",
   "schemaVersion": 42,
   "tags": [
-    "declarative-2026-07-11",
-    "declarative-2026-07-11-reqfix",
-    "nix-provisioned",
+    "zfs",
     "storage",
-    "zfs"
+    "pool",
+    "health",
+    "nix-provisioned"
   ],
   "templating": {
     "list": []

@@ -765,12 +765,12 @@
   "refresh": "30s",
   "schemaVersion": 42,
   "tags": [
-    "declarative-2026-07-11",
-    "declarative-2026-07-11-reqfix",
     "disk",
     "io",
-    "nix-provisioned",
-    "storage"
+    "latency",
+    "filesystem",
+    "zfs",
+    "nix-provisioned"
   ],
   "templating": {
     "list": []

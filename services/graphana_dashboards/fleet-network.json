@@ -91,19 +91,97 @@
       ],
       "title": "Interface Bandwidth",
       "transformations": [
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.88:(.*)/", "renamePattern": "LINDA:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.1:(.*)/", "renamePattern": "cortex-alpha:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.3:(.*)/", "renamePattern": "local-nas:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.20:(.*)/", "renamePattern": "terminal-zero:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.21:(.*)/", "renamePattern": "terminal-nx-01:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.30:(.*)/", "renamePattern": "print-controller:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.41:(.*)/", "renamePattern": "display-1:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.43:(.*)/", "renamePattern": "arm-builder:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.50:(.*)/", "renamePattern": "remote-worker:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.51:(.*)/", "renamePattern": "remote-builder:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.52:(.*)/", "renamePattern": "gaming-host-1:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.107:(.*)/", "renamePattern": "alpha-three:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.108:(.*)/", "renamePattern": "alpha-one:$1" } }
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.88:(.*)/",
+            "renamePattern": "LINDA:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.1:(.*)/",
+            "renamePattern": "cortex-alpha:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.3:(.*)/",
+            "renamePattern": "local-nas:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.20:(.*)/",
+            "renamePattern": "terminal-zero:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.21:(.*)/",
+            "renamePattern": "terminal-nx-01:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.30:(.*)/",
+            "renamePattern": "print-controller:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.41:(.*)/",
+            "renamePattern": "display-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.43:(.*)/",
+            "renamePattern": "arm-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.50:(.*)/",
+            "renamePattern": "remote-worker:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.51:(.*)/",
+            "renamePattern": "remote-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.52:(.*)/",
+            "renamePattern": "gaming-host-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.107:(.*)/",
+            "renamePattern": "alpha-three:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.108:(.*)/",
+            "renamePattern": "alpha-one:$1"
+          }
+        }
       ],
       "type": "timeseries"
     },
@@ -232,19 +310,97 @@
       ],
       "title": "Interface Status",
       "transformations": [
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.88:(.*)/", "renamePattern": "LINDA:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.1:(.*)/", "renamePattern": "cortex-alpha:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.3:(.*)/", "renamePattern": "local-nas:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.20:(.*)/", "renamePattern": "terminal-zero:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.21:(.*)/", "renamePattern": "terminal-nx-01:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.30:(.*)/", "renamePattern": "print-controller:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.41:(.*)/", "renamePattern": "display-1:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.43:(.*)/", "renamePattern": "arm-builder:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.50:(.*)/", "renamePattern": "remote-worker:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.51:(.*)/", "renamePattern": "remote-builder:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.52:(.*)/", "renamePattern": "gaming-host-1:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.107:(.*)/", "renamePattern": "alpha-three:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.108:(.*)/", "renamePattern": "alpha-one:$1" } }
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.88:(.*)/",
+            "renamePattern": "LINDA:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.1:(.*)/",
+            "renamePattern": "cortex-alpha:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.3:(.*)/",
+            "renamePattern": "local-nas:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.20:(.*)/",
+            "renamePattern": "terminal-zero:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.21:(.*)/",
+            "renamePattern": "terminal-nx-01:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.30:(.*)/",
+            "renamePattern": "print-controller:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.41:(.*)/",
+            "renamePattern": "display-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.43:(.*)/",
+            "renamePattern": "arm-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.50:(.*)/",
+            "renamePattern": "remote-worker:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.51:(.*)/",
+            "renamePattern": "remote-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.52:(.*)/",
+            "renamePattern": "gaming-host-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.107:(.*)/",
+            "renamePattern": "alpha-three:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.108:(.*)/",
+            "renamePattern": "alpha-one:$1"
+          }
+        }
       ],
       "type": "stat"
     },
@@ -339,19 +495,97 @@
       ],
       "title": "Network Errors",
       "transformations": [
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.88:(.*)/", "renamePattern": "LINDA:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.1:(.*)/", "renamePattern": "cortex-alpha:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.3:(.*)/", "renamePattern": "local-nas:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.20:(.*)/", "renamePattern": "terminal-zero:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.21:(.*)/", "renamePattern": "terminal-nx-01:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.30:(.*)/", "renamePattern": "print-controller:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.41:(.*)/", "renamePattern": "display-1:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.43:(.*)/", "renamePattern": "arm-builder:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.50:(.*)/", "renamePattern": "remote-worker:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.51:(.*)/", "renamePattern": "remote-builder:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.52:(.*)/", "renamePattern": "gaming-host-1:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.107:(.*)/", "renamePattern": "alpha-three:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.108:(.*)/", "renamePattern": "alpha-one:$1" } }
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.88:(.*)/",
+            "renamePattern": "LINDA:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.1:(.*)/",
+            "renamePattern": "cortex-alpha:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.3:(.*)/",
+            "renamePattern": "local-nas:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.20:(.*)/",
+            "renamePattern": "terminal-zero:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.21:(.*)/",
+            "renamePattern": "terminal-nx-01:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.30:(.*)/",
+            "renamePattern": "print-controller:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.41:(.*)/",
+            "renamePattern": "display-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.43:(.*)/",
+            "renamePattern": "arm-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.50:(.*)/",
+            "renamePattern": "remote-worker:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.51:(.*)/",
+            "renamePattern": "remote-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.52:(.*)/",
+            "renamePattern": "gaming-host-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.107:(.*)/",
+            "renamePattern": "alpha-three:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.108:(.*)/",
+            "renamePattern": "alpha-one:$1"
+          }
+        }
       ],
       "type": "timeseries"
     },
@@ -433,19 +667,97 @@
       ],
       "title": "Network Drops",
       "transformations": [
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.88:(.*)/", "renamePattern": "LINDA:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.1:(.*)/", "renamePattern": "cortex-alpha:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.3:(.*)/", "renamePattern": "local-nas:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.20:(.*)/", "renamePattern": "terminal-zero:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.21:(.*)/", "renamePattern": "terminal-nx-01:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.30:(.*)/", "renamePattern": "print-controller:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.41:(.*)/", "renamePattern": "display-1:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.43:(.*)/", "renamePattern": "arm-builder:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.50:(.*)/", "renamePattern": "remote-worker:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.51:(.*)/", "renamePattern": "remote-builder:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.52:(.*)/", "renamePattern": "gaming-host-1:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.107:(.*)/", "renamePattern": "alpha-three:$1" } },
-        { "id": "renameByRegex", "options": { "regex": "/10\\.88\\.127\\.108:(.*)/", "renamePattern": "alpha-one:$1" } }
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.88:(.*)/",
+            "renamePattern": "LINDA:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.1:(.*)/",
+            "renamePattern": "cortex-alpha:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.3:(.*)/",
+            "renamePattern": "local-nas:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.20:(.*)/",
+            "renamePattern": "terminal-zero:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.21:(.*)/",
+            "renamePattern": "terminal-nx-01:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.30:(.*)/",
+            "renamePattern": "print-controller:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.41:(.*)/",
+            "renamePattern": "display-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.43:(.*)/",
+            "renamePattern": "arm-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.50:(.*)/",
+            "renamePattern": "remote-worker:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.51:(.*)/",
+            "renamePattern": "remote-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.52:(.*)/",
+            "renamePattern": "gaming-host-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.107:(.*)/",
+            "renamePattern": "alpha-three:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.108:(.*)/",
+            "renamePattern": "alpha-one:$1"
+          }
+        }
       ],
       "type": "timeseries"
     }
@@ -453,9 +765,10 @@
   "refresh": "30s",
   "schemaVersion": 42,
   "tags": [
-    "declarative-2026-07-11",
-    "declarative-2026-07-11-reqfix",
+    "fleet",
     "network",
+    "bandwidth",
+    "errors",
     "nix-provisioned"
   ],
   "templating": {

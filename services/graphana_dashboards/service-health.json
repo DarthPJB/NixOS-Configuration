@@ -616,11 +616,11 @@
   "refresh": "30s",
   "schemaVersion": 42,
   "tags": [
-    "declarative-2026-07-11",
-    "declarative-2026-07-11-reqfix",
-    "nix-provisioned",
+    "systemd",
     "services",
-    "systemd"
+    "health",
+    "backup",
+    "nix-provisioned"
   ],
   "templating": {
     "list": []
