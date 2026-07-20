@@ -19,7 +19,7 @@
   produces a validated registry attrsect: `{ hosts, shared, planes, errors, warnings }`.
 - `lib/topology/mkHorizons.nix` is the per-machine horizon transformer: it consumes the
   registry and a hostname, then produces the host's resolved settings (coordinate, hub_of,
-  effective ICMP, applicable routes, vhostPlanes, errors, warnings).
+  effective ICMP, applicable routes, vhosts, errors, warnings).
 
 ## Schema Fields (13 per-host fields)
 
@@ -177,7 +177,7 @@
   ]
   ```
 
-### `vhostPlanes` (optional, default `{}`)
+### `vhosts` (optional, default `{}`)
 
 - **Type:** Object keyed by vhost name (string), values are arrays of plane entries
 - **Description:** Declares which planes each virtual host (vhost) is served on. Each
@@ -193,7 +193,7 @@
     Nix config).
 - **Example:**
   ```json
-  "vhostPlanes": {
+  "vhosts": {
     "code.johnbargman.net": [
       { "plane_name": "cortex-alpha.lan", "subnet": "10.88.128.0/24", "proxy_to": "10.88.127.3:80", "reason": "Gitea on LAN" },
       { "plane_name": "wg",               "subnet": "10.88.127.0/24", "proxy_to": "10.88.127.3:80", "reason": "Gitea on WG" }
@@ -232,6 +232,22 @@
 - **Example:**
   ```json
   "public_key_file": "secrets/public_keys/wireguard/wg_cortex-alpha_pub"
+  ```
+
+### `exporters` (optional, default `{}`)
+
+- **Type:** Attrset of service-name → settings attrset
+- **Description:** Prometheus metric exporters this host runs. Empty attrset `{}` means
+  "enable with defaults". The generator holds a default port table; if no port is specified,
+  the default applies.
+- **Example:**
+  ```json
+  "exporters": {
+    "node": {},
+    "nvidia": { "port": 9101 },
+    "smartctl": {},
+    "dnsmasq": { "port": 3101 }
+  }
   ```
 
 ### `_` (optional, documentation comments)

@@ -5,7 +5,7 @@
       "subnet": "10.88.128.0/24",
       "peer_id": 87,
       "trust": 1,
-      "interface": null
+      "interface": "unknown-lan"
     }
   ],
   "hostname": "lindacore-87",

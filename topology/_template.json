@@ -7,8 +7,7 @@
       "subnet": "<SUBNET_CIDR>",
       "peer_id": 0,
       "trust": 0,
-      "interface": "<INTERFACE>",
-      "parent": null
+      "interface": "<INTERFACE>"
     }
   ],
   "hub_of": [],
@@ -19,8 +18,9 @@
   "icmp_override": {},
   "routes": [],
   "requires_routes": [],
-  "vhostPlanes": {},
   "default_response": "404-or-drop",
   "public_key_file": "secrets/public_keys/wireguard/wg_<MACHINE_NAME>_pub",
+  "exporters": {},
+  "vhosts": {},
   "advertised_tailscale_routes": []
 }

@@ -75,7 +75,7 @@ let
       { plane_name = "wg"; subnet = "10.88.127.0/24"; }
     ];
     effective_icmp = { wireg0 = { pmtud = true; ping = false; }; enp3s0 = { pmtud = true; ping = true; }; };
-    vhostPlanes = { };
+    vhosts = { };
   };
 
   result = genRuleset horizon;

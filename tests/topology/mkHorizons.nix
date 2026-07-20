@@ -75,7 +75,7 @@ let
       && h.coordinate == [ ]
       && h.hub_of == [ ]
       && h.effective_icmp == { }
-      && h.vhostPlanes == { };
+      && h.vhosts == { };
     detail =
       let
         h = mkHorizons { inherit registry; hostname = "__nonexistent__"; };
