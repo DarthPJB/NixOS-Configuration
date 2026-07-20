@@ -10,5 +10,62 @@
   ],
   "hostname": "remote-worker",
   "public_key_file": "secrets/public_keys/wireguard/wg_remote-worker_pub",
-  "trust": 3
+  "trust": 3,
+  "exporters": {
+    "nextcloud": {
+      "port": 3106
+    },
+    "nginx": {
+      "port": 3105
+    },
+    "smartctl": {}
+  },
+  "vhosts": {
+    "_": [
+      {
+        "default": true,
+        "return": "444"
+      }
+    ],
+    "johnbargman.net": [
+      {
+        "static": {
+          "root": "../../webroot"
+        },
+        "acme": {
+          "enable": true,
+          "host": "johnbargman.net"
+        },
+        "forceSSL": true
+      }
+    ],
+    "johnbargman.com": [
+      {
+        "static": {
+          "root": "../../webroot"
+        },
+        "acme": {
+          "enable": true,
+          "host": "johnbargman.com"
+        },
+        "forceSSL": true
+      }
+    ],
+    "johnbargman.com-wg": [
+      {
+        "plane": "wg",
+        "subnet": "10.88.127.0/24",
+        "static": {
+          "root": "../../personal-site"
+        },
+        "acme": {
+          "enable": true,
+          "host": "johnbargman.com"
+        },
+        "forceSSL": true,
+        "server_name": "johnbargman.com"
+      }
+    ]
+  },
+  "default_response": "444"
 }

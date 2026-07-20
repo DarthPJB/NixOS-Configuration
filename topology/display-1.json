@@ -10,5 +10,8 @@
   ],
   "hostname": "display-1",
   "public_key_file": "secrets/public_keys/wireguard/wg_display-1_pub",
-  "trust": 3
+  "trust": 3,
+  "exporters": {
+    "smartctl": {}
+  }
 }
