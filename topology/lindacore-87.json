@@ -1,17 +1,4 @@
 {
-  "_legacy": {
-    "_comment": "Phase -1 source data (preserved for reference)",
-    "_dhcp_hostname": "LINDACORE-87",
-    "_file_origin": "cortex-alpha.nix::lan.hosts.lindacore-87",
-    "_ip_in_topology": "10.88.128.87",
-    "_mac_in_topology": "18:c0:4d:8d:53:6c",
-    "_routing_legacy": {
-      "tailscale": false,
-      "wireguard": false
-    },
-    "_services_legacy": [],
-    "_wireguard_peer_id": null
-  },
   "coordinate": [
     {
       "plane_name": "cortex-alpha.lan",
