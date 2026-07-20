@@ -500,69 +500,70 @@
     ];
   };
 
-  nginx = {
-    # ACME configuration - uses wildcard cert for johnbargman.net
-    acmeHost = "johnbargman.net";
-    listenAddresses = [
-      "10.88.128.1" # LAN gateway
-      "10.88.127.1" # WireGuard IP
-      "82.5.173.252" # WAN IP
-    ];
+  # TOPOLOGY-DERIVED: see topology/cortex-alpha.json vhosts
+  # nginx = {
+  #   # ACME configuration - uses wildcard cert for johnbargman.net
+  #   acmeHost = "johnbargman.net";
+  #   listenAddresses = [
+  #     "10.88.128.1" # LAN gateway
+  #     "10.88.127.1" # WireGuard IP
+  #     "82.5.173.252" # WAN IP
+  #   ];
 
-    # Base virtual hosts that serve static content or default responses
-    baseVhosts = {
-      "_" = {
-        default = true;
-        useACMEHost = null;
-        locations."/".return = "444";
-      };
-      "johnbargman.net" = {
-        enableACME = true;
-        forceSSL = true;
-        root = ../webroot;
-      };
-      "cortex-alpha.johnbargman.net" = {
-        useACMEHost = "johnbargman.net";
-        forceSSL = true;
-        root = ../webroot;
-      };
-    };
+  #   # Base virtual hosts that serve static content or default responses
+  #   baseVhosts = {
+  #     "_" = {
+  #       default = true;
+  #       useACMEHost = null;
+  #       locations."/".return = "444";
+  #     };
+  #     "johnbargman.net" = {
+  #       enableACME = true;
+  #       forceSSL = true;
+  #       root = ../webroot;
+  #     };
+  #     "cortex-alpha.johnbargman.net" = {
+  #       useACMEHost = "johnbargman.net";
+  #       forceSSL = true;
+  #       root = ../webroot;
+  #     };
+  #   };
 
-    # Proxy definitions with full configuration
-    # Pattern inspired by infrastructure-2/modules/proxy-host.nix
-    proxies = {
-      "print-controller.johnbargman.net" = {
-        backend = "http://10.88.127.30:80";
-        forceSSL = false;
-        websockets = true;
-      };
-      "code.johnbargman.net" = {
-        backend = "http://10.88.127.3:80";
-        forceSSL = false;
-        websockets = true;
-      };
-      "git.johnbargman.net" = {
-        backend = "http://10.88.127.3:80";
-        forceSSL = false;
-        websockets = true;
-      };
-      "prometheus.johnbargman.net" = {
-        backend = "http://10.88.127.3:8080";
-        forceSSL = false;
-        websockets = true;
-      };
-      "grafana.johnbargman.net" = {
-        backend = "http://10.88.127.3:3101";
-        forceSSL = false;
-        websockets = true;
-      };
-      "ap.johnbargman.net" = {
-        backend = "http://10.88.128.2:80";
-        forceSSL = false;
-        websockets = true;
-      };
-    };
-  };
+  #   # Proxy definitions with full configuration
+  #   # Pattern inspired by infrastructure-2/modules/proxy-host.nix
+  #   proxies = {
+  #     "print-controller.johnbargman.net" = {
+  #       backend = "http://10.88.127.30:80";
+  #       forceSSL = false;
+  #       websockets = true;
+  #     };
+  #     "code.johnbargman.net" = {
+  #       backend = "http://10.88.127.3:80";
+  #       forceSSL = false;
+  #       websockets = true;
+  #     };
+  #     "git.johnbargman.net" = {
+  #       backend = "http://10.88.127.3:80";
+  #       forceSSL = false;
+  #       websockets = true;
+  #     };
+  #     "prometheus.johnbargman.net" = {
+  #       backend = "http://10.88.127.3:8080";
+  #       forceSSL = false;
+  #       websockets = true;
+  #     };
+  #     "grafana.johnbargman.net" = {
+  #       backend = "http://10.88.127.3:3101";
+  #       forceSSL = false;
+  #       websockets = true;
+  #     };
+  #     "ap.johnbargman.net" = {
+  #       backend = "http://10.88.128.2:80";
+  #       forceSSL = false;
+  #       websockets = true;
+  #     };
+  #   };
+  # };
 
   wireguard = {
     interface = "wireg0";
