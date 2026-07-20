@@ -9,7 +9,7 @@ let
   # GitLab netrc — user-readable copy from gitlab-credentials.nix
   gitlabNetrcPath = "/run/gitlab-netrc";
 
-  # GIT_ASKPASS script — all runners need this for private flake inputs
+  # GIT_ASKPASS script — runners with netrc access need this for private flake inputs
   gitlabAskpass = pkgs.writeShellScript "gitlab-askpass" ''
     case "$1" in
       *Username*) exec ${pkgs.gnused}/bin/sed -n 's/^login[[:space:]]*//p' "${gitlabNetrcPath}" ;;
@@ -17,12 +17,17 @@ let
     esac
   '';
 
-  # Baremetal runner service overrides — share host nix store
+  # Baremetal runner service overrides — share host nix store only
   baremetalOverrides = {
     PrivateMounts = false;
     DynamicUser = false;
     User = "build";
     ProtectSystem = false;
+    BindReadOnlyPaths = [ "/nix" ];
+  };
+
+  # GitLab-aware overrides — store sharing + netrc for private flake inputs
+  gitlabOverrides = baremetalOverrides // {
     BindReadOnlyPaths = [ "/nix" gitlabNetrcPath ];
   };
 
@@ -39,7 +44,6 @@ in
       tokenFile = patTokenFile;
       url = "https://github.com/DarthPJB/parsec-gaming-nix";
       replace = true;
-      extraEnvironment = { GIT_ASKPASS = "${gitlabAskpass}"; };
       serviceOverrides = baremetalOverrides;
     };
     rat-infested = {
@@ -49,7 +53,6 @@ in
       tokenFile = patTokenFile;
       url = "https://github.com/DarthPJB/ratty";
       replace = true;
-      extraEnvironment = { GIT_ASKPASS = "${gitlabAskpass}"; };
       serviceOverrides = baremetalOverrides;
     };
     entropy-is-origin = {
@@ -60,7 +63,7 @@ in
       }";
       url = "https://github.com/Bargman-Tech";
       extraEnvironment = { GIT_ASKPASS = "${gitlabAskpass}"; };
-      serviceOverrides = baremetalOverrides;
+      serviceOverrides = gitlabOverrides;
     };
   };
 
