@@ -78,6 +78,20 @@ in
   #     };
   #   };
   # };
+  # Overlay: personalsite root for WG split-horizon (rewrite NOT portable as relative path in JSON alone).
+  # Topology owns base vhost flags; this sets the derivation root.
+  services.nginx.virtualHosts."johnbargman.com-wg" = {
+    locations."/".root = lib.mkForce personal-site.packages.${pkgs.stdenv.hostPlatform.system}.webroot;
+  };
+
+  # Overlay: nextcloud exporter credentials (secrix paths; topology delivers enable+port)
+  services.prometheus.exporters.nextcloud = {
+    url = "https://nextcloud.johnbargman.net";
+    username = "admin";
+    passwordFile = config.secrix.system.secrets.nextcloud_password_file.decrypted.path;
+    user = "nextcloud";
+  };
+
   # Virtual disk devices — smartctl/smartd not applicable
   services.smartd.enable = lib.mkForce false;
   services.prometheus.exporters.smartctl.enable = lib.mkForce false;
