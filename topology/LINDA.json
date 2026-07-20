@@ -24,6 +24,13 @@
       "plane_name": "cortex-alpha.lan",
       "subnet": "10.88.128.0/24",
       "trust": 1
+    },
+    {
+      "interface": null,
+      "peer_id": 88,
+      "plane_name": "tailscale-platonic",
+      "subnet": "100.64.0.0/10",
+      "trust": 2
     }
   ],
   "hostname": "LINDA",

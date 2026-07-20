@@ -207,12 +207,12 @@ let
       pass = actual == expected;
     };
 
-  # Test: LINDA has 2 coordinates (wg + cortex-alpha.lan)
+  # Test: LINDA has 3 coordinates (wg + cortex-alpha.lan + tailscale-platonic)
   testLINDACoordinateCount =
     let
       h = mkHorizons { inherit registry; hostname = "LINDA"; };
       actual = length h.coordinate;
-      expected = 2;
+      expected = 3;
     in
     {
       name = "LINDA_coordinate_count";

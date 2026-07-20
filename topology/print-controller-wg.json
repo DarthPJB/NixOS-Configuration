@@ -14,21 +14,14 @@
   },
   "coordinate": [
     {
-      "interface": null,
+      "interface": "wlan0",
       "peer_id": 30,
       "plane_name": "cortex-alpha.lan",
       "subnet": "10.88.128.0/24",
       "trust": 1
-    },
-    {
-      "interface": "wireg0",
-      "peer_id": 0,
-      "plane_name": "wg",
-      "subnet": "10.88.127.0/24",
-      "trust": 3
     }
   ],
   "hostname": "print-controller-wg",
-  "public_key_file": null,
+  "public_key_file": "secrets/public_keys/wireguard/wg_print-controller_pub",
   "trust": 3
 }

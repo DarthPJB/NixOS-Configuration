@@ -25,9 +25,12 @@
       "interface": "enp3s0",
       "peer_id": 1,
       "plane_name": "building-b-lan",
-      "subnet": "10.89.128.1",
+      "subnet": "10.89.128.0/24",
       "trust": 1
     }
+  ],
+  "hub_of": [
+    { "plane_name": "building-b-lan", "subnet": "10.89.128.0/24" }
   ],
   "hostname": "building-b",
   "public_key_file": null,

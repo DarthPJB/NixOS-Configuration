@@ -4,10 +4,10 @@
 # These tests lock down the current state of the registry to detect
 # regressions as data quality issues are fixed.
 #
-# Expected state (after Phase 0):
-#   - hosts count: 36 (35 per-host JSON files + cortex-alpha.json)
-#   - planes count: 4 (cortex-alpha's 4 hub_of planes; building-b lacks hub_of)
-#   - errors count: 8 (1 dangling coordinate, 6 peer_id collisions, 1 invalid CIDR)
+# Expected state (after planar topology fix):
+#   - hosts count: 31
+#   - planes count: 5
+#   - errors count: 0
 #
 # Architecture: §4.1 of the planar topology plan (rev 8).
 
@@ -31,7 +31,7 @@ let
   testHostsCount =
     let
       actual = length hostnames;
-      expected = 36;
+      expected = 31;
     in
     {
       name = "hosts_count";
@@ -44,7 +44,7 @@ let
   testPlanesCount =
     let
       actual = length (attrNames planes);
-      expected = 4;
+      expected = 5;
     in
     {
       name = "planes_count";
@@ -57,7 +57,7 @@ let
   testErrorsCount =
     let
       actual = length errors;
-      expected = 8;
+      expected = 0;
     in
     {
       name = "errors_count";
@@ -126,7 +126,7 @@ let
       pass = actual == expected;
     };
 
-  # ── Test 8: building-b dangling coordinate error ────────────
+  # ── Test 8: No building-b dangling coordinate error ─────────
   testErrorBuildingBDangling =
     let
       actual = countErrorsWithSubstr
@@ -134,12 +134,12 @@ let
     in
     {
       name = "error_building-b_dangling_coordinate";
-      expected = 1;
+      expected = 0;
       actual = actual;
-      pass = actual == 1;
+      pass = actual == 0;
     };
 
-  # ── Test 9: building-b invalid CIDR error ───────────────────
+  # ── Test 9: No building-b invalid CIDR error ────────────────
   testErrorBuildingBInvalidCIDR =
     let
       actual = countErrorsWithSubstr
@@ -147,17 +147,17 @@ let
     in
     {
       name = "error_building-b_invalid_cidr";
-      expected = 1;
+      expected = 0;
       actual = actual;
-      pass = actual == 1;
+      pass = actual == 0;
     };
 
-  # ── Test 10: Peer ID collision count (must be exactly 6) ────
+  # ── Test 10: No peer ID collisions ───────────────────────────
   testPeerIdCollisionCount =
     let
       collisionErrors = filter (e: lib.hasInfix "peer_id collision" e) errors;
       actual = length collisionErrors;
-      expected = 6;
+      expected = 0;
     in
     {
       name = "peer_id_collision_count";
@@ -166,7 +166,7 @@ let
       pass = actual == expected;
     };
 
-  # ── Test 11: Specific peer_id collision (wg/20) ─────────────
+  # ── Test 11: No peer_id collision (wg/20) ───────────────────
   testPeerIdCollisionWg20 =
     let
       actual = countErrorsWithSubstr
@@ -174,12 +174,12 @@ let
     in
     {
       name = "peer_id_collision_wg_20";
-      expected = 1;
+      expected = 0;
       actual = actual;
-      pass = actual == 1;
+      pass = actual == 0;
     };
 
-  # ── Test 12: Specific peer_id collision (wg/21 triple) ──────
+  # ── Test 12: No peer_id collision (wg/21 triple) ────────────
   testPeerIdCollisionWg21 =
     let
       actual = countErrorsWithSubstr
@@ -187,13 +187,13 @@ let
     in
     {
       name = "peer_id_collision_wg_21";
-      expected = 1;
+      expected = 0;
       actual = actual;
-      pass = actual == 1;
+      pass = actual == 0;
     };
 
   # ── Test 13: No planes without a hub ────────────────────────
-  # All 4 planes should have a non-null hub
+  # All 5 planes should have a non-null hub
   testAllPlanesHaveHub =
     let
       planeList = attrValues planes;
