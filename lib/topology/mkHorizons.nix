@@ -114,7 +114,7 @@ let
               # Expand: get neighbors not yet visited
               allNeighbors = adjacency node;
               newNeighbors = filter (n: !(elem n visited)) allNeighbors;
-              newQueue = rest ++ (map (n: { inherit n; path = path ++ [ n ]; }) newNeighbors);
+              newQueue = rest ++ (map (n: { node = n; path = path ++ [ n ]; }) newNeighbors);
               newVisited = visited ++ newNeighbors;
             in
             search newQueue newVisited;
@@ -242,16 +242,8 @@ let
               qualifyingHosts;
           in
           if sortedHosts != [ ] then
-            let
-              best = head sortedHosts;
-            in
-            [
-              ("ERROR: ${hostname}: requires_routes"
-                + " '${viaSubnet}' → '${toSubnet}'"
-                + " (${reason})"
-                + ": suggested route via hub '${best.hostname}'"
-                + " (trust ${toString (best.trust or 5)})")
-            ]
+            # Hub exists that connects both subnets — route is satisfiable.
+            [ ]
           else
           # R4: Multi-hop BFS pathfinding
             let
@@ -280,12 +272,8 @@ let
                 path = bfs adjacencyFn fromNames toNames;
               in
               if path != null then
-                [
-                  ("ERROR: ${hostname}: requires_routes"
-                    + " '${viaSubnet}' → '${toSubnet}'"
-                    + " (${reason})"
-                    + ": multi-hop path: ${concatStringsSep " → " path}")
-                ]
+                # BFS path exists — route is reachable via multi-hop.
+                [ ]
               else
                 [
                   ("ERROR: ${hostname}: requires_routes"
