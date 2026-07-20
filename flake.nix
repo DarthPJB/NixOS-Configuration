@@ -571,39 +571,39 @@
           extraModules = [
             ./users/build.nix
             # self.inputs.LLM-CORE.nixosModules.opencode-fleet  # Disabled for overlord-I — re-enable as part of overlord-II
-            # TOPOLOGY-DERIVED: see topology/remote-worker.json vhosts
-            # Inline nginx config neutralized — vhosts come from topology-derive
-            # {
-            #   services.nginx = {
-            #     enable = true;
-            #     virtualHosts = {
-            #       "csfinancialconsulting.com" = {
-            #         forceSSL = true;
-            #         enableACME = true;
-            #         listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
-            #         locations."/" = {
-            #           root = carmelsite.packages.x86_64-linux.default;
-            #         };
-            #       };
-            #       "csfincon.us" = {
-            #         forceSSL = true;
-            #         enableACME = true;
-            #         listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
-            #         locations."/" = {
-            #           root = carmelsite.packages.x86_64-linux.default;
-            #         };
-            #       };
-            #       "carmel-staging.johnbargman.net" = {
-            #         useACMEHost = "johnbargman.net";
-            #         forceSSL = true;
-            #         listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
-            #         locations."/" = {
-            #           root = carmelsite.packages.x86_64-linux.default;
-            #         };
-            #       };
-            #     };
-            #   };
-            # }
+            # Topology-derive owns johnbargman.net/.com vhosts (see topology/remote-worker.json).
+            # Carmelsite client sites remain machine overlay (merge with topology nginx.enable).
+            {
+              services.nginx = {
+                statusPage = true;
+                virtualHosts = {
+                  "csfinancialconsulting.com" = {
+                    forceSSL = true;
+                    enableACME = true;
+                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
+                    locations."/" = {
+                      root = carmelsite.packages.x86_64-linux.default;
+                    };
+                  };
+                  "csfincon.us" = {
+                    forceSSL = true;
+                    enableACME = true;
+                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
+                    locations."/" = {
+                      root = carmelsite.packages.x86_64-linux.default;
+                    };
+                  };
+                  "carmel-staging.johnbargman.net" = {
+                    useACMEHost = "johnbargman.net";
+                    forceSSL = true;
+                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
+                    locations."/" = {
+                      root = carmelsite.packages.x86_64-linux.default;
+                    };
+                  };
+                };
+              };
+            }
           ];
 
         };

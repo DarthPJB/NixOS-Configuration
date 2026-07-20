@@ -237,7 +237,10 @@ let
       # ACME attributes
       acmeConfig = { }
         // (if enableACMEEffective then { enableACME = true; } else { })
-        // (if effectiveUseACMEHost != null then { useACMEHost = effectiveUseACMEHost; } else { });
+        // (if effectiveUseACMEHost != null then { useACMEHost = effectiveUseACMEHost; } else { })
+        // (if entry ? acmeRoot then { acmeRoot = entry.acmeRoot; }
+            else if (entry.acme or {}) ? acmeRoot then { acmeRoot = entry.acme.acmeRoot; }
+            else { });
 
       # Proxy-specific attrset (addSSL when using global ACME host)
       extraProxyCfg = if addSSLProxy then { addSSL = true; } else { };
@@ -250,6 +253,7 @@ let
         // extraProxyCfg
         // serverNameConfig
         // listenAddressesConfig
+
         // acmeConfig;
     };
 
