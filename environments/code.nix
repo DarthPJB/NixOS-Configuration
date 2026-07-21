@@ -1,7 +1,6 @@
 { config
 , lib
 , pkgs
-, pkgs_llm
 , ...
 }:
 
@@ -40,6 +39,5 @@
     pkgs.inotify-tools
     pkgs.rsync
     pkgs.git
-    pkgs_llm.opencode
   ];
 }
