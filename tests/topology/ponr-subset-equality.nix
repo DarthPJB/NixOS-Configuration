@@ -58,13 +58,16 @@ let
       };
       services.prometheus.exporters = lib.mkOption { type = types.attrs; default = { }; };
       users.users.nginx.extraGroups = lib.mkOption {
-        type = types.listOf types.str; default = [ ];
+        type = types.listOf types.str;
+        default = [ ];
       };
       assertions = lib.mkOption {
-        type = types.listOf types.unspecified; default = [ ];
+        type = types.listOf types.unspecified;
+        default = [ ];
       };
       warnings = lib.mkOption {
-        type = types.listOf types.str; default = [ ];
+        type = types.listOf types.str;
+        default = [ ];
       };
     };
   };
@@ -108,7 +111,7 @@ let
       # So we do: dump."services.nginx".virtualHosts
       # This won't work directly because ."services.nginx" uses a dot in the attr name.
     in
-    dump.${subkey} or null;
+      dump.${subkey} or null;
 
   # Compare two values for equality, recursing into attrsets/lists
   # Returns true if equal, false otherwise.
@@ -138,115 +141,132 @@ let
       dump = readBaseline hostname;
       servicesPrometheus = dump."services.prometheus" or { };
     in
-    servicesPrometheus.exporters or { };
+      servicesPrometheus.exporters or { };
 
   baselineNginxEnable = hostname:
     let
       dump = readBaseline hostname;
       servicesNginx = dump."services.nginx" or { };
     in
-    servicesNginx.enable or false;
+      servicesNginx.enable or false;
 
   baselineVhosts = hostname:
     let
       dump = readBaseline hostname;
       servicesNginx = dump."services.nginx" or { };
     in
-    servicesNginx.virtualHosts or { };
+      servicesNginx.virtualHosts or { };
 
   # ── Run comparison for each machine ─────────────────────────
 
   # Build per-machine checks
-  machineChecks = map (hostname:
-    let
-      # Get topology-derive output
-      topoConfig = evalHost hostname;
+  machineChecks = map
+    (hostname:
+      let
+        # Get topology-derive output
+        topoConfig = evalHost hostname;
 
-      # Managed keys from topology-derive
-      deriveExporters = topoConfig.services.prometheus.exporters or { };
-      deriveNginxEnable = topoConfig.services.nginx.enable or false;
-      deriveVhosts = topoConfig.services.nginx.virtualHosts or { };
+        # Managed keys from topology-derive
+        deriveExporters = topoConfig.services.prometheus.exporters or { };
+        deriveNginxEnable = topoConfig.services.nginx.enable or false;
+        deriveVhosts = topoConfig.services.nginx.virtualHosts or { };
 
-      # Baseline values
-      baseExporters = baselineExporters hostname;
-      baseNginxEnable = baselineNginxEnable hostname;
-      baseVhosts = baselineVhosts hostname;
+        # Baseline values
+        baseExporters = baselineExporters hostname;
+        baseNginxEnable = baselineNginxEnable hostname;
+        baseVhosts = baselineVhosts hostname;
 
-      # Exporter names
-      deriveExporterNames = attrNames deriveExporters;
+        # Exporter names
+        deriveExporterNames = attrNames deriveExporters;
 
-      # Check exporters: for each exporter topology-derive produces,
-      # verify the baseline has matching fields.
-      exporterChecks = map (expName:
-        let
-          deriveVal = deriveExporters.${expName};
-          baseVal = baseExporters.${expName} or null;
-          expPresent = baseVal != null;
-          deriveKeys = attrNames deriveVal;
-          allEqual = lib.all (k: deepEqual (deriveVal.${k} or null) (baseVal.${k} or null)) deriveKeys;
-        in
-        {
-          name = "${hostname}_exporter_${expName}";
-          expected = true;
-          actual = expPresent && allEqual;
-          pass = expPresent && allEqual;
-        }
-      ) deriveExporterNames;
+        # Check exporters: for each exporter topology-derive produces,
+        # verify the baseline has matching fields.
+        exporterChecks = map
+          (expName:
+            let
+              deriveVal = deriveExporters.${expName};
+              baseVal = baseExporters.${expName} or null;
+              expPresent = baseVal != null;
+              deriveKeys = attrNames deriveVal;
+              allEqual = lib.all (k: deepEqual (deriveVal.${k} or null) (baseVal.${k} or null)) deriveKeys;
+            in
+            {
+              name = "${hostname}_exporter_${expName}";
+              expected = true;
+              actual = expPresent && allEqual;
+              pass = expPresent && allEqual;
+            }
+          )
+          deriveExporterNames;
 
-      # Check nginx.enable — only when topology-derive explicitly sets it
-      # (i.e., when it produces vhosts). Machines where topology-derive
-      # does not manage nginx (e.g. print-controller with klipper nginx from
-      # another module) should be skipped.
-      nginxEnableCheck = {
-        name = "${hostname}_nginx_enable";
-        expected = baseNginxEnable;
-        actual = deriveNginxEnable;
-        pass = if deriveVhosts != { } then
-          deriveNginxEnable == baseNginxEnable
-        else
-          true;  # Skip: derive doesn't manage nginx for this machine
-      };
+        # Check nginx.enable — only when topology-derive explicitly sets it
+        # (i.e., when it produces vhosts). Machines where topology-derive
+        # does not manage nginx (e.g. print-controller with klipper nginx from
+        # another module) should be skipped.
+        nginxEnableCheck = {
+          name = "${hostname}_nginx_enable";
+          expected = baseNginxEnable;
+          actual = deriveNginxEnable;
+          pass =
+            if deriveVhosts != { } then
+              deriveNginxEnable == baseNginxEnable
+            else
+              true; # Skip: derive doesn't manage nginx for this machine
+        };
 
-      # Check vhosts: for each vhost topology-derive produces,
-      # verify the baseline has it with matching fields.
-      # Only compare KEY METADATA fields (forceSSL, default, addSSL,
-      # enableACME, useACMEHost, serverName). Skip locations and root
-      # because:
-      #   - Path values (root) are serialized differently in baseline dumps
-      #   - Location shapes vary depending on serialization context
-      #   - Location correctness is verified by golden test comparison
-      deriveVhostNames = attrNames deriveVhosts;
-      vhostChecks = map (vhName:
-        let
-          deriveVal = deriveVhosts.${vhName};
-          baseVal = baseVhosts.${vhName} or null;
-          vhPresent = baseVal != null;
+        # Check vhosts: for each vhost topology-derive produces,
+        # verify the baseline has it with matching fields.
+        # Only compare KEY METADATA fields (forceSSL, default, addSSL,
+        # enableACME, useACMEHost, serverName). Skip locations and root
+        # because:
+        #   - Path values (root) are serialized differently in baseline dumps
+        #   - Location shapes vary depending on serialization context
+        #   - Location correctness is verified by golden test comparison
+        deriveVhostNames = attrNames deriveVhosts;
+        vhostChecks = map
+          (vhName:
+            let
+              deriveVal = deriveVhosts.${vhName};
+              baseVal = baseVhosts.${vhName} or null;
+              vhPresent = baseVal != null;
 
-          # Compare only key vhost metadata fields
-          keyFields = [ "forceSSL" "default" "addSSL" "enableACME"
-                        "useACMEHost" "serverName" ];
-          relevantFields = builtins.filter (f:
-            builtins.elem f (attrNames deriveVal)
-          ) keyFields;
-          fieldChecks = map (f:
-            deepEqual (deriveVal.${f} or null) (baseVal.${f} or null)
-          ) relevantFields;
-          allFieldsMatch = if relevantFields == [ ] then true else lib.all (x: x) fieldChecks;
-        in
-        {
-          name = "${hostname}_vhost_${vhName}";
-          expected = true;
-          actual = vhPresent && allFieldsMatch;
-          pass = vhPresent && allFieldsMatch;
-        }
-      ) deriveVhostNames;
+              # Compare only key vhost metadata fields
+              keyFields = [
+                "forceSSL"
+                "default"
+                "addSSL"
+                "enableACME"
+                "useACMEHost"
+                "serverName"
+              ];
+              relevantFields = builtins.filter
+                (f:
+                  builtins.elem f (attrNames deriveVal)
+                )
+                keyFields;
+              fieldChecks = map
+                (f:
+                  deepEqual (deriveVal.${f} or null) (baseVal.${f} or null)
+                )
+                relevantFields;
+              allFieldsMatch = if relevantFields == [ ] then true else lib.all (x: x) fieldChecks;
+            in
+            {
+              name = "${hostname}_vhost_${vhName}";
+              expected = true;
+              actual = vhPresent && allFieldsMatch;
+              pass = vhPresent && allFieldsMatch;
+            }
+          )
+          deriveVhostNames;
 
-    in
-    {
-      name = hostname;
-      checks = exporterChecks ++ [ nginxEnableCheck ] ++ vhostChecks;
-    }
-  ) managedMachines;
+      in
+      {
+        name = hostname;
+        checks = exporterChecks ++ [ nginxEnableCheck ] ++ vhostChecks;
+      }
+    )
+    managedMachines;
 
   # ── Aggregate results ──────────────────────────────────────
   allChecks = lib.flatten (map (m: m.checks) machineChecks);
@@ -255,19 +275,21 @@ let
   failed = length (builtins.filter (c: !c.pass) allChecks);
 
   # Print per-machine summary
-  machineSummaries = map (m:
-    let
-      mc = m.checks;
-      fp = length (builtins.filter (c: !c.pass) mc);
-      tp = length (builtins.filter (c: c.pass) mc);
-    in
-    {
-      machine = m.name;
-      total = length mc;
-      passed = tp;
-      failed = fp;
-    }
-  ) machineChecks;
+  machineSummaries = map
+    (m:
+      let
+        mc = m.checks;
+        fp = length (builtins.filter (c: !c.pass) mc);
+        tp = length (builtins.filter (c: c.pass) mc);
+      in
+      {
+        machine = m.name;
+        total = length mc;
+        passed = tp;
+        failed = fp;
+      }
+    )
+    machineChecks;
 
 in
 {

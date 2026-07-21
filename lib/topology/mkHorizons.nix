@@ -245,7 +245,7 @@ let
               qualifyingHosts;
           in
           if sortedHosts != [ ] then
-            # Hub exists that connects both subnets — route is satisfiable.
+          # Hub exists that connects both subnets — route is satisfiable.
             [ ]
           else
           # R4: Multi-hop BFS pathfinding
@@ -275,7 +275,7 @@ let
                 path = bfs adjacencyFn fromNames toNames;
               in
               if path != null then
-                # BFS path exists — route is reachable via multi-hop.
+              # BFS path exists — route is reachable via multi-hop.
                 [ ]
               else
                 [

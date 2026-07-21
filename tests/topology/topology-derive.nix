@@ -41,13 +41,16 @@ let
       };
       services.prometheus.exporters = lib.mkOption { type = types.attrs; default = { }; };
       users.users.nginx.extraGroups = lib.mkOption {
-        type = types.listOf types.str; default = [ ];
+        type = types.listOf types.str;
+        default = [ ];
       };
       assertions = lib.mkOption {
-        type = types.listOf types.unspecified; default = [ ];
+        type = types.listOf types.unspecified;
+        default = [ ];
       };
       warnings = lib.mkOption {
-        type = types.listOf types.str; default = [ ];
+        type = types.listOf types.str;
+        default = [ ];
       };
     };
   };
@@ -78,12 +81,12 @@ let
   f1 = evalHost "__test_f1";
   f1Ifaces = f1.networking.interfaces or { };
 
-  f1HasLan0   = f1Ifaces ? lan0;
+  f1HasLan0 = f1Ifaces ? lan0;
   f1HasWireg0 = f1Ifaces ? wireg0;
 
   f1NginxEnabled = f1.services.nginx.enable or false;
-  f1Vhosts       = f1.services.nginx.virtualHosts or { };
-  f1Exporters    = f1.services.prometheus.exporters or { };
+  f1Vhosts = f1.services.nginx.virtualHosts or { };
+  f1Exporters = f1.services.prometheus.exporters or { };
 
   # ── Test 1 & 8: Simple leaf — interfaces are DISABLED ─────────
   testF1InterfacesEmpty = {
@@ -122,11 +125,11 @@ let
   #   - vhosts: static (johnbargman.net), proxy (code.johnbargman.net)
   # ═══════════════════════════════════════════════════════════════
   f2 = evalHost "__test_f2";
-  f2Ifaces     = f2.networking.interfaces or { };
-  f2Exporters  = f2.services.prometheus.exporters or { };
-  f2Vhosts     = f2.services.nginx.virtualHosts or { };
-  f2NginxOn    = f2.services.nginx.enable or false;
-  f2AcmeGroup  = f2.users.users.nginx.extraGroups or [ ];
+  f2Ifaces = f2.networking.interfaces or { };
+  f2Exporters = f2.services.prometheus.exporters or { };
+  f2Vhosts = f2.services.nginx.virtualHosts or { };
+  f2NginxOn = f2.services.nginx.enable or false;
+  f2AcmeGroup = f2.users.users.nginx.extraGroups or [ ];
 
   # ── Test 2: Default exporter ports ──────────────────────────
   testF2NodeExporterEnabled = {
@@ -276,8 +279,8 @@ let
   #   - vhosts: static + acme enable
   # ═══════════════════════════════════════════════════════════════
   f3 = evalHost "__test_f3";
-  f3Exporters  = f3.services.prometheus.exporters or { };
-  f3Vhosts     = f3.services.nginx.virtualHosts or { };
+  f3Exporters = f3.services.prometheus.exporters or { };
+  f3Vhosts = f3.services.nginx.virtualHosts or { };
 
   # ── Test 3: Port override ──────────────────────────────────
   testF3NodeExporterPortOverride = {
