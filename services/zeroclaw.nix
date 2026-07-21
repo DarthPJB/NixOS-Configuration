@@ -141,4 +141,21 @@
       };
     };
   };
+
+  # Relax systemd hardening — agent needs full filesystem and command access.
+  # The module's default hardening blocks /proc, /sys, nix-shell, and general
+  # filesystem reads.  Since alpha-three is expendable, we override to allow
+  # the agent to operate freely.
+  systemd.services.zeroclaw.serviceConfig = {
+    ProtectSystem = lib.mkForce false;
+    ProtectHome = lib.mkForce false;
+    PrivateTmp = lib.mkForce false;
+    ReadWritePaths = lib.mkForce [ "/" ];
+    CapabilityBoundingSet = lib.mkForce "";
+    LockPersonality = lib.mkForce false;
+    RestrictNamespaces = lib.mkForce false;
+    RestrictRealtime = lib.mkForce false;
+    RestrictSUIDSGID = lib.mkForce false;
+    NoNewPrivileges = lib.mkForce false;
+  };
 }
