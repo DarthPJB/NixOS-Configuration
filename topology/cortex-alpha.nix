@@ -445,7 +445,7 @@
     subnetRouter = true;
     advertisedHosts = [ "lindacore-88" ];
     advertisedRoutes = [
-      "10.88.127.51/32"
+      # "10.88.127.51/32" removed — remote-builder now directly on Tailscale
       "10.88.128.88/32"
       "10.88.127.107/32"
       "10.88.128.248/32"
