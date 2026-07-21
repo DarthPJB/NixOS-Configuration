@@ -13,7 +13,6 @@
     carmelsite = { url = "git+https://gitlab.com/mecha-team-zero/carmelsite.git"; };
     deadnix = { url = "github:astro/deadnix"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     hyprland.url = "github:hyprwm/Hyprland";
-    lint-utils = { url = "github:homotopic/lint-utils"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     determinate = {
       url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
       inputs.nix.url = "github:darthpjb/nix-src/fix/ssh-master-localcommand-protocol-leak";
@@ -37,7 +36,7 @@
     personal-site = { url = "git+https://gitlab.com/mecha-team-zero/bargman-website.git"; };
     LLM-CORE = { url = "git+https://gitlab.com/mecha-team-zero/llm-core.git"; inputs.nixpkgs.follows = "nixpkgs_llm"; inputs.nix-mcp-servers.inputs.nixpkgs.follows = "nixpkgs_llm"; };
   };
-  outputs = { self, deadnix, determinate, disko, hyprland, lint-utils, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE }:
+  outputs = { self, deadnix, determinate, disko, hyprland, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
@@ -697,7 +696,16 @@
       };
 
       checks."x86_64-linux" = {
-        nixpkgs-fmt = lint-utils.linters.x86_64-linux.nixpkgs-fmt { src = self; };
+        formatting = nixpkgs.runCommand "check-formatting"
+          { buildInputs = [ nixpkgs.nixpkgs-fmt ]; }
+          "nixpkgs-fmt --check ${self} && touch $out";
+
+        deadnix = nixpkgs.writeShellApplication {
+          name = "run-deadnix";
+          meta.description = "Detect dead Nix code";
+          runtimeInputs = [ deadnix.packages.x86_64-linux.default ];
+          text = ''exec deadnix --no-lambda-pattern-names "${self}"'';
+        };
 
         # Network topology golden check for cortex-alpha (manual run)
         network-config-cortex-alpha = nixpkgs.writeShellApplication {
