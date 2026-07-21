@@ -265,7 +265,7 @@ let
       cyclers;
 
   # ── Validator 7: Route requirements ──────────────────────────
-  # Every route must have from_subnet, to_subnet, proto, reason.
+  # Every route must have from, port, proto, to, reason.
   vRouteRequirements =
     let
       results = flatten (map
@@ -273,7 +273,7 @@ let
           map
             (route:
               let
-                required = [ "from_subnet" "to_subnet" "proto" "reason" ];
+                required = [ "from" "port" "proto" "to" "reason" ];
                 missing = filter (f: !hasAttr f route) required;
               in
               if missing != [ ] then
