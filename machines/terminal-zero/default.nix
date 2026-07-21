@@ -94,7 +94,7 @@
     };
     wireless = {
       enable = true; # Enables wireless support via wpa_supplicant.
-      userControlled.enable = true;
+      userControlled = true;
       interfaces = [ "wlp3s0" ]; # NOT "wwp0s29u1u4i6" the gsm adapter
     };
   };

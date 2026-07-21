@@ -438,7 +438,7 @@
     useDHCP = false;
     wireless = {
       enable = false; # Enables wireless support via wpa_supplicant.
-      userControlled.enable = true;
+      userControlled = true;
       interfaces = [ "wlp72s0" ];
     };
   };

@@ -77,7 +77,7 @@
   # Pick only one of the below networking options.
   networking.wireless = {
     enable = true; # Enables wireless support via wpa_supplicant.
-    userControlled.enable = true;
+    userControlled = true;
     interfaces = [ "wlp9s0u1u4" ];
   };
   # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.

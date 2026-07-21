@@ -227,7 +227,6 @@
     "<derivation:arandr-0.1.11>",
     "<derivation:prismlauncher-11.0.2>",
     "<derivation:vintagestory-1.22.3>",
-    "<derivation:tailscale-1.98.5>",
     "<derivation:gpp-2.25>",
     "<derivation:entr-5.8>",
     "<derivation:platformio-6.1.19>",
@@ -280,7 +279,8 @@
     "<derivation:lshw-02.20>",
     "<derivation:usbutils-019>",
     "<derivation:moonlight-qt-6.1.0>",
-    "<derivation:determinate-nixd-3.21.5>",
+    "<derivation:determinate-nixd-3.21.7>",
+    "<derivation:opencode-1.18.3>",
     "<derivation:nix-build-all>",
     "<derivation:tmux-3.6a>",
     "<derivation:progress-0.17>",
@@ -325,7 +325,7 @@
     "<derivation:picom-13>",
     "<derivation:lightdm-1.32.0>",
     "<derivation:kmscon-9.3.5>",
-    "<derivation:determinate-nix-3.21.5>",
+    "<derivation:determinate-nix-3.21.7>",
     "<derivation:nix-info>",
     "<derivation:nix-bash-completions-0.6.8>",
     "<derivation:dbus-1.16.2>",
@@ -335,7 +335,6 @@
     "<derivation:cups-pk-helper-0.2.6>",
     "<derivation:wpa_supplicant-2.11>",
     "<derivation:wireguard-tools-1.0.20260223>",
-    "<derivation:tailscale-1.98.5>",
     "<derivation:iptables-1.8.13>",
     "<derivation:nixos-firewall-tool>",
     "<derivation:dhcpcd-10.3.1>",
@@ -666,9 +665,7 @@
     "rulesetFile": null,
     "tables": {}
   },
-  "networking.tailscale": {
-    "advertisedRoutes": []
-  },
+  "networking.tailscale": null,
   "networking.wireguard": {
     "enable": true,
     "interfaces": {
@@ -2954,7 +2951,7 @@
     },
     "disableTaildrop": false,
     "disableUpstreamLogging": false,
-    "enable": true,
+    "enable": false,
     "extraDaemonFlags": [],
     "extraSetFlags": [],
     "extraUpFlags": [],
