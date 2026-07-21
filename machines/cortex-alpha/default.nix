@@ -81,6 +81,10 @@ in
   # WireGuard private key management via secrix
   secrix.services.wireguard-wireg0.secrets.cortex-alpha.encrypted.file =
     ../../secrets/private_keys/wireguard/wg_cortex-alpha;
+  secrix.services.tailscaled.secrets.auth-key.encrypted.file =
+    ../../secrets/tailscale_auth_key;
+  services.tailscale.authKeyFile =
+    config.secrix.services.tailscaled.secrets.auth-key.decrypted.path;
   networking = {
     nat.enable = lib.mkForce false;
     nftables = {
