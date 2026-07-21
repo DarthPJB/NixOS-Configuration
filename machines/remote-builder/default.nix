@@ -39,7 +39,7 @@
 
   # Tailscale: direct connection to hyperhyper (replaces WireGuard proxy route)
   secrix.services.tailscale.secrets.auth-key.encrypted.file =
-    ../../../secrets/tailscale_auth_key;
+    ../../secrets/tailscale_auth_key;
   services.tailscale = {
     authKeyFile = config.secrix.services.tailscale.secrets.auth-key.decrypted.path;
     authKeyParameters.preauthorized = true;
