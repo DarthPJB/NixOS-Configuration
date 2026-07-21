@@ -19,35 +19,35 @@ let
   # ── isPrivateSubnet unit tests ─────────────────────────────────────
   subnetCases = [
     # Existing private ranges
-    { name = "rfc1918_10";         subnet = "10.0.0.0/8";       expected = true; }
-    { name = "rfc1918_172_16";     subnet = "172.16.0.0/12";    expected = true; }
-    { name = "rfc1918_192_168";    subnet = "192.168.0.0/16";   expected = true; }
-    { name = "loopback_127";       subnet = "127.0.0.0/8";      expected = true; }
-    { name = "linklocal_169_254";  subnet = "169.254.0.0/16";   expected = true; }
+    { name = "rfc1918_10"; subnet = "10.0.0.0/8"; expected = true; }
+    { name = "rfc1918_172_16"; subnet = "172.16.0.0/12"; expected = true; }
+    { name = "rfc1918_192_168"; subnet = "192.168.0.0/16"; expected = true; }
+    { name = "loopback_127"; subnet = "127.0.0.0/8"; expected = true; }
+    { name = "linklocal_169_254"; subnet = "169.254.0.0/16"; expected = true; }
 
     # CGNAT: 100.64.0.0/10
-    { name = "cgnat_low_bound";    subnet = "100.64.0.0/24";    expected = true; }
-    { name = "cgnat_mid";          subnet = "100.80.0.0/24";    expected = true; }
-    { name = "cgnat_high_bound";   subnet = "100.127.0.0/24";   expected = true; }
-    { name = "cgnat_outside";      subnet = "100.128.0.0/24";   expected = false; }
-    { name = "cgnat_below";        subnet = "100.63.0.0/24";    expected = false; }
+    { name = "cgnat_low_bound"; subnet = "100.64.0.0/24"; expected = true; }
+    { name = "cgnat_mid"; subnet = "100.80.0.0/24"; expected = true; }
+    { name = "cgnat_high_bound"; subnet = "100.127.0.0/24"; expected = true; }
+    { name = "cgnat_outside"; subnet = "100.128.0.0/24"; expected = false; }
+    { name = "cgnat_below"; subnet = "100.63.0.0/24"; expected = false; }
 
     # IPv6 ULA: fc00::/7
-    { name = "ipv6_ula_fc";        subnet = "fc00::/7";         expected = true; }
-    { name = "ipv6_ula_fd";        subnet = "fd00::/8";         expected = true; }
-    { name = "ipv6_ula_fdaa";      subnet = "fdaa:bb:1::/48";   expected = true; }
+    { name = "ipv6_ula_fc"; subnet = "fc00::/7"; expected = true; }
+    { name = "ipv6_ula_fd"; subnet = "fd00::/8"; expected = true; }
+    { name = "ipv6_ula_fdaa"; subnet = "fdaa:bb:1::/48"; expected = true; }
 
     # IPv6 link-local: fe80::/10
-    { name = "ipv6_link_local";    subnet = "fe80::/10";        expected = true; }
-    { name = "ipv6_link_local_iface"; subnet = "fe80::1%eth0";  expected = true; }
+    { name = "ipv6_link_local"; subnet = "fe80::/10"; expected = true; }
+    { name = "ipv6_link_local_iface"; subnet = "fe80::1%eth0"; expected = true; }
 
     # IPv6 documentation: 2001:db8::/32
-    { name = "ipv6_doc";           subnet = "2001:db8::/32";    expected = true; }
-    { name = "ipv6_doc_full";      subnet = "2001:0db8::/32";   expected = true; }
+    { name = "ipv6_doc"; subnet = "2001:db8::/32"; expected = true; }
+    { name = "ipv6_doc_full"; subnet = "2001:0db8::/32"; expected = true; }
 
     # Public WAN (not private)
-    { name = "public_wan_ipv4";    subnet = "82.5.173.0/24";    expected = false; }
-    { name = "public_wan_ipv6";    subnet = "2a00:1450:4000::/48"; expected = false; }
+    { name = "public_wan_ipv4"; subnet = "82.5.173.0/24"; expected = false; }
+    { name = "public_wan_ipv6"; subnet = "2a00:1450:4000::/48"; expected = false; }
   ];
 
   subnetResults = map

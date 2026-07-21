@@ -59,7 +59,7 @@ let
       || firstHexet == "fe80"
       # Documentation: 2001:db8::/32
       || (firstHexet == "2001"
-        && (secondHexet == "db8" || secondHexet == "0db8"))
+      && (secondHexet == "db8" || secondHexet == "0db8"))
     else
       let
         oct1 = elemAt (splitString "." ip) 0;
@@ -74,9 +74,22 @@ let
       # RFC1918: 172.16.0.0/12
       || (oct1 == "172"
       && elem oct2 [
-        "16" "17" "18" "19" "20"
-        "21" "22" "23" "24" "25"
-        "26" "27" "28" "29" "30" "31"
+        "16"
+        "17"
+        "18"
+        "19"
+        "20"
+        "21"
+        "22"
+        "23"
+        "24"
+        "25"
+        "26"
+        "27"
+        "28"
+        "29"
+        "30"
+        "31"
       ])
       # RFC1918: 192.168.0.0/16
       || oct1 == "192"
