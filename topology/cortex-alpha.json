@@ -69,6 +69,74 @@
       "dnsmasqListenAddress": "10.88.128.1:53"
     }
   },
+  "routes": [
+    { "from": "wan", "port": 2208, "proto": "tcp", "to": "10.88.128.3:22", "reason": "SSH to local-nas" },
+    { "from": "wan", "port": 27015, "proto": "tcp", "to": "10.88.128.88:27015", "reason": "Game server (TCP) to LINDACORE-88" },
+    { "from": "wan", "port": 4549, "proto": "tcp", "to": "10.88.128.88:4549", "reason": "Game server to LINDACORE-88" },
+    { "from": "wan", "port": 17780, "proto": "udp", "to": "10.88.128.88:17780", "reason": "Game server to LINDACORE-88" },
+    { "from": "wan", "port": 17781, "proto": "udp", "to": "10.88.128.88:17781", "reason": "Game server to LINDACORE-88" },
+    { "from": "wan", "port": 17782, "proto": "udp", "to": "10.88.128.88:17782", "reason": "Game server to LINDACORE-88" },
+    { "from": "wan", "port": 17783, "proto": "udp", "to": "10.88.128.88:17783", "reason": "Game server to LINDACORE-88" },
+    { "from": "wan", "port": 17784, "proto": "udp", "to": "10.88.128.88:17784", "reason": "Game server to LINDACORE-88" },
+    { "from": "wan", "port": 17785, "proto": "udp", "to": "10.88.128.88:17785", "reason": "Game server to LINDACORE-88" },
+    { "from": "wan", "port": 27015, "proto": "udp", "to": "10.88.128.88:27015", "reason": "Game server (UDP) to LINDACORE-88" },
+    { "from": "wan", "port": 2207, "proto": "udp", "to": "10.88.127.88:2207", "reason": "Service to LINDACORE-88" },
+    { "from": "wan", "port": 4175, "proto": "udp", "to": "10.88.128.88:4175", "reason": "Game server to LINDACORE-88" },
+    { "from": "wan", "port": 4179, "proto": "udp", "to": "10.88.128.88:4179", "reason": "Game server to LINDACORE-88" },
+    { "from": "wan", "port": 4171, "proto": "udp", "to": "10.88.128.88:4171", "reason": "Game server to LINDACORE-88" }
+  ],
+  "wireguard": {
+    "interface": "wireg0",
+    "listen_port": 2108,
+    "peers": [
+      "LINDA",
+      "alpha-one",
+      "alpha-three",
+      "cluster-box",
+      "cortex-alpha",
+      "display-0",
+      "display-1",
+      "display-2",
+      "arm-builder",
+      "dlyon",
+      "gaming-host-1",
+      "grimterm",
+      "local-nas",
+      "print-controller",
+      "remote-builder",
+      "remote-worker",
+      "storage-array",
+      "terminal-nx-01",
+      "terminal-zero"
+    ]
+  },
+  "firewall": {
+    "allowed_tcp_ports": [22, 636, 1108],
+    "allowed_udp_ports": [],
+    "interfaces": {
+      "wireg0": { "tcp": [443, 3100, 3101, 3102], "udp": [1108] },
+      "enp3s0": { "tcp": [443, 2208], "udp": [1108, 2108, 67, 53] },
+      "enp2s0": { "tcp": [2208], "udp": [2108, 2207, 17780, 17781, 17782, 17783, 17784, 17785, 27015, 4175, 4179, 4171] }
+    }
+  },
+  "dns": {
+    "interface": "enp3s0",
+    "static": [
+      { "domain": "git.johnbargman.net", "ip": "10.88.128.1" },
+      { "domain": "code.johnbargman.net", "ip": "10.88.128.1" },
+      { "domain": "cortex-alpha.johnbargman.net", "ip": "10.88.128.1" },
+      { "domain": "ap.johnbargman.net", "ip": "10.88.128.1" },
+      { "domain": "prometheus.johnbargman.net", "ip": "10.88.128.1" },
+      { "domain": "grafana.johnbargman.net", "ip": "10.88.128.1" },
+      { "domain": "print-controller.johnbargman.net", "ip": "10.88.128.1" },
+      { "domain": "minio.johnbargman.net", "ip": "10.88.128.1" }
+    ],
+    "dhcp": {
+      "range": "10.88.128.128,10.88.128.254,24h",
+      "interface": "enp3s0"
+    },
+    "servers": ["208.67.220.220", "208.67.222.222", "1.0.0.1", "8.8.8.8"]
+  },
   "vhosts": {
   "_": [
     {
