@@ -31,6 +31,9 @@
   # hyperhyper (x86_64-linux) and arm-builder (aarch64-linux).
   nix.settings.max-jobs = 0;
 
+  # This machine IS the cache. Never garbage-collect — retain all closures.
+  nix.gc.automatic = lib.mkForce false;
+
   # Route to hyperhyper (100.107.101.14) via cortex-alpha WireGuard gateway
   # hyperhyper is on an external Tailscale VPN — cortex-alpha is the only
   # WireGuard hub with a Tailscale connection, so all traffic for hyperhyper

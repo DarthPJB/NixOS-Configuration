@@ -549,21 +549,6 @@
         "type": "github"
       }
     },
-    "flake-utils_6": {
-      "locked": {
-        "lastModified": 1644229661,
-        "narHash": "sha256-1YdnJAsNy69bpcjuoKdOYQX0YxZBiCYZo4Twxerqv7k=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "3cecb5b042f7f209c56ffd8371b2711a290ec797",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
     "git-hooks": {
       "inputs": {
         "flake-compat": [
@@ -1110,27 +1095,6 @@
         "nixpkgs": [
           "denton-glasses",
           "openface",
-          "nixpkgs_stable"
-        ]
-      },
-      "locked": {
-        "lastModified": 1745917180,
-        "narHash": "sha256-PPo7GwCwhENsX5NuxiEdxmy++OoxUpxV+fOpTGaWYoM=",
-        "owner": "homotopic",
-        "repo": "lint-utils",
-        "rev": "62c2fa87ba9620e2d5470d957827175c6e1c128f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "homotopic",
-        "repo": "lint-utils",
-        "type": "github"
-      }
-    },
-    "lint-utils_3": {
-      "inputs": {
-        "flake-utils": "flake-utils_6",
-        "nixpkgs": [
           "nixpkgs_stable"
         ]
       },
@@ -1825,7 +1789,6 @@
         "hype-train-outlaw": "hype-train-outlaw",
         "hyprland": "hyprland",
         "ikbaeb-th": "ikbaeb-th",
-        "lint-utils": "lint-utils_3",
         "nixinate": "nixinate",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs_llm": "nixpkgs_llm",

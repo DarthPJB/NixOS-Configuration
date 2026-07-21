@@ -126,7 +126,7 @@ in
       dates = "daily";
       randomizedDelaySec = "2h";
       persistent = true;
-      options = "--delete-older-than 30d --max-freed $((50 * 1024**3))";
+      options = "--max 3 --delete-older-than 30d";
     };
     settings = {
       experimental-features = [
