@@ -17,13 +17,45 @@
 let
   inherit (builtins)
     readDir readFile fromJSON filter attrNames hasAttr isAttrs
-    isList isString pathExists length head tail elemAt foldl' all any
-    elem toString substring genList match;
+    pathExists length head elemAt foldl'
+    elem toString;
 
   inherit (lib)
-    removeSuffix hasSuffix attrValues toInt flatten unique
-    concatStringsSep optionals optional filterAttrs mapAttrs
-    hasInfix hasPrefix;
+    removeSuffix hasSuffix attrValues flatten unique
+    concatStringsSep mapAttrs
+    hasPrefix splitString any;
+
+  # ── CIDR helpers ─────────────────────────────────────────────
+  # Convert dotted decimal IP to 32-bit unsigned integer
+  ipToInt = ip:
+    let
+      parts = splitString "." ip;
+      octets = map builtins.fromJSON parts;
+    in
+    foldl' (acc: o: acc * 256 + o) 0 octets;
+
+  # Compute 2^n for n ≤ 32
+  pow2 = n:
+    if n == 0 then 1
+    else 2 * pow2 (n - 1);
+
+  # Convert CIDR notation to { start, end } integer range
+  cidrToRange = cidr:
+    let
+      parts = splitString "/" cidr;
+      ipStr = builtins.elemAt parts 0;
+      maskStr = builtins.elemAt parts 1;
+      ipInt = ipToInt ipStr;
+      mask = builtins.fromJSON maskStr;
+      hostBits = 32 - mask;
+      size = pow2 hostBits;
+    in {
+      start = ipInt;
+      end = ipInt + size - 1;
+    };
+
+  # Check if two [start, end] ranges overlap
+  rangesOverlap = a: b: a.start <= b.end && b.start <= a.end;
 
   # ── Paths ────────────────────────────────────────────────────
   # The topology directory is ../topology relative to this file
@@ -122,7 +154,7 @@ let
         (attrValues hosts);
     in
     # Strip internal _-prefixed fields for output
-    mapAttrs (k: v: removeAttrs v [ "_dupHub" ]) withPeers;
+    mapAttrs (_k: v: removeAttrs v [ "_dupHub" ]) withPeers;
 
   # ── Validator 1: Filename/hostname binding ───────────────────
   # topology/<X>.json MUST have "hostname": "<X>".
@@ -453,6 +485,38 @@ let
           [ ])
       (attrValues hosts));
 
+  # ── Validator: Tailscale route overlap ───────────────────────
+  # For each host with advertised_tailscale_routes, check that each
+  # route CIDR overlaps with at least one of the host's coordinate
+  # subnets. This is a WARNING (not error) because Tailscale can
+  # advertise routes for subnets the host doesn't directly sit on.
+  vTailscaleRoutes =
+    filter (x: x != null) (flatten (map
+      (host:
+        let
+          routes = host.advertised_tailscale_routes or [ ];
+          coordSubnets = map (c: c.subnet) (host.coordinate or [ ]);
+        in
+        if routes == [ ] then [ ]
+        else
+          map
+            (route:
+              let
+                routeRange = cidrToRange route;
+                overlaps = any
+                  (coordSubnet:
+                    let coordRange = cidrToRange coordSubnet;
+                    in rangesOverlap routeRange coordRange
+                  )
+                  coordSubnets;
+              in
+              if overlaps then null
+              else "WARNING: ${host.hostname}: advertised_tailscale_routes entry '${route}' does not overlap with any coordinate subnet"
+            )
+            routes
+      )
+      (attrValues hosts)));
+
   # ── Aggregate results ────────────────────────────────────────
   allErrors = flatten [
     vFilenameBinding
@@ -471,6 +535,7 @@ let
 
   allWarnings = flatten [
     vIcmpOverrideInterfaces
+    vTailscaleRoutes
   ];
 
 in

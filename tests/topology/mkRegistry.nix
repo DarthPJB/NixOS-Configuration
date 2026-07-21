@@ -22,10 +22,15 @@ let
   planes = registry.planes;
   errors = registry.errors;
   hostnames = attrNames hosts;
+  warnings = registry.warnings;
 
   # Helper: count errors matching a substring
   countErrorsWithSubstr = substr:
     length (filter (e: lib.hasInfix substr e) errors);
+
+  # Helper: count warnings matching a substring
+  countWarningsWithSubstr = substr:
+    length (filter (w: lib.hasInfix substr w) warnings);
 
   # ── Test 1: Host count ──────────────────────────────────────
   testHostsCount =
@@ -66,7 +71,20 @@ let
       pass = actual == expected;
     };
 
-  # ── Test 4: Known host present ──────────────────────────────
+  # ── Test 4: Warning count ──────────────────────────────────
+  testWarningsCount =
+    let
+      actual = length warnings;
+      expected = 0;
+    in
+    {
+      name = "warnings_count";
+      expected = expected;
+      actual = actual;
+      pass = actual == expected;
+    };
+
+  # ── Test 5: Known host present ──────────────────────────────
   testCortexAlphaExists =
     let
       expected = "cortex-alpha";
@@ -78,7 +96,7 @@ let
       pass = elem expected hostnames;
     };
 
-  # ── Test 5: Known host has expected fields ──────────────────
+  # ── Test 6: Known host has expected fields ──────────────────
   testCortexAlphaFields =
     let
       actual = attrNames (hosts.cortex-alpha or { });
@@ -107,7 +125,7 @@ let
       pass = actual == expected;
     };
 
-  # ── Test 6: Known host has expected hostname value ──────────
+  # ── Test 7: Known host has expected hostname value ──────────
   testCortexAlphaHostname =
     let
       actual = hosts.cortex-alpha.hostname or null;
@@ -120,7 +138,7 @@ let
       pass = actual == expected;
     };
 
-  # ── Test 7: Known host has 4 hub_of entries ─────────────────
+  # ── Test 8: Known host has 4 hub_of entries ─────────────────
   testCortexAlphaHubOfCount =
     let
       actual = length (hosts.cortex-alpha.hub_of or [ ]);
@@ -133,7 +151,7 @@ let
       pass = actual == expected;
     };
 
-  # ── Test 8: No building-b dangling coordinate error ─────────
+  # ── Test 9: No building-b dangling coordinate error ─────────
   testErrorBuildingBDangling =
     let
       actual = countErrorsWithSubstr
@@ -146,7 +164,7 @@ let
       pass = actual == 0;
     };
 
-  # ── Test 9: No building-b invalid CIDR error ────────────────
+  # ── Test 10: No building-b invalid CIDR error ───────────────
   testErrorBuildingBInvalidCIDR =
     let
       actual = countErrorsWithSubstr
@@ -159,7 +177,7 @@ let
       pass = actual == 0;
     };
 
-  # ── Test 10: No peer ID collisions ───────────────────────────
+  # ── Test 11: No peer ID collisions ───────────────────────────
   testPeerIdCollisionCount =
     let
       collisionErrors = filter (e: lib.hasInfix "peer_id collision" e) errors;
@@ -173,7 +191,7 @@ let
       pass = actual == expected;
     };
 
-  # ── Test 11: No peer_id collision (wg/20) ───────────────────
+  # ── Test 12: No peer_id collision (wg/20) ───────────────────
   testPeerIdCollisionWg20 =
     let
       actual = countErrorsWithSubstr
@@ -186,7 +204,7 @@ let
       pass = actual == 0;
     };
 
-  # ── Test 12: No peer_id collision (wg/21 triple) ────────────
+  # ── Test 13: No peer_id collision (wg/21 triple) ────────────
   testPeerIdCollisionWg21 =
     let
       actual = countErrorsWithSubstr
@@ -199,7 +217,7 @@ let
       pass = actual == 0;
     };
 
-  # ── Test 13: No planes without a hub ────────────────────────
+  # ── Test 14: No planes without a hub ────────────────────────
   # All 5 planes should have a non-null hub
   testAllPlanesHaveHub =
     let
@@ -220,6 +238,7 @@ let
     testHostsCount
     testPlanesCount
     testErrorsCount
+    testWarningsCount
     testCortexAlphaExists
     testCortexAlphaFields
     testCortexAlphaHostname
