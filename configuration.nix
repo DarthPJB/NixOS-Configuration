@@ -180,4 +180,30 @@ in
   # Required for kmscon hwaccel (unstable nixpkgs assertion)
   hardware.graphics.enable = lib.mkDefault true;
   services.getty.autologinUser = "John88";
+
+  # FlakeHub token for Determinate Nix — silences "Permanent" auth errors.
+  # Secrix decrypts the token at /run/determinate-flakehub-login-keys/flakehub-token,
+  # then this service runs `determinate-nixd login token --token-file` which writes
+  # the netrc with correct entries for flakehub.com, api.flakehub.com, cache.flakehub.com.
+  # Runs after nix-daemon so the socket is ready. Token exists only for service lifetime.
+  # Does NOT touch /run/gitlab-netrc — completely separate concern.
+  secrix.services.determinate-flakehub-login.secrets.flakehub-token.encrypted.file =
+    "${self}/secrets/flakehub_token";
+
+  systemd.services.determinate-flakehub-login = let
+    determinate-nixd = self.inputs.determinate.packages.${pkgs.stdenv.system}.default;
+  in {
+    description = "Login to FlakeHub via Determinate Nix daemon";
+    after = [ "nix-daemon.service" ];
+    requires = [ "nix-daemon.service" ];
+    # secrix module adds: after/bindsTo determinate-flakehub-login-keys.service
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      ${lib.getExe determinate-nixd} login token \
+        --token-file /run/determinate-flakehub-login-keys/flakehub-token
+    '';
+  };
 }
