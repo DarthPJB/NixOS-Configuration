@@ -111,7 +111,7 @@ in
     "kernel.printk" = "7 7 7 7"; # Maximum verbosity for dmesg
   };
 
-  services.rsyslogd = lib.mkIf (config.nixpkgs.system == "x86_64-linux") {
+  services.rsyslogd = lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 {
     enable = true;
     extraConfig = ''
       kern.* /var/log/kern.log
@@ -192,7 +192,7 @@ in
 
   systemd.services.determinate-flakehub-login =
     let
-      determinate-nixd = self.inputs.determinate.packages.${pkgs.stdenv.system}.default;
+      determinate-nixd = self.inputs.determinate.packages.${pkgs.stdenv.hostPlatform.system}.default;
     in
     {
       description = "Login to FlakeHub via Determinate Nix daemon";

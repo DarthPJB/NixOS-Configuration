@@ -97,7 +97,7 @@
 
   systemd.services.determinate-flakehub-login =
     let
-      determinate-nixd = self.inputs.determinate.packages.${pkgs.stdenv.system}.default;
+      determinate-nixd = self.inputs.determinate.packages.${pkgs.stdenv.hostPlatform.system}.default;
     in
     {
       description = "Login to FlakeHub via Determinate Nix daemon";

@@ -63,7 +63,7 @@
         # Skip nix test suite — OOMs on remote builders during source build.
         # The forked nix (darthpjb/nix-src) builds from source, not from cache.
         ({ pkgs, lib, ... }: {
-          nix.package = lib.mkForce (determinate.inputs.nix.packages.${pkgs.system}.default.overrideAttrs (old: { doCheck = false; }));
+          nix.package = lib.mkForce (determinate.inputs.nix.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: { doCheck = false; }));
         })
         {
           programs.ssh.knownHosts = mkKnownHosts self.nixosConfigurations;
@@ -87,7 +87,6 @@
       ];
       mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108, images ? { } }:
         nixpkgs_stable.lib.nixosSystem {
-          system = "x86_64-linux";
           modules = commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${hostname}
             {
@@ -103,7 +102,7 @@
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;
               _module.args = globalArgs // {
                 inherit hostname;
-                unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
+                unstable = import nixpkgs_unstable { localSystem = "x86_64-linux"; config.allowUnfree = true; };
                 nixinate = {
                   inherit host sshUser buildOn;
                   port = sshPort;
@@ -115,7 +114,6 @@
         };
       mkAarch64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
         nixpkgs_unstable.lib.nixosSystem {
-          system = "aarch64-linux";
           modules = [
             "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
@@ -138,7 +136,7 @@
               ];
               _module.args = globalArgs // {
                 inherit hostname;
-                unstable = import nixpkgs_unstable { system = "aarch64-linux"; config.allowUnfree = true; };
+                unstable = import nixpkgs_unstable { localSystem = "aarch64-linux"; config.allowUnfree = true; };
                 nixinate = {
                   inherit host sshUser;
                   buildOn = "local";
@@ -466,12 +464,12 @@
 
       nixosConfigurations = {
         beta-one = nixpkgs_unstable.lib.nixosSystem {
-          system = "armv7l-linux";
           modules = [
             "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
             "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
             ./machines/beta/1.nix
             {
+              nixpkgs.hostPlatform = "armv7l-linux";
               _module.args = globalArgs // { hostname = "beta-one"; };
             }
           ];
@@ -496,7 +494,6 @@
         # Generic ARM bootstrap image — reusable for ALL ARM devices
         # No WG, no device-specific config, open SSH on port 22
         arm-bootstrap = nixpkgs_unstable.lib.nixosSystem {
-          system = "aarch64-linux";
           modules = [
             "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
@@ -513,7 +510,7 @@
               networking.hostName = "arm-bootstrap";
               _module.args = globalArgs // {
                 hostname = "arm-bootstrap";
-                unstable = import nixpkgs_unstable { system = "aarch64-linux"; config.allowUnfree = true; };
+                unstable = import nixpkgs_unstable { localSystem = "aarch64-linux"; config.allowUnfree = true; };
               };
             }
           ];
@@ -660,7 +657,6 @@
         };
 
         bargman-greeter-vm = nixpkgs_stable.lib.nixosSystem {
-          system = "x86_64-linux";
           modules = [
             ./environments/i3wm_darthpjb.nix
             ./environments/bargman-greeter-vm.nix

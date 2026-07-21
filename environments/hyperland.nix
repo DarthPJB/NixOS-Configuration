@@ -6,7 +6,7 @@
 {
   programs.hyprland = {
     enable = true;
-    #   package = self.inputs.hyprland.packages.${pkgs.system}.hyprland;
+    #   package = self.inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
     withUWSM = true;
     xwayland.enable = true;
   };

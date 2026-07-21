@@ -1842,11 +1842,11 @@
         "nixpkgs": "nixpkgs_16"
       },
       "locked": {
-        "lastModified": 1781802448,
-        "narHash": "sha256-fquZY1SFToXU+M5jBAiNGoMBUfXbDB036lS4K7M81FA=",
+        "lastModified": 1784646685,
+        "narHash": "sha256-MPr+ax3aOwDcmu6sZZYPVlMiFQMNY4r5hDBxgBsBo/E=",
         "owner": "Platonic-Systems",
         "repo": "secrix",
-        "rev": "f79faf63b260e27c3a1a2ba047ac72963d5b0066",
+        "rev": "4d0e6a962086ea1653d82d4e31ea07abf7e09ee6",
         "type": "github"
       },
       "original": {
