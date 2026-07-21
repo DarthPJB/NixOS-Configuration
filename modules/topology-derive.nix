@@ -120,7 +120,14 @@ let
     else
       null;
 
-  allCoordIPs = map (c: subnetPeerToIP c.subnet c.peer_id) (topology.coordinate or [ ]);
+  # ── Coordinate IP sets for listen address derivation ────────
+  # Tailscale is a mesh VPN — nginx should not listen on it.
+  # WAN is only for static/default vhosts, not proxy vhosts.
+  coords = topology.coordinate or [ ];
+  nonTailCoords = filter (c: (c.plane_name or "") != "tailscale-platonic") coords;
+  nonWanCoords = filter (c: (c.plane_name or "") != "82.5.173.0/24-wan") nonTailCoords;
+  nonTailIPs = map (c: subnetPeerToIP c.subnet c.peer_id) nonTailCoords;
+  nonWanIPs = map (c: subnetPeerToIP c.subnet c.peer_id) nonWanCoords;
 
   # ── Exporter configuration ────────────────────────────────
   # Each exporter entry in topology.exporters becomes:
@@ -254,14 +261,18 @@ let
         else { };
 
       # Listen addresses: explicit override, plane-derivation, or full-derivation
+      # Proxy vhosts: LAN + WG only (no tailscale, no WAN)
+      # Static/default vhosts: LAN + WG + WAN (no tailscale)
       listenAddressesConfig =
         if entry ? listenAddresses then
           { listenAddresses = entry.listenAddresses; }
         else if entry ? plane then
           let planeIP = getPlaneIP entry.plane; in
           if planeIP != null then { listenAddresses = [ planeIP ]; } else { }
-        else if allCoordIPs != [ ] then
-          { listenAddresses = allCoordIPs; }
+        else if isProxy && nonWanIPs != [ ] then
+          { listenAddresses = nonWanIPs; }
+        else if nonTailIPs != [ ] then
+          { listenAddresses = nonTailIPs; }
         else { };
 
       # Server name override (when vhost key differs from server_name)
