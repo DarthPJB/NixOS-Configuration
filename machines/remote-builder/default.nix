@@ -20,6 +20,7 @@
     ../../modifier_imports/remote-builder.nix
     ../../users/build.nix
     ../../modules/enable-wg-topology.nix
+    ../../locale/tailscale.nix
   ];
   # Virtual disk devices — smartctl/smartd not applicable
   services.smartd.enable = lib.mkForce false;
@@ -36,26 +37,11 @@
   nix.gc.automatic = lib.mkForce false;
   nix.settings.auto-optimise-store = lib.mkForce false;
 
-  # Route to hyperhyper (100.107.101.14) via cortex-alpha WireGuard gateway
-  # hyperhyper is on an external Tailscale VPN — cortex-alpha is the only
-  # WireGuard hub with a Tailscale connection, so all traffic for hyperhyper
-  # must go through it.
-  #
-  # Two things needed:
-  # 1. WireGuard allowedIPs must include the Tailscale IP so the tunnel accepts it
-  # 2. A route must direct traffic for that IP through the tunnel
-  networking.wireguard.interfaces.wireg0.peers = lib.mkForce [
-    {
-      # cortex-alpha hub — extend allowedIPs to include hyperhyper Tailscale IP
-      publicKey = builtins.readFile "${self}/secrets/public_keys/wireguard/wg_cortex-alpha_pub";
-      allowedIPs = [ "10.88.127.0/24" "100.107.101.14/32" ];
-      endpoint = "cortex-alpha.johnbargman.net:2108";
-      persistentKeepalive = 25;
-    }
-  ];
-
-  # Route for hyperhyper through WireGuard tunnel (dhcpcd-compatible)
-  networking.localCommands = ''
-    ${pkgs.iproute2}/bin/ip route replace 100.107.101.14/32 via 10.88.127.1 dev wireg0 2>/dev/null || true
-  '';
+  # Tailscale: direct connection to hyperhyper (replaces WireGuard proxy route)
+  secrix.services.tailscale.secrets.auth-key.encrypted.file =
+    ../../../secrets/tailscale_auth_key;
+  services.tailscale = {
+    authKeyFile = config.secrix.services.tailscale.secrets.auth-key.decrypted.path;
+    authKeyParameters.preauthorized = true;
+  };
 }
