@@ -41,6 +41,5 @@
     pkgs.rsync
     pkgs.git
     pkgs_llm.opencode
-    pkgs_llm.crush
   ];
 }
