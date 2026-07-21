@@ -81,7 +81,6 @@ in
     (lib.mkIf (config.coreRouter.enable && topology ? tailscale) {
       # Topology-managed: Tailscale VPN configuration
       services.tailscale = lib.mkOverride 100 tailscaleLib.config;
-      networking.tailscale.advertisedRoutes = tailscaleLib.mkAdvertisedRoutes;
     })
 
     (lib.mkIf (config.coreRouter.enable && topology ? dns) {

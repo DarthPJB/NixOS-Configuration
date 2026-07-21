@@ -43,9 +43,6 @@ let
           wireg0 = wireguardLib.mkWireguardPeers;
         };
       };
-      tailscale = {
-        advertisedRoutes = tailscaleLib.mkAdvertisedRoutes;
-      };
     };
   };
 
@@ -124,7 +121,6 @@ let
     "services.tailscale.enable" = config: config.services.tailscale.enable or false;
     "services.tailscale.useRoutingFeatures" = config: config.services.tailscale.useRoutingFeatures or null;
     "services.tailscale.extraSetFlags" = config: config.services.tailscale.extraSetFlags or [ ];
-    "networking.tailscale.advertisedRoutes" = config: config.networking.tailscale.advertisedRoutes or [ ];
 
     # DNS/DHCP
     "services.dnsmasq.enable" = config: config.services.dnsmasq.enable or false;

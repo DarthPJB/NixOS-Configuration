@@ -54,16 +54,16 @@ let
   # Enable Tailscale if any routing is configured
   enable = (topology.tailscale.subnetRouter or false) || (uniqueRoutes != [ ]);
 
-  # Build configuration
+  # Build complete services.tailscale config
   config = {
-    enable = enable;
+    inherit enable;
   }
-  // (if topology.tailscale.subnetRouter or false then { useRoutingFeatures = "server"; } else { });
-
-  # Helper function to return just the routes
-  mkAdvertisedRoutes = uniqueRoutes;
+  // (if topology.tailscale.subnetRouter or false then { useRoutingFeatures = "server"; } else { })
+  // (if uniqueRoutes != [ ] then {
+    extraSetFlags = [ "--advertise-routes=${concatStringsSep "," uniqueRoutes}" ];
+  } else { });
 
 in
 {
-  inherit config mkAdvertisedRoutes;
+  inherit config;
 }

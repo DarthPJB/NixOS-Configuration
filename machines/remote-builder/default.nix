@@ -8,7 +8,6 @@
 {
   imports = [
     ./hardware-configuration.nix
-    # ../../configuration.nix — already in commonModules (flake.nix), do not duplicate
     ../../users/darthpjb.nix
     ../../modifier_imports/flakes.nix
     ../../environments/sshd.nix
@@ -20,7 +19,6 @@
     ../../modifier_imports/remote-builder.nix
     ../../users/build.nix
     ../../modules/enable-wg-topology.nix
-    ../../locale/tailscale.nix
   ];
   # Virtual disk devices — smartctl/smartd not applicable
   services.smartd.enable = lib.mkForce false;
@@ -41,6 +39,7 @@
   secrix.services.tailscaled.secrets.auth-key.encrypted.file =
     ../../secrets/tailscale_auth_key;
   services.tailscale = {
+    enable = true;
     authKeyFile = config.secrix.services.tailscaled.secrets.auth-key.decrypted.path;
     authKeyParameters.preauthorized = true;
   };

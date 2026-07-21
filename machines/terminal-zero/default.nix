@@ -19,7 +19,6 @@
     ../../environments/rtl-sdr.nix
     ../../environments/pio.nix
     ../../environments/code.nix
-    ../../locale/tailscale.nix
     ./hardware-configuration.nix
     ../../environments/steam.nix
     ../../modules/enable-wg-topology.nix

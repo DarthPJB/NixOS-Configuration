@@ -119,7 +119,6 @@ in
     # --- Tailscale configuration ---
     (lib.mkIf (config.coreRouterTopology.enable && machineTopology ? tailscale) {
       services.tailscale = lib.mkOverride 100 tailscaleLib.config;
-      networking.tailscale.advertisedRoutes = tailscaleLib.mkAdvertisedRoutes;
     })
 
     # --- DNS/DHCP configuration ---
