@@ -94,5 +94,5 @@ remote-worker.
 | 3: Configure hub (max-jobs=0) | ✅ Done | |
 | 3b: Route to hyperhyper | ✅ Done | CI can contact hyperhyper |
 | 3c: Move hate-filled runner + netrc | ✅ Done | Committed `d723f05` |
-| 4: Cache contribution | ⬜ Pending | Post-build hook → cache.platonic.systems |
+| 4: Cache strategy | ✅ Done | remote-builder IS the cache, GC disabled |
 | 5: Verify and deploy | ⬜ Pending | End-to-end validation |

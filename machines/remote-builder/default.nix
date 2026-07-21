@@ -32,7 +32,9 @@
   nix.settings.max-jobs = 0;
 
   # This machine IS the cache. Never garbage-collect — retain all closures.
+  # Also skip store optimisation — only grows, never rebuilds locally.
   nix.gc.automatic = lib.mkForce false;
+  nix.settings.auto-optimise-store = lib.mkForce false;
 
   # Route to hyperhyper (100.107.101.14) via cortex-alpha WireGuard gateway
   # hyperhyper is on an external Tailscale VPN — cortex-alpha is the only

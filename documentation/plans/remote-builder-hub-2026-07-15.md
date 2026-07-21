@@ -16,11 +16,10 @@ running GitHub runners into the **build-runner hub** — the central node that:
 2. **Never builds locally** (`max-jobs = 0`) — it is a pure coordinator
 3. **Runs unlimited GitHub Actions runners** — since builds are distributed, the hub only
    needs storage and network I/O
-4. **Contributes to the fleet cache** — pushes built paths to `cache.platonic.systems`
-   using the Infrastructure-2 post-build hook pattern
+4. **IS the fleet cache** — retains all built closures locally; GC disabled
 
 The existing remote builders remain unchanged:
-- **hyperhyper** (`100.107.101.14`) — 100+ cores, 1TB RAM, x86_64-linux, hosts `cache.platonic.systems`
+- **hyperhyper** (`100.107.101.14`) — 100+ cores, 1TB RAM, x86_64-linux
 - **arm-builder** (`10.88.127.43`) — aarch64-linux
 
 ## Why This Is Needed
@@ -48,8 +47,8 @@ GitHub Actions
 remote-builder (hub)
   ├─ GitHub runners (unlimited)
   ├─ nix-daemon (max-jobs = 0)
-  ├─ 200+ GB NFS disk (/nix store)
-  └─ post-build-hook (sign + push to cache)
+  ├─ 300GB disk (/nix store) — IS the fleet cache, GC disabled
+  └─ receives completed paths from builders
         │
         ├──────────────────────┐
         ▼                      ▼
@@ -57,7 +56,6 @@ remote-builder (hub)
   (100.88.101.14)           (10.88.127.43)
   x86_64-linux              aarch64-linux
   100+ cores, 1TB RAM       RPi 4, 4GB RAM
-  hosts cache.platonic.systems
 ```
 
 ## Phase 1: Clean Up `modifier_imports/remote-builder.nix`
@@ -218,95 +216,23 @@ secrix secrets declared; build user verified; nix-daemon dispatches to hyperhype
 
 ---
 
-## Phase 4: Configure Cache Contribution
+## Phase 4: Cache Strategy
 
-**Goal:** Configure remote-builder to push built paths to `cache.platonic.systems`
-using the Infrastructure-2 post-build hook pattern. This phase deploys AFTER the
-hub configuration is active (Phase 3).
+**Goal:** remote-builder IS the fleet cache. No external cache push needed.
 
-**Reference (IMMUTABLE):** `/speed-storage/repo/platonic.systems/infrastructure-2/services/cache-push.nix`
+**Status:** SUPERSEDED — the original plan called for pushing to an external cache
+via post-build hook. This is no longer the design. remote-builder retains all
+closures locally with GC disabled (`nix.gc.automatic = false`). The 300GB disk
+provides sufficient capacity for the fleet's build outputs.
 
-### How the Infrastructure-2 Pattern Works
+**Why this changed:** The hub accumulates all CI build outputs from hyperhyper
+and arm-builder via ssh-ng. These paths stay in the store permanently. Other
+machines in the fleet can use remote-builder as a substituter (via WireGuard)
+once a serving mechanism is configured.
 
-1. A `post-build-hook` runs after every nix build
-2. It signs each output path with `nix store sign --key-file <cache-priv-key>`
-3. It copies each signed path to the cache via
-   `nix copy --to ssh-ng://nix-ssh@<cache-address>?ssh-key=<cache-ssh-key>`
-4. The cache (`cache.platonic.systems`) runs `nix.sshServe` + `services.nix-serve`
-   on hyperhyper
-
-### Why It Works for the Hub
-
-Even with `max-jobs = 0` (set in Phase 3), the hub's nix-daemon receives completed
-paths from the remote builders via ssh-ng. When those paths arrive, the post-build-hook
-triggers, signs them, and pushes them to the cache. The hub becomes a cache contributor
-without ever building anything itself.
-
-### Work
-
-#### 4.1 Create `services/cache-push.nix`
-
-Replicate the Infrastructure-2 pattern in the NixOS-Configuration repo:
-
-```nix
-# services/cache-push.nix
-# Post-build hook: sign and push to cache.platonic.systems
-# Reference: /speed-storage/repo/platonic.systems/infrastructure-2/services/cache-push.nix
-#            (IMMUTABLE — do not modify the reference)
-```
-
-Key elements from the reference:
-- `sign-command`: `nix store sign --key-file <cache-priv-key>`
-- `copy-command`: `nix copy --to ssh-ng://nix-ssh@<cache-address>?ssh-key=<cache-ssh-key>`
-- `post-build-hook`: shell script that iterates `$OUT_PATHS`, signs each, copies each
-- Retry logic: copy fails once → sleep 1s → retry once → continue
-- `nix.extraOptions`: `post-build-hook = <path-to-hook-script>`
-
-#### 4.2 Declare Secrix Secrets for Cache Credentials
-
-Two additional secrets needed:
-
-| Secret | Secrix Path | Purpose | Source |
-|--------|-------------|---------|--------|
-| cache-priv-key | `secrix.system.secrets.cache-priv-key` | Signing key for cache paths | From Infrastructure-2 `secrets/cache-priv-key` |
-| nix-ci-cache-ssh-key | `secrix.system.secrets.nix-ci-cache-ssh-key` | SSH key for cache push (nix-ssh user) | From Infrastructure-2 `secrets/nix-ci/nix_cache_private_ssh` |
-
-These secrets need to be re-encrypted for this repo's secrix context (remote-builder's
-host key). The encrypted blobs should be placed in `secrets/` and declared in the
-cache-push module.
-
-**Encryption command:**
-```bash
-nix run .#secrix encrypt secrets/cache-priv-key -- --all-users -s remote-builder
-nix run .#secrix encrypt secrets/nix-ci-cache-ssh-key -- --all-users -s remote-builder
-```
-
-#### 4.3 Import Cache-Push Module
-
-Add `../../services/cache-push.nix` to `machines/remote-builder/default.nix` imports.
-This is additive to the imports added in Phase 3.
-
-#### 4.4 Enable Cache Verification Fleet-Wide
-
-Uncomment the `cache.platonic.systems` trusted-public-key in `configuration.nix`:
-
-```nix
-# CURRENTLY (line 155):
-#        "cache.platonic.systems:ePE43vrTvMW4177G3LfAYWCSdZkSBA5gY3WZCO1Y3ew="
-
-# SHOULD BE:
-        "cache.platonic.systems:ePE43vrTvMW4177G3LfAYWCSdZkSBA5gY3WZCO1Y3ew="
-```
-
-Without this, the fleet cannot verify signed paths from the cache. The
-`trusted-substituters` already includes the URL (line 151), but the public key
-is needed for signature verification.
-
-**Files:** `services/cache-push.nix` (new), `machines/remote-builder/default.nix`,
-`configuration.nix`, `secrets/` (encrypted blobs)
-
-**Exit criteria:** Cache-push module created; secrix secrets encrypted and declared;
-`cache.platonic.systems` public key uncommented; post-build-hook configured.
+**Future work:** Configure `nix.sshServe` or `nix-serve` on remote-builder to
+serve its store as a substituter for the fleet. This is a separate task from
+the hub configuration.
 
 ---
 
@@ -343,30 +269,26 @@ is needed for signature verification.
    ```
    Should dispatch to hyperhyper, not build locally.
 
-6. **Verify post-build-hook** — after a build completes, check cache:
-   ```bash
-   ssh deploy@10.88.127.51 -p 1108 'journalctl -u nix-daemon --since "5 min ago" | grep push-to-cache'
-   ```
-
-7. **Monitor store growth** on the new 200+ GB disk:
+6. **Monitor store growth** on the 300GB disk:
    ```bash
    ssh deploy@10.88.127.51 -p 1108 'df -h /nix'
    ```
 
-8. **Run golden tests**:
+7. **Run golden tests**:
    ```bash
    nix run .#check-network -- remote-builder
    ```
 
-9. **Fleet-wide cache verification** — on any machine:
+8. **Verify GC is disabled**:
    ```bash
-   nix build nixpkgs#hello --substituters https://cache.platonic.systems --no-link
+   ssh deploy@10.88.127.51 -p 1108 'systemctl is-enabled nix-gc.timer'
    ```
+   Should show `masked` or `disabled`.
 
 **Files:** None (operational)
 
 **Exit criteria:** Builds dispatch to hyperhyper/arm-builder; `max-jobs = 0` confirmed;
-secrix secrets present; post-build-hook pushes to cache; golden test passes.
+secrix secrets present; GC disabled; golden test passes.
 
 ---
 
@@ -377,10 +299,7 @@ secrix secrets present; post-build-hook pushes to cache; golden test passes.
 | 1 | `modifier_imports/remote-builder.nix` | Remove 5 commented-out builder blocks; add architecture comment |
 | 2 | `machines/remote-builder/default.nix` | Add `fileSystems."/nix"` for 200+ GB external disk; store migration |
 | 3 | `machines/remote-builder/default.nix` | Import `modifier_imports/remote-builder.nix`; set `nix.settings.max-jobs = 0` |
-| 4 | `services/cache-push.nix` (new) | Post-build hook: sign + push to `cache.platonic.systems` |
-| 4 | `machines/remote-builder/default.nix` | Import `services/cache-push.nix` |
-| 4 | `configuration.nix` | Uncomment `cache.platonic.systems` trusted-public-key |
-| 4 | `secrets/` | Re-encrypt `cache-priv-key` and `nix-ci-cache-ssh-key` for remote-builder |
+| 4 | `machines/remote-builder/default.nix` | Disable GC (`nix.gc.automatic = false`) — machine IS the cache |
 
 ## Secrets Summary
 
@@ -388,8 +307,6 @@ secrix secrets present; post-build-hook pushes to cache; golden test passes.
 |--------|-------------|---------|--------|
 | `hyper_build_private_key` | `secrix.services.nix-daemon.secrets.hyperhyper` | SSH key for hyperhyper | ✅ Already in `secrets/` |
 | `builder-key` | `secrix.services.nix-daemon.secrets.personal-builder` | SSH key for arm-builder | ✅ Already in `secrets/` |
-| `cache-priv-key` | `secrix.system.secrets.cache-priv-key` | Signing key for cache paths | ⬜ Needs re-encryption for this repo |
-| `nix-ci-cache-ssh-key` | `secrix.system.secrets.nix-ci-cache-ssh-key` | SSH key for cache push | ⬜ Needs re-encryption for this repo |
 
 ## Key Design Principles
 
@@ -398,11 +315,10 @@ secrix secrets present; post-build-hook pushes to cache; golden test passes.
 - **hyperhyper and arm-builder remain unchanged** — they are the actual builders
 - **Unlimited runners are fine** — builds are distributed, the hub only needs storage
   and network I/O
-- **200+ GB disk** provides store capacity for the hub to hold all closures
-- **Cache contribution** uses the Infrastructure-2 post-build hook pattern
-  (immutable reference)
-- **Secrix manages all secrets** — SSH keys and cache credentials are encrypted at
-  rest, decrypted only at service runtime
+- **300GB disk** provides store capacity for the hub to hold all closures
+- **remote-builder IS the cache** — GC disabled, all closures retained permanently
+- **Secrix manages all secrets** — SSH keys encrypted at rest, decrypted only at
+  service runtime
 - **`modifier_imports/remote-builder.nix` is the client config** — it defines what
   machines to USE as builders, not how to BE a builder
 
@@ -431,11 +347,9 @@ from LINDA to remote-builder (commit `d723f05`).
 | Risk | Mitigation |
 |------|------------|
 | Store migration loses paths | Re-copy after any new closures; verify item counts |
-| Cache push fails silently | Retry logic in hook; journal logging for debugging |
 | Secrix secret decryption fails | Verify host key in `secrets/public_keys/host_keys/` |
 | `max-jobs = 0` breaks local operations | None expected — hub only coordinates |
 | SSH multiplexing corrupts ssh-ng | Already handled by `sshMultiplex.exclusions` in the module |
-| Cache public key missing | Phase 4.4 uncomments it fleet-wide |
 
 ## References
 
@@ -450,6 +364,3 @@ from LINDA to remote-builder (commit `d723f05`).
 - `documentation/arm-build-limitations.md` — prior store migration work
 - `documentation/incidents/2026-07-03-remote-builder-stale-machines-file.md` — incident
   showing `/etc/nix/machines` is declaratively generated
-- Infrastructure-2 `services/cache-push.nix` — IMMUTABLE reference for cache-push pattern
-- Infrastructure-2 `services/nix-cache-serve.nix` — IMMUTABLE reference for cache-serve
-- Infrastructure-2 `systems/hyperhyper/default.nix` — how hyperhyper uses the cache

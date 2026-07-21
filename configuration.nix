@@ -142,18 +142,10 @@ in
       auto-optimise-store = true;
       builders-use-substitutes = true;
 
-      trusted-users = [
-        "root"
-        "John88"
-        "build"
-        "deploy"
-      ];
       trusted-substituters = [
-        "https://cache.platonic.systems" # Building things has perks, having them in prod more so. ;)
         "https://cache.nixos.org"
       ];
       trusted-public-keys = [
-        #        "cache.platonic.systems:ePE43vrTvMW4177G3LfAYWCSdZkSBA5gY3WZCO1Y3ew="
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
       ];
     };
