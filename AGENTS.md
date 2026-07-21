@@ -141,11 +141,11 @@ Until then, both paths coexist.
 
 ### Formatter Configuration
 **DO NOT CHANGE THE FORMATTER CONFIGURATION** without explicit user approval.
-- Current formatter: `nixpkgs.nixpkgs-fmt`
-- Check: `lint-utils.linters.x86_64-linux.nixpkgs-fmt`
-- These MUST match. Changing one without the other breaks the build.
+- Current formatter: `nixpkgs.nixpkgs-fmt` (declared in `formatter."x86_64-linux"`)
+- Formatting enforced via `checks.x86_64-linux.formatting` (`nixpkgs-fmt --check`)
+- Dead code enforced via `checks.x86_64-linux.deadnix` (`deadnix --no-lambda-pattern-names`)
+- Both run via `nix flake check` and in CI
 - Do NOT run `nix fmt` on the entire codebase without explicit permission.
-- **Known issue:** No CI gate enforces this match. Risk of silent drift.
 
 ### Git Worktree Workflow
 
@@ -327,4 +327,3 @@ completion. These are tracked here for visibility; execute in order.
 | # | Task | Location |
 |---|---|---|
 | F7 | **Update `documentation/plans/overlord-II-PLAN.md`** — references deleted `real-topology/` (lines 80, 90-91, 96, 118) | Moved to snippets; remaining refs stale |
-| F8 | **Add CI gate for formatter/linter match** — documented CRITICAL but unenforced | `AGENTS.md:80-85` |
