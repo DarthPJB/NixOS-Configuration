@@ -190,20 +190,22 @@ in
   secrix.services.determinate-flakehub-login.secrets.flakehub-token.encrypted.file =
     "${self}/secrets/flakehub_token";
 
-  systemd.services.determinate-flakehub-login = let
-    determinate-nixd = self.inputs.determinate.packages.${pkgs.stdenv.system}.default;
-  in {
-    description = "Login to FlakeHub via Determinate Nix daemon";
-    after = [ "nix-daemon.service" ];
-    requires = [ "nix-daemon.service" ];
-    # secrix module adds: after/bindsTo determinate-flakehub-login-keys.service
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
+  systemd.services.determinate-flakehub-login =
+    let
+      determinate-nixd = self.inputs.determinate.packages.${pkgs.stdenv.system}.default;
+    in
+    {
+      description = "Login to FlakeHub via Determinate Nix daemon";
+      after = [ "nix-daemon.service" ];
+      requires = [ "nix-daemon.service" ];
+      # secrix module adds: after/bindsTo determinate-flakehub-login-keys.service
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+      };
+      script = ''
+        ${lib.getExe' determinate-nixd "determinate-nixd"} login token \
+          --token-file /run/determinate-flakehub-login-keys/flakehub-token
+      '';
     };
-    script = ''
-      ${lib.getExe determinate-nixd} login token \
-        --token-file /run/determinate-flakehub-login-keys/flakehub-token
-    '';
-  };
 }
