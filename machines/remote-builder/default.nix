@@ -41,6 +41,8 @@
   services.tailscale = {
     enable = true;
     authKeyFile = config.secrix.services.tailscaled.secrets.auth-key.decrypted.path;
-    authKeyParameters.preauthorized = true;
+    # NOTE: Do NOT set authKeyParameters.preauthorized. Pre-auth keys
+    # (tskey-auth-*) have properties baked in at creation. Appending
+    # ?preauthorized=true to the key string breaks validation.
   };
 }
