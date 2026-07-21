@@ -82,15 +82,15 @@ let
   testCortexAlphaFields =
     let
       actual = attrNames (hosts.cortex-alpha or { });
-      # cortex-alpha.json has 10 fields (no "role" field in JSON format)
+      # cortex-alpha.json has 10 fields (default_response removed per RF-0.5, lan_dhcp added per RF-0.3)
       expected = [
         "acme_host"
         "advertised_tailscale_routes"
         "coordinate"
-        "default_response"
         "exporters"
         "hostname"
         "hub_of"
+        "lan_dhcp"
         "public_key_file"
         "trust"
         "vhosts"

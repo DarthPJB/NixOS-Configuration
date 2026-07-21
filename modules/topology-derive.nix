@@ -107,6 +107,21 @@ let
     then subnetPeerToIP (head realCoordinates).subnet (head realCoordinates).peer_id
     else "0.0.0.0";
 
+  # ── Vhost listen address derivation ────────────────────────
+  # When a vhost entry has no explicit listenAddresses, derive them
+  # from coordinates. If the entry has a "plane" field, use only the
+  # coordinate matching that plane. Otherwise use all coordinates.
+  getPlaneIP = plane_name:
+    let
+      coords = filter (c: (c.plane_name or "") == plane_name) (topology.coordinate or [ ]);
+    in
+    if coords != [ ] then
+      subnetPeerToIP (head coords).subnet (head coords).peer_id
+    else
+      null;
+
+  allCoordIPs = map (c: subnetPeerToIP c.subnet c.peer_id) (topology.coordinate or [ ]);
+
   # ── Exporter configuration ────────────────────────────────
   # Each exporter entry in topology.exporters becomes:
   #   services.prometheus.exporters.<name>
@@ -238,10 +253,15 @@ let
           }
         else { };
 
-      # Listen addresses per-vhost override (when entry has explicit listenAddresses)
+      # Listen addresses: explicit override, plane-derivation, or full-derivation
       listenAddressesConfig =
         if entry ? listenAddresses then
           { listenAddresses = entry.listenAddresses; }
+        else if entry ? plane then
+          let planeIP = getPlaneIP entry.plane; in
+          if planeIP != null then { listenAddresses = [ planeIP ]; } else { }
+        else if allCoordIPs != [ ] then
+          { listenAddresses = allCoordIPs; }
         else { };
 
       # Server name override (when vhost key differs from server_name)

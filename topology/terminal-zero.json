@@ -15,7 +15,7 @@
       "trust": 1
     },
     {
-      "interface": "unknown-lan-2",
+      "interface": "mac:f0:de:f1:c7:fe:30",
       "peer_id": 21,
       "plane_name": "cortex-alpha.lan",
       "subnet": "10.88.128.0/24",

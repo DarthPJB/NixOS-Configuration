@@ -5,7 +5,6 @@
 # builtins.fromJSON. Produces a validated attrset with:
 #
 #   hosts    = { hostname = <parsed JSON>; ... }  # 36 entries (all per-host files)
-#   shared   = <contents of shared.json>
 #   planes   = { "<plane_name>|<subnet>" = { plane_name, subnet, hub, peers, trust }; ... }
 #   errors   = [ ... ]  # Non-empty → build fails
 #   warnings = [ ... ]
@@ -36,10 +35,8 @@ let
   allFileNames = attrNames dirEntries;
   jsonFileNames = filter (n: hasSuffix ".json" n) allFileNames;
 
-  # Special files excluded from per-host parsing
-  specialFiles = [ "shared.json" ];
   # Exclude files starting with "_" (template, test fixtures)
-  hostFileNames = filter (n: !(builtins.elem n specialFiles) && !(hasPrefix "_" n)) jsonFileNames;
+  hostFileNames = filter (n: !(hasPrefix "_" n)) jsonFileNames;
 
   # ── JSON parsing ─────────────────────────────────────────────
   parseJSON = name: fromJSON (readFile (topologyDir + "/${name}"));
@@ -55,9 +52,6 @@ let
       value = h;
     })
     parsedHosts);
-
-  # Parse shared.json separately
-  shared = parseJSON "shared.json";
 
   # ── Plane index construction ─────────────────────────────────
   # Collect all hub_of entries across all hosts
@@ -444,22 +438,6 @@ let
       )
       (attrValues hosts)));
 
-  # ── Extra: Orphan wg_peer warning ────────────────────────────
-  # A shared.json wg_peers entry without a corresponding
-  # topology/<name>.json produces a warning.
-  vOrphanWgPeers =
-    let
-      wgPeers = shared.wg_peers or { };
-      hostnames = attrNames hosts;
-    in
-    filter (x: x != null) (map
-      (peer:
-        if !(elem peer hostnames) then
-          "WARNING: shared.json wg_peers entry '${peer}' has no corresponding topology/<name>.json file"
-        else null
-      )
-      (attrNames wgPeers));
-
   # ── Validator: exporters shape ───────────────────────────────
   vExportersShape =
     flatten (map
@@ -492,14 +470,12 @@ let
   ];
 
   allWarnings = flatten [
-    vOrphanWgPeers
     vIcmpOverrideInterfaces
   ];
 
 in
 {
   hosts = hosts;
-  shared = shared;
   planes = planes;
   errors = allErrors;
   warnings = allWarnings;
