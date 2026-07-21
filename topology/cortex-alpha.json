@@ -57,8 +57,11 @@
     "10.88.128.248/32",
     "10.88.128.247/32"
   ],
+  "lan_dhcp": {
+    "range": "10.88.128.128,10.88.128.254,24h",
+    "interface": "enp3s0"
+  },
   "acme_host": "johnbargman.net",
-  "default_response": "404-or-drop",
   "exporters": {
     "dnsmasq": {
       "listenAddress": "10.88.127.1",
@@ -70,8 +73,7 @@
   "_": [
     {
       "default": true,
-      "return": "444",
-      "listenAddresses": ["10.88.128.1", "10.88.127.1", "82.5.173.252"]
+      "return": "444"
     }
   ],
   "johnbargman.net": [
@@ -83,8 +85,7 @@
         "enable": true,
         "host": "johnbargman.net"
       },
-      "forceSSL": true,
-      "listenAddresses": ["10.88.128.1", "10.88.127.1", "82.5.173.252"]
+      "forceSSL": true
     }
   ],
   "cortex-alpha.johnbargman.net": [
@@ -95,56 +96,49 @@
       "acme": {
         "host": "johnbargman.net"
       },
-      "forceSSL": true,
-      "listenAddresses": ["10.88.128.1", "10.88.127.1", "82.5.173.252"]
+      "forceSSL": true
     }
   ],
   "print-controller.johnbargman.net": [
     {
       "proxy_to": "10.88.127.30:80",
       "regex_prefix": true,
-      "proxy_headers": true,
-      "listenAddresses": ["10.88.128.1", "10.88.127.1"]
+      "proxy_headers": true
     }
   ],
   "code.johnbargman.net": [
     {
       "proxy_to": "10.88.127.3:80",
       "regex_prefix": true,
-      "proxy_headers": true,
-      "listenAddresses": ["10.88.128.1", "10.88.127.1"]
+      "proxy_headers": true
     }
   ],
   "git.johnbargman.net": [
     {
       "proxy_to": "10.88.127.3:80",
       "regex_prefix": true,
-      "proxy_headers": true,
-      "listenAddresses": ["10.88.128.1", "10.88.127.1"]
+      "proxy_headers": true
     }
   ],
   "prometheus.johnbargman.net": [
     {
       "proxy_to": "10.88.127.3:8080",
       "regex_prefix": true,
-      "proxy_headers": true,
-      "listenAddresses": ["10.88.128.1", "10.88.127.1"]
+      "proxy_headers": true
     }
   ],
   "grafana.johnbargman.net": [
     {
       "proxy_to": "10.88.127.3:3101",
       "regex_prefix": true,
-      "proxy_headers": true,
-      "listenAddresses": ["10.88.128.1", "10.88.127.1"]
+      "proxy_headers": true
     }
   ],
   "ap.johnbargman.net": [
     {
       "proxy_to": "10.88.128.2:80",
       "regex_prefix": true,
-      "proxy_headers": true,
-      "listenAddresses": ["10.88.128.1", "10.88.127.1"]
+      "proxy_headers": true
     }
   ]
   }

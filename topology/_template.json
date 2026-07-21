@@ -18,7 +18,6 @@
   "icmp_override": {},
   "routes": [],
   "requires_routes": [],
-  "default_response": "404-or-drop",
   "public_key_file": "secrets/public_keys/wireguard/wg_<MACHINE_NAME>_pub",
   "exporters": {},
   "vhosts": {},

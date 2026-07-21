@@ -25,8 +25,7 @@
     "default": [
       {
         "default": true,
-        "return": "444",
-        "listenAddresses": ["0.0.0.0"]
+        "return": "444"
       }
     ],
     "johnbargman.net": [
@@ -38,8 +37,7 @@
           "enable": true,
           "acmeRoot": null
         },
-        "forceSSL": true,
-        "listenAddresses": ["0.0.0.0"]
+        "forceSSL": true
       }
     ],
     "johnbargman.com": [
@@ -51,8 +49,7 @@
           "enable": true,
           "acmeRoot": null
         },
-        "forceSSL": true,
-        "listenAddresses": ["0.0.0.0"]
+        "forceSSL": true
       }
     ],
     "johnbargman.com-wg": [
@@ -67,8 +64,7 @@
           "acmeRoot": null
         },
         "forceSSL": true,
-        "server_name": "johnbargman.com",
-        "listenAddresses": ["10.88.127.50"]
+        "server_name": "johnbargman.com"
       }
     ]
   }
