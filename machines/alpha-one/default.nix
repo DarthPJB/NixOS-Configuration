@@ -48,10 +48,80 @@
     };
   };
 
-  # OpenCode fleet — Voyager only (client machine)
+  # secrix secret declarations for MCP tokens
+  secrix.system.secretsDir = {
+    permissions = "0555";
+    user = "root";
+    group = "users";
+  };
+  secrix.system.secrets.github-PAT-token = {
+    encrypted.file = "${self}/secrets/github-PAT-token";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
+  secrix.system.secrets.gitlab-PAT-token = {
+    encrypted.file = "${self}/secrets/gitlab-PAT-token";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
+  secrix.system.secrets.openrouter-master-token = {
+    encrypted.file = "${self}/secrets/openrouter-master-token";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
+  secrix.system.secrets.mimo-token-plan-ai-key = {
+    encrypted.file = "${self}/secrets/mimo-token-plan-ai-key";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
+
+  # OpenCode fleet — Voyager only (client machine) with full provider and MCP config
   services.opencode-fleet = {
     enable = true;
     user = "John88";
     shipOverride = [ "voyager" ];
+    mcp.git = {
+      enable = true;
+      extraArgs = [ "--repository" "/home/pokej/NixOS-Configuration" ];
+    };
+    mcp.filesystem = {
+      enable = true;
+      paths = [ "/home/pokej" "/speed-storage" "/nix/store" "/home/pokej/NixOS-Configuration" ];
+    };
+    mcp.time.enable = true;
+    mcp.sqlite.enable = true;
+    mcp.playwright.enable = true;
+    mcp.github = {
+      enable = true;
+      tokenFile = config.secrix.system.secrets.github-PAT-token.decrypted.path;
+    };
+    mcp.gitlab = {
+      enable = true;
+      tokenFile = config.secrix.system.secrets.gitlab-PAT-token.decrypted.path;
+    };
+    mcp.prometheus = {
+      enable = true;
+      prometheusUrl = "http://10.88.127.3:8080";
+    };
+    providers.openrouter = {
+      enable = true;
+      apiKeyFile = config.secrix.system.secrets.openrouter-master-token.decrypted.path;
+    };
+    providers.xiaomi-token-plan-sgp = {
+      enable = true;
+      apiKeyFile = config.secrix.system.secrets.mimo-token-plan-ai-key.decrypted.path;
+    };
   };
 }
