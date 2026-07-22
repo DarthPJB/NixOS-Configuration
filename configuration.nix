@@ -126,7 +126,7 @@ in
       dates = "daily";
       randomizedDelaySec = "2h";
       persistent = true;
-      options = "--max 3 --delete-older-than 30d";
+      options = "--delete-older-than 30d";
     };
     settings = {
       experimental-features = [
@@ -152,6 +152,10 @@ in
   };
   # AllowUsers is now per-user in each user module (build.nix, deployment.nix, inspect.nix)
   # sshd.nix manages John88. NixOS module system merges all entries.
+
+  # Fleet-wide default: keep 5 system configuration generations in boot menu.
+  # Individual machines can override (LINDA sets this to 1 for space-constrained NVMe).
+  boot.loader.systemd-boot.configurationLimit = lib.mkDefault 5;
 
   services.kmscon = {
     #  Alright, I know what you are thinking; For real? All I have to do is grab a John-tech and enter tty?
