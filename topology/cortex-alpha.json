@@ -87,28 +87,7 @@
   ],
   "wireguard": {
     "interface": "wireg0",
-    "listen_port": 2108,
-    "peers": [
-      "LINDA",
-      "alpha-one",
-      "alpha-three",
-      "cluster-box",
-      "cortex-alpha",
-      "display-0",
-      "display-1",
-      "display-2",
-      "arm-builder",
-      "dlyon",
-      "gaming-host-1",
-      "grimterm",
-      "local-nas",
-      "print-controller",
-      "remote-builder",
-      "remote-worker",
-      "storage-array",
-      "terminal-nx-01",
-      "terminal-zero"
-    ]
+    "listen_port": 2108
   },
   "firewall": {
     "allowed_tcp_ports": [22, 636, 1108],

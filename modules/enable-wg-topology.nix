@@ -1,5 +1,6 @@
 # modules/enable-wg-topology.nix
 # Topology-driven WireGuard module for client machines
+# Phase M-1: Reads from JSON registry (mkRegistry.nix) instead of shared.nix
 { config
 , lib
 , self
@@ -7,15 +8,118 @@
 }:
 
 let
-  topology = import ../topology/shared.nix { inherit lib; };
-  wireguardSettings = (import ../lib/topology/mkWireguardSettings.nix { inherit lib; }) topology;
+  # ── Phase M-1: JSON Registry ─────────────────────────────────
+  registry = import ../lib/topology/mkRegistry.nix { inherit lib; };
+
   hostname = config.networking.hostName;
-  machineExists = wireguardSettings.machines ? ${hostname};
-  machineSettings = if machineExists then wireguardSettings.machines.${hostname} else null;
-  wireguardConfig =
-    if machineExists then
-      (import ../lib/topology/genWireguard.nix { inherit lib; }) wireguardSettings hostname
+  domain = "johnbargman.net";
+
+  # Helper: derive IP from coordinate (subnet + peer_id)
+  coordToIp = coord:
+    let
+      parts = lib.splitString "/" coord.subnet;
+      networkIp = builtins.head parts;
+      octets = lib.splitString "." networkIp;
+      prefix = lib.concatStringsSep "." (lib.init octets);
+    in "${prefix}.${toString coord.peer_id}";
+
+  # Read public key file, returning null if missing
+  readPubKey = hostnameKey:
+    let
+      path = ../secrets/public_keys/wireguard/wg_${hostnameKey}_pub;
+    in
+    if builtins.pathExists path
+    then builtins.readFile path
     else null;
+
+  # ── Machine WG coordinate ────────────────────────────────────
+  myHost = registry.hosts.${hostname} or null;
+  myWgCoords = builtins.filter (c: c.plane_name == "wg") (myHost.coordinate or [ ]);
+  myWgCoord = if myWgCoords != [ ] then builtins.head myWgCoords else null;
+
+  # ── Hub (cortex-alpha) coordinate ────────────────────────────
+  hubHostname = "cortex-alpha";
+  hubHost = registry.hosts.${hubHostname} or null;
+  hubWgCoords = builtins.filter (c: c.plane_name == "wg") (hubHost.coordinate or [ ]);
+  hubWgCoord = if hubWgCoords != [ ] then builtins.head hubWgCoords else null;
+
+  # ── Derived values ───────────────────────────────────────────
+  myWgIp = if myWgCoord != null then coordToIp myWgCoord else null;
+  hubWgIp = if hubWgCoord != null then coordToIp hubWgCoord else null;
+  listenPort = if hubHost != null then hubHost.wireguard.listen_port or 2108 else 2108;
+  interfaceName = if myWgCoord != null then myWgCoord.interface else "wireg0";
+
+  # Subnet IP for hubIps (third octet preserved, fourth = .0)
+  subnetStr = if myWgCoord != null then myWgCoord.subnet else "10.88.127.0/24";
+  subnetParts = lib.splitString "." (builtins.head (lib.splitString "/" subnetStr));
+  subnetIp = "${builtins.elemAt subnetParts 0}.${builtins.elemAt subnetParts 1}.${builtins.elemAt subnetParts 2}.0";
+
+  # ── Role ─────────────────────────────────────────────────────
+  isHub = hostname == hubHostname;
+  hubPubKey = readPubKey hubHostname;
+
+  # ── Build peer list ──────────────────────────────────────────
+  # All hosts with a wg coordinate
+  allWgHostnames = builtins.attrNames (lib.filterAttrs (name: host:
+    builtins.any (c: c.plane_name == "wg") (host.coordinate or [ ])
+  ) registry.hosts);
+
+  # For non-hub: only the hub peer (with endpoint)
+  hubPeer =
+    if isHub then [ ] else
+    if hubPubKey == null then [ ] else [{
+      name = hubHostname;
+      publicKey = hubPubKey;
+      allowedIPs = [ hubWgIp "10.88.127.0/24" ];
+      endpoint = "${hubHostname}.${domain}:${toString listenPort}";
+    }];
+
+  # For hub: all other WG hosts as peers (without endpoints)
+  clientPeers =
+    if !isHub then [ ] else
+    lib.flatten (map
+      (name:
+        if name == hostname then [ ] else
+        let
+          peerCoord = builtins.head (builtins.filter
+            (c: c.plane_name == "wg")
+            (registry.hosts.${name}.coordinate or [ ]));
+          peerPubKey = readPubKey name;
+        in
+        if peerPubKey == null then [ ] else
+        let
+          peerIp = coordToIp peerCoord;
+        in [{
+          name = name;
+          publicKey = peerPubKey;
+          allowedIPs = [ peerIp ];
+        }]
+      )
+      allWgHostnames
+    );
+
+  peers = hubPeer ++ clientPeers;
+
+  # ── Machine settings (for genWireguard.nix) ──────────────────
+  machineSettings =
+    if myWgCoord != null then {
+      inherit hostname;
+      interface = interfaceName;
+      listenPort = listenPort;
+      machineIp = myWgIp;
+      isHub = isHub;
+      hubIps = if isHub then [ "${myWgIp}/32" "${subnetIp}/24" ] else [ ];
+      inherit peers;
+    } else null;
+
+  # Generate WireGuard config via the standard generator
+  wireguardConfig =
+    if machineSettings != null then
+      (import ../lib/topology/genWireguard.nix { inherit lib; })
+        { machines = { ${hostname} = machineSettings; }; warnings = [ ]; errors = [ ]; }
+        hostname
+    else null;
+
 in
 {
   options.enableWgTopology = {
@@ -32,11 +136,11 @@ in
   };
 
   config = lib.mkIf config.enableWgTopology.enable {
-    enableWgTopology.machineIp = machineSettings.machineIp;
+    enableWgTopology.machineIp = myWgIp;
     assertions = [
       {
-        assertion = machineExists;
-        message = "Machine ${hostname} not found in WireGuard topology";
+        assertion = myWgCoord != null;
+        message = "Machine ${hostname} not found in WireGuard topology (JSON registry)";
       }
     ];
 
@@ -54,7 +158,7 @@ in
 
     services.openssh = lib.mkIf config.services.openssh.enable {
       listenAddresses = [{
-        addr = machineSettings.machineIp;
+        addr = myWgIp;
         port = 1108;
       }];
     };
