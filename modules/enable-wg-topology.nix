@@ -21,7 +21,8 @@ let
       networkIp = builtins.head parts;
       octets = lib.splitString "." networkIp;
       prefix = lib.concatStringsSep "." (lib.init octets);
-    in "${prefix}.${toString coord.peer_id}";
+    in
+    "${prefix}.${toString coord.peer_id}";
 
   # Read public key file, returning null if missing
   readPubKey = hostnameKey:
@@ -60,9 +61,11 @@ let
 
   # ── Build peer list ──────────────────────────────────────────
   # All hosts with a wg coordinate
-  allWgHostnames = builtins.attrNames (lib.filterAttrs (name: host:
-    builtins.any (c: c.plane_name == "wg") (host.coordinate or [ ])
-  ) registry.hosts);
+  allWgHostnames = builtins.attrNames (lib.filterAttrs
+    (name: host:
+      builtins.any (c: c.plane_name == "wg") (host.coordinate or [ ])
+    )
+    registry.hosts);
 
   # For non-hub: only the hub peer (with endpoint)
   hubPeer =
@@ -89,7 +92,8 @@ let
         if peerPubKey == null then [ ] else
         let
           peerIp = coordToIp peerCoord;
-        in [{
+        in
+        [{
           name = name;
           publicKey = peerPubKey;
           allowedIPs = [ peerIp ];

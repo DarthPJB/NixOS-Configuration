@@ -17,7 +17,6 @@ in
     ../../services/dynamic_domain_gandi.nix
     (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
     ../../server_services/ldap.nix
-    ../../modules/core-router-topology.nix
     # NOTE: enable-wg.nix is for WireGuard CLIENTS, not the hub
     # The hub's WireGuard config comes from core-router.nix via topology
     ./hardware-configuration.nix
