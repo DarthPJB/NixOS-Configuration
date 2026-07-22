@@ -183,6 +183,52 @@ Builder hosts are excluded from SSH multiplexing to prevent ControlMaster corrup
 
 **Key observation:** Validation passes. Build jobs are queued because the self-hosted runner (`hate-filled`) is processing one job at a time. The runner is `busy: true`.
 
+### Run 29846947438 (2026-07-21 16:04, push — FIRST FULL BUILD COMPLETION)
+
+**Title:** "fix(checks): flatten network-config into per-machine checks"
+**Status:** completed (failure — 4 machines failed)
+**Total wall time:** 15h 13m
+
+| Job | Duration | Result | Notes |
+|---|---|---|---|
+| Security Scan | 45s | ✅ | |
+| Validation & Linting | 12m 23s | ✅ | Queue wait: 13m |
+| Build x86 (cortex-alpha) | 6m 12s | ✅ | Warm cache |
+| Build x86 (alpha-three) | **4h 53m** | ✅ | Cold cache, massive rebuild |
+| Build x86 (terminal-zero) | 4m 36s | ✅ | |
+| Build x86 (terminal-nx-01) | 2m 58s | ❌ | Parsec narHash mismatch |
+| Build x86 (remote-worker) | 2m 8s | ✅ | Warm cache |
+| Build x86 (remote-builder) | 2m 2s | ✅ | Warm cache |
+| Build x86 (alpha-one) | 3m 32s | ❌ | Parsec narHash mismatch |
+| Build x86 (local-nas) | 2m 6s | ✅ | |
+| Build x86 (LINDA) | 4m 22s | ❌ | Parsec narHash mismatch |
+| Build x86 (gaming-host-1) | 7m 43s | ❌ | moonrise gradle failure |
+| Build ARM (display-1) | 4m 17s | ✅ | |
+| Build ARM (arm-builder) | 1m 57s | ✅ | |
+| Build ARM (display-2) | 2m 41s | ✅ | |
+| Build ARM (print-controller) | 2m 11s | ✅ | |
+| Build ARM (beta-one) | 51s | ✅ | |
+
+**Failure modes:**
+- **Parsec narHash** (3 machines): Upstream Parsec released new version; flake.lock pins old hash
+- **Moonrise gradle** (1 machine): Minecraft mod dependency build fails on hyperhyper
+
+### Runner Status (2026-07-22 09:23 UTC)
+
+| Runner | Status | Busy | Memory | Notes |
+|---|---|---|---|---|
+| hate-filled | offline | no | - | Base runner |
+| hate-filled-1 | **online** | **yes** | 2.4G | Building LINDA |
+| hate-filled-2 | offline | no | - | |
+| hate-filled-3 | offline | no | - | |
+| hate-filled-4 | offline | no | - | |
+| hate-filled-5 | offline | no | - | |
+| disgust | online | no | 77M | **Idle** |
+| entropy-is-origin | online | no | 79M | **Idle** |
+| rat-infested | online | no | 81M | **Idle** |
+
+**Critical:** 3 runners are idle while 12 runs are queued. Only hate-filled-1 is processing jobs.
+
 ---
 
 ## 5. Build Patterns

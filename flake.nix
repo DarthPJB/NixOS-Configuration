@@ -10,19 +10,18 @@
   };
 
   inputs = {
-    carmelsite = { url = "git+https://gitlab.com/mecha-team-zero/carmelsite.git"; };
-    deadnix = { url = "github:astro/deadnix"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
-    hyprland.url = "github:hyprwm/Hyprland";
+    carmelsite.url = "git+https://gitlab.com/mecha-team-zero/carmelsite.git";
+    deadnix.url = "https://flakehub.com/f/astro/deadnix/1";
     determinate = {
       url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
       inputs.nix.url = "github:darthpjb/nix-src/fix/ssh-master-localcommand-protocol-leak";
     };
-    disko = { url = "github:nix-community/disko"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
+    disko = { url = "https://flakehub.com/f/nix-community/disko/1"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
     secrix.url = "github:Platonic-Systems/secrix";
     nixinate = { url = "github:Bargman-Tech/nixinate"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
-    nixpkgs_llm.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
+    nixpkgs_llm.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
     hype-train-claw.url = "github:marijanp/zeroclaw";
@@ -34,9 +33,9 @@
     bargman-assets.url = "git+https://gitlab.com/mecha-team-zero/bargman-assets.git";
     denton-glasses.url = "git+https://gitlab.com/mecha-team-zero/denton-glasses.git";
     personal-site = { url = "git+https://gitlab.com/mecha-team-zero/bargman-website.git"; };
-    LLM-CORE = { url = "git+https://gitlab.com/mecha-team-zero/llm-core.git"; inputs.nixpkgs.follows = "nixpkgs_llm"; inputs.nix-mcp-servers.inputs.nixpkgs.follows = "nixpkgs_llm"; };
+    LLM-CORE = { url = "git+https://gitlab.com/mecha-team-zero/llm-core.git"; inputs.nixpkgs.follows = "nixpkgs_llm"; inputs.nix-mcp-servers.inputs.nixpkgs.follows = "nixpkgs_stable"; };
   };
-  outputs = { self, deadnix, determinate, disko, hyprland, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE }:
+  outputs = { self, deadnix, determinate, disko, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;

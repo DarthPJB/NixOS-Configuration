@@ -127,6 +127,7 @@
   # OpenCode fleet — Voyager only (client machine)
   services.opencode-fleet = {
     enable = true;
+    user = "John88";
     shipOverride = [ "voyager" ];
   };
 

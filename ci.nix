@@ -64,6 +64,24 @@ let
           name = "Flake check";
           run = "nix flake check";
         }
+
+        # Eval profiler — generates flamegraph of flake evaluation
+        # Diagnostic step: identifies eval bottlenecks (topology, module system, inputs)
+        {
+          name = "Profile evaluation";
+          run = ''
+            nix build --option eval-profiler flamegraph \
+                      --option eval-profile-file /tmp/eval-profile \
+                      --option builders "" \
+                      .#nixosConfigurations.remote-builder.config.system.build.toplevel \
+                      --dry-run 2>&1 || true
+            if [ -f /tmp/eval-profile ]; then
+              echo "=== Eval profile (top 20 stacks) ==="
+              sort -rn -k2 /tmp/eval-profile | head -20
+            fi
+          '';
+          "continue-on-error" = true;
+        }
         {
           name = "Dead code check";
           run = "nix shell nixpkgs#deadnix -c deadnix .";
