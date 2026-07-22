@@ -184,7 +184,64 @@ These gaps are NOT build time — they're runner queue contention from multiple 
 
 ---
 
-## Update — 2026-07-22 (Last 24 Hours)
+## Update — 2026-07-22 (Post-Eval-Cache Deploy)
+
+> **Deployed:** 2026-07-22 11:31 UTC
+> **Change:** `NIX_CACHE_HOME=/nix/cache` + `BindPaths = [ "/nix/cache" ]`
+> **Effect:** Eval cache and flake input cache now persistent across jobs
+
+### Pipeline #183 Timings (Post-Deploy)
+
+| Job | Duration | Result | Notes |
+|---|---|---|---|
+| display-1 (ARM) | 2m 41s | ✅ | |
+| arm-builder (ARM) | 2m 5s | ✅ | |
+| display-2 (ARM) | 2m 36s | ✅ | |
+| print-controller (ARM) | 2m 14s | ✅ | |
+| local-nas | 2m 19s | ✅ | Warm cache |
+| remote-builder | 2m 18s | ✅ | Warm cache |
+| cortex-alpha | 2m 17s | ✅ | Warm cache |
+| remote-worker | 2m 15s | ✅ | Warm cache |
+| terminal-zero | 4m 23s | ✅ | |
+| alpha-three | 9m 55s | ✅ | Cold cache |
+
+### Pipeline #185 Timings (Post-Deploy)
+
+| Job | Duration | Result | Notes |
+|---|---|---|---|
+| arm-builder (ARM) | 2m 5s | ✅ | |
+| cortex-alpha | 2m 6s | ✅ | Warm cache |
+| local-nas | 2m 19s | ✅ | Warm cache |
+| remote-builder | 2m 22s | ✅ | Warm cache |
+| remote-worker | 2m 22s | ✅ | Warm cache |
+| display-1 (ARM) | 3m 7s | ✅ | |
+| terminal-zero | 4m 27s | ✅ | |
+| alpha-three | 4m 54s | ✅ | |
+
+### Queue Drain Summary
+
+| Time (UTC) | Queue Depth | Runs/Hour | Notes |
+|---|---|---|---|
+| 11:19 | 20+ | — | Pre-deploy, all jobs failing |
+| 11:31 | 20+ | — | BindPaths fix deployed |
+| 12:00 | 11 | ~9 | Rapid drain |
+| 12:28 | 2 | ~9 | Nearly clear |
+| 13:00 | 3 | ~2 | New pushes arriving |
+| 14:00 | 3 | ~2 | Normal operating depth |
+
+**Backlog drained from 20+ to 3 in ~2.5 hours.** Now operating at steady state.
+
+### Eval Cache Status
+
+```
+/nix/cache/ — 14-18MB total
+├── eval-cache-v6/           — 3 SQLite databases
+├── fetcher-cache-v4.sqlite  — 972K
+├── gitv3/                   — 3 shallow clones cached
+└── tarball-cache-v2/        — tarball cache populated
+```
+
+**Expected improvement:** Next run with identical inputs should see eval drop from ~1m45s to <10s.
 
 > **Dumped:** 2026-07-22 09:25 UTC
 > **Source:** GitHub Actions API via `gh`, SSH deploy@remote-builder

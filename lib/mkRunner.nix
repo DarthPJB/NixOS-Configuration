@@ -45,6 +45,9 @@ let
         User = "build";
         ProtectSystem = false;
         BindReadOnlyPaths = [ "/nix" ] ++ lib.optional (gitlabNetrcPath != null) gitlabNetrcPath;
+        # Writable bind mount for eval cache and flake input cache.
+        # Overrides the read-only /nix mount for this subpath only.
+        BindPaths = [ "/nix/cache" ];
       } // extraServiceOverrides;
     };
   };
