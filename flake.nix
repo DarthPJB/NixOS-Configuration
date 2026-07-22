@@ -525,7 +525,6 @@
           extraModules = [
             ./modifier_imports/central-builder.nix
             nixos-hardware.nixosModules.lenovo-thinkpad-x220
-            LLM-CORE.nixosModules.opencode-fleet
             #   { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; }
           ];
         };
@@ -554,7 +553,7 @@
         };
         alpha-one = mkX86_64 "alpha-one" {
           host = topoIp "alpha-one";
-          extraModules = [ ./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
+          extraModules = [ ./users/build.nix LLM-CORE.nixosModules.opencode-fleet { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
         };
         alpha-three = mkX86_64 "alpha-three" {
           host = topoIp "alpha-three";
