@@ -1,144 +1,67 @@
-{ ... }:
-{
-  cortex-alpha = {
-    wireguard = "10.88.127.1";
-    lan = { "10.88.128.1" = "enp3s0"; };
-    uplink = { "82.5.173.252" = "enp2s0"; };
-    peers = [
-      "LINDA"
-      "alpha-one"
-      "alpha-three"
-      "building-b"
-      "cluster-box"
-      "cortex-alpha"
-      "display-0"
-      "display-1"
-      "display-2"
-      "arm-builder"
-      "dlyon"
-      "gaming-host-1"
-      "grimterm"
-      "local-nas"
-      "print-controller"
-      "remote-builder"
-      "remote-worker"
-      "storage-array"
-      "terminal-nx-01"
-      "terminal-zero"
-    ];
-  };
+{ lib }:
+# Registry-derived compat shim for shared.nix consumers.
+# Phase M-0: Data sourced from JSON topology via mkRegistry.nix.
+# To be deleted in Phase M-3 when all consumers are migrated.
+let
+  registry = import ../lib/topology/mkRegistry.nix { inherit lib; };
 
-  local-nas = {
-    wireguard = "10.88.127.3";
-    lan = { "10.88.128.3" = "enp0s31f6"; };
-    hub = "cortex-alpha";
-  };
+  coordToIp = coord:
+    let
+      parts = lib.splitString "/" coord.subnet;
+      ip = builtins.head parts;
+      octets = lib.splitString "." ip;
+      prefix = lib.concatStringsSep "." (lib.init octets);
+    in "${prefix}.${toString coord.peer_id}";
 
-  alpha-one = {
-    wireguard = "10.88.127.108";
-    lan = { "10.88.128.108" = "enp0s31f6"; };
-    hub = "cortex-alpha";
-  };
+  # Find hub hostname for a machine by checking which plane's hub is
+  # not this machine (i.e., find coordinates on planes where another
+  # host is the hub).
+  findHub = name: host:
+    let
+      coords = host.coordinate or [];
+      planeKeys = builtins.attrNames registry.planes;
+      matchingPlanes = builtins.filter
+        (k:
+          let
+            plane = registry.planes.${k};
+            # Machine is a peer on this plane
+            isPeer = builtins.elem name plane.peers;
+            # Hub is a different machine
+            hubIsOther = plane.hub != name;
+          in
+          isPeer && hubIsOther
+        )
+        planeKeys;
+    in
+    if matchingPlanes != [] then
+      registry.planes.${builtins.head matchingPlanes}.hub
+    else
+      null;
 
-  alpha-three = {
-    wireguard = "10.88.127.107";
-    hub = "cortex-alpha";
-  };
+  # Build machine entry matching old shared.nix format
+  buildEntry = name: host:
+    let
+      coords = host.coordinate or [];
+      wgCoords = builtins.filter (c: c.plane_name == "wg") coords;
+      wgCoord = if wgCoords != [] then builtins.head wgCoords else null;
+      # Collect non-wg, non-tailscale coordinates as lan/uplink
+      # Skip MAC-based aliases (peer_id with "mac:" interface names)
+      otherCoords = builtins.filter
+        (c: c.plane_name != "wg" && c.plane_name != "tailscale-platonic"
+          && !lib.hasPrefix "mac:" c.interface)
+        coords;
+      lan = lib.listToAttrs (map (c: {
+        name = coordToIp c;
+        value = c.interface;
+      }) otherCoords);
+      hub = findHub name host;
+    in
+    (if wgCoord != null then { wireguard = coordToIp wgCoord; } else {})
+    // (if lan != {} then { inherit lan; } else {})
+    // (if hub != null then { inherit hub; } else {});
 
-  LINDA = {
-    wireguard = "10.88.127.88";
-    lan = { "10.88.128.88" = "enp0s31f6"; };
-    hub = "cortex-alpha";
-  };
-
-  print-controller = {
-    wireguard = "10.88.127.30";
-    lan = { "10.88.128.10" = "wlan0"; };
-    hub = "cortex-alpha";
-  };
-
-  terminal-zero = {
-    wireguard = "10.88.127.20";
-    lan = { "10.88.128.20" = "enp0s25"; };
-    hub = "cortex-alpha";
-  };
-
-  terminal-nx-01 = {
-    wireguard = "10.88.127.21";
-    lan = { "10.88.128.22" = "enp0s31f6"; };
-    hub = "cortex-alpha";
-  };
-
-  display-1 = {
-    wireguard = "10.88.127.41";
-    hub = "cortex-alpha";
-  };
-
-  display-2 = {
-    wireguard = "10.88.127.42";
-    hub = "cortex-alpha";
-  };
-
-  arm-builder = {
-    wireguard = "10.88.127.43";
-    hub = "cortex-alpha";
-  };
-
-  remote-builder = {
-    wireguard = "10.88.127.51";
-    hub = "cortex-alpha";
-  };
-
-  gaming-host-1 = {
-    wireguard = "10.88.127.52";
-    hub = "cortex-alpha";
-  };
-
-  remote-worker = {
-    wireguard = "10.88.127.50";
-    hub = "cortex-alpha";
-  };
-
-  storage-array = {
-    wireguard = "10.88.127.4";
-    hub = "cortex-alpha";
-  };
-
-  display-0 = {
-    wireguard = "10.88.127.40";
-  };
-
-  dlyon = {
-    wireguard = "10.88.127.210";
-  };
-
-  grimterm = {
-    wireguard = "10.88.127.212";
-  };
-
-  cluster-box = {
-    wireguard = "10.88.127.211";
-  };
-
-  alpha-two = {
-    wireguard = "10.88.127.109";
-  };
-
-  # Hub-of-hubs example
-  building-b = {
-    wireguard = "10.88.127.100";
-    lan = { "10.89.128.1" = "enp3s0"; };
-    peers = [ "office-1" "office-2" ];
-    hub = "cortex-alpha";
-  };
-
-  office-1 = {
-    wireguard = "10.88.127.101";
-    hub = "building-b";
-  };
-
-  office-2 = {
-    wireguard = "10.88.127.102";
-    hub = "building-b";
-  };
-}
+  # Build full attrset then filter to only entries with wireguard (matching old shared.nix behavior)
+  allEntries = lib.mapAttrs buildEntry registry.hosts;
+  result = lib.filterAttrs (_name: v: v ? wireguard) allEntries;
+in
+  result

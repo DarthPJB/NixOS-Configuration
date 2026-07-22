@@ -38,14 +38,46 @@
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
-      # Import topology to derive deployment IPs from single source of truth
-      topo = import ./topology/shared.nix { inherit lib; };
-      # Dormant topology registry — consumed in Phase 2+ (see planar-topology plan)
-      # The runtime gate is the NixOS option `topology.useNewPipeline` in
-      # modules/core-router-topology.nix (default false).
-      topology-registry = import ./lib/topology/mkRegistry.nix { inherit lib; };
-      # Get wireguard IP for a machine from topology
-      topoIp = machineName: topo.${machineName}.wireguard;
+      topoRegistry = import ./lib/topology/mkRegistry.nix { inherit lib; };
+      # Helper: derive IP from coordinate (subnet + peer_id)
+      coordToIp = coord:
+        let
+          parts = lib.splitString "/" coord.subnet;
+          ip = builtins.head parts;
+          octets = lib.splitString "." ip;
+          prefix = lib.concatStringsSep "." (lib.init octets);
+        in "${prefix}.${toString coord.peer_id}";
+      # Backward-compatible topo attrset derived from JSON registry
+      topo = lib.mapAttrs (name: host:
+        let
+          coords = host.coordinate or [];
+          wgCoords = builtins.filter (c: c.plane_name == "wg") coords;
+          wgCoord = if wgCoords != [] then builtins.head wgCoords else null;
+          # Filter to only include standard network interfaces (skip MAC-based aliases)
+          otherCoords = builtins.filter (c:
+            c.plane_name != "wg" && c.plane_name != "tailscale-platonic"
+            && !lib.hasPrefix "mac:" c.interface
+          ) coords;
+          lan = lib.listToAttrs (map (c: {
+            name = coordToIp c;
+            value = c.interface;
+          }) otherCoords);
+        in
+        (if wgCoord != null then { wireguard = coordToIp wgCoord; } else {})
+        // (if lan != {} then { inherit lan; } else {})
+      ) topoRegistry.hosts;
+      # Get wireguard IP for a machine from topology registry
+      topoIp = machineName:
+        let
+          host = topoRegistry.hosts.${machineName} or null;
+          wgCoords = if host != null then
+            builtins.filter (c: c.plane_name == "wg") (host.coordinate or [])
+          else [];
+          wgCoord = if wgCoords != [] then builtins.head wgCoords else null;
+        in
+        if wgCoord != null then
+          coordToIp wgCoord
+        else throw "topoIp: ${machineName} has no WG coordinate in topology JSON";
       globalArgs = {
         inherit self;
         inherit ikbaeb-th;
@@ -223,8 +255,6 @@
       ci-generator = import ./ci/generate-workflow.nix { inherit self lib; pkgs = nixpkgs; };
     in
     {
-      # Dormant topology registry — accessible for evaluation but not wired into any machine config
-      inherit topology-registry;
       formatter."x86_64-linux" = nixpkgs.nixpkgs-fmt;
       apps."x86_64-linux" = { secrix = secrix.secrix self; } // (nixinate.lib.genDeploy.x86_64-linux self) // {
         # Check network config against golden
