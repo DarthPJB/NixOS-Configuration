@@ -94,6 +94,14 @@
       mode = "0440";
     };
   };
+  secrix.system.secrets.general-xai-key = {
+    encrypted.file = "${self}/secrets/general-xai-key";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
 
   # OpenCode fleet — Voyager only (client machine) with full provider and MCP config
   services.opencode-fleet = {
@@ -134,6 +142,10 @@
     providers.xiaomi-token-plan-sgp = {
       enable = true;
       apiKeyFile = config.secrix.system.secrets.mimo-token-plan-ai-key.decrypted.path;
+    };
+    providers.xai = {
+      enable = true;
+      apiKeyFile = config.secrix.system.secrets.general-xai-key.decrypted.path;
     };
   };
 }
