@@ -7,19 +7,38 @@
 }:
 let
   inherit fqdn listen-addr;
-  inherit (builtins) toJSON attrNames;
-  inherit (pkgs) writeText;
-  inherit (lib.modules) mkIf;
+  inherit (builtins) attrNames head filter;
   inherit (lib.strings) concatStringsSep;
   prometheus-dn = "prometheus.${fqdn}";
   graphana-dn = "grafana.${fqdn}";
 
-  # Import topology to generate scrape targets
-  topology = import ../topology/shared.nix { inherit lib; };
+  # Import topology registry to generate scrape targets
+  registry = import ../lib/topology/mkRegistry.nix { inherit lib; };
+  topology = registry.hosts;
+
+  # Derive IP from a coordinate entry (subnet + peer_id)
+  coordToIp = coord:
+    let
+      parts = lib.splitString "/" coord.subnet;
+      networkIp = head parts;
+      octets = lib.splitString "." networkIp;
+      prefix = lib.concatStringsSep "." (lib.init octets);
+    in
+    "${prefix}.${toString coord.peer_id}";
+
+  # Extract WG IP from a host entry
+  getWgIp = host:
+    let
+      wgCoords = filter (c: c.plane_name == "wg") (host.coordinate or [ ]);
+    in
+    if wgCoords != [ ] then coordToIp (head wgCoords) else null;
+
+  # Filter to hosts with WG coordinates and build deployment targets
+  wgHosts = lib.filterAttrs (_name: host: getWgIp host != null) topology;
   deploymentExporterPort = toString config.services.nixos-deployment-exporter.port;
   deploymentTargets = map
-    (name: "${topology.${name}.wireguard}:${deploymentExporterPort}")
-    (attrNames topology);
+    (name: "${getWgIp topology.${name}}:${deploymentExporterPort}")
+    (attrNames wgHosts);
 in
 {
   # TODO: with convergence style, automate scraper addition.
@@ -179,9 +198,22 @@ in
     webExternalUrl = "https://${prometheus-dn}";
   };
 
+  # Grafana secret_key — encrypted via secrix, decrypted at runtime
+  secrix.system.secrets.grafana_secret_key = {
+    encrypted.file = ../secrets/grafana_secret_key;
+    decrypted = {
+      user = "grafana";
+      group = "grafana";
+      mode = "0400";
+    };
+  };
+
   services.grafana = {
     enable = true;
     settings = {
+      # secret_key is required since nixpkgs 26.05 — no default provided.
+      # Uses Grafana's file:// provider to read from secrix-managed secret.
+      security.secret_key = "file://${config.secrix.system.secrets.grafana_secret_key.decrypted.path}";
       server = {
         protocol = "http";
         http_addr = "10.88.127.3";
