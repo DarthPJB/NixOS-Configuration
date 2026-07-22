@@ -49,7 +49,8 @@ let
       mask = builtins.fromJSON maskStr;
       hostBits = 32 - mask;
       size = pow2 hostBits;
-    in {
+    in
+    {
       start = ipInt;
       end = ipInt + size - 1;
     };

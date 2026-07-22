@@ -46,34 +46,42 @@
           ip = builtins.head parts;
           octets = lib.splitString "." ip;
           prefix = lib.concatStringsSep "." (lib.init octets);
-        in "${prefix}.${toString coord.peer_id}";
-      # Backward-compatible topo attrset derived from JSON registry
-      topo = lib.mapAttrs (name: host:
-        let
-          coords = host.coordinate or [];
-          wgCoords = builtins.filter (c: c.plane_name == "wg") coords;
-          wgCoord = if wgCoords != [] then builtins.head wgCoords else null;
-          # Filter to only include standard network interfaces (skip MAC-based aliases)
-          otherCoords = builtins.filter (c:
-            c.plane_name != "wg" && c.plane_name != "tailscale-platonic"
-            && !lib.hasPrefix "mac:" c.interface
-          ) coords;
-          lan = lib.listToAttrs (map (c: {
-            name = coordToIp c;
-            value = c.interface;
-          }) otherCoords);
         in
-        (if wgCoord != null then { wireguard = coordToIp wgCoord; } else {})
-        // (if lan != {} then { inherit lan; } else {})
-      ) topoRegistry.hosts;
+        "${prefix}.${toString coord.peer_id}";
+      # Backward-compatible topo attrset derived from JSON registry
+      topo = lib.mapAttrs
+        (name: host:
+          let
+            coords = host.coordinate or [ ];
+            wgCoords = builtins.filter (c: c.plane_name == "wg") coords;
+            wgCoord = if wgCoords != [ ] then builtins.head wgCoords else null;
+            # Filter to only include standard network interfaces (skip MAC-based aliases)
+            otherCoords = builtins.filter
+              (c:
+                c.plane_name != "wg" && c.plane_name != "tailscale-platonic"
+                && !lib.hasPrefix "mac:" c.interface
+              )
+              coords;
+            lan = lib.listToAttrs (map
+              (c: {
+                name = coordToIp c;
+                value = c.interface;
+              })
+              otherCoords);
+          in
+          (if wgCoord != null then { wireguard = coordToIp wgCoord; } else { })
+          // (if lan != { } then { inherit lan; } else { })
+        )
+        topoRegistry.hosts;
       # Get wireguard IP for a machine from topology registry
       topoIp = machineName:
         let
           host = topoRegistry.hosts.${machineName} or null;
-          wgCoords = if host != null then
-            builtins.filter (c: c.plane_name == "wg") (host.coordinate or [])
-          else [];
-          wgCoord = if wgCoords != [] then builtins.head wgCoords else null;
+          wgCoords =
+            if host != null then
+              builtins.filter (c: c.plane_name == "wg") (host.coordinate or [ ])
+            else [ ];
+          wgCoord = if wgCoords != [ ] then builtins.head wgCoords else null;
         in
         if wgCoord != null then
           coordToIp wgCoord
@@ -706,7 +714,7 @@
 
         topology-coverage =
           let
-            coverage = import ./lib/golden_coverage.nix { inherit self; };
+            coverage = import ./lib/golden_coverage.nix { inherit self lib; };
           in
           if !coverage.isComplete then
             throw "Topology coverage incomplete. Missing: ${builtins.toJSON coverage.missing}"

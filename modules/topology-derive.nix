@@ -398,5 +398,148 @@ in
       users.users.nginx.extraGroups = [ "acme" ];
     })
 
+    # ── Firewall (Phase M-2.1) ──────────────────────────────────
+    (lib.mkIf (hasTopology && config.topology.enable && topology ? firewall) {
+      networking.firewall = {
+        allowedTCPPorts = topology.firewall.allowed_tcp_ports or [ ];
+        allowedUDPPorts = topology.firewall.allowed_udp_ports or [ ];
+        interfaces = lib.mapAttrs
+          (iface: rules: {
+            allowedTCPPorts = rules.tcp or [ ];
+            allowedUDPPorts = rules.udp or [ ];
+          })
+          (topology.firewall.interfaces or { });
+      };
+    })
+
+    # ── DNS/DHCP (Phase M-2.2) ──────────────────────────────────
+    (lib.mkIf (hasTopology && config.topology.enable && (topology ? dns || topology ? lan_dhcp)) {
+      services.dnsmasq = {
+        enable = true;
+        settings = {
+          interface = [ (topology.dns.interface or topology.lan_dhcp.interface or "") ];
+          # dhcp-range with interface prefix (matching mkDhcpDns.nix format)
+          "dhcp-range" =
+            let
+              dhcpIface = topology.lan_dhcp.interface or topology.dns.dhcp.interface or topology.dns.interface or "";
+              dhcpRange = topology.lan_dhcp.range or topology.dns.dhcp.range or "";
+            in
+            [ "${dhcpIface},${dhcpRange}" ];
+          address = map (entry: "/${entry.domain}/${entry.ip}") (topology.dns.static or [ ]);
+          server = topology.dns.servers or [ ];
+          # DHCP static hosts (from lan_dhcp.hosts — matching mkDhcpDns.nix)
+          dhcp-host = builtins.sort (a: b: a < b) (
+            map (h: "${h.mac},${h.ip},${h.hostname},infinite")
+              (topology.lan_dhcp.hosts or topology.dns.dhcp.hosts or [ ])
+          );
+          # Additional dnsmasq settings (matching mkDhcpDns.nix)
+          domain = [ hostname ];
+          local = [ "/${hostname}/" ];
+          domain-needed = true;
+          bogus-priv = true;
+          no-resolv = true;
+          cache-size = 1000;
+        };
+      };
+    })
+
+    # ── Port forwarding / nftables (Phase M-2.3) ────────────────
+    (lib.mkIf (hasTopology && config.topology.enable && topology ? routes && topology.routes != [ ]) {
+      networking.nftables.enable = true;
+      networking.nftables.ruleset =
+        let
+          # Derive WAN interface from coordinate whose plane_name contains "-wan"
+          wanCoords = filter (c: lib.hasSuffix "-wan" (c.plane_name or "")) (topology.coordinate or [ ]);
+          wanIface = if wanCoords != [ ] then (head wanCoords).interface else "wan";
+          # Derive LAN subnet from coordinate whose plane_name contains ".lan"
+          lanCoords = filter (c: lib.hasSuffix ".lan" (c.plane_name or "")) (topology.coordinate or [ ]);
+          lanSubnet = if lanCoords != [ ] then (head lanCoords).subnet else "10.0.0.0/8";
+          # Partition routes by protocol
+          tcpRoutes = filter (r: r.proto == "tcp") topology.routes;
+          udpRoutes = filter (r: r.proto == "udp") topology.routes;
+          # Generate a DNAT rule string
+          mkDnat = proto: route:
+            "      iifname \"${wanIface}\" ${proto} dport ${toString route.port} dnat to ${route.to}";
+          tcpRules = map (mkDnat "tcp") tcpRoutes;
+          udpRules = map (mkDnat "udp") udpRoutes;
+          allRules = concatStringsSep "\n" (tcpRules ++ udpRules);
+        in
+        ''
+          table ip nat {
+            chain prerouting {
+              type nat hook prerouting priority dstnat; policy accept;
+          ${allRules}
+            };
+            chain postrouting {
+              type nat hook postrouting priority srcnat; policy accept;
+              oifname "${wanIface}" ip saddr ${lanSubnet} masquerade
+            };
+          }
+        '';
+    })
+
+    # ── Tailscale advertised routes (Phase M-2.4) ────────────────
+    (lib.mkIf (hasTopology && config.topology.enable && topology ? advertised_tailscale_routes) {
+      services.tailscale = {
+        enable = true;
+        extraSetFlags = [
+          "--advertise-routes=${concatStringsSep "," topology.advertised_tailscale_routes}"
+        ];
+        useRoutingFeatures = "server";
+      };
+    })
+
+    # ── WireGuard hub configuration (Phase M-2 supplement) ──────
+    # Derives WireGuard peers from the JSON registry (all hosts with
+    # a "wg" coordinate) and reads their public keys from secret files.
+    (lib.mkIf (hasTopology && config.topology.enable && topology ? wireguard) {
+      networking.wireguard.enable = true;
+      networking.wireguard.interfaces =
+        let
+          # Derive WG IP from WG coordinate
+          wgCoords = filter (c: c.plane_name == "wg") (topology.coordinate or [ ]);
+          wgCoord = if wgCoords != [ ] then head wgCoords else null;
+          selfWgIp = if wgCoord != null then "${subnetPeerToIP wgCoord.subnet wgCoord.peer_id}/32" else "";
+          # Subnet IP (network address for the WG subnet)
+          subnetOctets = splitString "." (builtins.head (splitString "/" (if wgCoord != null then wgCoord.subnet else "0.0.0.0/24")));
+          subnetPrefix = "${elemAt subnetOctets 0}.${elemAt subnetOctets 1}.${elemAt subnetOctets 2}";
+          subnetCidr = elemAt (splitString "/" (if wgCoord != null then wgCoord.subnet else "0.0.0.0/24")) 1;
+          subnetNetIp = "${subnetPrefix}.0/${subnetCidr}";
+          # Read public key from secrets file
+          readPubKey = hostnameKey:
+            let
+              p = ../secrets/public_keys/wireguard/wg_${hostnameKey}_pub;
+            in
+            if builtins.pathExists p then builtins.readFile p else null;
+          # Build peers from registry (all hosts with WG coordinate except self)
+          allHostnames = builtins.attrNames registry.hosts;
+          peerList =
+            if wgCoord == null then [ ] else
+            lib.flatten (map
+              (name:
+                if name == hostname then [ ] else
+                let
+                  peerHost = registry.hosts.${name};
+                  peerWgCoords = filter (c: c.plane_name == "wg") (peerHost.coordinate or [ ]);
+                  peerCoord = if peerWgCoords != [ ] then head peerWgCoords else null;
+                  pubKey = readPubKey name;
+                in
+                if peerCoord == null || pubKey == null then [ ] else [{
+                  publicKey = pubKey;
+                  allowedIPs = [ "${subnetPeerToIP peerCoord.subnet peerCoord.peer_id}/32" ];
+                }]
+              )
+              allHostnames);
+        in
+        {
+          ${topology.wireguard.interface} = {
+            ips = [ selfWgIp subnetNetIp ];
+            listenPort = topology.wireguard.listen_port;
+            peers = peerList;
+            # privateKeyFile is set by machine config (cortex-alpha/default.nix)
+          };
+        };
+    })
+
   ]; # config merge
 }
