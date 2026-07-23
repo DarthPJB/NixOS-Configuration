@@ -39,10 +39,54 @@
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
-      # Import topology to derive deployment IPs from single source of truth
-      topo = import ./topology/shared.nix { inherit lib; };
-      # Get wireguard IP for a machine from topology
-      topoIp = machineName: topo.${machineName}.wireguard;
+      topoRegistry = import ./lib/topology/mkRegistry.nix { inherit lib; };
+      # Helper: derive IP from coordinate (subnet + peer_id)
+      coordToIp = coord:
+        let
+          parts = lib.splitString "/" coord.subnet;
+          ip = builtins.head parts;
+          octets = lib.splitString "." ip;
+          prefix = lib.concatStringsSep "." (lib.init octets);
+        in
+        "${prefix}.${toString coord.peer_id}";
+      # Backward-compatible topo attrset derived from JSON registry
+      topo = lib.mapAttrs
+        (name: host:
+          let
+            coords = host.coordinate or [ ];
+            wgCoords = builtins.filter (c: c.plane_name == "wg") coords;
+            wgCoord = if wgCoords != [ ] then builtins.head wgCoords else null;
+            # Filter to only include standard network interfaces (skip MAC-based aliases)
+            otherCoords = builtins.filter
+              (c:
+                c.plane_name != "wg" && c.plane_name != "tailscale-platonic"
+                && !lib.hasPrefix "mac:" c.interface
+              )
+              coords;
+            lan = lib.listToAttrs (map
+              (c: {
+                name = coordToIp c;
+                value = c.interface;
+              })
+              otherCoords);
+          in
+          (if wgCoord != null then { wireguard = coordToIp wgCoord; } else { })
+          // (if lan != { } then { inherit lan; } else { })
+        )
+        topoRegistry.hosts;
+      # Get wireguard IP for a machine from topology registry
+      topoIp = machineName:
+        let
+          host = topoRegistry.hosts.${machineName} or null;
+          wgCoords =
+            if host != null then
+              builtins.filter (c: c.plane_name == "wg") (host.coordinate or [ ])
+            else [ ];
+          wgCoord = if wgCoords != [ ] then builtins.head wgCoords else null;
+        in
+        if wgCoord != null then
+          coordToIp wgCoord
+        else throw "topoIp: ${machineName} has no WG coordinate in topology JSON";
       globalArgs = {
         inherit self;
         inherit ikbaeb-th;
@@ -57,6 +101,7 @@
       commonModules = [
         secrix.nixosModules.default
         ratty.nixosModules.default
+        ./modules/topology-derive.nix
         ./configuration.nix
         ./modules/ssh-multiplex.nix
         # Skip nix test suite — OOMs on remote builders during source build.
@@ -612,35 +657,34 @@
           extraModules = [
             ./users/build.nix
             # self.inputs.LLM-CORE.nixosModules.opencode-fleet  # Disabled for overlord-I — re-enable as part of overlord-II
+            # Topology-derive owns johnbargman.net/.com vhosts (see topology/remote-worker.json).
+            # Carmelsite client sites remain machine overlay (merge with topology nginx.enable).
             {
               services.nginx = {
-                enable = true;
+                statusPage = true;
                 virtualHosts = {
                   "csfinancialconsulting.com" = {
                     forceSSL = true;
                     enableACME = true;
-                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
+                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
                     locations."/" = {
                       root = carmelsite.packages.x86_64-linux.default;
-                      #proxywebsockets = false; # needed if you need to use websocket
                     };
                   };
                   "csfincon.us" = {
                     forceSSL = true;
                     enableACME = true;
-                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
+                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
                     locations."/" = {
                       root = carmelsite.packages.x86_64-linux.default;
-                      #proxywebsockets = false; # needed if you need to use websocket
                     };
                   };
                   "carmel-staging.johnbargman.net" = {
                     useACMEHost = "johnbargman.net";
                     forceSSL = true;
-                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
+                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
                     locations."/" = {
                       root = carmelsite.packages.x86_64-linux.default;
-                      #proxywebsockets = false; # needed if you need to use websocket
                     };
                   };
                 };
@@ -701,30 +745,32 @@
           text = ''exec deadnix --no-lambda-pattern-names "${self}"'';
         };
 
-        # Network topology golden check for cortex-alpha (manual run)
-        network-config-cortex-alpha = nixpkgs.writeShellApplication {
-          name = "network-config-cortex-alpha";
-          meta.description = "Check network config against golden file";
-          runtimeInputs = [ nixpkgs.jq ];
-          text = ''
-            echo "Generating current network config for cortex-alpha..."
-            nix run .#dump-config -- cortex-alpha | jq -S . > /tmp/current-network.json
+        # Network topology golden check for all machines (generalized)
+        network-config = lib.genAttrs (builtins.attrNames self.nixosConfigurations) (machine:
+          nixpkgs.writeShellApplication {
+            name = "network-config-${machine}";
+            meta.description = "Verify network config against golden for ${machine}";
+            runtimeInputs = [ nixpkgs.jq nixpkgs.diffutils ];
+            text = ''
+              echo "Generating current network config for ${machine}..."
+              nix run .#dump-config -- ${machine} | jq -S . > /tmp/current-network.json
 
-            echo "Comparing with golden..."
-            if diff -u ${self}/goldens/cortex-alpha.json /tmp/current-network.json; then
-              echo "✓ Network config matches golden for cortex-alpha"
-            else
-              echo "✗ Network configuration has changed from golden!"
-              echo "If intentional, update with:"
-              echo "  nix run .#dump-config -- cortex-alpha > goldens/cortex-alpha.json"
-              exit 1
-            fi
-          '';
-        };
+              echo "Comparing with golden..."
+              if diff -u ${self}/goldens/${machine}.json /tmp/current-network.json; then
+                echo "✓ Network config matches golden for ${machine}"
+              else
+                echo "✗ Network configuration has changed from golden for ${machine}!"
+                echo "If intentional, update with:"
+                echo "  nix run .#dump-config -- ${machine} > goldens/${machine}.json"
+                exit 1
+              fi
+            '';
+          }
+        );
 
         topology-coverage =
           let
-            coverage = import ./lib/golden_coverage.nix { inherit self; };
+            coverage = import ./lib/golden_coverage.nix { inherit self lib; };
           in
           if !coverage.isComplete then
             throw "Topology coverage incomplete. Missing: ${builtins.toJSON coverage.missing}"

@@ -1,0 +1,20 @@
+{
+  "hostname": "__test_f1",
+  "trust": 3,
+  "coordinate": [
+    {
+      "plane_name": "cortex-alpha.lan",
+      "subnet": "10.88.128.0/24",
+      "peer_id": 240,
+      "trust": 1,
+      "interface": "lan0"
+    },
+    {
+      "plane_name": "wg",
+      "subnet": "10.88.127.0/24",
+      "peer_id": 240,
+      "trust": 3,
+      "interface": "wireg0"
+    }
+  ]
+}

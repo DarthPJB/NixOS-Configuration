@@ -17,7 +17,6 @@ in
     ../../services/dynamic_domain_gandi.nix
     (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
     ../../server_services/ldap.nix
-    ../../modules/core-router-topology.nix
     # NOTE: enable-wg.nix is for WireGuard CLIENTS, not the hub
     # The hub's WireGuard config comes from core-router.nix via topology
     ./hardware-configuration.nix
@@ -50,13 +49,14 @@ in
   # each system will, spread throughout the day, ipferf each other system.
   # just a small burst, so A ->B C->E etc
   # > "the iperf3 exporter does this it looks like, it will run iperf on demand" ~ @chloe.kever
-  services.prometheus.exporters.dnsmasq = {
-    enable = true;
-    listenAddress = "10.88.127.1";
-    port = 3101;
-    leasesPath = "/dev/null";
-    dnsmasqListenAddress = "10.88.128.1:53";
-  };
+  # TOPOLOGY-DERIVED: see topology/cortex-alpha.json exporters.dnsmasq
+  # services.prometheus.exporters.dnsmasq = {
+  #   enable = true;
+  #   listenAddress = "10.88.127.1";
+  #   port = 3101;
+  #   leasesPath = "/dev/null";
+  #   dnsmasqListenAddress = "10.88.128.1:53";
+  # };
 
   # mDNS/Avahi — resolve .local names for device discovery (RFC 6762)
   # Cortex-alpha only resolves; NOT a publishing device (hub, not discoverable)
@@ -97,6 +97,8 @@ in
     # WireGuard private key - topology handles peers and IPs, but we need the key
     wireguard.interfaces.wireg0.privateKeyFile =
       config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
+    # TOPOLOGY-DERIVED: see topology/cortex-alpha.json coordinate
+    # Addresses managed by topology-derive in later phase.
     interfaces.enp3s0 = {
       useDHCP = lib.mkDefault false;
       ipv4.addresses = [
@@ -106,7 +108,6 @@ in
         }
       ];
     };
-
     interfaces.enp2s0 = {
       useDHCP = lib.mkDefault true;
     };

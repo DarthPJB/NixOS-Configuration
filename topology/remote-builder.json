@@ -1,0 +1,14 @@
+{
+  "coordinate": [
+    {
+      "interface": "wireg0",
+      "peer_id": 51,
+      "plane_name": "wg",
+      "subnet": "10.88.127.0/24",
+      "trust": 3
+    }
+  ],
+  "hostname": "remote-builder",
+  "public_key_file": "secrets/public_keys/wireguard/wg_remote-builder_pub",
+  "trust": 3
+}

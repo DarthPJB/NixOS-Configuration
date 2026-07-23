@@ -1,7 +1,8 @@
 { config, pkgs, lib, ... }:
 let
-  # Import shared topology (single source of truth for all machine IPs)
-  topology = import ../topology/shared.nix { inherit lib; };
+  # Import JSON topology registry (single source of truth for all machine IPs)
+  registry = import ../lib/topology/mkRegistry.nix { inherit lib; };
+  topology = registry.hosts;
 
   # Import hosts generation function
   hostsLib = import ../lib/topology/mkHostsEntries.nix { inherit lib; };
@@ -11,7 +12,7 @@ let
 in
 {
   networking.extraHosts = ''
-    # Fleet machines (auto-generated from topology/shared.nix)
+    # Fleet machines (auto-generated from JSON topology registry)
     ${topologyHosts}
 
     # External hosts (manual entries)

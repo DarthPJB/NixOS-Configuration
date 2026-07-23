@@ -1,0 +1,14 @@
+{
+  "coordinate": [
+    {
+      "interface": "wlan0",
+      "peer_id": 30,
+      "plane_name": "cortex-alpha.lan",
+      "subnet": "10.88.128.0/24",
+      "trust": 1
+    }
+  ],
+  "hostname": "print-controller-wg",
+  "public_key_file": "secrets/public_keys/wireguard/wg_print-controller_pub",
+  "trust": 3
+}

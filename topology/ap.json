@@ -1,0 +1,14 @@
+{
+  "coordinate": [
+    {
+      "plane_name": "cortex-alpha.lan",
+      "subnet": "10.88.128.0/24",
+      "peer_id": 2,
+      "trust": 1,
+      "interface": "mac:14:cc:20:46:f8:ab"
+    }
+  ],
+  "hostname": "ap",
+  "public_key_file": null,
+  "trust": 3
+}

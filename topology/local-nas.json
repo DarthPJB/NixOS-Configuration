@@ -1,0 +1,21 @@
+{
+  "hostname": "local-nas",
+  "trust": 3,
+  "coordinate": [
+    {
+      "plane_name": "cortex-alpha.lan",
+      "subnet": "10.88.128.0/24",
+      "peer_id": 3,
+      "trust": 1,
+      "interface": "enp0s31f6"
+    },
+    {
+      "plane_name": "wg",
+      "subnet": "10.88.127.0/24",
+      "peer_id": 3,
+      "trust": 3,
+      "interface": "wireg0"
+    }
+  ],
+  "public_key_file": "secrets/public_keys/wireguard/wg_local-nas_pub"
+}

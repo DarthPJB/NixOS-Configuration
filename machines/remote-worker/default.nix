@@ -39,51 +39,66 @@ in
     extraDomainNames = [ "*.johnbargman.com" ]; # johnbargman.com"];
   };
 
-  services.nginx = {
-    enable = true;
-    statusPage = true;
-    virtualHosts = {
-      "default" = {
-        default = true;
-        listenAddresses = [ "0.0.0.0" ];
-        locations."/" = {
-          return = "444"; # Close connection without response
-        };
-      };
-      "johnbargman.net" = {
-        enableACME = true;
-        acmeRoot = null;
-        forceSSL = true;
-        listenAddresses = [ "0.0.0.0" ];
-        locations."/" = {
-          root = ../../webroot;
-          #proxyWebsockets = false; # needed if you need to use websocket
-        };
-      };
-      # johnbargman.com — split-horizon
-      # Public: serves existing webroot on all interfaces
-      "johnbargman.com" = {
-        enableACME = true;
-        acmeRoot = null;
-        forceSSL = true;
-        listenAddresses = [ "0.0.0.0" ];
-        locations."/" = {
-          root = ../../webroot;
-        };
-      };
-      # WireGuard: serves personal-site on WG IP only
-      "johnbargman.com-wg" = {
-        serverName = "johnbargman.com";
-        enableACME = true;
-        acmeRoot = null;
-        forceSSL = true;
-        listenAddresses = [ "10.88.127.50" ];
-        locations."/" = {
-          root = personal-site.packages.${pkgs.stdenv.hostPlatform.system}.webroot;
-        };
-      };
-    };
+  # TOPOLOGY-DERIVED: see topology/remote-worker.json vhosts
+  # services.nginx = {
+  #   enable = true;
+  #   statusPage = true;
+  #   virtualHosts = {
+  #     "default" = {
+  #       default = true;
+  #       listenAddresses = [ "0.0.0.0" ];
+  #       locations."/" = {
+  #         return = "444"; # Close connection without response
+  #       };
+  #     };
+  #     "johnbargman.net" = {
+  #       enableACME = true;
+  #       acmeRoot = null;
+  #       forceSSL = true;
+  #       listenAddresses = [ "0.0.0.0" ];
+  #       locations."/" = {
+  #         root = ../../webroot;
+  #         #proxyWebsockets = false; # needed if you need to use websocket
+  #       };
+  #     };
+  #     # johnbargman.com — split-horizon
+  #     # Public: serves existing webroot on all interfaces
+  #     "johnbargman.com" = {
+  #       enableACME = true;
+  #       acmeRoot = null;
+  #       forceSSL = true;
+  #       listenAddresses = [ "0.0.0.0" ];
+  #       locations."/" = {
+  #         root = ../../webroot;
+  #       };
+  #     };
+  #     # WireGuard: serves personal-site on WG IP only
+  #     "johnbargman.com-wg" = {
+  #       serverName = "johnbargman.com";
+  #       enableACME = true;
+  #       acmeRoot = null;
+  #       forceSSL = true;
+  #       listenAddresses = [ "10.88.127.50" ];
+  #       locations."/" = {
+  #         root = personal-site.packages.${pkgs.stdenv.hostPlatform.system}.webroot;
+  #       };
+  #     };
+  #   };
+  # };
+  # Overlay: personalsite root for WG split-horizon (rewrite NOT portable as relative path in JSON alone).
+  # Topology owns base vhost flags; this sets the derivation root.
+  services.nginx.virtualHosts."johnbargman.com-wg" = {
+    locations."/".root = lib.mkForce personal-site.packages.${pkgs.stdenv.hostPlatform.system}.webroot;
   };
+
+  # Overlay: nextcloud exporter credentials (secrix paths; topology delivers enable+port)
+  services.prometheus.exporters.nextcloud = {
+    url = "https://nextcloud.johnbargman.net";
+    username = "admin";
+    passwordFile = config.secrix.system.secrets.nextcloud_password_file.decrypted.path;
+    user = "nextcloud";
+  };
+
   # Virtual disk devices — smartctl/smartd not applicable
   services.smartd.enable = lib.mkForce false;
   services.prometheus.exporters.smartctl.enable = lib.mkForce false;
@@ -100,19 +115,23 @@ in
     443
   ];
 
-  services.prometheus.exporters.nginx = {
-    enable = true;
-    port = 3105;
-  };
+  # TOPOLOGY-DERIVED: see topology/remote-worker.json exporters.nginx
+  # services.prometheus.exporters.nginx = {
+  #   enable = true;
+  #   port = 3105;
+  # };
 
-  services.prometheus.exporters.nextcloud = {
-    enable = true;
-    port = 3106;
-    url = "https://nextcloud.johnbargman.net";
-    username = "admin";
-    passwordFile = config.secrix.system.secrets.nextcloud_password_file.decrypted.path;
-    user = "nextcloud";
-  };
+  # TOPOLOGY-DERIVED (basic): see topology/remote-worker.json exporters.nextcloud
+  # Exporter-specific options preserved:
+  #   url, username, passwordFile, user
+  # services.prometheus.exporters.nextcloud = {
+  #   enable = true;
+  #   port = 3106;
+  #   url = "https://nextcloud.johnbargman.net";
+  #   username = "admin";
+  #   passwordFile = config.secrix.system.secrets.nextcloud_password_file.decrypted.path;
+  #   user = "nextcloud";
+  # };
 
   # OpenCode fleet configuration
   # DISABLED for overlord-I — re-enable and test as part of overlord-II

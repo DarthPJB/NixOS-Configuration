@@ -62,20 +62,27 @@
 
   environment.systemPackages = with pkgs; [ ];
 
-  # ── Nginx reverse proxy for squaremap ──────────────────────────────
+  # TOPOLOGY-DERIVED: see topology/gaming-host-1.json vhosts
+  # Nginx-level settings NOT managed by topology-derive — preserved here
   services.nginx = {
-    enable = true;
     recommendedProxySettings = true;
     recommendedTlsSettings = true;
-    virtualHosts."gaming-host-1.johnbargman.net" = {
-      forceSSL = true;
-      useACMEHost = "gaming-host-1.johnbargman.net";
-      locations."/" = {
-        proxyPass = "http://127.0.0.1:8080";
-        proxyWebsockets = true;
-      };
-    };
+    # enable and virtualHosts come from topology-derive
   };
+  # ── Nginx reverse proxy for squaremap ──────────────────────────────
+  # services.nginx = {
+  #   enable = true;
+  #   recommendedProxySettings = true;
+  #   recommendedTlsSettings = true;
+  #   virtualHosts."gaming-host-1.johnbargman.net" = {
+  #     forceSSL = true;
+  #     useACMEHost = "gaming-host-1.johnbargman.net";
+  #     locations."/" = {
+  #       proxyPass = "http://127.0.0.1:8080";
+  #       proxyWebsockets = true;
+  #     };
+  #   };
+  # };
 
   # Allow nginx through the firewall
   networking.firewall.allowedTCPPorts = [ 80 443 ];

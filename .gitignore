@@ -3,5 +3,6 @@ result
 .opencode
 *.qcow2
 documentation/logs/
+documentation/2026-*/
 sqlite_mcp_server.db
 nix

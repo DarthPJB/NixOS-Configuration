@@ -1,0 +1,209 @@
+{
+  "hostname": "cortex-alpha",
+  "trust": 5,
+  "hub_of": [
+    {
+      "plane_name": "cortex-alpha.lan",
+      "subnet": "10.88.128.0/24"
+    },
+    {
+      "plane_name": "wg",
+      "subnet": "10.88.127.0/24"
+    },
+    {
+      "plane_name": "tailscale-platonic",
+      "subnet": "100.64.0.0/10"
+    },
+    {
+      "plane_name": "82.5.173.0/24-wan",
+      "subnet": "82.5.173.0/24"
+    }
+  ],
+  "coordinate": [
+    {
+      "plane_name": "cortex-alpha.lan",
+      "subnet": "10.88.128.0/24",
+      "peer_id": 1,
+      "trust": 1,
+      "interface": "enp3s0"
+    },
+    {
+      "plane_name": "wg",
+      "subnet": "10.88.127.0/24",
+      "peer_id": 1,
+      "trust": 3,
+      "interface": "wireg0"
+    },
+    {
+      "plane_name": "tailscale-platonic",
+      "subnet": "100.64.0.0/10",
+      "peer_id": 1,
+      "trust": 2,
+      "interface": "tailscale0"
+    },
+    {
+      "plane_name": "82.5.173.0/24-wan",
+      "subnet": "82.5.173.0/24",
+      "peer_id": 252,
+      "trust": 6,
+      "interface": "enp2s0"
+    }
+  ],
+  "public_key_file": "secrets/public_keys/wireguard/wg_cortex-alpha_pub",
+  "advertised_tailscale_routes": [
+    "10.88.127.51/32",
+    "10.88.128.88/32",
+    "10.88.127.107/32",
+    "10.88.128.248/32",
+    "10.88.128.247/32"
+  ],
+  "lan_dhcp": {
+    "range": "10.88.128.128,10.88.128.254,24h",
+    "interface": "enp3s0",
+    "hosts": [
+      {"mac": "00:e0:4c:68:03:8f", "ip": "10.88.128.248", "hostname": "michel"},
+      {"mac": "10:0b:a9:7e:cc:8c", "ip": "10.88.128.20", "hostname": "terminal-zero-1"},
+      {"mac": "14:cc:20:46:f8:ab", "ip": "10.88.128.2", "hostname": "ap"},
+      {"mac": "18:26:49:c5:48:24", "ip": "10.88.128.89", "hostname": "LINDACORE-89"},
+      {"mac": "18:c0:4d:8d:53:6c", "ip": "10.88.128.87", "hostname": "LINDACORE-87"},
+      {"mac": "18:c0:4d:8d:53:6d", "ip": "10.88.128.88", "hostname": "LINDACORE-88"},
+      {"mac": "52:54:00:e9:4a:af", "ip": "10.88.128.24", "hostname": "LINDA-WM"},
+      {"mac": "60:45:2e:9d:42:ac", "ip": "10.88.128.247", "hostname": "michel-wifi"},
+      {"mac": "60:66:82:42:b1:c8", "ip": "10.88.128.151", "hostname": "LINDA-lan"},
+      {"mac": "70:54:d2:17:d1:c4", "ip": "10.88.128.23", "hostname": "terminal-nx-01-2"},
+      {"mac": "b8:27:eb:7f:f0:38", "ip": "10.88.128.10", "hostname": "print-controller"},
+      {"mac": "dc:85:de:86:a8:77", "ip": "10.88.128.22", "hostname": "terminal-nx-01-1"},
+      {"mac": "f0:de:f1:c7:fe:30", "ip": "10.88.128.21", "hostname": "terminal-zero-2"},
+      {"mac": "f8:32:e4:b9:77:0b", "ip": "10.88.128.3", "hostname": "local-nas"},
+      {"mac": "f8:32:e4:b9:77:0d", "ip": "10.88.128.108", "hostname": "alpha-one"}
+    ]
+  },
+  "acme_host": "johnbargman.net",
+  "exporters": {
+    "dnsmasq": {
+      "listenAddress": "10.88.127.1",
+      "leasesPath": "/dev/null",
+      "dnsmasqListenAddress": "10.88.128.1:53"
+    }
+  },
+  "routes": [
+    { "from": "wan", "port": 2208, "proto": "tcp", "to": "10.88.128.3:22", "reason": "SSH to local-nas" },
+    { "from": "wan", "port": 27015, "proto": "tcp", "to": "10.88.128.88:27015", "reason": "Game server (TCP) to LINDACORE-88" },
+    { "from": "wan", "port": 4549, "proto": "tcp", "to": "10.88.128.88:4549", "reason": "Game server to LINDACORE-88" },
+    { "from": "wan", "port": 17780, "proto": "udp", "to": "10.88.128.88:17780", "reason": "Game server to LINDACORE-88" },
+    { "from": "wan", "port": 17781, "proto": "udp", "to": "10.88.128.88:17781", "reason": "Game server to LINDACORE-88" },
+    { "from": "wan", "port": 17782, "proto": "udp", "to": "10.88.128.88:17782", "reason": "Game server to LINDACORE-88" },
+    { "from": "wan", "port": 17783, "proto": "udp", "to": "10.88.128.88:17783", "reason": "Game server to LINDACORE-88" },
+    { "from": "wan", "port": 17784, "proto": "udp", "to": "10.88.128.88:17784", "reason": "Game server to LINDACORE-88" },
+    { "from": "wan", "port": 17785, "proto": "udp", "to": "10.88.128.88:17785", "reason": "Game server to LINDACORE-88" },
+    { "from": "wan", "port": 27015, "proto": "udp", "to": "10.88.128.88:27015", "reason": "Game server (UDP) to LINDACORE-88" },
+    { "from": "wan", "port": 2207, "proto": "udp", "to": "10.88.127.88:2207", "reason": "Service to LINDACORE-88" },
+    { "from": "wan", "port": 4175, "proto": "udp", "to": "10.88.128.88:4175", "reason": "Game server to LINDACORE-88" },
+    { "from": "wan", "port": 4179, "proto": "udp", "to": "10.88.128.88:4179", "reason": "Game server to LINDACORE-88" },
+    { "from": "wan", "port": 4171, "proto": "udp", "to": "10.88.128.88:4171", "reason": "Game server to LINDACORE-88" }
+  ],
+  "wireguard": {
+    "interface": "wireg0",
+    "listen_port": 2108
+  },
+  "firewall": {
+    "allowed_tcp_ports": [22, 636, 1108],
+    "allowed_udp_ports": [],
+    "interfaces": {
+      "wireg0": { "tcp": [443, 3100, 3101, 3102], "udp": [1108] },
+      "enp3s0": { "tcp": [443, 2208], "udp": [1108, 2108, 67, 53] },
+      "enp2s0": { "tcp": [2208], "udp": [2108, 2207, 17780, 17781, 17782, 17783, 17784, 17785, 27015, 4175, 4179, 4171] }
+    }
+  },
+  "dns": {
+    "interface": "enp3s0",
+    "static": [
+      { "domain": "git.johnbargman.net", "ip": "10.88.128.1" },
+      { "domain": "code.johnbargman.net", "ip": "10.88.128.1" },
+      { "domain": "cortex-alpha.johnbargman.net", "ip": "10.88.128.1" },
+      { "domain": "ap.johnbargman.net", "ip": "10.88.128.1" },
+      { "domain": "prometheus.johnbargman.net", "ip": "10.88.128.1" },
+      { "domain": "grafana.johnbargman.net", "ip": "10.88.128.1" },
+      { "domain": "print-controller.johnbargman.net", "ip": "10.88.128.1" },
+      { "domain": "minio.johnbargman.net", "ip": "10.88.128.1" }
+    ],
+    "dhcp": {
+      "range": "10.88.128.128,10.88.128.254,24h",
+      "interface": "enp3s0"
+    },
+    "servers": ["208.67.220.220", "208.67.222.222", "1.0.0.1", "8.8.8.8"]
+  },
+  "vhosts": {
+  "_": [
+    {
+      "default": true,
+      "return": "444"
+    }
+  ],
+  "johnbargman.net": [
+    {
+      "static": {
+        "root": "../webroot"
+      },
+      "acme": {
+        "enable": true,
+        "host": "johnbargman.net"
+      },
+      "forceSSL": true
+    }
+  ],
+  "cortex-alpha.johnbargman.net": [
+    {
+      "static": {
+        "root": "../webroot"
+      },
+      "acme": {
+        "host": "johnbargman.net"
+      },
+      "forceSSL": true
+    }
+  ],
+  "print-controller.johnbargman.net": [
+    {
+      "proxy_to": "10.88.127.30:80",
+      "regex_prefix": true,
+      "proxy_headers": true
+    }
+  ],
+  "code.johnbargman.net": [
+    {
+      "proxy_to": "10.88.127.3:80",
+      "regex_prefix": true,
+      "proxy_headers": true
+    }
+  ],
+  "git.johnbargman.net": [
+    {
+      "proxy_to": "10.88.127.3:80",
+      "regex_prefix": true,
+      "proxy_headers": true
+    }
+  ],
+  "prometheus.johnbargman.net": [
+    {
+      "proxy_to": "10.88.127.3:8080",
+      "regex_prefix": true,
+      "proxy_headers": true
+    }
+  ],
+  "grafana.johnbargman.net": [
+    {
+      "proxy_to": "10.88.127.3:3101",
+      "regex_prefix": true,
+      "proxy_headers": true
+    }
+  ],
+  "ap.johnbargman.net": [
+    {
+      "proxy_to": "10.88.128.2:80",
+      "regex_prefix": true,
+      "proxy_headers": true
+    }
+  ]
+  }
+}

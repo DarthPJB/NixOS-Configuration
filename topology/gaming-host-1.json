@@ -1,0 +1,25 @@
+{
+  "coordinate": [
+    {
+      "interface": "wireg0",
+      "peer_id": 52,
+      "plane_name": "wg",
+      "subnet": "10.88.127.0/24",
+      "trust": 3
+    }
+  ],
+  "hostname": "gaming-host-1",
+  "public_key_file": "secrets/public_keys/wireguard/wg_gaming-host-1_pub",
+  "trust": 3,
+  "vhosts": {
+    "gaming-host-1.johnbargman.net": [
+      {
+        "proxy_to": "127.0.0.1:8080",
+        "forceSSL": true,
+        "acme": {
+          "host": "gaming-host-1.johnbargman.net"
+        }
+      }
+    ]
+  }
+}

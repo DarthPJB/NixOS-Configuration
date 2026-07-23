@@ -1,0 +1,74 @@
+{
+  "hostname": "remote-worker",
+  "trust": 3,
+  "coordinate": [
+    {
+      "interface": "wireg0",
+      "peer_id": 50,
+      "plane_name": "wg",
+      "subnet": "10.88.127.0/24",
+      "trust": 3
+    }
+  ],
+  "public_key_file": "secrets/public_keys/wireguard/wg_remote-worker_pub",
+  "exporters": {
+    "nextcloud": {
+      "port": 3106,
+      "listenAddress": "0.0.0.0"
+    },
+    "nginx": {
+      "port": 3105,
+      "listenAddress": "0.0.0.0"
+    }
+  },
+  "vhosts": {
+    "default": [
+      {
+        "default": true,
+        "return": "444",
+        "listenAddresses": ["193.16.42.101", "10.0.1.42", "10.88.127.50"]
+      }
+    ],
+    "johnbargman.net": [
+      {
+        "static": {
+          "root": "../../webroot"
+        },
+        "acme": {
+          "enable": true,
+          "acmeRoot": null
+        },
+        "forceSSL": true,
+        "listenAddresses": ["193.16.42.101", "10.0.1.42", "10.88.127.50"]
+      }
+    ],
+    "johnbargman.com": [
+      {
+        "static": {
+          "root": "../../webroot"
+        },
+        "acme": {
+          "enable": true,
+          "acmeRoot": null
+        },
+        "forceSSL": true,
+        "listenAddresses": ["193.16.42.101", "10.0.1.42", "10.88.127.50"]
+      }
+    ],
+    "johnbargman.com-wg": [
+      {
+        "plane": "wg",
+        "subnet": "10.88.127.0/24",
+        "static": {
+          "root": "../../webroot"
+        },
+        "acme": {
+          "enable": true,
+          "acmeRoot": null
+        },
+        "forceSSL": true,
+        "server_name": "johnbargman.com"
+      }
+    ]
+  }
+}
