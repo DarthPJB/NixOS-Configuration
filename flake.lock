@@ -9,17 +9,17 @@
         "opencode-flake": "opencode-flake"
       },
       "locked": {
-        "lastModified": 1784811107,
-        "narHash": "sha256-cDSWPs3+292vCnvzgg40maTJJJSBbqBR0OABq5rWvNA=",
-        "ref": "refs/heads/main",
-        "rev": "5dc38b70be4393b4d5f448018a332aa9df47f201",
-        "revCount": 452,
-        "type": "git",
-        "url": "https://gitlab.com/mecha-team-zero/llm-core.git"
+        "lastModified": 1784831980,
+        "narHash": "sha256-NyUm8zFUPvrlCxQ3jU9GKLgsX1L55agmnrGXi6Pbzqk=",
+        "owner": "mecha-team-zero",
+        "repo": "llm-core",
+        "rev": "0e25764d84408cdc9d0aff57e98298927fd9793f",
+        "type": "gitlab"
       },
       "original": {
-        "type": "git",
-        "url": "https://gitlab.com/mecha-team-zero/llm-core.git"
+        "owner": "mecha-team-zero",
+        "repo": "llm-core",
+        "type": "gitlab"
       }
     },
     "bargman-assets": {
