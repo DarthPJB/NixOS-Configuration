@@ -51,7 +51,6 @@
   ],
   "public_key_file": "secrets/public_keys/wireguard/wg_cortex-alpha_pub",
   "advertised_tailscale_routes": [
-    "10.88.127.51/32",
     "10.88.128.88/32",
     "10.88.127.107/32",
     "10.88.128.248/32",
