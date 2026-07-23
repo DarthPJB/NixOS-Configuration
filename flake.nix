@@ -33,7 +33,7 @@
     bargman-assets.url = "git+https://gitlab.com/mecha-team-zero/bargman-assets.git";
     denton-glasses.url = "git+https://gitlab.com/mecha-team-zero/denton-glasses.git";
     personal-site = { url = "git+https://gitlab.com/mecha-team-zero/bargman-website.git"; };
-    LLM-CORE = { url = "git+https://gitlab.com/mecha-team-zero/llm-core.git"; inputs.nixpkgs.follows = "nixpkgs_llm"; inputs.nix-mcp-servers.inputs.nixpkgs.follows = "nixpkgs_stable"; };
+    LLM-CORE = { url = "gitlab:mecha-team-zero/llm-core"; inputs.nixpkgs.follows = "nixpkgs_llm"; inputs.nix-mcp-servers.inputs.nixpkgs.follows = "nixpkgs_stable"; };
   };
   outputs = { self, deadnix, determinate, disko, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE }:
     let
@@ -137,7 +137,7 @@
               boot.kernelPatches = lib.singleton {
                 name = "disable-backdoor";
                 patch = null;
-                features.rust = false;
+                features.rust = lib.mkForce false;
               };
 
               nixpkgs.hostPlatform = "x86_64-linux";

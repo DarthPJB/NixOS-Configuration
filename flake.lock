@@ -9,17 +9,17 @@
         "opencode-flake": "opencode-flake"
       },
       "locked": {
-        "lastModified": 1784808790,
-        "narHash": "sha256-JJ+Oua6L3lSgK8l21UFmf2e/jwBSK/KMbrd2XHAW8Io=",
-        "ref": "refs/heads/main",
-        "rev": "732d9662ca921a966bf4308354c00c8616b30e91",
-        "revCount": 450,
-        "type": "git",
-        "url": "https://gitlab.com/mecha-team-zero/llm-core.git"
+        "lastModified": 1784831980,
+        "narHash": "sha256-NyUm8zFUPvrlCxQ3jU9GKLgsX1L55agmnrGXi6Pbzqk=",
+        "owner": "mecha-team-zero",
+        "repo": "llm-core",
+        "rev": "0e25764d84408cdc9d0aff57e98298927fd9793f",
+        "type": "gitlab"
       },
       "original": {
-        "type": "git",
-        "url": "https://gitlab.com/mecha-team-zero/llm-core.git"
+        "owner": "mecha-team-zero",
+        "repo": "llm-core",
+        "type": "gitlab"
       }
     },
     "bargman-assets": {
@@ -1318,7 +1318,7 @@
     "parsecDeb": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-+sNEGgb2wARM8JDf3Gdzk+N/IFNERlEQJFROGQGP8XE=",
+        "narHash": "sha256-/vdEJeyo8wibEOpMYaI4RzjGSVcE4mB+8I66pWN2s8U=",
         "type": "file",
         "url": "https://builds.parsecgaming.com/package/parsec-linux.deb"
       },
@@ -1330,7 +1330,7 @@
     "parsecMeta": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-HQhIa2A5e21sjVSZEk5OsPt5C6RDBxqi7NpiNP0JZIM=",
+        "narHash": "sha256-MaBaAcuriCHa1NEfGsGLQS3cNgA2+CtBaIW850f3Wm8=",
         "type": "file",
         "url": "https://builds.parsecgaming.com/channel/release/appdata/linux/latest"
       },
@@ -1346,11 +1346,11 @@
         "parsecMeta": "parsecMeta"
       },
       "locked": {
-        "lastModified": 1777820575,
-        "narHash": "sha256-raYOwVMcpnclTfIkKJv/FcYQrakowpEu+C7m+qu4JDw=",
+        "lastModified": 1783823234,
+        "narHash": "sha256-lPVKR0pAekVlhUqrWndY9zgqmuuyL0lPzywHOm6lyK8=",
         "owner": "DarthPJB",
         "repo": "parsec-gaming-nix",
-        "rev": "848cd8f9576330e40d7157715cdcd05c76f95ee6",
+        "rev": "1d4a2ceba1e7382bd40bff12617f208e94c418f6",
         "type": "github"
       },
       "original": {
@@ -1364,11 +1364,11 @@
         "nixpkgs": "nixpkgs_14"
       },
       "locked": {
-        "lastModified": 1783231853,
-        "narHash": "sha256-gU7SeyrU13iqw8GMtqm+gaHtcQ660zTq9aiA7oCQamA=",
+        "lastModified": 1784474605,
+        "narHash": "sha256-kKWL5QwK9w3M05eZuZzTtwMe00M9JEt4dDYzHgbhQKc=",
         "ref": "refs/heads/main",
-        "rev": "79769c8c6af7293efd1ca328b48d2683f7e10a3e",
-        "revCount": 46,
+        "rev": "d8cf00bb36c541324e4cb08e291bca9e697d57cd",
+        "revCount": 57,
         "type": "git",
         "url": "https://gitlab.com/mecha-team-zero/bargman-website.git"
       },
