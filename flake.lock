@@ -1346,11 +1346,11 @@
         "parsecMeta": "parsecMeta"
       },
       "locked": {
-        "lastModified": 1783823234,
-        "narHash": "sha256-lPVKR0pAekVlhUqrWndY9zgqmuuyL0lPzywHOm6lyK8=",
+        "lastModified": 1784834219,
+        "narHash": "sha256-ItZdA+ZelrodqogQAwbPA3ojh8IZisGVafiMXUrW3Go=",
         "owner": "DarthPJB",
         "repo": "parsec-gaming-nix",
-        "rev": "1d4a2ceba1e7382bd40bff12617f208e94c418f6",
+        "rev": "cab452ad4cfa864c26b9072e8293d86178c0ee0b",
         "type": "github"
       },
       "original": {
