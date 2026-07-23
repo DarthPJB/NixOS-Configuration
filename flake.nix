@@ -137,7 +137,7 @@
               boot.kernelPatches = lib.singleton {
                 name = "disable-backdoor";
                 patch = null;
-                features.rust = lib.mkForce false;
+                features.rust = false;
               };
 
               nixpkgs.hostPlatform = "x86_64-linux";
