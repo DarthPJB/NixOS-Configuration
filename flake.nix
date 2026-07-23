@@ -689,28 +689,55 @@
       checks."x86_64-linux" = {
         nixpkgs-fmt = lint-utils.linters.x86_64-linux.nixpkgs-fmt { src = self; };
 
-        # Network topology golden check for all machines (generalized)
-        network-config = lib.genAttrs (builtins.attrNames self.nixosConfigurations) (machine:
-          nixpkgs.writeShellApplication {
-            name = "network-config-${machine}";
-            meta.description = "Verify network config against golden for ${machine}";
-            runtimeInputs = [ nixpkgs.jq nixpkgs.diffutils ];
-            text = ''
-              echo "Generating current network config for ${machine}..."
-              nix run .#dump-config -- ${machine} | jq -S . > /tmp/current-network.json
-
-              echo "Comparing with golden..."
-              if diff -u ${self}/goldens/${machine}.json /tmp/current-network.json; then
-                echo "✓ Network config matches golden for ${machine}"
-              else
-                echo "✗ Network configuration has changed from golden for ${machine}!"
-                echo "If intentional, update with:"
-                echo "  nix run .#dump-config -- ${machine} > goldens/${machine}.json"
+        # Network topology golden check for all machines
+        # Pure Nix evaluation — compares serialized config against golden files at build time
+        network-config =
+          let
+            machines = builtins.attrNames self.nixosConfigurations;
+            serializer = import ./lib/serialize-config.nix { inherit lib; };
+            # Pre-compute JSON for each machine at eval time
+            # unsafeDiscardStringContext strips derivation references so builtins.toFile accepts the string
+            machineJsonFiles = lib.genAttrs machines (machine:
+              let
+                config = self.nixosConfigurations.${machine}.config;
+                json = builtins.unsafeDiscardStringContext (
+                  builtins.toJSON (serializer.serializeConfig config)
+                );
+              in
+              builtins.toFile "network-config-${machine}.json" json
+            );
+          in
+          nixpkgs.runCommand "network-config-golden-check"
+            {
+              buildInputs = [ nixpkgs.jq nixpkgs.diffutils ];
+              goldenSrc = "${self}/goldens";
+            }
+            ''
+              PASS=true
+              ${lib.concatMapStringsSep "\n" (machine: ''
+                if [ -f "$goldenSrc/${machine}.json" ]; then
+                  echo "Checking ${machine}..."
+                  ${lib.getExe nixpkgs.jq} -S . < "${machineJsonFiles.${machine}}" > /tmp/current.json
+                  if ${lib.getExe' nixpkgs.diffutils "diff"} -u "$goldenSrc/${machine}.json" /tmp/current.json; then
+                    echo "  ✓ ${machine} matches golden"
+                  else
+                    echo "  ✗ ${machine} differs from golden!"
+                    PASS=false
+                  fi
+                else
+                  echo "Skipping ${machine} (no golden file)"
+                fi
+              '') machines}
+              if [ "$PASS" != "true" ]; then
+                echo ""
+                echo "Golden check failed. If changes are intentional, update with:"
+                echo "  nix run .#dump-config -- <machine> > goldens/<machine>.json"
                 exit 1
               fi
+              echo ""
+              echo "All golden checks passed"
+              touch $out
             '';
-          }
-        );
 
         topology-coverage =
           let
