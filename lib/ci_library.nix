@@ -76,6 +76,7 @@ let
   # --- Workflow generator (generic) ---
 
   # Assemble a GitHub Actions workflow struct from parts.
+  # Supports optional concurrency controls to prevent queue buildup.
   generateGitHubActions =
     { name
     , on
@@ -84,9 +85,10 @@ let
         contents = "read";
         deployments = "write";
       }
+    , concurrency ? null
     }: {
       inherit name on permissions jobs;
-    };
+    } // (if concurrency != null then { inherit concurrency; } else { });
 
   # --- Serialization pipeline (generic) ---
 
@@ -103,24 +105,27 @@ let
   '';
 
   # Generate GitHub Actions workflow YAML from Nix evaluation.
-  generateWorkflowScript = pkgs.writeShellApplication {
-    name = "generate-ci-workflow";
-    runtimeInputs = [
-      pkgs.nix
-      pkgs.jq
-      json2yaml
-    ];
-    text = ''
-      set -euo pipefail
+  # Parameterized to allow different workflow attribute paths.
+  generateWorkflowScript = { workflowAttrPath ? ".#ci.ci.github-actions" }:
+    pkgs.writeShellApplication {
+      name = "generate-ci-workflow";
+      runtimeInputs = [
+        pkgs.nix
+        pkgs.jq
+        json2yaml
+      ];
+      text = ''
+        set -euo pipefail
 
-      nix eval --json .#ci.ci.github-actions | jq '{name, on, permissions, jobs}' | json2yaml
-    '';
-  };
+        nix eval --json ${workflowAttrPath} | jq '{name, on, permissions, jobs, concurrency}' | json2yaml
+      '';
+    };
 
   # Validate a generated GitHub Actions workflow YAML file.
+  # Uses actionlint for comprehensive GitHub Actions validation.
   validateWorkflowScript = pkgs.writeShellApplication {
     name = "validate-ci-workflow";
-    runtimeInputs = [ pkgs.yq ];
+    runtimeInputs = [ pkgs.yq pkgs.actionlint ];
     text = ''
       set -euo pipefail
 
@@ -144,6 +149,16 @@ let
         echo "Missing required fields"
         exit 1
       fi
+
+      # Run actionlint for comprehensive GitHub Actions validation
+      echo ""
+      echo "Running actionlint..."
+      ${lib.getExe pkgs.actionlint} .github/workflows/ci.yml || {
+        echo ""
+        echo "actionlint found issues (see above)"
+        exit 1
+      }
+      echo "actionlint passed"
 
       echo ""
       echo "Workflow validation complete!"

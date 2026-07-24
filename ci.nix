@@ -1,7 +1,6 @@
 # CI Configuration Module for NixOS Configuration Repository
 # Generates GitHub Actions workflow from Nix evaluation
-{ self
-, lib
+{ lib
 , pkgs
 , parallelism ? { }
 , ...
@@ -25,23 +24,34 @@ let
     "remote-builder"
   ];
 
-  armMachines = [
-    "arm-builder"
+  # Native aarch64 builds — evaluated on aarch64 runner
+  armNativeMachines = [
     "display-1"
     "display-2"
     "print-controller"
-    "beta-one" # Added: armv7l-linux machine
   ];
+
+  # Cross-compiled from x86_64 — evaluated on x86_64 runner, targets ARM
+  armCrossMachines = [
+    "arm-builder" # aarch64, buildPlatform=x86_64-linux
+    "beta-one" # armv7l, buildPlatform=x86_64-linux
+  ];
+
+  # All ARM machines (for workflow_dispatch input)
+  armMachines = armNativeMachines ++ armCrossMachines;
 
   # Pre-computed nix options per system type
   x86NixOptions = ciLib.formatNixOptions "x86-default" "x86_64-linux" parallelism;
-  armNixOptions = ciLib.formatNixOptions "arm-default" "aarch64-linux" parallelism;
+  armNativeNixOptions = ciLib.formatNixOptions "arm-native" "aarch64-linux" parallelism;
+  armCrossNixOptions = ciLib.formatNixOptions "arm-cross" "x86_64-linux" parallelism;
 
   # Pre-computed GitHub Actions max-parallel per system
   x86Settings = ciLib.resolveNixSettings "x86-default" "x86_64-linux" parallelism;
-  armSettings = ciLib.resolveNixSettings "arm-default" "aarch64-linux" parallelism;
+  armNativeSettings = ciLib.resolveNixSettings "arm-native" "aarch64-linux" parallelism;
+  armCrossSettings = ciLib.resolveNixSettings "arm-cross" "x86_64-linux" parallelism;
   x86MaxParallel = x86Settings.max-parallel or null;
-  armMaxParallel = armSettings.max-parallel or null;
+  armNativeMaxParallel = armNativeSettings.max-parallel or null;
+  armCrossMaxParallel = armCrossSettings.max-parallel or null;
 
   # CI job definitions
   ciJobs = {
@@ -100,13 +110,23 @@ let
       needs = [ "validation" "security" ];
     };
 
-    # Build matrix for ARM machines — constrained concurrency for RPi memory
-    build-arm = ciLib.mkMatrixJob {
-      name = "Build ARM Configurations";
-      machines = armMachines;
+    # Build matrix for native ARM machines — evaluated on aarch64 runner
+    build-arm-native = ciLib.mkMatrixJob {
+      name = "Build ARM (native aarch64)";
+      machines = armNativeMachines;
       system = "aarch64-linux";
-      nixOptions = armNixOptions;
-      maxParallel = armMaxParallel;
+      nixOptions = armNativeNixOptions;
+      maxParallel = armNativeMaxParallel;
+      needs = [ "validation" "security" ];
+    };
+
+    # Build matrix for cross-compiled ARM machines — evaluated on x86_64, targets ARM
+    build-arm-cross = ciLib.mkMatrixJob {
+      name = "Build ARM (cross-compiled from x86_64)";
+      machines = armCrossMachines;
+      system = "x86_64-linux";
+      nixOptions = armCrossNixOptions;
+      maxParallel = armCrossMaxParallel;
       needs = [ "validation" "security" ];
     };
 
@@ -174,8 +194,9 @@ let
         "validation"
         "security"
         "build-x86"
-        "build-arm"
-      ]; # Added: full dependency chain
+        "build-arm-native"
+        "build-arm-cross"
+      ];
       name = "Deploy - \${{ github.event.inputs.machine }}";
       runs-on = "self-hosted";
       "if" = "github.event_name == 'workflow_dispatch'";
@@ -188,7 +209,20 @@ let
 
         {
           name = "Build configuration";
-          run = "MACHINE=\${{ github.event.inputs.machine }}\nARM_MACHINES=\"arm-builder display-1 display-2 print-controller beta-one\"\nif echo \"\$ARM_MACHINES\" | grep -qw \"\$MACHINE\"; then\n  NIX_OPTS=\"${armNixOptions}\"\nelse\n  NIX_OPTS=\"${x86NixOptions}\"\nfi\nnix build \$NIX_OPTS .#nixosConfigurations.\$MACHINE.config.system.build.toplevel";
+          run = ''
+            MACHINE="''${{ github.event.inputs.machine }}"
+            ARM_NATIVE="display-1 display-2 print-controller"
+            ARM_CROSS="arm-builder beta-one"
+
+            if echo "$ARM_NATIVE" | grep -qw "$MACHINE"; then
+              NIX_OPTS="${armNativeNixOptions}"
+            elif echo "$ARM_CROSS" | grep -qw "$MACHINE"; then
+              NIX_OPTS="${armCrossNixOptions}"
+            else
+              NIX_OPTS="${x86NixOptions}"
+            fi
+            nix build "$NIX_OPTS" ".#nixosConfigurations.$MACHINE.config.system.build.toplevel"
+          '';
         }
         {
           name = "Test deployment";
@@ -200,16 +234,6 @@ let
           "if" = "github.event.inputs.action == 'deploy'";
           run = "nix run .#\${{ github.event.inputs.machine }} -- switch";
         }
-        {
-          name = "Upload deployment logs";
-          "if" = "always()"; # Upload even if deployment fails
-          uses = "actions/upload-artifact@v4";
-          "with" = {
-            name = "deploy-\${{ github.event.inputs.machine }}-logs";
-            path = "/tmp/deploy-*.log";
-            retention-days = "30";
-          };
-        }
       ];
     };
   };
@@ -219,6 +243,7 @@ let
     name = "NixOS CI/CD";
     on = {
       push = {
+        branches = [ "main" ];
         paths = [
           "**.nix"
           "flake.lock"
@@ -259,6 +284,10 @@ let
       deployments = "write";
     };
     jobs = ciJobs;
+    concurrency = {
+      group = "\${{ github.workflow }}-\${{ github.ref }}";
+      "cancel-in-progress" = true;
+    };
   };
 
 in

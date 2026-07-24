@@ -1,7 +1,11 @@
 {
+  "concurrency": {
+    "cancel-in-progress": true,
+    "group": "${{ github.workflow }}-${{ github.ref }}"
+  },
   "jobs": {
-    "build-arm": {
-      "name": "Build ARM Configurations",
+    "build-arm-cross": {
+      "name": "Build ARM (cross-compiled from x86_64)",
       "needs": [
         "validation",
         "security"
@@ -14,7 +18,7 @@
         },
         {
           "name": "Build configuration",
-          "run": "nix build --option max-jobs 2 --option cores 2 .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
+          "run": "nix build  .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
         }
       ],
       "strategy": {
@@ -22,10 +26,36 @@
         "matrix": {
           "machine": [
             "arm-builder",
+            "beta-one"
+          ]
+        },
+        "max-parallel": 10
+      }
+    },
+    "build-arm-native": {
+      "name": "Build ARM (native aarch64)",
+      "needs": [
+        "validation",
+        "security"
+      ],
+      "runs-on": "self-hosted",
+      "steps": [
+        {
+          "name": "Checkout",
+          "uses": "actions/checkout@v4"
+        },
+        {
+          "name": "Build configuration",
+          "run": "nix build  .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
+        }
+      ],
+      "strategy": {
+        "fail-fast": false,
+        "matrix": {
+          "machine": [
             "display-1",
             "display-2",
-            "print-controller",
-            "beta-one"
+            "print-controller"
           ]
         },
         "max-parallel": 2
@@ -45,7 +75,7 @@
         },
         {
           "name": "Build configuration",
-          "run": "nix build --option max-jobs auto --option cores 0 .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
+          "run": "nix build  .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
         }
       ],
       "strategy": {
@@ -74,7 +104,8 @@
         "validation",
         "security",
         "build-x86",
-        "build-arm"
+        "build-arm-native",
+        "build-arm-cross"
       ],
       "runs-on": "self-hosted",
       "steps": [
@@ -84,7 +115,7 @@
         },
         {
           "name": "Build configuration",
-          "run": "MACHINE=${{ github.event.inputs.machine }}\nARM_MACHINES=\"arm-builder display-1 display-2 print-controller beta-one\"\nif echo \"$ARM_MACHINES\" | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"--option max-jobs 2 --option cores 2\"\nelse\n  NIX_OPTS=\"--option max-jobs auto --option cores 0\"\nfi\nnix build $NIX_OPTS .#nixosConfigurations.$MACHINE.config.system.build.toplevel"
+          "run": "MACHINE=\"${{ github.event.inputs.machine }}\"\nARM_NATIVE=\"display-1 display-2 print-controller\"\nARM_CROSS=\"arm-builder beta-one\"\n\nif echo \"$ARM_NATIVE\" | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"\"\nelif echo \"$ARM_CROSS\" | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"\"\nelse\n  NIX_OPTS=\"\"\nfi\nnix build \"$NIX_OPTS\" \".#nixosConfigurations.$MACHINE.config.system.build.toplevel\"\n"
         },
         {
           "if": "github.event.inputs.action == 'test'",
@@ -95,16 +126,6 @@
           "if": "github.event.inputs.action == 'deploy'",
           "name": "Deploy to machine",
           "run": "nix run .#${{ github.event.inputs.machine }} -- switch"
-        },
-        {
-          "if": "always()",
-          "name": "Upload deployment logs",
-          "uses": "actions/upload-artifact@v4",
-          "with": {
-            "name": "deploy-${{ github.event.inputs.machine }}-logs",
-            "path": "/tmp/deploy-*.log",
-            "retention-days": "30"
-          }
         }
       ]
     },
@@ -159,6 +180,11 @@
         },
         {
           "continue-on-error": true,
+          "name": "Profile evaluation",
+          "run": "nix build --option eval-profiler flamegraph \\\n          --option eval-profile-file /tmp/eval-profile \\\n          --option builders \"\" \\\n          .#nixosConfigurations.remote-builder.config.system.build.toplevel \\\n          --dry-run 2>&1 || true\nif [ -f /tmp/eval-profile ]; then\n  echo \"=== Eval profile (top 20 stacks) ===\"\n  sort -rn -k2 /tmp/eval-profile | head -20\nfi\n"
+        },
+        {
+          "continue-on-error": true,
           "name": "Dead code check",
           "run": "nix shell nixpkgs#deadnix -c deadnix ."
         }
@@ -177,6 +203,9 @@
       ]
     },
     "push": {
+      "branches": [
+        "main"
+      ],
       "paths": [
         "**.nix",
         "flake.lock",
@@ -209,10 +238,10 @@
             "gaming-host-1",
             "remote-worker",
             "remote-builder",
-            "arm-builder",
             "display-1",
             "display-2",
             "print-controller",
+            "arm-builder",
             "beta-one"
           ],
           "required": true,
