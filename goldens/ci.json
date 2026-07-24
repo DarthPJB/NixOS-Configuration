@@ -1,4 +1,8 @@
 {
+  "concurrency": {
+    "cancel-in-progress": true,
+    "group": "${{ github.workflow }}-${{ github.ref }}"
+  },
   "jobs": {
     "build-arm": {
       "name": "Build ARM Configurations",
@@ -95,16 +99,6 @@
           "if": "github.event.inputs.action == 'deploy'",
           "name": "Deploy to machine",
           "run": "nix run .#${{ github.event.inputs.machine }} -- switch"
-        },
-        {
-          "if": "always()",
-          "name": "Upload deployment logs",
-          "uses": "actions/upload-artifact@v4",
-          "with": {
-            "name": "deploy-${{ github.event.inputs.machine }}-logs",
-            "path": "/tmp/deploy-*.log",
-            "retention-days": "30"
-          }
         }
       ]
     },
@@ -159,6 +153,11 @@
         },
         {
           "continue-on-error": true,
+          "name": "Profile evaluation",
+          "run": "nix build --option eval-profiler flamegraph \\\n          --option eval-profile-file /tmp/eval-profile \\\n          --option builders \"\" \\\n          .#nixosConfigurations.remote-builder.config.system.build.toplevel \\\n          --dry-run 2>&1 || true\nif [ -f /tmp/eval-profile ]; then\n  echo \"=== Eval profile (top 20 stacks) ===\"\n  sort -rn -k2 /tmp/eval-profile | head -20\nfi\n"
+        },
+        {
+          "continue-on-error": true,
           "name": "Dead code check",
           "run": "nix shell nixpkgs#deadnix -c deadnix ."
         }
@@ -177,6 +176,9 @@
       ]
     },
     "push": {
+      "branches": [
+        "main"
+      ],
       "paths": [
         "**.nix",
         "flake.lock",

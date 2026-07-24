@@ -5,12 +5,12 @@
 
 let
   ciLib = import ../lib/ci_library.nix { inherit lib pkgs; };
-  ci = import ../ci.nix { inherit self lib pkgs; };
+  ci = import ../ci.nix { inherit lib pkgs; };
 in
 {
   # Scripts for CI management (from ketchup library)
   scripts = {
-    generate-ci-workflow = ciLib.generateWorkflowScript;
+    generate-ci-workflow = ciLib.generateWorkflowScript { };
     validate-ci-workflow = ciLib.validateWorkflowScript;
   };
 

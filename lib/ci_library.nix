@@ -76,6 +76,7 @@ let
   # --- Workflow generator (generic) ---
 
   # Assemble a GitHub Actions workflow struct from parts.
+  # Supports optional concurrency controls to prevent queue buildup.
   generateGitHubActions =
     { name
     , on
@@ -84,9 +85,10 @@ let
         contents = "read";
         deployments = "write";
       }
+    , concurrency ? null
     }: {
       inherit name on permissions jobs;
-    };
+    } // (if concurrency != null then { inherit concurrency; } else { });
 
   # --- Serialization pipeline (generic) ---
 
@@ -103,19 +105,21 @@ let
   '';
 
   # Generate GitHub Actions workflow YAML from Nix evaluation.
-  generateWorkflowScript = pkgs.writeShellApplication {
-    name = "generate-ci-workflow";
-    runtimeInputs = [
-      pkgs.nix
-      pkgs.jq
-      json2yaml
-    ];
-    text = ''
-      set -euo pipefail
+  # Parameterized to allow different workflow attribute paths.
+  generateWorkflowScript = { workflowAttrPath ? ".#ci.ci.github-actions" }:
+    pkgs.writeShellApplication {
+      name = "generate-ci-workflow";
+      runtimeInputs = [
+        pkgs.nix
+        pkgs.jq
+        json2yaml
+      ];
+      text = ''
+        set -euo pipefail
 
-      nix eval --json .#ci.ci.github-actions | jq '{name, on, permissions, jobs}' | json2yaml
-    '';
-  };
+        nix eval --json ${workflowAttrPath} | jq '{name, on, permissions, jobs, concurrency}' | json2yaml
+      '';
+    };
 
   # Validate a generated GitHub Actions workflow YAML file.
   validateWorkflowScript = pkgs.writeShellApplication {

@@ -1,7 +1,6 @@
 # CI Configuration Module for NixOS Configuration Repository
 # Generates GitHub Actions workflow from Nix evaluation
-{ self
-, lib
+{ lib
 , pkgs
 , parallelism ? { }
 , ...
@@ -200,16 +199,6 @@ let
           "if" = "github.event.inputs.action == 'deploy'";
           run = "nix run .#\${{ github.event.inputs.machine }} -- switch";
         }
-        {
-          name = "Upload deployment logs";
-          "if" = "always()"; # Upload even if deployment fails
-          uses = "actions/upload-artifact@v4";
-          "with" = {
-            name = "deploy-\${{ github.event.inputs.machine }}-logs";
-            path = "/tmp/deploy-*.log";
-            retention-days = "30";
-          };
-        }
       ];
     };
   };
@@ -219,6 +208,7 @@ let
     name = "NixOS CI/CD";
     on = {
       push = {
+        branches = [ "main" ];
         paths = [
           "**.nix"
           "flake.lock"
@@ -259,6 +249,10 @@ let
       deployments = "write";
     };
     jobs = ciJobs;
+    concurrency = {
+      group = "\${{ github.workflow }}-\${{ github.ref }}";
+      "cancel-in-progress" = true;
+    };
   };
 
 in
