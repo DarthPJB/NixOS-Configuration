@@ -2,8 +2,27 @@ concurrency:
   cancel-in-progress: true
   group: ${{ github.workflow }}-${{ github.ref }}
 jobs:
-  build-arm:
-    name: Build ARM Configurations
+  build-arm-cross:
+    name: Build ARM (cross-compiled from x86_64)
+    needs:
+    - validation
+    - security
+    runs-on: self-hosted
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Build configuration
+      run: nix build --option max-jobs auto --option cores 0 .#nixosConfigurations.${{
+        matrix.machine }}.config.system.build.toplevel
+    strategy:
+      fail-fast: false
+      matrix:
+        machine:
+        - arm-builder
+        - beta-one
+      max-parallel: 10
+  build-arm-native:
+    name: Build ARM (native aarch64)
     needs:
     - validation
     - security
@@ -18,11 +37,9 @@ jobs:
       fail-fast: false
       matrix:
         machine:
-        - arm-builder
         - display-1
         - display-2
         - print-controller
-        - beta-one
       max-parallel: 2
   build-x86:
     name: Build x86_64 Configurations
@@ -58,17 +75,19 @@ jobs:
     - validation
     - security
     - build-x86
-    - build-arm
+    - build-arm-native
+    - build-arm-cross
     runs-on: self-hosted
     steps:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Build configuration
-      run: "MACHINE=${{ github.event.inputs.machine }}\nARM_MACHINES=\"arm-builder\
-        \ display-1 display-2 print-controller beta-one\"\nif echo \"$ARM_MACHINES\"\
-        \ | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"--option max-jobs 2 --option\
-        \ cores 2\"\nelse\n  NIX_OPTS=\"--option max-jobs auto --option cores 0\"\n\
-        fi\nnix build $NIX_OPTS .#nixosConfigurations.$MACHINE.config.system.build.toplevel"
+      run: "MACHINE=\"${{ github.event.inputs.machine }}\"\nARM_NATIVE=\"display-1\
+        \ display-2 print-controller\"\nARM_CROSS=\"arm-builder beta-one\"\n\nif echo\
+        \ \"$ARM_NATIVE\" | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"--option max-jobs\
+        \ 2 --option cores 2\"\nelif echo \"$ARM_CROSS\" | grep -qw \"$MACHINE\";\
+        \ then\n  NIX_OPTS=\"--option max-jobs auto --option cores 0\"\nelse\n  NIX_OPTS=\"\
+        --option max-jobs auto --option cores 0\"\nfi\nnix build $NIX_OPTS .#nixosConfigurations.$MACHINE.config.system.build.toplevel\n"
     - if: github.event.inputs.action == 'test'
       name: Test deployment
       run: nix run .#${{ github.event.inputs.machine }}
@@ -163,10 +182,10 @@ name: NixOS CI/CD
         - gaming-host-1
         - remote-worker
         - remote-builder
-        - arm-builder
         - display-1
         - display-2
         - print-controller
+        - arm-builder
         - beta-one
         required: true
         type: choice
