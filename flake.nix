@@ -215,22 +215,15 @@
         in
         lib.filterAttrs (name: value: value != null) entries;
 
-      # Parallelism control for CI build jobs — two axes:
-      #   Nix-level: max-jobs, cores, builders per derivation
-      #   GitHub Actions-level: max-parallel concurrent matrix jobs
-      # x86: all-at-once (shared derivations benefit from full concurrency)
-      # ARM: constrained (RPi memory limits)
+      # Parallelism control for CI build jobs
+      # Only GitHub Actions-level max-parallel — machines use their own nix.conf
       ciParallelism = {
         default = {
-          max-jobs = "auto";
-          cores = "0";
-          max-parallel = 10; # GitHub Actions: concurrent matrix jobs
+          max-parallel = 10;
         };
         perSystem = {
           aarch64-linux = {
-            max-jobs = "2";
-            cores = "2";
-            max-parallel = 2; # ARM: only 2 concurrent builds
+            max-parallel = 2;
           };
         };
       };
