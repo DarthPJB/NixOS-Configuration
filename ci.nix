@@ -33,8 +33,8 @@ let
 
   # Cross-compiled from x86_64 — evaluated on x86_64 runner, targets ARM
   armCrossMachines = [
-    "arm-builder"  # aarch64, buildPlatform=x86_64-linux
-    "beta-one"     # armv7l, buildPlatform=x86_64-linux
+    "arm-builder" # aarch64, buildPlatform=x86_64-linux
+    "beta-one" # armv7l, buildPlatform=x86_64-linux
   ];
 
   # All ARM machines (for workflow_dispatch input)
