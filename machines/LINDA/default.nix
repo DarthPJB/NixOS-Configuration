@@ -303,7 +303,7 @@
   services.xserver.enable = true;
   services.xserver.videoDrivers = [ "nvidia" ];
   services.xserver.displayManager.setupCommands = ''
-    ${pkgs.xorg.xrandr}/bin/xrandr \
+    ${pkgs.xrandr}/bin/xrandr \
       --output HDMI-0 --mode 1920x1080 --pos 0x0 --rotate right \
       --output HDMI-1 --primary --mode 3840x2160 --pos 1080x0 --rotate normal \
       --output DP-3 --mode 1920x1080 --pos 4920x0 --rotate left

@@ -9,11 +9,11 @@
         "opencode-flake": "opencode-flake"
       },
       "locked": {
-        "lastModified": 1784831980,
-        "narHash": "sha256-NyUm8zFUPvrlCxQ3jU9GKLgsX1L55agmnrGXi6Pbzqk=",
+        "lastModified": 1784902283,
+        "narHash": "sha256-rHFmoQr4b7QFuP3NgZaNyWAgA73NfJgPlCHjfX8sdWY=",
         "owner": "mecha-team-zero",
         "repo": "llm-core",
-        "rev": "0e25764d84408cdc9d0aff57e98298927fd9793f",
+        "rev": "926ad1b93a1f5b6b83183f7092eb0af9012313f0",
         "type": "gitlab"
       },
       "original": {
@@ -835,11 +835,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1783939427,
-        "narHash": "sha256-+i1Zh5YXJZseOan600ispFfZX3mMolp3KJXtJt1orJI=",
+        "lastModified": 1784902284,
+        "narHash": "sha256-MAE/QadRUpQZHTYxYcsWQiv28MyPzUHpve5lAhweslY=",
         "owner": "Bargman-Tech",
         "repo": "nixinate",
-        "rev": "151b976923aed6f0f5567a88686da0168f4c0c03",
+        "rev": "603270c9a4524e93c31bdaf5dc0fd5e03ef4ed1e",
         "type": "github"
       },
       "original": {
@@ -1462,11 +1462,11 @@
         "nixpkgs": "nixpkgs_16"
       },
       "locked": {
-        "lastModified": 1781802448,
-        "narHash": "sha256-fquZY1SFToXU+M5jBAiNGoMBUfXbDB036lS4K7M81FA=",
+        "lastModified": 1784646685,
+        "narHash": "sha256-MPr+ax3aOwDcmu6sZZYPVlMiFQMNY4r5hDBxgBsBo/E=",
         "owner": "Platonic-Systems",
         "repo": "secrix",
-        "rev": "f79faf63b260e27c3a1a2ba047ac72963d5b0066",
+        "rev": "4d0e6a962086ea1653d82d4e31ea07abf7e09ee6",
         "type": "github"
       },
       "original": {
