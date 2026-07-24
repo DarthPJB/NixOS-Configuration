@@ -115,7 +115,7 @@
         },
         {
           "name": "Build configuration",
-          "run": "MACHINE=\"${{ github.event.inputs.machine }}\"\nARM_NATIVE=\"display-1 display-2 print-controller\"\nARM_CROSS=\"arm-builder beta-one\"\n\nif echo \"$ARM_NATIVE\" | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"--option max-jobs 2 --option cores 2\"\nelif echo \"$ARM_CROSS\" | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"--option max-jobs auto --option cores 0\"\nelse\n  NIX_OPTS=\"--option max-jobs auto --option cores 0\"\nfi\nnix build $NIX_OPTS .#nixosConfigurations.$MACHINE.config.system.build.toplevel\n"
+          "run": "MACHINE=\"${{ github.event.inputs.machine }}\"\nARM_NATIVE=\"display-1 display-2 print-controller\"\nARM_CROSS=\"arm-builder beta-one\"\n\nif echo \"$ARM_NATIVE\" | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"--option max-jobs 2 --option cores 2\"\nelif echo \"$ARM_CROSS\" | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"--option max-jobs auto --option cores 0\"\nelse\n  NIX_OPTS=\"--option max-jobs auto --option cores 0\"\nfi\nnix build \"$NIX_OPTS\" \".#nixosConfigurations.$MACHINE.config.system.build.toplevel\"\n"
         },
         {
           "if": "github.event.inputs.action == 'test'",

@@ -87,7 +87,8 @@ jobs:
         \ \"$ARM_NATIVE\" | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"--option max-jobs\
         \ 2 --option cores 2\"\nelif echo \"$ARM_CROSS\" | grep -qw \"$MACHINE\";\
         \ then\n  NIX_OPTS=\"--option max-jobs auto --option cores 0\"\nelse\n  NIX_OPTS=\"\
-        --option max-jobs auto --option cores 0\"\nfi\nnix build $NIX_OPTS .#nixosConfigurations.$MACHINE.config.system.build.toplevel\n"
+        --option max-jobs auto --option cores 0\"\nfi\nnix build \"$NIX_OPTS\" \"\
+        .#nixosConfigurations.$MACHINE.config.system.build.toplevel\"\n"
     - if: github.event.inputs.action == 'test'
       name: Test deployment
       run: nix run .#${{ github.event.inputs.machine }}

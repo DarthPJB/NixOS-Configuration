@@ -221,7 +221,7 @@ let
             else
               NIX_OPTS="${x86NixOptions}"
             fi
-            nix build $NIX_OPTS .#nixosConfigurations.$MACHINE.config.system.build.toplevel
+            nix build "$NIX_OPTS" ".#nixosConfigurations.$MACHINE.config.system.build.toplevel"
           '';
         }
         {

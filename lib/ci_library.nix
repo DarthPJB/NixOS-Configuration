@@ -122,9 +122,10 @@ let
     };
 
   # Validate a generated GitHub Actions workflow YAML file.
+  # Uses actionlint for comprehensive GitHub Actions validation.
   validateWorkflowScript = pkgs.writeShellApplication {
     name = "validate-ci-workflow";
-    runtimeInputs = [ pkgs.yq ];
+    runtimeInputs = [ pkgs.yq pkgs.actionlint ];
     text = ''
       set -euo pipefail
 
@@ -148,6 +149,16 @@ let
         echo "Missing required fields"
         exit 1
       fi
+
+      # Run actionlint for comprehensive GitHub Actions validation
+      echo ""
+      echo "Running actionlint..."
+      ${lib.getExe pkgs.actionlint} .github/workflows/ci.yml || {
+        echo ""
+        echo "actionlint found issues (see above)"
+        exit 1
+      }
+      echo "actionlint passed"
 
       echo ""
       echo "Workflow validation complete!"
