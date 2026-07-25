@@ -23,12 +23,12 @@
 
 let
   inherit (builtins)
-    hasAttr isAttrs isList isString length head tail elemAt
-    elem filter attrNames attrValues map listToAttrs foldl'
-    toString toJSON genList match substring typeOf;
+    hasAttr length head tail
+    elem filter attrNames attrValues map listToAttrs
+    toString;
 
   inherit (lib)
-    flatten unique optionals optional filterAttrs concatStringsSep
+    flatten unique concatStringsSep
     sort;
 
   # ── Default ICMP settings per plan §4.5 ─────────────────────────

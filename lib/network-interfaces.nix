@@ -4,10 +4,7 @@ let
     mkOption
     mkIf
     types
-    mkMerge
     mapAttrs
-    splitString
-    last
     ;
 in
 {
