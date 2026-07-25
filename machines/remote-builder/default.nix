@@ -34,6 +34,15 @@
   nix.gc.automatic = lib.mkForce false;
   nix.settings.auto-optimise-store = lib.mkForce false;
 
+  # Build-time GC: last-resort protection against disk-full.
+  # Triggers during builds when free space drops below 10GB.
+  # Collects unreachable garbage until 30GB free (max 20GB freed).
+  # This only deletes paths with no GC roots — system profiles and active
+  # builds are never touched.
+  nix.settings.min-free = 10 * 1024 * 1024 * 1024; # 10GB
+  nix.settings.max-free = 30 * 1024 * 1024 * 1024; # 30GB
+  nix.settings.min-free-check-interval = 30;
+
   # Tailscale: direct connection to hyperhyper (replaces WireGuard proxy route)
   secrix.services.tailscaled.secrets.auth-key.encrypted.file =
     ../../secrets/tailscale_auth_key;
