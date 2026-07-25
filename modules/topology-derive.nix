@@ -49,19 +49,6 @@ let
     in
     "${prefix}.${toString peer_id}";
 
-  # ── WIP: Interface address derivation ──────────────────────
-  # prefixLengthFromSubnet and interfaceConfig are built but not yet
-  # wired into the module's config output. Preserved for when
-  # coordinate → interface derivation is activated.
-  # Extract prefix length from CIDR notation.
-  # For "10.88.128.0/24" -> 24
-  prefixLengthFromSubnet = subnet:
-    let
-      parts = splitString "/" subnet;
-      maskStr = elemAt parts 1;
-    in
-    fromJSON maskStr;
-
   # ── Default exporter ports ────────────────────────────────
   defaultPorts = {
     node = 9100;
@@ -84,26 +71,6 @@ let
     if hasTopology then
       filter (c: !hasPrefix "mac:" (c.interface or "")) (topology.coordinate or [ ])
     else [ ];
-
-  # Build interface config from each coordinate entry.
-  # Each produces: networking.interfaces.<iface>.ipv4.addresses
-  #   = [ { address = ...; prefixLength = ...; } ]
-  interfaceConfig = builtins.listToAttrs (map
-    (c:
-      let
-        ip = subnetPeerToIP c.subnet c.peer_id;
-        mask = prefixLengthFromSubnet c.subnet;
-      in
-      nameValuePair c.interface {
-        ipv4.addresses = [
-          {
-            address = ip;
-            prefixLength = mask;
-          }
-        ];
-      }
-    )
-    realCoordinates);
 
   # ── First coordinate IP for listen addresses ──────────────
   firstIP =
