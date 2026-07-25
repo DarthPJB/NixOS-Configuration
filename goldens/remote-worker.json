@@ -8,8 +8,10 @@
     "kernel.printk": "7 7 7 7",
     "net.core.rmem_max": null,
     "net.core.wmem_max": null,
+    "net.ipv4.conf.all.forwarding": true,
     "net.ipv4.ping_group_range": "0 2147483647",
     "net.ipv6.conf.all.disable_ipv6": false,
+    "net.ipv6.conf.all.forwarding": true,
     "net.ipv6.conf.default.disable_ipv6": false,
     "net.ipv6.conf.default.use_tempaddr": "2",
     "vm.max_map_count": 1048576,
@@ -256,6 +258,7 @@
     "<derivation:dbus-1.16.2>",
     "<derivation:dbus-broker-37>",
     "<derivation:wireguard-tools-1.0.20260223>",
+    "<derivation:tailscale-1.98.5>",
     "<derivation:iptables-1.8.13>",
     "<derivation:nixos-firewall-tool>",
     "<derivation:dhcpcd-10.3.1>",
@@ -1680,7 +1683,9 @@
         "hostNames": [
           "remote-worker",
           "remote-worker.johnbargman.net",
-          "10.88.127.50"
+          "10.88.127.50",
+          "10.0.1.42",
+          "193.16.42.101"
         ],
         "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M\n",
         "publicKeyFile": null
@@ -3516,9 +3521,11 @@
     },
     "disableTaildrop": false,
     "disableUpstreamLogging": false,
-    "enable": false,
+    "enable": true,
     "extraDaemonFlags": [],
-    "extraSetFlags": [],
+    "extraSetFlags": [
+      "--advertise-routes="
+    ],
     "extraUpFlags": [],
     "interfaceName": "tailscale0",
     "openFirewall": false,
@@ -3530,7 +3537,7 @@
       "enable": false,
       "services": {}
     },
-    "useRoutingFeatures": "none"
+    "useRoutingFeatures": "server"
   },
   "systemd.services.tailscale-udp-gro": null,
   "time.timeZone": "Etc/UTC"
