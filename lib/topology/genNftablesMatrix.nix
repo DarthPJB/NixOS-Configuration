@@ -30,7 +30,7 @@
 
 let
   inherit (builtins)
-    elemAt toString hasAttr filter listToAttrs concatLists elem fromJSON match;
+    elemAt filter listToAttrs concatLists elem fromJSON match;
   inherit (lib) splitString concatStringsSep;
 
   # ── Private subnet check ──────────────────────────────────────────
@@ -108,14 +108,6 @@ let
 
       # All interface names from coordinate entries
       interfaceList = map (c: c.interface) coordinate;
-
-      # Build interface  → subnet  lookup (for ping rules, etc.)
-      ifaceSubnetMap = listToAttrs (map
-        (c: {
-          name = c.interface;
-          value = c.subnet;
-        })
-        coordinate);
 
       # Build subnet → interface lookup (for route composition)
       subnetIfaceMap = listToAttrs (map
