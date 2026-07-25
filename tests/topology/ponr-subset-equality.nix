@@ -22,8 +22,7 @@ let
   lib = pkgs.lib;
   types = lib.types;
   inherit (builtins)
-    readFile fromJSON pathExists attrNames length head
-    elem filter listToAttrs mapAttrs mapAttrs' attrValues;
+    readFile fromJSON pathExists attrNames length;
 
   # ── Configuration ─────────────────────────────────────────────
   # Baselines captured at /tmp/ponr-baseline/ (impure path)
@@ -102,7 +101,8 @@ let
   #   dump["services.nginx"].virtualHosts
   #   dump["services.nginx"].enable
   #   dump["services.prometheus"].exporters
-  flatGet = dump: subkey:
+  # NOTE: flatGet preserved for future use — currently unused
+  _flatGet = dump: subkey:
     let
       # Walk the dump looking for a key that starts with the path prefix
       # In the flat format, "services.nginx" contains the entire nginx attrset.

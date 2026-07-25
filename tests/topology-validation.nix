@@ -6,7 +6,7 @@
 let
   inherit (builtins) filter map;
   validate = import ../lib/topology/validate.nix { inherit lib; };
-  inherit (validate) validateTopology validateCrossReferences;
+  inherit (validate) validateCrossReferences;
 
   # Valid topology example
   validTopology = {

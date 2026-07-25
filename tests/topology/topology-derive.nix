@@ -19,7 +19,7 @@ let
   pkgs = import <nixpkgs> { };
   lib = pkgs.lib;
   types = lib.types;
-  inherit (builtins) head attrNames length elem;
+  inherit (builtins) length elem;
 
   # ── Module under test ─────────────────────────────────────────
   modulePath = /tmp/nixos-planar-topology/modules/topology-derive.nix;
@@ -81,9 +81,6 @@ let
   f1 = evalHost "__test_f1";
   f1Ifaces = f1.networking.interfaces or { };
 
-  f1HasLan0 = f1Ifaces ? lan0;
-  f1HasWireg0 = f1Ifaces ? wireg0;
-
   f1NginxEnabled = f1.services.nginx.enable or false;
   f1Vhosts = f1.services.nginx.virtualHosts or { };
   f1Exporters = f1.services.prometheus.exporters or { };
@@ -125,7 +122,6 @@ let
   #   - vhosts: static (johnbargman.net), proxy (code.johnbargman.net)
   # ═══════════════════════════════════════════════════════════════
   f2 = evalHost "__test_f2";
-  f2Ifaces = f2.networking.interfaces or { };
   f2Exporters = f2.services.prometheus.exporters or { };
   f2Vhosts = f2.services.nginx.virtualHosts or { };
   f2NginxOn = f2.services.nginx.enable or false;
