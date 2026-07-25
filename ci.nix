@@ -108,6 +108,7 @@ let
       nixOptions = x86NixOptions;
       maxParallel = x86MaxParallel;
       needs = [ "validation" "security" ];
+      timeout-minutes = 720; # 12h — LINDA cold-cache builds take ~6h
     };
 
     # Build matrix for native ARM machines — evaluated on aarch64 runner

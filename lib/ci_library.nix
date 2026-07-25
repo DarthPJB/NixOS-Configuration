@@ -27,8 +27,10 @@ let
     , needs ? [ ]
     , runs-on ? "self-hosted"
     , fail-fast ? false
+    , timeout-minutes ? 360 # GitHub Actions job timeout (default 6h)
     }: {
       inherit name needs runs-on;
+      "timeout-minutes" = timeout-minutes;
       strategy = {
         inherit fail-fast;
       } // (if maxParallel != null then { "max-parallel" = maxParallel; } else { }) // {
