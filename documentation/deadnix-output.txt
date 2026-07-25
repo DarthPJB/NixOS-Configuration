@@ -1,0 +1,208 @@
+Using saved setting for 'extra-substituters = https://install.determinate.systems' from ~/.local/share/nix/trusted-settings.json.
+Using saved setting for 'extra-trusted-public-keys = cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM= install.determinate.systems:a7GMGXFqz7lFjOE45sTRq1g/RX6KFHRKHXOHTi1uFhM=' from ~/.local/share/nix/trusted-settings.json.
+Warning: Unused declarations were found.
+   ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/server_services/samba_server.nix:7:22]
+ 7 │  inherit (builtins) readFile;
+   │                         ╰──── Unused let binding: readFile
+Warning: Unused declarations were found.
+     ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/server_services/game_servers/minecraft-curseforge.nix:513:80]
+ 512 │      (name: instanceCfg:
+     │         ╰── Unused lambda argument: name
+ 522 │      (name: instanceCfg:
+     │         ╰── Unused lambda argument: name
+Warning: Unused declarations were found.
+    ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/server_services/game_servers/dragonwilds.nix:54:9]
+ 54 │        bash = lib.getExe pkgs.bash;
+    │          ╰── Unused let binding: bash
+Warning: Unused declarations were found.
+   ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/server_services/nextcloud.nix:7:22]
+ 7 │  inherit (builtins) readFile;
+   │                         ╰──── Unused let binding: readFile
+Warning: Unused declarations were found.
+    ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/modifier_imports/pi-firmware.nix:8:22]
+  8 │  inherit (builtins) map;
+    │                      ╰── Unused let binding: map
+  9 │  inherit (lib) mkOption getExe;
+    │                            ╰─── Unused let binding: getExe
+ 12 │  cfg = config.boot.raspi;
+    │   ╰── Unused let binding: cfg
+ 13 │  kernelSrc = pkgs.fetchFromGitHub {
+    │      ╰───── Unused let binding: kernelSrc
+Warning: Unused declarations were found.
+    ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/machines/display-2/default.nix:11:6]
+ 11 │    (final: super: {
+    │       ╰─── Unused lambda argument: final
+Warning: Unused declarations were found.
+    ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/machines/display-1/default.nix:89:6]
+ 89 │    (final: super: {
+    │       ╰─── Unused lambda argument: final
+Warning: Unused declarations were found.
+   ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/machines/display-0/default.nix:9:6]
+ 9 │    (final: super: {
+   │       ╰─── Unused lambda argument: final
+Warning: Unused declarations were found.
+    ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/machines/beta-one/1.nix:21:6]
+ 21 │    (final: super: {
+    │       ╰─── Unused lambda argument: final
+Warning: Unused declarations were found.
+    ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/lib/network-interfaces.nix:7:5]
+  7 │    mkMerge
+    │       ╰──── Unused let binding: mkMerge
+  9 │    splitString
+    │         ╰────── Unused let binding: splitString
+ 10 │    last
+    │      ╰── Unused let binding: last
+ 45 │      (name: iface: {
+    │         ╰── Unused lambda argument: name
+Warning: Unused declarations were found.
+    ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/lib/topology/mkWireguardSettings.nix:26:18]
+ 26 │      (hostname: machine:
+    │                    ╰──── Unused lambda argument: machine
+Warning: Unused declarations were found.
+    ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/lib/topology/mkHorizons.nix:26:28]
+ 26 │    hasAttr isAttrs isList isString length head tail elemAt
+    │               │       │       │                        ╰─── Unused let binding: elemAt
+    │               │       │       ╰──────────────────────────── Unused let binding: isString
+    │               │       ╰──────────────────────────────────── Unused let binding: isList
+    │               ╰──────────────────────────────────────────── Unused let binding: isAttrs
+ 27 │    elem filter attrNames attrValues map listToAttrs foldl'
+    │                                                        ╰─── Unused let binding: foldl'
+ 28 │    toString toJSON genList match substring typeOf;
+    │                │      │      │       │        ╰─── Unused let binding: typeOf
+    │                │      │      │       ╰──────────── Unused let binding: substring
+    │                │      │      ╰──────────────────── Unused let binding: match
+    │                │      ╰─────────────────────────── Unused let binding: genList
+    │                ╰────────────────────────────────── Unused let binding: toJSON
+ 31 │    flatten unique optionals optional filterAttrs concatStringsSep
+    │                       │         │         ╰────── Unused let binding: filterAttrs
+    │                       │         ╰──────────────── Unused let binding: optional
+    │                       ╰────────────────────────── Unused let binding: optionals
+Warning: Unused declarations were found.
+    ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/lib/topology/genNginx.nix:31:35]
+ 29 │      (vhostName: entries:
+    │           ╰───── Unused lambda argument: vhostName
+ 64 │      mkProxyHost = domain: proxyConfig:
+    │                       ╰─── Unused lambda argument: domain
+ 86 │      mkBaseHost = domain: baseConfig:
+    │                      ╰─── Unused lambda argument: domain
+Warning: Unused declarations were found.
+   ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/lib/topology/mkDnsSettings.nix:8:3]
+ 8 │  utils = import ./utils.nix { inherit lib; };
+   │    ╰─── Unused let binding: utils
+ 9 │  inherit (utils) safeLookup;
+   │                       ╰───── Unused let binding: safeLookup
+Warning: Unused declarations were found.
+    ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/lib/topology/mkDhcpDns.nix:23:11]
+ 23 │          name: host: if host ? mac && host ? ip && host ? hostname then "${host.mac},${host.ip},${host.hostname},infinite" else null
+    │            ╰── Unused lambda argument: name
+Warning: Unused declarations were found.
+     ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/lib/topology/validate.nix:13:5]
+  13 │    isInt
+     │      ╰─── Unused let binding: isInt
+  25 │    splitString
+     │         ╰────── Unused let binding: splitString
+  73 │      errors = [ ];
+     │         ╰─── Unused let binding: errors
+  90 │                  hostLabel = host.hostname or name;
+     │                      ╰───── Unused let binding: hostLabel
+ 125 │            allHostnames = lib.mapAttrsToList (name: host: host.hostname or null) hosts;
+     │                                                 ╰── Unused lambda argument: name
+ 372 │      wgRoutingHosts =
+     │             ╰─────── Unused let binding: wgRoutingHosts
+ 373 │        lib.filterAttrs (n: h: h ? routing && h.routing ? wireguard && h.routing.wireguard) allHosts;
+     │                         ╰─ Unused lambda argument: n
+ 374 │      wgRoutingHostnames = attrNames wgRoutingHosts;
+     │               ╰───────── Unused let binding: wgRoutingHostnames
+Warning: Unused declarations were found.
+     ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/lib/topology/genNftablesMatrix.nix:33:13]
+  33 │    elemAt toString hasAttr filter listToAttrs concatLists elem fromJSON match;
+     │               │       ╰──── Unused let binding: hasAttr
+     │               ╰──────────── Unused let binding: toString
+ 113 │      ifaceSubnetMap = listToAttrs (map
+     │             ╰─────── Unused let binding: ifaceSubnetMap
+Warning: Unused declarations were found.
+    ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/tests/topology/genNginx.nix:52:4]
+ 52 │  nginxEnabled = result.services.nginx.enabled or true
+    │        ╰────── Unused let binding: nginxEnabled
+Warning: Unused declarations were found.
+     ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/tests/topology/ponr-subset-equality.nix:25:51]
+  25 │    readFile fromJSON pathExists attrNames length head
+     │                                                    ╰── Unused let binding: head
+  26 │    elem filter listToAttrs mapAttrs mapAttrs' attrValues;
+     │      │     │        │          │        │          ╰───── Unused let binding: attrValues
+     │      │     │        │          │        ╰──────────────── Unused let binding: mapAttrs'
+     │      │     │        │          ╰───────────────────────── Unused let binding: mapAttrs
+     │      │     │        ╰──────────────────────────────────── Unused let binding: listToAttrs
+     │      │     ╰───────────────────────────────────────────── Unused let binding: filter
+     │      ╰─────────────────────────────────────────────────── Unused let binding: elem
+ 105 │  flatGet = dump: subkey:
+     │     ╰──── Unused let binding: flatGet
+Warning: Unused declarations were found.
+    ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/tests/topology/mkRegistry.nix:32:4]
+ 32 │  countWarningsWithSubstr = substr:
+    │             ╰──────────── Unused let binding: countWarningsWithSubstr
+Warning: Unused declarations were found.
+    ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/tests/topology/mkHorizons.nix:15:23]
+ 15 │  inherit (builtins) elem all length attrNames attrValues filter;
+    │                       │                            ╰───── Unused let binding: attrValues
+    │                       ╰────────────────────────────────── Unused let binding: elem
+ 18 │  testHubHorizon = hostname: {
+    │         ╰─────── Unused let binding: testHubHorizon
+ 43 │  testLeafHorizon = hostname: {
+    │         ╰──────── Unused let binding: testLeafHorizon
+Warning: Unused declarations were found.
+     ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/tests/topology/topology-derive.nix:22:22]
+  22 │  inherit (builtins) head attrNames length elem;
+     │                       │      ╰───── Unused let binding: attrNames
+     │                       ╰──────────── Unused let binding: head
+  84 │  f1HasLan0 = f1Ifaces ? lan0;
+     │      ╰───── Unused let binding: f1HasLan0
+  85 │  f1HasWireg0 = f1Ifaces ? wireg0;
+     │       ╰────── Unused let binding: f1HasWireg0
+ 128 │  f2Ifaces = f2.networking.interfaces or { };
+     │      ╰──── Unused let binding: f2Ifaces
+Warning: Unused declarations were found.
+   ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/tests/topology-validation.nix:9:22]
+ 9 │  inherit (validate) validateTopology validateCrossReferences;
+   │                             ╰──────── Unused let binding: validateTopology
+Warning: Unused declarations were found.
+    ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/modules/enable-wg-topology.nix:81:11]
+ 65 │    (name: host:
+    │       ╰── Unused lambda argument: name
+Warning: Unused declarations were found.
+     ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/modules/topology-derive.nix:23:34]
+  23 │    fromJSON readFile pathExists match elemAt
+     │                                   ╰─── Unused let binding: match
+  24 │    toString attrNames filter head tail genList length
+     │                                     │     │       ╰─── Unused let binding: length
+     │                                     │     ╰─────────── Unused let binding: genList
+     │                                     ╰───────────────── Unused let binding: tail
+  25 │    attrValues listToAttrs removeAttrs;
+     │         │          ╰────── Unused let binding: listToAttrs
+     │         ╰───────────────── Unused let binding: attrValues
+  28 │    hasPrefix hasSuffix optional optionals mapAttrs mapAttrs'
+     │                                     │         ╰──── Unused let binding: mapAttrs
+     │                                     ╰────────────── Unused let binding: optionals
+  54 │  prefixLengthFromSubnet = subnet:
+     │             ╰─────────── Unused let binding: prefixLengthFromSubnet
+  87 │  interfaceConfig = listToAttrs (map
+     │         ╰──────── Unused let binding: interfaceConfig
+ 407 │          (iface: rules: {
+     │             ╰─── Unused lambda argument: iface
+Warning: Unused declarations were found.
+     ╭─[/nix/store/bgf2mv32wmlcrqs37zdw785jbl6mrww0-source/flake.nix:54:10]
+  54 │        (name: host:
+     │           ╰── Unused lambda argument: name
+ 110 │          nix.package = lib.mkForce (determinate.inputs.nix.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: { doCheck = false; }));
+     │                                                                                                                                ╰── Unused lambda argument: old
+ 117 │            (final: prev: {
+     │               │      ╰── Unused lambda argument: prev
+     │               ╰───────── Unused lambda argument: final
+ 169 │                (final: super: {
+     │                   ╰─── Unused lambda argument: final
+ 193 │      mkLibVirtImage = { config, name, format ? "qcow2", partitionTableType ? "efi", installBootLoader ? true, touchEFIVars ? true, diskSize ? "auto", additionalSpace ? "2048M", copyChannel ? true }:
+     │             ╰─────── Unused let binding: mkLibVirtImage
+ 261 │        lib.filterAttrs (name: value: value != null) entries;
+     │                           ╰── Unused lambda argument: name
+ 542 │                (final: super: {
+     │                   ╰─── Unused lambda argument: final

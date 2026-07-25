@@ -735,7 +735,7 @@
           name = "run-deadnix";
           meta.description = "Detect dead Nix code";
           runtimeInputs = [ deadnix.packages.x86_64-linux.default ];
-          text = ''exec deadnix --no-lambda-pattern-names "${self}"'';
+          text = ''exec deadnix --fail --no-lambda-pattern-names "${self}"'';
         };
 
         # Network topology golden check for all machines
