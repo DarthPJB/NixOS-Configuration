@@ -5,7 +5,6 @@ This document describes the directory layout of the NixOS-Configuration reposito
 
 ## Root Level
 - `flake.nix` - Main flake definition with inputs, outputs, and system configurations
-- `topology.nix` - Incremental network topology (WIP two-layer architecture)
 - `configuration.nix` - Legacy NixOS configuration (may be minimal or transitional)
 - `AGENTS.md` - Instructions for AI agents working on this repository
 
@@ -13,15 +12,21 @@ This document describes the directory layout of the NixOS-Configuration reposito
 - `machines/` - Machine-specific NixOS configurations
   - One subdirectory per host (e.g., `cortex-alpha/`, `terminal-zero/`)
   - Each contains `default.nix` for primary config and `hardware-configuration.nix` for auto-generated hardware details
-- `real-topology/` - Per-machine topology data and golden tests
-  - `<machine>.nix` - Topology data (DNS, nginx, firewall, WireGuard, etc.)
-  - `golden/<machine>.json` - Golden test references (sacrosanct)
-  - `default.nix` - Golden test generator
+- `topology/` - Topology data (single source of truth)
+  - `shared.nix` - Shared topology data (WireGuard IPs, LAN IPs, hub relationships)
+  - `<machine>.nix` - Per-machine topology data (DNS, nginx, firewall, WireGuard, etc.)
+  - `default.nix` - Entry point, imports shared + per-machine files
+  - `external/` - Non-Nix-managed systems (APs, external PCs, WireGuard-only peers)
+- `goldens/` - Golden test files (sacrosanct)
+  - `<machine>.json` - Golden test references for each machine
 - `lib/topology/` - Topology transformation functions
   - `mk*.nix` - Transformers (topology data → flat settings)
   - `gen*.nix` - Generators (settings → NixOS config)
   - `validate.nix` - Topology validation
   - `utils.nix` - Shared utilities
+- `lib/serialize-config.nix` - The one config serializer (used by `dump-config` and `checks.network-config-*`)
+- `lib/golden_coverage.nix` - Coverage audit (separate tool; checks if every machine has a golden)
+- (Note: `lib/golden_generator.nix` is dead code from 2026-07-11 and should be deleted.)
 - `modules/` - NixOS modules
   - `core-router.nix` - Hub machine module (production architecture)
   - `enable-wg-topology.nix` - WireGuard client module (deployed on 13 machines)

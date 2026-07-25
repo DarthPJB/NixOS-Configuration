@@ -15,6 +15,10 @@
 # 4. nix build → fails with correct outputHash → plug it in.
 # 5. nix build again → success. Cached permanently.
 # ──────────────────────────────────────────────────────────────────────
+#
+# v1.1.1: Aether moa_type egg.id bug is fixed upstream — moa patch
+# no longer required. Aether 1.21.1-1.5.10-neoforge now ships correct
+# egg.id values (aether:blue_moa_egg, etc.) in moa_type/*.json.
 
 { minecraft-curseforge
 , fetchurl
@@ -22,19 +26,16 @@
 }:
 
 let
-  version = "1.0.1";
+  version = "1.1.1";
   src = fetchurl {
-    url = "https://mediafilez.forgecdn.net/files/8360/850/ServerFiles-${version}.zip";
-    hash = "sha256-FXK/iFkcwAJJwnZTnzvmzvKb9a8YM6KZfpJjPHxtLck=";
+    url = "https://mediafilez.forgecdn.net/files/8431/25/ServerFiles-${version}.zip";
+    hash = "sha256-3+mw6yldX6EPTwBNTZqVbINnM0r24b583wb8FPYhxaQ=";
   };
-  moaPatch = import ../patches/v1.0.1-moa-patch.nix { inherit lib version; };
 in
 minecraft-curseforge {
   name = "all-the-mons";
   inherit src;
-  postBuild = moaPatch;
 
   # Fixed-output hash of the built server directory.
-  # Nix will tell you the correct value on the first failed build.
-  outputHash = "sha256-1bDkPWWq8zknj0EJsXN4VLwsZygzLTHFU7WW/nH590A=";
+  outputHash = "sha256-yBEEiPi0MBPW1ChnxnJI4Cr0EIOg5+YxafwdUjJbrFE=";
 }

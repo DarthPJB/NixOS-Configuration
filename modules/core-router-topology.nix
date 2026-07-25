@@ -1,5 +1,13 @@
 # modules/core-router-topology.nix
-# Topology-driven configuration using new generators
+# Topology-driven configuration using WIP two-layer architecture (transformers -> generators).
+#
+# Architecture:
+#   - WireGuard (hub): uses production mkWireguardPeers.nix (reads explicit peer list from per-machine file)
+#   - WireGuard (clients): uses WIP mkWireguardSettings.nix via enable-wg-topology.nix (not this module)
+#   - DNS/Firewall/Nginx: uses WIP transformers + generators from per-machine topology
+#   - Forwarding/Tailscale/Monitoring: uses production transformers directly (no WIP pair needed)
+#
+# Must produce byte-identical golden output to modules/core-router.nix (production path).
 { config
 , lib
 , pkgs
@@ -8,50 +16,76 @@
 }:
 
 let
-  # Import topology (all machines)
-  topology = import ../topology.nix { inherit lib; };
-
-  # Compute settings for all services
-  wireguardSettings = (import ../lib/topology/mkWireguardSettings.nix { inherit lib; }) topology;
-  nginxSettings = (import ../lib/topology/mkNginxSettings.nix { inherit lib; }) topology;
-  firewallSettings = (import ../lib/topology/mkFirewallSettings.nix { inherit lib; }) topology;
-  dnsSettings = (import ../lib/topology/mkDnsSettings.nix { inherit lib; }) topology;
-
-  # Generate configs for current machine
   hostname = config.networking.hostName;
-  wireguardConfig = (import ../lib/topology/genWireguard.nix { inherit lib; }) wireguardSettings hostname;
-  nginxConfig = (import ../lib/topology/genNginx.nix { inherit lib; }) nginxSettings hostname;
-  firewallConfig = (import ../lib/topology/genFirewall.nix { inherit lib; }) firewallSettings hostname;
+
+  # --- Per-machine topology (detailed — all data for this machine) ---
+  machineTopology = import ../topology/${hostname}.nix { inherit lib self; };
+
+  # Wrap per-machine topology for transformer iteration pattern: { ${hostname} = topology; }
+  perMachineTopology = { ${hostname} = machineTopology; };
+
+  # --- Validation (same as production core-router.nix) ---
+  validator = import ../lib/topology/validate.nix { inherit lib; };
+  validation = validator.validateTopology machineTopology;
+  crossValidation = validator.validateCrossReferences machineTopology;
+
+  # --- WireGuard (production path — reads explicit peer list from per-machine file) ---
+  wireguardLib = (import ../lib/topology/mkWireguardPeers.nix) { inherit lib; } machineTopology self;
+
+  # --- WIP transformers (from per-machine topology) ---
+  dnsSettings = (import ../lib/topology/mkDnsSettings.nix { inherit lib; }) perMachineTopology;
+  firewallSettings = (import ../lib/topology/mkFirewallSettings.nix { inherit lib; }) perMachineTopology;
+  nginxSettings = (import ../lib/topology/mkNginxSettings.nix { inherit lib; }) perMachineTopology;
+
+  # --- WIP generators (settings + hostname -> NixOS config) ---
   dnsConfig = (import ../lib/topology/genDns.nix { inherit lib; }) dnsSettings hostname;
+  firewallConfig = (import ../lib/topology/genFirewall.nix { inherit lib; }) firewallSettings hostname;
+  nginxConfig = (import ../lib/topology/genNginx.nix { inherit lib; }) nginxSettings hostname;
 
-  # Collect all warnings and errors
-  allWarnings = wireguardSettings.warnings ++ nginxSettings.warnings ++ dnsSettings.warnings;
-  allErrors = wireguardSettings.errors ++ nginxSettings.errors ++ firewallSettings.errors ++ dnsSettings.errors;
+  # --- Production transformers (used directly — no WIP pair needed) ---
+  tailscaleLib = (import ../lib/topology/mkTailscaleConfig.nix { inherit lib; }) machineTopology;
+  forwardingLib = (import ../lib/topology/mkForwarding.nix { inherit lib; }) machineTopology;
+  monitoringLib = (import ../lib/topology/mkMonitoringSettings.nix { inherit lib; }) machineTopology;
 
-  # Is this machine a hub (serving clients)?
-  isHub = wireguardSettings.machines.${hostname}.isHub or false;
+  # --- Collect all warnings and errors ---
+  allWarnings =
+    (lib.optionals (validation.warnings != [ ]) (map (w: "topology: ${w}") validation.warnings))
+    ++ (lib.optionals (crossValidation.warnings != [ ]) (map (w: "cross-ref: ${w}") crossValidation.warnings))
+    ++ nginxSettings.warnings
+    ++ dnsSettings.warnings;
+  allErrors =
+    (lib.optionals (!validation.valid) [ "Invalid topology: ${builtins.concatStringsSep "; " validation.errors}" ])
+    ++ (lib.optionals (!crossValidation.valid) [ "Cross-ref failed: ${builtins.concatStringsSep "; " crossValidation.errors}" ])
+    ++ nginxSettings.errors
+    ++ firewallSettings.errors
+    ++ dnsSettings.errors;
 in
 {
   options.coreRouterTopology.enable = lib.mkOption {
     type = lib.types.bool;
     default = true;
-    description = "Enable topology-driven configuration using new generators";
+    description = "Enable topology-driven configuration using WIP two-layer generators";
   };
 
   config = lib.mkMerge [
-    # Assertions for validation
+    # --- Validation assertions (match production core-router.nix) ---
     {
       assertions = [
         {
-          assertion = config.coreRouterTopology.enable -> (builtins.elem hostname (builtins.attrNames wireguardSettings.machines));
-          message = "Machine ${hostname} not found in WireGuard topology";
+          assertion = config.coreRouterTopology.enable -> validation.valid;
+          message = "Invalid topology for ${hostname}: ${builtins.concatStringsSep "; " validation.errors}";
+        }
+        {
+          assertion = config.coreRouterTopology.enable -> crossValidation.valid;
+          message = "Cross-reference validation failed for ${hostname}: ${builtins.concatStringsSep "; " crossValidation.errors}";
         }
       ] ++ builtins.map
         (warning: {
           assertion = false;
           message = "Topology warning: ${warning}";
         })
-        allWarnings ++ builtins.map
+        allWarnings
+      ++ builtins.map
         (error: {
           assertion = false;
           message = "Topology validation error: ${error}";
@@ -59,36 +93,8 @@ in
         allErrors;
     }
 
-    # WireGuard configuration (hub and client)
-    (lib.mkIf (config.coreRouterTopology.enable && wireguardSettings.machines ? ${hostname}) {
-      networking.wireguard.enable = true;
-      networking.wireguard.interfaces = lib.mkOverride 100 wireguardConfig.networking.wireguard.interfaces;
-      # Set private key via secrix
-      secrix.services.wireguard-wireg0.secrets.${hostname}.encrypted.file =
-        ../../secrets/private_keys/wireguard/wg_${hostname};
-      networking.wireguard.interfaces.wireg0.privateKeyFile =
-        config.secrix.services.wireguard-wireg0.secrets.${hostname}.decrypted.path;
-    })
-
-    # Nginx configuration (hub only)
-    (lib.mkIf (config.coreRouterTopology.enable && isHub) {
-      services.nginx = lib.mkOverride 100 nginxConfig.services.nginx;
-      # Ensure nginx can read ACME certificates
-      users.users.nginx.extraGroups = [ "acme" ];
-    })
-
-    # Firewall configuration
+    # --- UDP GRO service (machine-specific, same as production) ---
     (lib.mkIf config.coreRouterTopology.enable {
-      networking.firewall = lib.mkOverride 100 firewallConfig.networking.firewall;
-    })
-
-    # DNS/DHCP configuration (hub only)
-    (lib.mkIf (config.coreRouterTopology.enable && isHub) {
-      services.dnsmasq = lib.mkOverride 100 dnsConfig.services.dnsmasq;
-    })
-
-    # UDP GRO service for Tailscale (hub only, assuming cortex-alpha has it)
-    (lib.mkIf (config.coreRouterTopology.enable && isHub && hostname == "cortex-alpha") {
       systemd.services.tailscale-udp-gro = {
         description = "Enable UDP GRO forwarding for tailscale performance on enp2s0";
         wantedBy = [ "multi-user.target" ];
@@ -99,6 +105,49 @@ in
           RemainAfterExit = true;
         };
       };
+    })
+
+    # --- WireGuard configuration (hub — production path, reads explicit peer list) ---
+    # Note: privateKeyFile and secrix secrets are set in the machine's default.nix
+    (lib.mkIf (config.coreRouterTopology.enable && machineTopology ? wireguard) {
+      networking.wireguard.enable = true;
+      networking.wireguard.interfaces = lib.mkOverride 100 {
+        ${machineTopology.wireguard.interface} = wireguardLib.mkWireguardPeers;
+      };
+    })
+
+    # --- Tailscale configuration ---
+    (lib.mkIf (config.coreRouterTopology.enable && machineTopology ? tailscale) {
+      services.tailscale = lib.mkOverride 100 tailscaleLib.config;
+    })
+
+    # --- DNS/DHCP configuration ---
+    (lib.mkIf (config.coreRouterTopology.enable && machineTopology ? dns) {
+      services.dnsmasq = lib.mkOverride 100 dnsConfig.services.dnsmasq;
+    })
+
+    # --- Firewall configuration ---
+    (lib.mkIf (config.coreRouterTopology.enable && machineTopology ? firewall) {
+      networking.firewall = lib.mkOverride 100 firewallConfig.networking.firewall;
+    })
+
+    # --- Port forwarding (nftables) ---
+    (lib.mkIf (config.coreRouterTopology.enable && machineTopology ? forwarding) {
+      networking.nftables.enable = lib.mkOverride 100 true;
+      networking.nftables.ruleset = lib.mkOverride 100 forwardingLib.nftablesRuleset;
+    })
+
+    # --- Nginx reverse proxy configuration (if proxies exist) ---
+    (lib.mkIf (config.coreRouterTopology.enable && machineTopology ? nginx && (machineTopology.nginx.proxies or { }) != { }) {
+      services.nginx.enable = lib.mkOverride 100 true;
+      services.nginx.virtualHosts = lib.mkOverride 100 nginxConfig.services.nginx.virtualHosts;
+      # Ensure nginx can read ACME certificates
+      users.users.nginx.extraGroups = [ "acme" ];
+    })
+
+    # --- Prometheus exporters configuration ---
+    (lib.mkIf (config.coreRouterTopology.enable && machineTopology ? monitoring) {
+      services.prometheus.exporters = lib.mkOverride 100 (monitoringLib.mkMonitoringConfig { });
     })
   ];
 }

@@ -16,7 +16,9 @@ let
 
   python = pkgs.python3.withPackages (ps: [ ps.prometheus-client ]);
 
-  # Build-time metadata — baked into the Nix store, deterministic per generation
+  # Build-time metadata — baked into the Nix store, deterministic per generation.
+  # Do NOT reference config.system.build.toplevel here (infinite recursion).
+  # System closure path is recorded at activation time into state.json instead.
   buildMetadata = pkgs.writeText "nixos-deployment-metadata.json" (builtins.toJSON {
     nixosVersion = config.system.nixos.version;
     nixosRelease = config.system.nixos.release;
@@ -24,6 +26,7 @@ let
     nixpkgsShortRev = self.inputs.nixpkgs_stable.shortRev or "dirty";
     flakeRevision = self.rev or "dirty";
     flakeShortRev = self.shortRev or "dirty";
+    flakeSource = builtins.unsafeDiscardStringContext (toString self.outPath);
     hostname = config.networking.hostName;
     stateVersion = config.system.stateVersion;
   });
@@ -56,6 +59,7 @@ let
         CollectorRegistry,
         Counter,
         Gauge,
+        Info,
         generate_latest,
     )
 
@@ -129,14 +133,21 @@ let
     # Global registry — metrics registered once
     registry = CollectorRegistry()
 
-    # Build-time metadata (info metrics — value always 1, labels carry data)
+    # Build-time + activation metadata (Info metrics replace labels cleanly)
     nixos_version = Gauge(
         'nixos_version_info', 'NixOS version information',
         ['version', 'release', 'state_version'], registry=registry,
     )
+    # Kept for dashboard compatibility (value=1, labels carry data)
     flake_info = Gauge(
         'nixos_flake_info', 'Flake and nixpkgs metadata from build time',
-        ['flake_revision', 'nixpkgs_revision', 'hostname'], registry=registry,
+        ['flake_revision', 'nixpkgs_revision', 'hostname', 'derivation_path'], registry=registry,
+    )
+    # Preferred: single Info series with system closure path from activation
+    system_info = Info(
+        'nixos_system',
+        'Active NixOS system closure and flake metadata',
+        registry=registry,
     )
 
     # Generation tracking
@@ -178,20 +189,44 @@ let
         """Read system state and update all metrics."""
         errors = 0
 
-        # Build-time metadata
+        # Build-time metadata + activation-recorded system path
+        state = {}
+        try:
+            state = load_json_file(STATE_FILE)
+        except Exception:
+            errors += 1
+
         try:
             meta = load_json_file(BUILD_METADATA_PATH)
+            system_path = (
+                state.get('system_path')
+                or meta.get('derivationPath')
+                or meta.get('flakeSource')
+                or 'unknown'
+            )
+            # Prefer short store hash for dashboards (full path still in system_path)
+            system_hash = system_path.rsplit('/', 1)[-1] if system_path else 'unknown'
             if meta:
                 nixos_version.labels(
                     version=meta.get('nixosVersion', 'unknown'),
                     release=meta.get('nixosRelease', 'unknown'),
                     state_version=meta.get('stateVersion', 'unknown'),
                 ).set(1)
+                # Single label set for derivation_path = active system closure path
                 flake_info.labels(
                     flake_revision=meta.get('flakeRevision', 'unknown'),
                     nixpkgs_revision=meta.get('nixpkgsRevision', 'unknown'),
-                    hostname=meta.get('hostname', 'unknown'),
+                    hostname=meta.get('hostname', state.get('hostname', 'unknown')),
+                    derivation_path=system_path,
                 ).set(1)
+                system_info.info({
+                    'hostname': meta.get('hostname', state.get('hostname', 'unknown')),
+                    'flake_revision': meta.get('flakeRevision', 'unknown'),
+                    'nixpkgs_revision': meta.get('nixpkgsRevision', 'unknown'),
+                    'system_path': system_path,
+                    'system_hash': system_hash,
+                    'generation': str(state.get('generation', "")),
+                })
         except Exception:
             errors += 1
 
@@ -208,12 +243,11 @@ let
         except Exception:
             errors += 1
 
-        # Activation timestamp
+        # Activation timestamp (Unix epoch seconds — dashboards must use dateTime units)
         try:
-            state = load_json_file(STATE_FILE)
             ts = state.get('activation_timestamp')
-            if ts is not None:
-                activation_timestamp.set(ts)
+            if ts is not None and int(ts) > 0:
+                activation_timestamp.set(int(ts))
         except Exception:
             errors += 1
 
@@ -308,17 +342,52 @@ in
       "d ${stateDir} 0755 root root -"
     ];
 
-    # Activation script — writes timestamp on every nixos-rebuild switch/test
+    # Activation script — writes timestamp + system closure path on every switch/test.
+    # system_path is the real /run/current-system target (content-addressed system drv output).
     system.activationScripts.nixos-deployment-state = {
       deps = [ "etc" ];
       text = ''
-        mkdir -p ${stateDir}
-        ${pkgs.coreutils}/bin/date +%s > ${stateDir}/activation-timestamp
-        ${pkgs.coreutils}/bin/date -Iseconds > ${stateDir}/activation-iso
-        ${pkgs.coreutils}/bin/printf '{"activation_timestamp":%d,"generation":%d,"hostname":"%s"}\n' \
-          "$(${pkgs.coreutils}/bin/date +%s)" \
-          "$(${pkgs.coreutils}/bin/readlink /nix/var/nix/profiles/system | ${pkgs.gnused}/bin/sed -n 's/.*system-\([0-9]*\)-link/\1/p')" \
-          "${config.networking.hostName}" \
+        ${lib.getExe' pkgs.coreutils "mkdir"} -p ${stateDir}
+        ts="$(${lib.getExe' pkgs.coreutils "date"} +%s)"
+        ${lib.getExe' pkgs.coreutils "printf"} '%s\n' "$ts" > ${stateDir}/activation-timestamp
+        ${lib.getExe' pkgs.coreutils "date"} -Iseconds > ${stateDir}/activation-iso
+        gen="$(${lib.getExe' pkgs.coreutils "readlink"} /nix/var/nix/profiles/system 2>/dev/null | ${lib.getExe pkgs.gnused} -n 's/.*system-\([0-9]*\)-link/\1/p')"
+        gen="''${gen:-0}"
+        system_path="$(${lib.getExe' pkgs.coreutils "readlink"} -f /run/current-system 2>/dev/null || true)"
+        if [ -z "$system_path" ]; then
+          system_path="$(${lib.getExe' pkgs.coreutils "readlink"} -f /nix/var/nix/profiles/system 2>/dev/null || true)"
+        fi
+        ${lib.getExe' pkgs.coreutils "printf"} \
+          '{"activation_timestamp":%s,"generation":%s,"hostname":"%s","system_path":"%s"}\n' \
+          "$ts" "$gen" "${config.networking.hostName}" "$system_path" \
+          > ${stateFile}
+      '';
+    };
+
+    # Also refresh state when the exporter starts (covers first boot / upgraded module)
+    systemd.services.nixos-deployment-state-write = {
+      description = "Write NixOS deployment activation state for exporter";
+      wantedBy = [ "multi-user.target" ];
+      before = [ "nixos-deployment-exporter.service" ];
+      after = [ "local-fs.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+      };
+      script = ''
+        ${lib.getExe' pkgs.coreutils "mkdir"} -p ${stateDir}
+        ts="$(${lib.getExe' pkgs.coreutils "date"} +%s)"
+        ${lib.getExe' pkgs.coreutils "printf"} '%s\n' "$ts" > ${stateDir}/activation-timestamp
+        ${lib.getExe' pkgs.coreutils "date"} -Iseconds > ${stateDir}/activation-iso
+        gen="$(${lib.getExe' pkgs.coreutils "readlink"} /nix/var/nix/profiles/system 2>/dev/null | ${lib.getExe pkgs.gnused} -n 's/.*system-\([0-9]*\)-link/\1/p')"
+        gen="''${gen:-0}"
+        system_path="$(${lib.getExe' pkgs.coreutils "readlink"} -f /run/current-system 2>/dev/null || true)"
+        if [ -z "$system_path" ]; then
+          system_path="$(${lib.getExe' pkgs.coreutils "readlink"} -f /nix/var/nix/profiles/system 2>/dev/null || true)"
+        fi
+        ${lib.getExe' pkgs.coreutils "printf"} \
+          '{"activation_timestamp":%s,"generation":%s,"hostname":"%s","system_path":"%s"}\n' \
+          "$ts" "$gen" "${config.networking.hostName}" "$system_path" \
           > ${stateFile}
       '';
     };
@@ -327,7 +396,11 @@ in
     systemd.services.nixos-deployment-exporter = {
       description = "NixOS Deployment State Prometheus Exporter";
       wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" ];
+      after = [
+        "network.target"
+        "nixos-deployment-state-write.service"
+      ];
+      requires = [ "nixos-deployment-state-write.service" ];
 
       serviceConfig = {
         Type = "simple";

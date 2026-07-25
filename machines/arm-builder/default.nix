@@ -89,4 +89,27 @@
   # smartd can't detect SMART through the USB-NVMe bridge — disable it.
   # smartctl_exporter (from metrics.nix) handles USB devices directly.
   services.smartd.enable = false;
+
+  # FlakeHub token for Determinate Nix — arm-builder disables configuration.nix
+  # so we duplicate the fleet-wide secrix binding here.
+  secrix.services.determinate-flakehub-login.secrets.flakehub-token.encrypted.file =
+    "${self}/secrets/flakehub_token";
+
+  systemd.services.determinate-flakehub-login =
+    let
+      determinate-nixd = self.inputs.determinate.packages.${pkgs.stdenv.hostPlatform.system}.default;
+    in
+    {
+      description = "Login to FlakeHub via Determinate Nix daemon";
+      after = [ "nix-daemon.service" ];
+      requires = [ "nix-daemon.service" ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+      };
+      script = ''
+        ${lib.getExe' determinate-nixd "determinate-nixd"} login token \
+          --token-file /run/determinate-flakehub-login-keys/flakehub-token
+      '';
+    };
 }

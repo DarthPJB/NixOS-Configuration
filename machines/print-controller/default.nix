@@ -35,4 +35,9 @@
       enable = false;
     };
   };
+
+  # SD-card Pi / no reliable SMART devices — same pattern as arm-builder / display hosts.
+  # Leaving smartd enabled causes switch-to-configuration to fail with exit 17.
+  services.smartd.enable = lib.mkForce false;
+  services.prometheus.exporters.smartctl.enable = lib.mkForce false;
 }

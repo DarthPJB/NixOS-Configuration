@@ -1,12 +1,15 @@
 # CI Configuration Module for NixOS Configuration Repository
 # Generates GitHub Actions workflow from Nix evaluation
-{ self
-, lib
+{ lib
 , pkgs
+, parallelism ? { }
 , ...
 }:
 
 let
+  # Import ketchup CI library for generic functions
+  ciLib = import ./lib/ci_library.nix { inherit lib pkgs; };
+
   # Machine categories for CI matrix
   x86Machines = [
     "terminal-zero"
@@ -21,13 +24,34 @@ let
     "remote-builder"
   ];
 
-  armMachines = [
-    "arm-builder"
+  # Native aarch64 builds — evaluated on aarch64 runner
+  armNativeMachines = [
     "display-1"
     "display-2"
     "print-controller"
-    "beta-one" # Added: armv7l-linux machine
   ];
+
+  # Cross-compiled from x86_64 — evaluated on x86_64 runner, targets ARM
+  armCrossMachines = [
+    "arm-builder" # aarch64, buildPlatform=x86_64-linux
+    "beta-one" # armv7l, buildPlatform=x86_64-linux
+  ];
+
+  # All ARM machines (for workflow_dispatch input)
+  armMachines = armNativeMachines ++ armCrossMachines;
+
+  # Pre-computed nix options per system type
+  x86NixOptions = ciLib.formatNixOptions "x86-default" "x86_64-linux" parallelism;
+  armNativeNixOptions = ciLib.formatNixOptions "arm-native" "aarch64-linux" parallelism;
+  armCrossNixOptions = ciLib.formatNixOptions "arm-cross" "x86_64-linux" parallelism;
+
+  # Pre-computed GitHub Actions max-parallel per system
+  x86Settings = ciLib.resolveNixSettings "x86-default" "x86_64-linux" parallelism;
+  armNativeSettings = ciLib.resolveNixSettings "arm-native" "aarch64-linux" parallelism;
+  armCrossSettings = ciLib.resolveNixSettings "arm-cross" "x86_64-linux" parallelism;
+  x86MaxParallel = x86Settings.max-parallel or null;
+  armNativeMaxParallel = armNativeSettings.max-parallel or null;
+  armCrossMaxParallel = armCrossSettings.max-parallel or null;
 
   # CI job definitions
   ciJobs = {
@@ -50,6 +74,24 @@ let
           name = "Flake check";
           run = "nix flake check";
         }
+
+        # Eval profiler — generates flamegraph of flake evaluation
+        # Diagnostic step: identifies eval bottlenecks (topology, module system, inputs)
+        {
+          name = "Profile evaluation";
+          run = ''
+            nix build --option eval-profiler flamegraph \
+                      --option eval-profile-file /tmp/eval-profile \
+                      --option builders "" \
+                      .#nixosConfigurations.remote-builder.config.system.build.toplevel \
+                      --dry-run 2>&1 || true
+            if [ -f /tmp/eval-profile ]; then
+              echo "=== Eval profile (top 20 stacks) ==="
+              sort -rn -k2 /tmp/eval-profile | head -20
+            fi
+          '';
+          "continue-on-error" = true;
+        }
         {
           name = "Dead code check";
           run = "nix shell nixpkgs#deadnix -c deadnix .";
@@ -58,60 +100,35 @@ let
       ];
     };
 
-    # Build matrix for x86_64 machines
-    # Uses self-hosted runner for private flake input access
-    build-x86 = {
-      needs = [
-        "validation"
-        "security"
-      ]; # Added: enforce job hierarchy
+    # Build matrix for x86_64 machines — all-at-once for shared derivation benefit
+    build-x86 = ciLib.mkMatrixJob {
       name = "Build x86_64 Configurations";
-      runs-on = "self-hosted";
-      strategy = {
-        fail-fast = false;
-        matrix = {
-          machine = x86Machines;
-        };
-      };
-      steps = [
-        {
-          name = "Checkout";
-          uses = "actions/checkout@v4";
-        }
-
-        {
-          name = "Build configuration";
-          run = "nix build .#nixosConfigurations.\${{ matrix.machine }}.config.system.build.toplevel";
-        }
-      ];
+      machines = x86Machines;
+      system = "x86_64-linux";
+      nixOptions = x86NixOptions;
+      maxParallel = x86MaxParallel;
+      needs = [ "validation" "security" ];
+      timeout-minutes = 720; # 12h — LINDA cold-cache builds take ~6h
     };
 
-    # Build matrix for ARM machines
-    # Uses self-hosted runner for private flake input access
-    build-arm = {
-      needs = [
-        "validation"
-        "security"
-      ]; # Added: enforce job hierarchy
-      name = "Build ARM Configurations";
-      runs-on = "self-hosted";
-      strategy = {
-        fail-fast = false;
-        matrix = {
-          machine = armMachines;
-        };
-      };
-      steps = [
-        {
-          name = "Checkout";
-          uses = "actions/checkout@v4";
-        }
+    # Build matrix for native ARM machines — evaluated on aarch64 runner
+    build-arm-native = ciLib.mkMatrixJob {
+      name = "Build ARM (native aarch64)";
+      machines = armNativeMachines;
+      system = "aarch64-linux";
+      nixOptions = armNativeNixOptions;
+      maxParallel = armNativeMaxParallel;
+      needs = [ "validation" "security" ];
+    };
 
-        {
-          name = "Build configuration";
-          run = "nix build .#nixosConfigurations.\${{ matrix.machine }}.config.system.build.toplevel";
-        }
-      ];
+    # Build matrix for cross-compiled ARM machines — evaluated on x86_64, targets ARM
+    build-arm-cross = ciLib.mkMatrixJob {
+      name = "Build ARM (cross-compiled from x86_64)";
+      machines = armCrossMachines;
+      system = "x86_64-linux";
+      nixOptions = armCrossNixOptions;
+      maxParallel = armCrossMaxParallel;
+      needs = [ "validation" "security" ];
     };
 
     # Security scan
@@ -178,8 +195,9 @@ let
         "validation"
         "security"
         "build-x86"
-        "build-arm"
-      ]; # Added: full dependency chain
+        "build-arm-native"
+        "build-arm-cross"
+      ];
       name = "Deploy - \${{ github.event.inputs.machine }}";
       runs-on = "self-hosted";
       "if" = "github.event_name == 'workflow_dispatch'";
@@ -192,8 +210,20 @@ let
 
         {
           name = "Build configuration";
-          # CHANGED: Use selected machine from input
-          run = "nix build .#nixosConfigurations.\${{ github.event.inputs.machine }}.config.system.build.toplevel";
+          run = ''
+            MACHINE="''${{ github.event.inputs.machine }}"
+            ARM_NATIVE="display-1 display-2 print-controller"
+            ARM_CROSS="arm-builder beta-one"
+
+            if echo "$ARM_NATIVE" | grep -qw "$MACHINE"; then
+              NIX_OPTS="${armNativeNixOptions}"
+            elif echo "$ARM_CROSS" | grep -qw "$MACHINE"; then
+              NIX_OPTS="${armCrossNixOptions}"
+            else
+              NIX_OPTS="${x86NixOptions}"
+            fi
+            nix build "$NIX_OPTS" ".#nixosConfigurations.$MACHINE.config.system.build.toplevel"
+          '';
         }
         {
           name = "Test deployment";
@@ -205,29 +235,16 @@ let
           "if" = "github.event.inputs.action == 'deploy'";
           run = "nix run .#\${{ github.event.inputs.machine }} -- switch";
         }
-        {
-          name = "Upload deployment logs";
-          "if" = "always()"; # Upload even if deployment fails
-          uses = "actions/upload-artifact@v4";
-          "with" = {
-            name = "deploy-\${{ github.event.inputs.machine }}-logs";
-            path = "/tmp/deploy-*.log";
-            retention-days = "30";
-          };
-        }
       ];
     };
   };
 
-  # Generate GitHub Actions YAML
-  generateGitHubActions = {
+  # Assemble workflow using ketchup generator with Bargman-specific data
+  generateGitHubActions = ciLib.generateGitHubActions {
     name = "NixOS CI/CD";
     on = {
       push = {
-        branches = [
-          "main"
-          "jb/ai/overlord-8"
-        ];
+        branches = [ "main" ];
         paths = [
           "**.nix"
           "flake.lock"
@@ -263,13 +280,15 @@ let
         };
       };
     };
-
     permissions = {
       contents = "read";
       deployments = "write";
     };
-
     jobs = ciJobs;
+    concurrency = {
+      group = "\${{ github.workflow }}-\${{ github.ref }}";
+      "cancel-in-progress" = true;
+    };
   };
 
 in
@@ -288,29 +307,5 @@ in
 
     # Job definitions
     jobs = ciJobs;
-  };
-
-  # Helper functions for CI
-  ciHelpers = {
-    # Generate matrix for a specific machine type
-    mkMatrix = machines: {
-      inherit machines;
-      include = map
-        (machine: {
-          inherit machine;
-          system = if builtins.elem machine armMachines then "aarch64-linux" else "x86_64-linux";
-        })
-        machines;
-    };
-
-    # Generate deployment command
-    mkDeployCommand =
-      machine: action:
-      if action == "deploy" then
-        "nix run .#${machine} -- switch"
-      else if action == "test" then
-        "nix run .#${machine}"
-      else
-        "nix build .#nixosConfigurations.${machine}.config.system.build.toplevel";
   };
 }

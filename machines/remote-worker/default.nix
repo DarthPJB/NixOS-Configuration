@@ -14,7 +14,6 @@ in
   imports = [
     ./hardware-configuration.nix
     # ../../configuration.nix — already in commonModules (flake.nix), do not duplicate
-    ../../locale/tailscale.nix
     ../../server_services/nextcloud.nix
     ../../users/build.nix
     ../../services/dynamic_domain_gandi.nix
@@ -26,9 +25,17 @@ in
   security.acme.defaults.email = "commander@johnbargman.net";
   # trigger the actual certificate generation for your hostname
   security.acme.certs."johnbargman.net" = {
+    # dnsProvider must be explicit — nginx module's mkOverride 2000 null
+    # overrides the inherited default. See acme_server.nix for rationale.
+    dnsProvider = "gandiv5";
+    environmentFile = config.secrix.system.secrets.dns01.decrypted.path;
+    webroot = null;
     extraDomainNames = [ "*.johnbargman.net" ]; # johnbargman.com"];
   };
   security.acme.certs."johnbargman.com" = {
+    dnsProvider = "gandiv5";
+    environmentFile = config.secrix.system.secrets.dns01.decrypted.path;
+    webroot = null;
     extraDomainNames = [ "*.johnbargman.com" ]; # johnbargman.com"];
   };
 
@@ -72,7 +79,7 @@ in
         forceSSL = true;
         listenAddresses = [ "10.88.127.50" ];
         locations."/" = {
-          root = personal-site.packages.${pkgs.system}.webroot;
+          root = personal-site.packages.${pkgs.stdenv.hostPlatform.system}.webroot;
         };
       };
     };

@@ -186,10 +186,31 @@ ping 10.88.127.42
 ssh -p 1108 deploy@10.88.127.42
 ```
 
+## Determinate Nix and Cross-Compilation
+
+**Critical:** The bootstrap image (`arm-bootstrap`) must NOT include Determinate Nix. It is cross-compiled from x86_64 and the Determinate Nix daemon (`determinate-nixd`) cannot be cross-compiled — it must be built natively on aarch64.
+
+**Bootstrap → Actual config transition:**
+1. `arm-bootstrap` is built with `dt = false` (no Determinate Nix) — cross-compiled, minimal, just gets the device on the network
+2. `arm-builder` (and other aarch64 machines) use `dt = true` (Determinate Nix) — the daemon is built natively on the remote builder during the first deployment
+3. The local x86_64 host runs Determinate Nix — all remote builders MUST also run Determinate Nix to avoid protocol mismatches
+
+**Why this matters:**
+- The local host's `nix` client speaks the Determinate protocol
+- Remote builders running standard `nix-daemon` cause `error: protocol mismatch` failures
+- The Determinate Nix daemon must be built natively (not cross-compiled) — so the bootstrap image can't include it
+- After the first deployment with `dt = true`, the remote builder will have `determinate-nixd` and can serve as a builder for subsequent cross-compiled deployments
+
+**Configuration:**
+- `mkAarch64` default is `dt ? true` — all aarch64 machines get Determinate Nix by default
+- `arm-bootstrap` is built separately (not via `mkAarch64`) with no Determinate Nix
+- `arm-builder` has explicit `dt = true` in `flake.nix` for safety (it IS the remote builder)
+
 ## Key Points
 
 - **Bootstrap image is generic** — one image for ALL ARM devices
 - **No WireGuard in bootstrap** — WG is part of the actual config
+- **No Determinate Nix in bootstrap** — daemon must be built natively, not cross-compiled
 - **Host key extraction is critical** — secrix needs the actual host key for encryption
 - **Deploy over LAN first** — then switch to WireGuard for future deployments
 - **Each device needs unique keys** — never reuse WireGuard or SSH host keys
@@ -197,6 +218,7 @@ ssh -p 1108 deploy@10.88.127.42
 - **Always encrypt with `-u John88`** — never encrypt with `-s hostname` only
 - **Use `NIX_SSHOPTS="-p 22"`** — for deployment to bootstrap image (port 22)
 - **Use `nixos-rebuild`** — not `nix run .#deploy.<hostname>` (that syntax is wrong)
+- **Remote builders must run Determinate Nix** — protocol mismatch with standard nix-daemon
 
 ## Lessons Learned
 

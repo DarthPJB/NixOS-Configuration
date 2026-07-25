@@ -14,13 +14,10 @@ in
 
 {
   imports = [
-    #  ../../lib/network-interfaces.nix
     ../../services/dynamic_domain_gandi.nix
     (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
     ../../server_services/ldap.nix
-    # ../../configuration.nix — already in commonModules (flake.nix), do not duplicate
-    ../../locale/tailscale.nix
-    ../../modules/core-router.nix
+    ../../modules/core-router-topology.nix
     # NOTE: enable-wg.nix is for WireGuard CLIENTS, not the hub
     # The hub's WireGuard config comes from core-router.nix via topology
     ./hardware-configuration.nix
@@ -41,6 +38,11 @@ in
   security.acme = {
     defaults.email = "commander@johnbargman.net";
     certs."johnbargman.net" = {
+      # dnsProvider must be explicit — nginx module's mkOverride 2000 null
+      # overrides the inherited default. See acme_server.nix for rationale.
+      dnsProvider = "gandiv5";
+      environmentFile = config.secrix.system.secrets.dns01.decrypted.path;
+      webroot = null;
       extraDomainNames = [ "*.johnbargman.net" ]; # johnbargman.com"];
     };
   };
@@ -79,6 +81,10 @@ in
   # WireGuard private key management via secrix
   secrix.services.wireguard-wireg0.secrets.cortex-alpha.encrypted.file =
     ../../secrets/private_keys/wireguard/wg_cortex-alpha;
+  secrix.services.tailscaled.secrets.auth-key.encrypted.file =
+    ../../secrets/tailscale_auth_key;
+  services.tailscale.authKeyFile =
+    config.secrix.services.tailscaled.secrets.auth-key.decrypted.path;
   networking = {
     nat.enable = lib.mkForce false;
     nftables = {

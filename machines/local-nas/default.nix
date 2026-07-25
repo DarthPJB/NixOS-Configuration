@@ -6,6 +6,12 @@
 , ...
 }:
 {
+  # MinIO is marked insecure (abandoned upstream, multiple CVEs).
+  # Required for S3-compatible storage on the local network.
+  nixpkgs.config.permittedInsecurePackages = [
+    "minio-2025-10-15T17-29-55Z"
+  ];
+
   imports = [
     # ../../configuration.nix — already in commonModules (flake.nix), do not duplicate
     ../../server_services/gitolite.nix
@@ -35,6 +41,7 @@
   boot.kernel.sysctl = {
     "fs.inotify.max_user_watches" = "1048576"; # 128 times the default 8192
   };
+  boot.zfs.forceImportRoot = lib.mkForce true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.extraPools = [

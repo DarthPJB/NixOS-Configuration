@@ -7,7 +7,7 @@
 }:
 
 let
-  topology = import ../topology.nix { inherit lib; };
+  topology = import ../topology/shared.nix { inherit lib; };
   wireguardSettings = (import ../lib/topology/mkWireguardSettings.nix { inherit lib; }) topology;
   hostname = config.networking.hostName;
   machineExists = wireguardSettings.machines ? ${hostname};

@@ -5,13 +5,13 @@ This document explains how NixOS configurations are organized in this repository
 
 ## Architecture Overview
 
-The repository uses a **topology-driven architecture** for network configuration. Network topology data lives in `real-topology/<machine>.nix` files, transformation functions in `lib/topology/` convert topology data to NixOS config, and golden tests in `real-topology/golden/` validate output. See `AGENTS.md` for full architecture details.
+The repository uses a **topology-driven architecture** for network configuration. Network topology data lives in `topology/<machine>.nix` files (with shared data in `topology/shared.nix`), transformation functions in `lib/topology/` convert topology data to NixOS config, and golden tests in `goldens/` validate output. See `AGENTS.md` for full architecture details.
 
 ## Module Organization
 - **Flake-based**: All configurations use Nix flakes for reproducibility
 - **Modular imports**: Configurations import from `environments/`, `services/`, and `lib/`
 - **Machine-specific**: Each machine in `machines/` has its own config importing shared modules
-- **Topology-driven**: Network config derived from `real-topology/` via `lib/topology/` transformers
+- **Topology-driven**: Network config derived from `topology/` via `lib/topology/` transformers
 
 ## File Patterns
 - **Options first**: Each module starts with `options` block defining configurable settings

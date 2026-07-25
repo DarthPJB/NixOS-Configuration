@@ -15,7 +15,7 @@ let
   graphana-dn = "grafana.${fqdn}";
 
   # Import topology to generate scrape targets
-  topology = import ../topology.nix { inherit lib; };
+  topology = import ../topology/shared.nix { inherit lib; };
   deploymentExporterPort = toString config.services.nixos-deployment-exporter.port;
   deploymentTargets = map
     (name: "${topology.${name}.wireguard}:${deploymentExporterPort}")
@@ -27,6 +27,7 @@ in
     enable = true;
     listenAddress = "${listen-addr}";
     port = 8080;
+    retentionTime = "0d";
     globalConfig.scrape_interval = "30s";
     scrapeConfigs = [
       {
@@ -178,10 +179,22 @@ in
     webExternalUrl = "https://${prometheus-dn}";
   };
 
-  services.grafana = {
+  # Grafana secret_key — encrypted via secrix, decrypted at runtime
+  secrix.system.secrets.grafana_secret_key = {
+    encrypted.file = ../secrets/grafana_secret_key;
+    decrypted = {
+      user = "grafana";
+      group = "grafana";
+      mode = "0400";
+    };
+  };
 
+  services.grafana = {
     enable = true;
     settings = {
+      # secret_key is required since nixpkgs 26.05 — no default provided.
+      # Uses Grafana's file:// provider to read from secrix-managed secret.
+      security.secret_key = "file://${config.secrix.system.secrets.grafana_secret_key.decrypted.path}";
       server = {
         protocol = "http";
         http_addr = "10.88.127.3";
@@ -191,23 +204,36 @@ in
       };
       analytics.reporting_enabled = false;
     };
-    provision.dashboards.settings.providers = [
-      {
-        updateInterfalSeconds = 5;
-        options = {
-          path = ./graphana_dashboards;
-          foldersFromFilesStructure = true;
-        };
-      }
-    ];
-    provision.datasources.settings.datasources = [
-      {
-        name = "prometheus";
-        type = "prometheus";
-        uid = "prometheus01";
-        url = config.services.prometheus.webExternalUrl;
-      }
-    ];
+    provision = {
+      enable = true;
+      dashboards.settings.providers = [
+        {
+          name = "default";
+          type = "file";
+          updateIntervalSeconds = 300; # 5m — standard poll duration
+          allowUiUpdates = false;
+          disableDeletion = false;
+          options = {
+            path = ./graphana_dashboards;
+            foldersFromFilesStructure = true;
+          };
+        }
+      ];
+      datasources.settings = {
+        apiVersion = 1;
+        prune = true;
+        datasources = [
+          {
+            name = "prometheus";
+            type = "prometheus";
+            uid = "prometheus01";
+            access = "proxy";
+            editable = false;
+            url = config.services.prometheus.webExternalUrl;
+          }
+        ];
+      };
+    };
   };
   networking.firewall.allowedTCPPorts = [
     config.services.prometheus.port

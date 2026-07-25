@@ -1,15 +1,12 @@
 { lib }:
 # genFirewall: settings -> hostname -> NixOS networking.firewall config
-# settings is the output of mkFirewallSettings
-# Returns the firewall configuration
+# Produces the same firewall config as production core-router.nix:
+#   networking.firewall = lib.mkOverride 100 topology.firewall;
 settings: hostname:
 let
-  machineSettings = settings.machines.${hostname};
+  machineSettings = settings.machines.${hostname} or null;
 in
+if machineSettings == null then { } else
 {
-  networking.firewall = {
-    allowedTCPPorts = machineSettings.tcpPorts;
-    allowedUDPPorts = machineSettings.udpPorts;
-    interfaces = machineSettings.interfaces;
-  };
+  networking.firewall = machineSettings.firewall;
 }

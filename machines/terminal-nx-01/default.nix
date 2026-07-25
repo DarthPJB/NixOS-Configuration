@@ -46,7 +46,7 @@
     };
     wireless = {
       enable = true; # Enables wireless support via wpa_supplicant.
-      userControlled.enable = true;
+      userControlled = true;
       interfaces = [ "wlp3s0" ];
     };
   };

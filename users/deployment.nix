@@ -28,8 +28,8 @@
     '';
   };
   systemd.tmpfiles.rules = [
-    "d /tmp/deploy 0755 deploy deploy -"
-    "Z /tmp/deploy 0755 deploy deploy - -"
+    "d /tmp/deploy 0755 deploy users -"
+    "Z /tmp/deploy 0755 deploy users - -"
   ];
   security.sudo.extraRules = [
     {

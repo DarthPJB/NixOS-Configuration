@@ -13,7 +13,6 @@
     ../../services/ollama.nix
     ../../services/litellm.nix
     ../../services/gitlab-credentials.nix
-    ../../services/github-runner-nixos-config.nix
     ../../modules/enable-wg-topology.nix
     ../../lib/rclone-target.nix
     ../../environments/i3wm_darthpjb.nix
@@ -29,7 +28,6 @@
     ../../environments/audio_visual_editing.nix
     ../../environments/general_fonts.nix
     ../../environments/video_call_streaming.nix
-    ../../locale/tailscale.nix
     ../../locale/input-methods.nix
     ../../environments/rtl-sdr.nix
     ../../modifier_imports/bluetooth.nix
@@ -96,13 +94,12 @@
             "+ .config/vivaldi/search_engines_prompt.json"
             "- .config/vivaldi/**"
             "- .config/**"
-            # Include essential directories
-            "+ .gnupg/**"
-            "+ .ssh/**"
-            "+ .mozilla/**"
-            "+ .thunderbird/**"
+            "- .gnupg/**"
+            "- .ssh/**"
+            "- .mozilla/**"
+            "- .thunderbird/**"
             "+ Pictures/**"
-            "+ Monero/**"
+            "0 Monero/**"
             # Exclude everything else
             "- .cache/**"
             "- .local/**"
@@ -203,7 +200,7 @@
   };
   services.printing.enable = true;
   services.guix.enable = true;
-  programs.adb.enable = true;
+  #programs.adb.enable = true;
   users.users.John88.extraGroups = [ "adbusers" ];
   systemd.user.services = {
     obsidian = {
@@ -266,7 +263,7 @@
     ];
     loader = {
       systemd-boot.enable = true;
-      systemd-boot.configurationLimit = 10;
+      systemd-boot.configurationLimit = 1;
       efi.canTouchEfiVariables = true;
     };
     initrd = {
@@ -278,12 +275,9 @@
         "usbhid"
         "uas"
         "sd_mod"
+        "nvidia-drm"
       ];
-      kernelModules = [
-        "nvidia"
-        "nvidia_modeset"
-        "nvidia_drm"
-      ];
+      kernelModules = [ ];
     };
     #kernelPackages= pkgs.linuxPackages_5_18;
     kernelModules = [
@@ -359,7 +353,7 @@
       nvidiaSettings = true;
       open = false;
       modesetting.enable = true;
-      powerManagement.enable = true;
+      powerManagement.enable = false;
     };
   };
 
@@ -444,40 +438,109 @@
     useDHCP = false;
     wireless = {
       enable = false; # Enables wireless support via wpa_supplicant.
-      userControlled.enable = true;
+      userControlled = true;
       interfaces = [ "wlp72s0" ];
     };
   };
 
   # secrix secret declarations for MCP tokens
-  # DISABLED for overlord-I — re-enable and test as part of overlord-II
-  # secrix.system.secrets.github-PAT-token.encrypted.file =
-  #   "${self}/secrets/github-PAT-token";
-  # secrix.system.secrets.gitlab-PAT-token.encrypted.file =
-  #   "${self}/secrets/gitlab-PAT-token";
+  secrix.system.secretsDir = {
+    permissions = "0555";
+    user = "root";
+    group = "users";
+  };
+  secrix.system.secrets.github-PAT-token = {
+    encrypted.file = "${self}/secrets/github-PAT-token";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
+  secrix.system.secrets.gitlab-PAT-token = {
+    encrypted.file = "${self}/secrets/gitlab-PAT-token";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
+  secrix.system.secrets.openrouter-master-token = {
+    encrypted.file = "${self}/secrets/openrouter-master-token";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
+  secrix.system.secrets.LINDA-openCODE-token = {
+    encrypted.file = "${self}/secrets/LINDA-openCODE-token";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
+  secrix.system.secrets.LINDA-xAI-token = {
+    encrypted.file = "${self}/secrets/LINDA-xAI-token";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
+  secrix.system.secrets.mimo-token-plan-ai-key = {
+    encrypted.file = "${self}/secrets/mimo-token-plan-ai-key";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
 
   # OpenCode fleet configuration — full fleet with MCP servers
-  # DISABLED for overlord-I — re-enable and test as part of overlord-II
-  # services.opencode-fleet = {
-  #   enable = true;
-  #   voyagerOnly = false; # Full fleet
-  #   mcp.git.enable = true;
-  #   mcp.filesystem.enable = true;
-  #   mcp.time.enable = true;
-  #   mcp.sqlite.enable = true;
-  #   mcp.playwright.enable = true;
-  #   mcp.github = {
-  #     enable = true;
-  #     tokenFile = config.secrix.system.secrets.github-PAT-token.decrypted.path;
-  #   };
-  #   mcp.gitlab = {
-  #     enable = true;
-  #     tokenFile = config.secrix.system.secrets.gitlab-PAT-token.decrypted.path;
-  #   };
-  #   mcp.prometheus = {
-  #     enable = true;
-  #     prometheusUrl = "http://10.88.127.3:8080";
-  #   };
-  # };
+  services.opencode-fleet = {
+    enable = true;
+    user = "John88";
+    mcp.git = {
+      enable = true;
+      extraArgs = [ "--repository" "/home/pokej/NixOS-Configuration" ];
+    };
+    mcp.filesystem = {
+      enable = true;
+      paths = [ "/home/pokej" "/speed-storage" "/nix/store" "/home/pokej/NixOS-Configuration" ];
+    };
+    mcp.time.enable = true;
+    mcp.sqlite.enable = true;
+    mcp.playwright.enable = true;
+    mcp.github = {
+      enable = true;
+      tokenFile = config.secrix.system.secrets.github-PAT-token.decrypted.path;
+    };
+    mcp.gitlab = {
+      enable = true;
+      tokenFile = config.secrix.system.secrets.gitlab-PAT-token.decrypted.path;
+    };
+    mcp.prometheus = {
+      enable = true;
+      prometheusUrl = "http://10.88.127.3:8080";
+    };
+    providers.openrouter = {
+      enable = true;
+      apiKeyFile = config.secrix.system.secrets.openrouter-master-token.decrypted.path;
+    };
+    providers.opencode-go = {
+      enable = true;
+      apiKeyFile = config.secrix.system.secrets.LINDA-openCODE-token.decrypted.path;
+    };
+    providers.xiaomi-token-plan-sgp = {
+      enable = true;
+      apiKeyFile = config.secrix.system.secrets.mimo-token-plan-ai-key.decrypted.path;
+    };
+    providers.xai = {
+      enable = true;
+      apiKeyFile = config.secrix.system.secrets.LINDA-xAI-token.decrypted.path;
+    };
+  };
 
 }

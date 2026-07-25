@@ -1,17 +1,27 @@
 {
   description = "A NixOS flake for John Bargman's machine provisioning";
 
+  nixConfig = {
+    extra-substituters = [ "https://install.determinate.systems" ];
+    extra-trusted-public-keys = [
+      "cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM="
+      "install.determinate.systems:a7GMGXFqz7lFjOE45sTRq1g/RX6KFHRKHXOHTi1uFhM="
+    ];
+  };
+
   inputs = {
-    carmelsite = { url = "git+https://gitlab.com/mecha-team-zero/carmelsite.git"; };
-    deadnix = { url = "github:astro/deadnix"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
-    hyprland.url = "github:hyprwm/Hyprland";
-    lint-utils = { url = "github:homotopic/lint-utils"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
-    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
+    carmelsite.url = "git+https://gitlab.com/mecha-team-zero/carmelsite.git";
+    deadnix.url = "https://flakehub.com/f/astro/deadnix/1";
+    determinate = {
+      url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
+      inputs.nix.url = "github:darthpjb/nix-src/fix/ssh-master-localcommand-protocol-leak";
+    };
+    disko = { url = "https://flakehub.com/f/nix-community/disko/1"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
     secrix.url = "github:Platonic-Systems/secrix";
     nixinate = { url = "github:Bargman-Tech/nixinate"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
-    nixpkgs_llm.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs_llm.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
     parsecgaming.url = "github:DarthPJB/parsec-gaming-nix";
     nixos-hardware.url = "github:nixos/nixos-hardware";
     hype-train-claw.url = "github:marijanp/zeroclaw";
@@ -23,16 +33,14 @@
     bargman-assets.url = "git+https://gitlab.com/mecha-team-zero/bargman-assets.git";
     denton-glasses.url = "git+https://gitlab.com/mecha-team-zero/denton-glasses.git";
     personal-site = { url = "git+https://gitlab.com/mecha-team-zero/bargman-website.git"; };
-    # LLM-CORE: Disabled for overlord-I deployment — re-enable and test as part of overlord-II
-    # LLM-CORE = { url = "git+https://gitlab.com/mecha-team-zero/llm-core.git"; };
+    LLM-CORE = { url = "gitlab:mecha-team-zero/llm-core"; inputs.nixpkgs.follows = "nixpkgs_llm"; inputs.nix-mcp-servers.inputs.nixpkgs.follows = "nixpkgs_stable"; };
   };
-  # LLM-CORE: Disabled for overlord-I deployment — re-enable and test as part of overlord-II
-  outputs = { self, deadnix, determinate, hyprland, lint-utils, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site/*, LLM-CORE*/ }:
+  outputs = { self, deadnix, determinate, disko, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
       # Import topology to derive deployment IPs from single source of truth
-      topo = import ./topology.nix { inherit lib; };
+      topo = import ./topology/shared.nix { inherit lib; };
       # Get wireguard IP for a machine from topology
       topoIp = machineName: topo.${machineName}.wireguard;
       globalArgs = {
@@ -41,8 +49,8 @@
         inherit bargman-assets;
         inherit denton-glasses;
         inherit personal-site;
-        # inherit LLM-CORE;  # Disabled for overlord-I — re-enable as part of overlord-II
-        pkgs_llm = import nixpkgs_llm { system = "x86_64-linux"; config.allowUnfree = true; config.permittedInsecurePackages = [ "nodejs-20.20.2" "nodejs-slim-20.20.2" ]; };
+        inherit LLM-CORE;
+        pkgs_llm = nixpkgs_llm.legacyPackages.x86_64-linux;
       };
       minecraft-curseforge-builder = nixpkgs.callPackage ./pkgs/minecraft-curseforge { };
       prometheus-mcp-server-builder = nixpkgs.callPackage ./pkgs/prometheus-mcp-server { };
@@ -50,6 +58,12 @@
         secrix.nixosModules.default
         ratty.nixosModules.default
         ./configuration.nix
+        ./modules/ssh-multiplex.nix
+        # Skip nix test suite — OOMs on remote builders during source build.
+        # The forked nix (darthpjb/nix-src) builds from source, not from cache.
+        ({ pkgs, lib, ... }: {
+          nix.package = lib.mkForce (determinate.inputs.nix.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: { doCheck = false; }));
+        })
         {
           programs.ssh.knownHosts = mkKnownHosts self.nixosConfigurations;
           nixpkgs.config.allowUnfree = true;
@@ -70,9 +84,8 @@
           ];
         }
       ];
-      mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108 }:
+      mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108, images ? { } }:
         nixpkgs_stable.lib.nixosSystem {
-          system = "x86_64-linux";
           modules = commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${hostname}
             {
@@ -88,18 +101,18 @@
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;
               _module.args = globalArgs // {
                 inherit hostname;
-                unstable = import nixpkgs_unstable { system = "x86_64-linux"; config.allowUnfree = true; };
+                unstable = import nixpkgs_unstable { localSystem = "x86_64-linux"; config.allowUnfree = true; };
                 nixinate = {
                   inherit host sshUser buildOn;
                   port = sshPort;
+                  inherit images;
                 };
               };
             }
           ];
         };
-      mkAarch64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? false, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
+      mkAarch64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
         nixpkgs_unstable.lib.nixosSystem {
-          system = "aarch64-linux";
           modules = [
             "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
@@ -122,7 +135,7 @@
               ];
               _module.args = globalArgs // {
                 inherit hostname;
-                unstable = import nixpkgs_unstable { system = "aarch64-linux"; config.allowUnfree = true; };
+                unstable = import nixpkgs_unstable { localSystem = "aarch64-linux"; config.allowUnfree = true; };
                 nixinate = {
                   inherit host sshUser;
                   buildOn = "local";
@@ -202,8 +215,21 @@
         in
         lib.filterAttrs (name: value: value != null) entries;
 
+      # Parallelism control for CI build jobs
+      # Only GitHub Actions-level max-parallel — machines use their own nix.conf
+      ciParallelism = {
+        default = {
+          max-parallel = 10;
+        };
+        perSystem = {
+          aarch64-linux = {
+            max-parallel = 2;
+          };
+        };
+      };
+
       # CI/CD Configuration
-      ci = import ./ci.nix { inherit self lib; pkgs = nixpkgs; };
+      ci = import ./ci.nix { inherit lib; pkgs = nixpkgs; parallelism = ciParallelism; };
 
       # CI Generator Scripts
       ci-generator = import ./ci/generate-workflow.nix { inherit self lib; pkgs = nixpkgs; };
@@ -211,33 +237,6 @@
     {
       formatter."x86_64-linux" = nixpkgs.nixpkgs-fmt;
       apps."x86_64-linux" = { secrix = secrix.secrix self; } // (nixinate.lib.genDeploy.x86_64-linux self) // {
-        # Network Reality Golden Generation
-        generate-golden = {
-          type = "app";
-          meta.description = "Generate golden network reality JSON for a machine (outputs to stdout)";
-          program = lib.getExe (nixpkgs.writeShellApplication {
-            name = "generate-golden";
-            runtimeInputs = [ nixpkgs.jq ];
-            text = ''
-              if [ -z "$1" ]; then
-                echo "Usage: nix run .#generate-golden <machine-name>"
-                echo "Example: nix run .#generate-golden cortex-alpha > real-topology/golden/cortex-alpha.json"
-                exit 1
-              fi
-              MACHINE="$1"
-              nix eval --json --impure \
-                --expr '
-                  let
-                    flake = builtins.getFlake (builtins.toString ./.);
-                    lib = (import <nixpkgs> {}).lib;
-                    topology = import ./real-topology/default.nix { inherit lib; self = flake; };
-                  in
-                  topology.generateGolden "'"$MACHINE"'"
-                ' 2>/dev/null | jq -S .
-            '';
-          });
-        };
-
         # Check network config against golden
         check-network = {
           type = "app";
@@ -248,14 +247,36 @@
             text = ''
               MACHINE="''${1:-cortex-alpha}"
               echo "Checking network config for $MACHINE..."
-              nix run .#generate-golden -- "$MACHINE" | jq -S . > /tmp/current-network.json
+              nix run .#dump-config -- "$MACHINE" | jq -S . > /tmp/current-network.json
                 
-              if diff -u "${self}/real-topology/golden/$MACHINE.json" /tmp/current-network.json; then
+              if diff -u "${self}/goldens/$MACHINE.json" /tmp/current-network.json; then
                 echo "✓ Network config matches golden for $MACHINE"
               else
                 echo "✗ Network configuration has changed from golden!"
                 echo "If intentional, update with:"
-                echo "  nix run .#generate-golden -- $MACHINE > real-topology/golden/$MACHINE.json"
+                echo "  nix run .#dump-config -- $MACHINE > goldens/$MACHINE.json"
+                exit 1
+              fi
+            '';
+          });
+        };
+
+        # Check CI config against golden
+        check-ci = {
+          type = "app";
+          meta.description = "Check CI config against golden file";
+          program = lib.getExe (nixpkgs.writeShellApplication {
+            name = "check-ci";
+            runtimeInputs = [ nixpkgs.jq nixpkgs.diffutils nixpkgs.coreutils ];
+            text = ''
+              ${lib.getExe' nixpkgs.coreutils "echo"} "Checking CI configuration against golden..."
+              nix eval --json .#ci.ci.github-actions 2>/dev/null | ${lib.getExe nixpkgs.jq} -S . > /tmp/current-ci.json
+              if ${lib.getExe' nixpkgs.diffutils "diff"} -u "${self}/goldens/ci.json" /tmp/current-ci.json; then
+                ${lib.getExe' nixpkgs.coreutils "echo"} "CI config matches golden"
+              else
+                ${lib.getExe' nixpkgs.coreutils "echo"} "CI configuration has changed from golden!"
+                ${lib.getExe' nixpkgs.coreutils "echo"} "If intentional, update with:"
+                ${lib.getExe' nixpkgs.coreutils "echo"} "  nix eval --json .#ci.ci.github-actions | jq -S . > goldens/ci.json"
                 exit 1
               fi
             '';
@@ -287,7 +308,7 @@
                     flake = builtins.getFlake (builtins.toString ./.);
                     lib = (import <nixpkgs> {}).lib;
                     serializer = import ./lib/serialize-config.nix { inherit lib; };
-                    config = flake.nixosConfigurations."'"$MACHINE"'".config;
+                    config = (flake.nixosConfigurations."'"$MACHINE"'" or flake.dormantConfigurations."'"$MACHINE"'").config;
                   in
                   serializer.serializeConfig config
                 ' | jq -S .
@@ -415,10 +436,13 @@
           minecraft-curseforge-all-the-mons = nixpkgs.callPackage ./pkgs/minecraft-curseforge/packs/all-the-mons.nix {
             minecraft-curseforge = minecraft-curseforge-builder;
           };
-          squaremap-neoforge = nixpkgs.callPackage ./pkgs/minecraft-curseforge/squaremap.nix { };
+          squaremap-neoforge = nixpkgs.callPackage ./pkgs/minecraft-curseforge/squaremap.nix {
+            moonrise-neoforge = self.packages.x86_64-linux.moonrise-neoforge;
+          };
+          moonrise-neoforge = nixpkgs.callPackage ./pkgs/minecraft-curseforge/moonrise.nix { };
           bargman-greeter-vm = self.nixosConfigurations.bargman-greeter-vm.config.system.build.vm;
           bargman-greeter-vm-bootloader = self.nixosConfigurations.bargman-greeter-vm.config.system.build.vmWithBootLoader;
-        };
+        } // (nixinate.lib.genImages.x86_64-linux self);
         "aarch64-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.print-controller
           self.nixosConfigurations.display-1
@@ -432,12 +456,12 @@
 
       nixosConfigurations = {
         beta-one = nixpkgs_unstable.lib.nixosSystem {
-          system = "armv7l-linux";
           modules = [
             "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
             "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
             ./machines/beta/1.nix
             {
+              nixpkgs.hostPlatform = "armv7l-linux";
               _module.args = globalArgs // { hostname = "beta-one"; };
             }
           ];
@@ -453,6 +477,7 @@
         };
         arm-builder = mkAarch64 "arm-builder" {
           host = topoIp "arm-builder";
+          dt = true; # Determinate Nix required — this machine IS the aarch64 remote builder
           extraModules = [
             ./users/deployment.nix
             ./users/build.nix
@@ -461,7 +486,6 @@
         # Generic ARM bootstrap image — reusable for ALL ARM devices
         # No WG, no device-specific config, open SSH on port 22
         arm-bootstrap = nixpkgs_unstable.lib.nixosSystem {
-          system = "aarch64-linux";
           modules = [
             "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
@@ -478,7 +502,7 @@
               networking.hostName = "arm-bootstrap";
               _module.args = globalArgs // {
                 hostname = "arm-bootstrap";
-                unstable = import nixpkgs_unstable { system = "aarch64-linux"; config.allowUnfree = true; };
+                unstable = import nixpkgs_unstable { localSystem = "aarch64-linux"; config.allowUnfree = true; };
               };
             }
           ];
@@ -522,14 +546,24 @@
         };
         alpha-one = mkX86_64 "alpha-one" {
           host = topoIp "alpha-one";
-          extraModules = [ ./users/build.nix { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
+          extraModules = [ ./users/build.nix LLM-CORE.nixosModules.opencode-fleet { environment.systemPackages = [ parsecgaming.packages.x86_64-linux.parsecgaming ]; } ];
         };
         alpha-three = mkX86_64 "alpha-three" {
           host = topoIp "alpha-three";
+          images = {
+            raw = {
+              enable = true;
+              imageSize = "20G";
+              espSize = "1024M";
+              swapSize = "8G";
+            };
+            installer.enable = true;
+          };
           extraModules = [
             ./users/build.nix
             hype-train-claw.nixosModules.zeroclaw
             ./services/zeroclaw.nix
+            LLM-CORE.nixosModules.opencode-fleet
             {
               nixpkgs.config.nvidia.acceptLicense = true;
             }
@@ -546,7 +580,7 @@
             xlibre-overlay.nixosModules.nvidia-ignore-ABI
             denton-glasses.nixosModules.eye-tracking
             denton-glasses.nixosModules.voxtype
-            # self.inputs.LLM-CORE.nixosModules.opencode-fleet  # Disabled for overlord-I — re-enable as part of overlord-II
+            LLM-CORE.nixosModules.opencode-fleet
             {
               programs.ratty = {
                 enable = true;
@@ -614,7 +648,6 @@
         };
 
         bargman-greeter-vm = nixpkgs_stable.lib.nixosSystem {
-          system = "x86_64-linux";
           modules = [
             ./environments/i3wm_darthpjb.nix
             ./environments/bargman-greeter-vm.nix
@@ -650,7 +683,16 @@
       };
 
       checks."x86_64-linux" = {
-        nixpkgs-fmt = lint-utils.linters.x86_64-linux.nixpkgs-fmt { src = self; };
+        formatting = nixpkgs.runCommand "check-formatting"
+          { buildInputs = [ nixpkgs.nixpkgs-fmt ]; }
+          "nixpkgs-fmt --check ${self} && touch $out";
+
+        deadnix = nixpkgs.writeShellApplication {
+          name = "run-deadnix";
+          meta.description = "Detect dead Nix code";
+          runtimeInputs = [ deadnix.packages.x86_64-linux.default ];
+          text = ''exec deadnix --no-lambda-pattern-names "${self}"'';
+        };
 
         # Network topology golden check for cortex-alpha (manual run)
         network-config-cortex-alpha = nixpkgs.writeShellApplication {
@@ -659,15 +701,15 @@
           runtimeInputs = [ nixpkgs.jq ];
           text = ''
             echo "Generating current network config for cortex-alpha..."
-            nix run .#generate-golden -- cortex-alpha | jq -S . > /tmp/current-network.json
+            nix run .#dump-config -- cortex-alpha | jq -S . > /tmp/current-network.json
 
             echo "Comparing with golden..."
-            if diff -u ${self}/real-topology/golden/cortex-alpha.json /tmp/current-network.json; then
+            if diff -u ${self}/goldens/cortex-alpha.json /tmp/current-network.json; then
               echo "✓ Network config matches golden for cortex-alpha"
             else
               echo "✗ Network configuration has changed from golden!"
               echo "If intentional, update with:"
-              echo "  nix run .#generate-golden -- cortex-alpha > real-topology/golden/cortex-alpha.json"
+              echo "  nix run .#dump-config -- cortex-alpha > goldens/cortex-alpha.json"
               exit 1
             fi
           '';
@@ -675,7 +717,7 @@
 
         topology-coverage =
           let
-            coverage = import ./real-topology/coverage.nix { inherit self; };
+            coverage = import ./lib/golden_coverage.nix { inherit self; };
           in
           if !coverage.isComplete then
             throw "Topology coverage incomplete. Missing: ${builtins.toJSON coverage.missing}"

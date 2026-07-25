@@ -1,0 +1,1993 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "description": "Full fleet administration dashboard — CPU, memory, disk, network, energy, ZFS, services. All queries dynamic.",
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 100,
+      "panels": [],
+      "title": "Fleet Status",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-YlBl"
+          },
+          "custom": {
+            "axisPlacement": "auto",
+            "fillOpacity": 100,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineWidth": 1,
+            "spanNulls": false
+          },
+          "fieldMinMax": false,
+          "mappings": [],
+          "min": 0,
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "bool_on_off"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 1,
+      "options": {
+        "alignValue": "center",
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": false
+        },
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "showValue": "auto",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "node_systemd_system_running{job=\"node\"}",
+          "includeNullMetadata": true,
+          "legendFormat": "{{instance}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "System Status (all nodes)",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.88:(.*)/",
+            "renamePattern": "LINDA"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.1:(.*)/",
+            "renamePattern": "cortex-alpha"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.3:(.*)/",
+            "renamePattern": "local-nas"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.20:(.*)/",
+            "renamePattern": "terminal-zero"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.21:(.*)/",
+            "renamePattern": "terminal-nx-01"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.30:(.*)/",
+            "renamePattern": "print-controller"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.41:(.*)/",
+            "renamePattern": "display-1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.42:(.*)/",
+            "renamePattern": "display-2"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.43:(.*)/",
+            "renamePattern": "arm-builder"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.50:(.*)/",
+            "renamePattern": "remote-worker"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.51:(.*)/",
+            "renamePattern": "remote-builder"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.52:(.*)/",
+            "renamePattern": "gaming-host-1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.107:(.*)/",
+            "renamePattern": "alpha-three"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.108:(.*)/",
+            "renamePattern": "alpha-one"
+          }
+        }
+      ],
+      "transparent": true,
+      "type": "state-timeline"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "id": 101,
+      "panels": [],
+      "title": "CPU",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": {
+            "fillOpacity": 20,
+            "lineWidth": 2,
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 20,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\",job=\"node\"}[5m])))",
+          "legendFormat": "{{instance}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Usage % (all nodes)",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.88:(.*)/",
+            "renamePattern": "LINDA"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.1:(.*)/",
+            "renamePattern": "cortex-alpha"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.3:(.*)/",
+            "renamePattern": "local-nas"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.20:(.*)/",
+            "renamePattern": "terminal-zero"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.21:(.*)/",
+            "renamePattern": "terminal-nx-01"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.30:(.*)/",
+            "renamePattern": "print-controller"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.41:(.*)/",
+            "renamePattern": "display-1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.43:(.*)/",
+            "renamePattern": "arm-builder"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.50:(.*)/",
+            "renamePattern": "remote-worker"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.51:(.*)/",
+            "renamePattern": "remote-builder"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.52:(.*)/",
+            "renamePattern": "gaming-host-1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.107:(.*)/",
+            "renamePattern": "alpha-three"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.108:(.*)/",
+            "renamePattern": "alpha-one"
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "rothz",
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "id": 16,
+      "options": {
+        "calculate": false,
+        "cellGap": 3,
+        "cellValues": {
+          "unit": "rothz"
+        },
+        "color": {
+          "exponent": 0.5,
+          "fill": "dark-orange",
+          "mode": "scheme",
+          "reverse": false,
+          "scale": "exponential",
+          "scheme": "Spectral",
+          "steps": 64
+        },
+        "filterValues": {
+          "le": 1E-9
+        },
+        "legend": {
+          "show": false
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "tooltip": {
+          "mode": "single",
+          "showColorScale": false,
+          "yHistogram": false
+        },
+        "yAxis": {
+          "axisPlacement": "hidden",
+          "reverse": false
+        }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "node_cpu_scaling_frequency_hertz{job=\"node\"}",
+          "legendFormat": "{{instance}} cpu{{cpu}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "CPU Frequency (all cores, all nodes)",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.88:(.*)/",
+            "renamePattern": "LINDA:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.1:(.*)/",
+            "renamePattern": "cortex-alpha:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.3:(.*)/",
+            "renamePattern": "local-nas:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.20:(.*)/",
+            "renamePattern": "terminal-zero:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.21:(.*)/",
+            "renamePattern": "terminal-nx-01:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.30:(.*)/",
+            "renamePattern": "print-controller:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.41:(.*)/",
+            "renamePattern": "display-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.43:(.*)/",
+            "renamePattern": "arm-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.50:(.*)/",
+            "renamePattern": "remote-worker:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.51:(.*)/",
+            "renamePattern": "remote-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.52:(.*)/",
+            "renamePattern": "gaming-host-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.107:(.*)/",
+            "renamePattern": "alpha-three:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.108:(.*)/",
+            "renamePattern": "alpha-one:$1"
+          }
+        }
+      ],
+      "transparent": true,
+      "type": "heatmap"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "id": 30,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "node_load1{job=\"node\"}",
+          "legendFormat": "{{instance}} load1",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "node_load5{job=\"node\"}",
+          "legendFormat": "{{instance}} load5",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "node_load15{job=\"node\"}",
+          "legendFormat": "{{instance}} load15",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Load Average (all nodes)",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.88:(.*)/",
+            "renamePattern": "LINDA:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.1:(.*)/",
+            "renamePattern": "cortex-alpha:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.3:(.*)/",
+            "renamePattern": "local-nas:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.20:(.*)/",
+            "renamePattern": "terminal-zero:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.21:(.*)/",
+            "renamePattern": "terminal-nx-01:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.30:(.*)/",
+            "renamePattern": "print-controller:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.41:(.*)/",
+            "renamePattern": "display-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.43:(.*)/",
+            "renamePattern": "arm-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.50:(.*)/",
+            "renamePattern": "remote-worker:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.51:(.*)/",
+            "renamePattern": "remote-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.52:(.*)/",
+            "renamePattern": "gaming-host-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.107:(.*)/",
+            "renamePattern": "alpha-three:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.108:(.*)/",
+            "renamePattern": "alpha-one:$1"
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 31
+      },
+      "id": 102,
+      "panels": [],
+      "title": "Memory & Disk",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": {
+            "fillOpacity": 15,
+            "lineWidth": 2,
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 32
+      },
+      "id": 40,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "(1 - node_memory_MemAvailable_bytes{job=\"node\"} / node_memory_MemTotal_bytes{job=\"node\"}) * 100",
+          "legendFormat": "{{instance}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Memory Usage % (all nodes)",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.88:(.*)/",
+            "renamePattern": "LINDA"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.1:(.*)/",
+            "renamePattern": "cortex-alpha"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.3:(.*)/",
+            "renamePattern": "local-nas"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.20:(.*)/",
+            "renamePattern": "terminal-zero"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.21:(.*)/",
+            "renamePattern": "terminal-nx-01"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.30:(.*)/",
+            "renamePattern": "print-controller"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.41:(.*)/",
+            "renamePattern": "display-1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.43:(.*)/",
+            "renamePattern": "arm-builder"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.50:(.*)/",
+            "renamePattern": "remote-worker"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.51:(.*)/",
+            "renamePattern": "remote-builder"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.52:(.*)/",
+            "renamePattern": "gaming-host-1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.107:(.*)/",
+            "renamePattern": "alpha-three"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.108:(.*)/",
+            "renamePattern": "alpha-one"
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "custom": {
+            "fillOpacity": 30,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 32
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": [
+            "mean"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "rate(node_disk_read_bytes_total{job=\"node\",device!~\"^(loop|ram|sr).*\"}[5m])",
+          "legendFormat": "{{instance}} {{device}} read",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "-rate(node_disk_written_bytes_total{job=\"node\",device!~\"^(loop|ram|sr).*\"}[5m])",
+          "legendFormat": "{{instance}} {{device}} write",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "rate(node_zfs_zpool_dataset_nread{job=\"node\"}[5m])",
+          "legendFormat": "{{instance}} {{dataset}} zfs-read",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "-rate(node_zfs_zpool_dataset_nwritten{job=\"node\"}[5m])",
+          "legendFormat": "{{instance}} {{dataset}} zfs-write",
+          "range": true,
+          "refId": "D"
+        }
+      ],
+      "title": "Disk I/O Bandwidth (all nodes + ZFS)",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.88:(.*)/",
+            "renamePattern": "LINDA:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.1:(.*)/",
+            "renamePattern": "cortex-alpha:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.3:(.*)/",
+            "renamePattern": "local-nas:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.20:(.*)/",
+            "renamePattern": "terminal-zero:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.21:(.*)/",
+            "renamePattern": "terminal-nx-01:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.30:(.*)/",
+            "renamePattern": "print-controller:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.41:(.*)/",
+            "renamePattern": "display-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.43:(.*)/",
+            "renamePattern": "arm-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.50:(.*)/",
+            "renamePattern": "remote-worker:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.51:(.*)/",
+            "renamePattern": "remote-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.52:(.*)/",
+            "renamePattern": "gaming-host-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.107:(.*)/",
+            "renamePattern": "alpha-three:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.108:(.*)/",
+            "renamePattern": "alpha-one:$1"
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "custom": {
+            "axisBorderShow": true,
+            "axisCenteredZero": true,
+            "axisColorMode": "series",
+            "axisGridShow": true,
+            "drawStyle": "line",
+            "fillOpacity": 73,
+            "lineInterpolation": "stepBefore",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
+      "id": 11,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "rate(node_ethtool_received_bytes_total{job=\"node\"}[5m])",
+          "legendFormat": "{{instance}} RX",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "0 - rate(node_ethtool_transmitted_bytes_total{job=\"node\"}[5m])",
+          "legendFormat": "{{instance}} TX",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Network Throughput (ethtool, all nodes)",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.88:(.*)/",
+            "renamePattern": "LINDA:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.1:(.*)/",
+            "renamePattern": "cortex-alpha:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.3:(.*)/",
+            "renamePattern": "local-nas:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.20:(.*)/",
+            "renamePattern": "terminal-zero:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.21:(.*)/",
+            "renamePattern": "terminal-nx-01:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.30:(.*)/",
+            "renamePattern": "print-controller:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.41:(.*)/",
+            "renamePattern": "display-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.43:(.*)/",
+            "renamePattern": "arm-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.50:(.*)/",
+            "renamePattern": "remote-worker:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.51:(.*)/",
+            "renamePattern": "remote-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.52:(.*)/",
+            "renamePattern": "gaming-host-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.107:(.*)/",
+            "renamePattern": "alpha-three:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.108:(.*)/",
+            "renamePattern": "alpha-one:$1"
+          }
+        }
+      ],
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 47
+      },
+      "id": 103,
+      "panels": [],
+      "title": "Energy",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "watt",
+          "custom": {
+            "fillOpacity": 73,
+            "lineInterpolation": "stepBefore",
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byValue",
+              "options": {
+                "op": "gte",
+                "reducer": "allIsZero",
+                "value": 0
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": true,
+                  "tooltip": true,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 48
+      },
+      "id": 12,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "node_hwmon_power_watt{job=\"node\"}",
+          "legendFormat": "{{instance}} hwmon",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "node_power_supply_energy_watthour{job=\"node\"}",
+          "legendFormat": "{{instance}} supply",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "nvidia_smi_power_draw_watts{job=\"nvidia\"}",
+          "legendFormat": "{{instance}} GPU",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Energy Usage (hwmon + nvidia)",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.88:(.*)/",
+            "renamePattern": "LINDA:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.1:(.*)/",
+            "renamePattern": "cortex-alpha:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.3:(.*)/",
+            "renamePattern": "local-nas:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.20:(.*)/",
+            "renamePattern": "terminal-zero:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.21:(.*)/",
+            "renamePattern": "terminal-nx-01:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.30:(.*)/",
+            "renamePattern": "print-controller:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.41:(.*)/",
+            "renamePattern": "display-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.43:(.*)/",
+            "renamePattern": "arm-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.50:(.*)/",
+            "renamePattern": "remote-worker:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.51:(.*)/",
+            "renamePattern": "remote-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.52:(.*)/",
+            "renamePattern": "gaming-host-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.107:(.*)/",
+            "renamePattern": "alpha-three:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.108:(.*)/",
+            "renamePattern": "alpha-one:$1"
+          }
+        }
+      ],
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "opacity"
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 48
+      },
+      "id": 50,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "nvidia_smi_utilization_gpu_ratio{job=\"nvidia\"} * 100",
+          "legendFormat": "{{instance}} GPU",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "nvidia_smi_utilization_memory_ratio{job=\"nvidia\"} * 100",
+          "legendFormat": "{{instance}} VRAM",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "GPU Utilization (nvidia)",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.88:(.*)/",
+            "renamePattern": "LINDA:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.21:(.*)/",
+            "renamePattern": "terminal-nx-01:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.107:(.*)/",
+            "renamePattern": "alpha-three:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.108:(.*)/",
+            "renamePattern": "alpha-one:$1"
+          }
+        }
+      ],
+      "type": "barchart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 55
+      },
+      "id": 104,
+      "panels": [],
+      "title": "Storage",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 56
+      },
+      "id": 60,
+      "options": {
+        "orientation": "vertical",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "namePlacement": "auto",
+        "sizing": "auto",
+        "valueMode": "color",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "(1 - node_filesystem_avail_bytes{job=\"node\",fstype!~\"tmpfs|devtmpfs|overlay|ramfs\",mountpoint!~\"/nix/store|/speed-storage/.*\"} / node_filesystem_size_bytes{job=\"node\",fstype!~\"tmpfs|devtmpfs|overlay|ramfs\",mountpoint!~\"/nix/store|/speed-storage/.*\"}) * 100",
+          "legendFormat": "{{instance}} {{mountpoint}}",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Filesystem Usage (all nodes)",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.88:(.*)/",
+            "renamePattern": "LINDA:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.1:(.*)/",
+            "renamePattern": "cortex-alpha:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.3:(.*)/",
+            "renamePattern": "local-nas:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.20:(.*)/",
+            "renamePattern": "terminal-zero:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.21:(.*)/",
+            "renamePattern": "terminal-nx-01:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.30:(.*)/",
+            "renamePattern": "print-controller:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.41:(.*)/",
+            "renamePattern": "display-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.43:(.*)/",
+            "renamePattern": "arm-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.50:(.*)/",
+            "renamePattern": "remote-worker:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.51:(.*)/",
+            "renamePattern": "remote-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.52:(.*)/",
+            "renamePattern": "gaming-host-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.107:(.*)/",
+            "renamePattern": "alpha-three:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.108:(.*)/",
+            "renamePattern": "alpha-one:$1"
+          }
+        }
+      ],
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 66
+      },
+      "id": 8,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "(1 - zfs_pool_free_bytes / zfs_pool_size_bytes) * 100",
+          "legendFormat": "{{instance}} {{pool}}",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "ZFS Pool Usage",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.88:(.*)/",
+            "renamePattern": "LINDA:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.1:(.*)/",
+            "renamePattern": "cortex-alpha:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.3:(.*)/",
+            "renamePattern": "local-nas:$1"
+          }
+        }
+      ],
+      "type": "gauge"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 74
+      },
+      "id": 105,
+      "panels": [],
+      "title": "Services",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus01"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "green",
+                  "text": "OK"
+                },
+                "1": {
+                  "color": "red",
+                  "text": "FAILED"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "noValue": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 75
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus01"
+          },
+          "editorMode": "code",
+          "expr": "(node_systemd_unit_state{state=\"failed\", job=\"node\"}) > 0",
+          "legendFormat": "{{instance}} {{name}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Failed Services (all nodes)",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.88:(.*)/",
+            "renamePattern": "LINDA:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.1:(.*)/",
+            "renamePattern": "cortex-alpha:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.3:(.*)/",
+            "renamePattern": "local-nas:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.20:(.*)/",
+            "renamePattern": "terminal-zero:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.21:(.*)/",
+            "renamePattern": "terminal-nx-01:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.30:(.*)/",
+            "renamePattern": "print-controller:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.41:(.*)/",
+            "renamePattern": "display-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.43:(.*)/",
+            "renamePattern": "arm-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.50:(.*)/",
+            "renamePattern": "remote-worker:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.51:(.*)/",
+            "renamePattern": "remote-builder:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.52:(.*)/",
+            "renamePattern": "gaming-host-1:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.107:(.*)/",
+            "renamePattern": "alpha-three:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.108:(.*)/",
+            "renamePattern": "alpha-one:$1"
+          }
+        }
+      ],
+      "type": "stat"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 42,
+  "tags": [
+    "fleet",
+    "admin",
+    "cpu",
+    "memory",
+    "disk",
+    "filesystem",
+    "network",
+    "energy",
+    "gpu",
+    "zfs",
+    "systemd",
+    "nix-provisioned"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "utc",
+  "title": "Fleet Admin (heavy)",
+  "uid": "fleet-cpu-disk",
+  "version": 1
+}

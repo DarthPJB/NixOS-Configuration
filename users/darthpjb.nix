@@ -35,4 +35,5 @@
       "systemd-journal"
     ]; # Enable ‘sudo’ for the user.
   };
+  nix.settings.trusted-users = [ "John88" ];
 }

@@ -5,7 +5,7 @@
 
 {
   # Add IKBAEB-th custom Thai keyboard layout
-  services.xserver.xkb.extraLayouts = self.inputs.ikbaeb-th.extraLayouts pkgs.system;
+  services.xserver.xkb.extraLayouts = self.inputs.ikbaeb-th.extraLayouts pkgs.stdenv.hostPlatform.system;
 
   # Configure fcitx5 with multiple input methods
   i18n.inputMethod = {

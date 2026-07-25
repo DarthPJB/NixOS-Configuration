@@ -88,10 +88,17 @@ let
                   hasIp = hasAttr "ip" host;
                   hasHostname = hasAttr "hostname" host;
                   hostLabel = host.hostname or name;
+                  ip = host.ip or "";
+                  # WireGuard-only / non-LAN entries are not DHCP candidates.
+                  # Do not emit "no mac" noise for 10.88.127.0/24 or routing.wireguard hosts.
+                  isWireguardOnly =
+                    (lib.hasPrefix "10.88.127." ip)
+                    || ((host.routing.wireguard or false) && !hasMac);
 
                   macNoHostname = hasMac && !hasHostname;
                   macNoIp = hasMac && !hasIp;
-                  hostnameNoMac = hasHostname && !hasMac;
+                  # Only LAN DHCP candidates need a MAC
+                  hostnameNoMac = hasHostname && !hasMac && !isWireguardOnly;
                 in
                 (if macNoHostname then
                   [ "WARNING: host '${name}' has mac but no hostname — will be silently excluded from DHCP reservations" ]

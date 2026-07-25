@@ -12,6 +12,16 @@ in
 
   # trigger the actual certificate generation for additional hostname
   security.acme.certs."${fqdn}" = {
+    # dnsProvider MUST be set explicitly on the per-cert level.
+    # The nixpkgs nginx module (commit 377c6bcefce8) sets
+    # dnsProvider = mkOverride 2000 null for any enableACME vhost,
+    # which overrides the inherited default from security.acme.defaults.
+    # A plain assignment here (priority 100) beats mkOverride 2000.
+    dnsProvider = "gandiv5";
+    environmentFile = config.secrix.system.secrets.dns01.decrypted.path;
+    # webroot MUST be null when using dnsProvider — the ACME module asserts
+    # exactly one of dnsProvider/webroot/listenHTTP/s3Bucket is non-null.
+    webroot = null;
     extraDomainNames = [ ]; # "johnbargman.com"];
     group = "nginx";
   };

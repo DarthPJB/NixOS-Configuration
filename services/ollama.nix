@@ -14,7 +14,7 @@
   services.ollama = {
     port = 11434;
     enable = true;
-    acceleration = "cuda";
+    # acceleration = "cuda";
     models = "/speed-storage/ollama";
     package = unstable.ollama-cuda;
     loadModels = [

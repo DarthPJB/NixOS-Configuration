@@ -1,0 +1,479 @@
+{
+  "annotations": { "list": [] },
+  "description": "Per-machine CPU frequency heatmaps — one panel per node, all cores visible.",
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "panels": [],
+      "title": "x86 Servers",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus01" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "scaleDistribution": { "type": "linear" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
+      "id": 1,
+      "options": {
+        "calculate": false, "cellGap": 1,
+        "cellValues": { "unit": "rothz" },
+        "color": { "exponent": 0.5, "fill": "dark-red", "mode": "scheme", "reverse": false, "scale": "exponential", "scheme": "Spectral", "steps": 64 },
+        "filterValues": { "le": 1e-09 },
+        "legend": { "show": false },
+        "rowsFrame": { "layout": "auto" },
+        "tooltip": { "mode": "single", "showColorScale": false, "yHistogram": false },
+        "yAxis": { "axisPlacement": "hidden", "reverse": false }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus01" },
+          "editorMode": "code",
+          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.1:9100\", job=\"node\"}",
+          "legendFormat": "Core: {{cpu}}",
+          "range": true, "refId": "A"
+        }
+      ],
+      "title": "CPU Frequency — cortex-alpha",
+      "transparent": true,
+      "type": "heatmap"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus01" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "scaleDistribution": { "type": "linear" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 1 },
+      "id": 2,
+      "options": {
+        "calculate": false, "cellGap": 1,
+        "cellValues": { "unit": "rothz" },
+        "color": { "exponent": 0.5, "fill": "dark-purple", "mode": "scheme", "reverse": false, "scale": "exponential", "scheme": "Spectral", "steps": 64 },
+        "filterValues": { "le": 1e-09 },
+        "legend": { "show": false },
+        "rowsFrame": { "layout": "auto" },
+        "tooltip": { "mode": "single", "showColorScale": false, "yHistogram": false },
+        "yAxis": { "axisPlacement": "hidden", "reverse": false }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus01" },
+          "editorMode": "code",
+          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.3:9100\", job=\"node\"}",
+          "legendFormat": "Core: {{cpu}}",
+          "range": true, "refId": "A"
+        }
+      ],
+      "title": "CPU Frequency — local-nas",
+      "transparent": true,
+      "type": "heatmap"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus01" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "scaleDistribution": { "type": "linear" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 9 },
+      "id": 3,
+      "options": {
+        "calculate": false, "cellGap": 1,
+        "cellValues": { "unit": "rothz" },
+        "color": { "exponent": 0.5, "fill": "dark-orange", "mode": "scheme", "reverse": false, "scale": "exponential", "scheme": "Spectral", "steps": 64 },
+        "filterValues": { "le": 1e-09 },
+        "legend": { "show": false },
+        "rowsFrame": { "layout": "auto" },
+        "tooltip": { "mode": "single", "showColorScale": false, "yHistogram": false },
+        "yAxis": { "axisPlacement": "hidden", "reverse": false }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus01" },
+          "editorMode": "code",
+          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.108:9100\", job=\"node\"}",
+          "legendFormat": "Core: {{cpu}}",
+          "range": true, "refId": "A"
+        }
+      ],
+      "title": "CPU Frequency — alpha-one",
+      "transparent": true,
+      "type": "heatmap"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus01" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "scaleDistribution": { "type": "linear" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 9 },
+      "id": 4,
+      "options": {
+        "calculate": false, "cellGap": 1,
+        "cellValues": { "unit": "rothz" },
+        "color": { "exponent": 0.5, "fill": "dark-green", "mode": "scheme", "reverse": false, "scale": "exponential", "scheme": "Spectral", "steps": 64 },
+        "filterValues": { "le": 1e-09 },
+        "legend": { "show": false },
+        "rowsFrame": { "layout": "auto" },
+        "tooltip": { "mode": "single", "showColorScale": false, "yHistogram": false },
+        "yAxis": { "axisPlacement": "hidden", "reverse": false }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus01" },
+          "editorMode": "code",
+          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.107:9100\", job=\"node\"}",
+          "legendFormat": "Core: {{cpu}}",
+          "range": true, "refId": "A"
+        }
+      ],
+      "title": "CPU Frequency — alpha-three",
+      "transparent": true,
+      "type": "heatmap"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus01" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "scaleDistribution": { "type": "linear" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 17 },
+      "id": 5,
+      "options": {
+        "calculate": false, "cellGap": 1,
+        "cellValues": { "unit": "rothz" },
+        "color": { "exponent": 0.5, "fill": "dark-blue", "mode": "scheme", "reverse": false, "scale": "exponential", "scheme": "Spectral", "steps": 64 },
+        "filterValues": { "le": 1e-09 },
+        "legend": { "show": false },
+        "rowsFrame": { "layout": "auto" },
+        "tooltip": { "mode": "single", "showColorScale": false, "yHistogram": false },
+        "yAxis": { "axisPlacement": "hidden", "reverse": false }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus01" },
+          "editorMode": "code",
+          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.52:9100\", job=\"node\"}",
+          "legendFormat": "Core: {{cpu}}",
+          "range": true, "refId": "A"
+        }
+      ],
+      "title": "CPU Frequency — gaming-host-1",
+      "transparent": true,
+      "type": "heatmap"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus01" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "scaleDistribution": { "type": "linear" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 17 },
+      "id": 6,
+      "options": {
+        "calculate": false, "cellGap": 1,
+        "cellValues": { "unit": "rothz" },
+        "color": { "exponent": 0.5, "fill": "dark-red", "mode": "scheme", "reverse": false, "scale": "exponential", "scheme": "Spectral", "steps": 64 },
+        "filterValues": { "le": 1e-09 },
+        "legend": { "show": false },
+        "rowsFrame": { "layout": "auto" },
+        "tooltip": { "mode": "single", "showColorScale": false, "yHistogram": false },
+        "yAxis": { "axisPlacement": "hidden", "reverse": false }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus01" },
+          "editorMode": "code",
+          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.50:9100\", job=\"node\"}",
+          "legendFormat": "Core: {{cpu}}",
+          "range": true, "refId": "A"
+        }
+      ],
+      "title": "CPU Frequency — remote-worker",
+      "transparent": true,
+      "type": "heatmap"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus01" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "scaleDistribution": { "type": "linear" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 25 },
+      "id": 7,
+      "options": {
+        "calculate": false, "cellGap": 1,
+        "cellValues": { "unit": "rothz" },
+        "color": { "exponent": 0.5, "fill": "dark-purple", "mode": "scheme", "reverse": false, "scale": "exponential", "scheme": "Spectral", "steps": 64 },
+        "filterValues": { "le": 1e-09 },
+        "legend": { "show": false },
+        "rowsFrame": { "layout": "auto" },
+        "tooltip": { "mode": "single", "showColorScale": false, "yHistogram": false },
+        "yAxis": { "axisPlacement": "hidden", "reverse": false }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus01" },
+          "editorMode": "code",
+          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.51:9100\", job=\"node\"}",
+          "legendFormat": "Core: {{cpu}}",
+          "range": true, "refId": "A"
+        }
+      ],
+      "title": "CPU Frequency — remote-builder",
+      "transparent": true,
+      "type": "heatmap"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus01" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "scaleDistribution": { "type": "linear" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 25 },
+      "id": 8,
+      "options": {
+        "calculate": false, "cellGap": 1,
+        "cellValues": { "unit": "rothz" },
+        "color": { "exponent": 0.5, "fill": "dark-orange", "mode": "scheme", "reverse": false, "scale": "exponential", "scheme": "Spectral", "steps": 64 },
+        "filterValues": { "le": 1e-09 },
+        "legend": { "show": false },
+        "rowsFrame": { "layout": "auto" },
+        "tooltip": { "mode": "single", "showColorScale": false, "yHistogram": false },
+        "yAxis": { "axisPlacement": "hidden", "reverse": false }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus01" },
+          "editorMode": "code",
+          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.21:9100\", job=\"node\"}",
+          "legendFormat": "Core: {{cpu}}",
+          "range": true, "refId": "A"
+        }
+      ],
+      "title": "CPU Frequency — terminal-nx-01",
+      "transparent": true,
+      "type": "heatmap"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus01" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "scaleDistribution": { "type": "linear" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 33 },
+      "id": 9,
+      "options": {
+        "calculate": false, "cellGap": 1,
+        "cellValues": { "unit": "rothz" },
+        "color": { "exponent": 0.5, "fill": "dark-green", "mode": "scheme", "reverse": false, "scale": "exponential", "scheme": "Spectral", "steps": 64 },
+        "filterValues": { "le": 1e-09 },
+        "legend": { "show": false },
+        "rowsFrame": { "layout": "auto" },
+        "tooltip": { "mode": "single", "showColorScale": false, "yHistogram": false },
+        "yAxis": { "axisPlacement": "hidden", "reverse": false }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus01" },
+          "editorMode": "code",
+          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.20:9100\", job=\"node\"}",
+          "legendFormat": "Core: {{cpu}}",
+          "range": true, "refId": "A"
+        }
+      ],
+      "title": "CPU Frequency — terminal-zero",
+      "transparent": true,
+      "type": "heatmap"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus01" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "scaleDistribution": { "type": "linear" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 33 },
+      "id": 10,
+      "options": {
+        "calculate": false, "cellGap": 1,
+        "cellValues": { "unit": "rothz" },
+        "color": { "exponent": 0.5, "fill": "dark-blue", "mode": "scheme", "reverse": false, "scale": "exponential", "scheme": "Spectral", "steps": 64 },
+        "filterValues": { "le": 1e-09 },
+        "legend": { "show": false },
+        "rowsFrame": { "layout": "auto" },
+        "tooltip": { "mode": "single", "showColorScale": false, "yHistogram": false },
+        "yAxis": { "axisPlacement": "hidden", "reverse": false }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus01" },
+          "editorMode": "code",
+          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.41:9100\", job=\"node\"}",
+          "legendFormat": "Core: {{cpu}}",
+          "range": true, "refId": "A"
+        }
+      ],
+      "title": "CPU Frequency — display-1",
+      "transparent": true,
+      "type": "heatmap"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus01" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "scaleDistribution": { "type": "linear" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 41 },
+      "id": 11,
+      "options": {
+        "calculate": false, "cellGap": 1,
+        "cellValues": { "unit": "rothz" },
+        "color": { "exponent": 0.5, "fill": "dark-red", "mode": "scheme", "reverse": false, "scale": "exponential", "scheme": "Spectral", "steps": 64 },
+        "filterValues": { "le": 1e-09 },
+        "legend": { "show": false },
+        "rowsFrame": { "layout": "auto" },
+        "tooltip": { "mode": "single", "showColorScale": false, "yHistogram": false },
+        "yAxis": { "axisPlacement": "hidden", "reverse": false }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus01" },
+          "editorMode": "code",
+          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.43:9100\", job=\"node\"}",
+          "legendFormat": "Core: {{cpu}}",
+          "range": true, "refId": "A"
+        }
+      ],
+      "title": "CPU Frequency — arm-builder",
+      "transparent": true,
+      "type": "heatmap"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus01" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "scaleDistribution": { "type": "linear" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 41 },
+      "id": 12,
+      "options": {
+        "calculate": false, "cellGap": 1,
+        "cellValues": { "unit": "rothz" },
+        "color": { "exponent": 0.5, "fill": "dark-purple", "mode": "scheme", "reverse": false, "scale": "exponential", "scheme": "Spectral", "steps": 64 },
+        "filterValues": { "le": 1e-09 },
+        "legend": { "show": false },
+        "rowsFrame": { "layout": "auto" },
+        "tooltip": { "mode": "single", "showColorScale": false, "yHistogram": false },
+        "yAxis": { "axisPlacement": "hidden", "reverse": false }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus01" },
+          "editorMode": "code",
+          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.30:9100\", job=\"node\"}",
+          "legendFormat": "Core: {{cpu}}",
+          "range": true, "refId": "A"
+        }
+      ],
+      "title": "CPU Frequency — print-controller",
+      "transparent": true,
+      "type": "heatmap"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 49 },
+      "id": 101,
+      "panels": [],
+      "title": "Workstation",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus01" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "scaleDistribution": { "type": "linear" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 50 },
+      "id": 13,
+      "options": {
+        "calculate": false, "cellGap": 1,
+        "cellValues": { "unit": "rothz" },
+        "color": { "exponent": 0.5, "fill": "dark-red", "mode": "scheme", "reverse": false, "scale": "exponential", "scheme": "Spectral", "steps": 64 },
+        "filterValues": { "le": 1e-09 },
+        "legend": { "show": true },
+        "rowsFrame": { "layout": "auto" },
+        "tooltip": { "mode": "single", "showColorScale": false, "yHistogram": false },
+        "yAxis": { "axisPlacement": "hidden", "reverse": false }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus01" },
+          "editorMode": "code",
+          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.88:9100\", job=\"node\"}",
+          "legendFormat": "Core: {{cpu}}",
+          "range": true, "refId": "A"
+        }
+      ],
+      "title": "CPU Frequency — LINDA (48 cores)",
+      "transparent": true,
+      "type": "heatmap"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 42,
+  "tags": ["fleet", "cpu", "frequency", "per-machine", "nix-provisioned"],
+  "templating": { "list": [] },
+  "time": { "from": "now-30m", "to": "now" },
+  "timepicker": {},
+  "timezone": "utc",
+  "title": "CPU Frequency (per machine)",
+  "uid": "cpu-frequency-per-machine",
+  "version": 1
+}

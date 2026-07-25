@@ -83,4 +83,8 @@
       enable = true;
     };
   };
+
+  # SD-card display Pi — no SMART-capable disks
+  services.smartd.enable = lib.mkForce false;
+  services.prometheus.exporters.smartctl.enable = lib.mkForce false;
 }

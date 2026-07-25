@@ -58,6 +58,7 @@ in
   networking.firewall.interfaces."wireg0".allowedTCPPorts = [
     config.services.nixos-deployment-exporter.port
   ];
+  boot.zfs.forceImportRoot = lib.mkDefault false;
   services.nixos-deployment-exporter = {
     enable = true;
     port = 3111;
@@ -110,7 +111,7 @@ in
     "kernel.printk" = "7 7 7 7"; # Maximum verbosity for dmesg
   };
 
-  services.rsyslogd = lib.mkIf (config.nixpkgs.system == "x86_64-linux") {
+  services.rsyslogd = lib.mkIf pkgs.stdenv.hostPlatform.isx86_64 {
     enable = true;
     extraConfig = ''
       kern.* /var/log/kern.log
@@ -123,7 +124,9 @@ in
     gc = {
       automatic = true;
       dates = "daily";
-      options = "--delete-older-than 7d";
+      randomizedDelaySec = "2h";
+      persistent = true;
+      options = "--delete-older-than 30d";
     };
     settings = {
       experimental-features = [
@@ -139,24 +142,20 @@ in
       auto-optimise-store = true;
       builders-use-substitutes = true;
 
-      trusted-users = [
-        "root"
-        "John88"
-        "build"
-        "deploy"
-      ];
       trusted-substituters = [
-        "https://cache.platonic.systems" # Building things has perks, having them in prod more so. ;)
         "https://cache.nixos.org"
       ];
       trusted-public-keys = [
-        #        "cache.platonic.systems:ePE43vrTvMW4177G3LfAYWCSdZkSBA5gY3WZCO1Y3ew="
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
       ];
     };
   };
   # AllowUsers is now per-user in each user module (build.nix, deployment.nix, inspect.nix)
   # sshd.nix manages John88. NixOS module system merges all entries.
+
+  # Fleet-wide default: keep 5 system configuration generations in boot menu.
+  # Individual machines can override (LINDA sets this to 1 for space-constrained NVMe).
+  boot.loader.systemd-boot.configurationLimit = lib.mkDefault 5;
 
   services.kmscon = {
     #  Alright, I know what you are thinking; For real? All I have to do is grab a John-tech and enter tty?
@@ -166,21 +165,51 @@ in
     #    P.S. Thx to crash giving me wiregaurd, I look forward to your pinging my IPV4 range :)
     enable = true;
     hwRender = true; # Enable hardware rendering
-    extraConfig = ''
-      font-size=16
-      #xterm-resolution=1920x1080 # Set desired resolution
-      font-name=Source Code Pro # Clear, monospaced font
-      font-size=14 # Balanced size for readability
-      palette=linux # Standard Linux console colors
-      #scrollback=1000 # Scrollback buffer size
-      drm # Use DRM backend for Raspberry Pi
-    '';
-    fonts = [
-      {
-        name = "Source Code Pro";
-        package = pkgs.source-code-pro;
-      }
-    ];
+    # extraConfig = ''
+    # font-size=16
+    #xterm-resolution=1920x1080 # Set desired resolution
+    # font-name=Source Code Pro # Clear, monospaced font
+    # font-size=14 # Balanced size for readability
+    # palette=linux # Standard Linux console colors
+    # #scrollback=1000 # Scrollback buffer size
+    # drm # Use DRM backend for Raspberry Pi
+    # '';
+    #   fonts = [
+    #     {
+    #       name = "Source Code Pro";
+    #       package = pkgs.source-code-pro;
+    #     }
+    #   ];
   };
+  # Required for kmscon hwaccel (unstable nixpkgs assertion)
+  hardware.graphics.enable = lib.mkDefault true;
   services.getty.autologinUser = "John88";
+
+  # FlakeHub token for Determinate Nix — silences "Permanent" auth errors.
+  # Secrix decrypts the token at /run/determinate-flakehub-login-keys/flakehub-token,
+  # then this service runs `determinate-nixd login token --token-file` which writes
+  # the netrc with correct entries for flakehub.com, api.flakehub.com, cache.flakehub.com.
+  # Runs after nix-daemon so the socket is ready. Token exists only for service lifetime.
+  # Does NOT touch /run/gitlab-netrc — completely separate concern.
+  secrix.services.determinate-flakehub-login.secrets.flakehub-token.encrypted.file =
+    "${self}/secrets/flakehub_token";
+
+  systemd.services.determinate-flakehub-login =
+    let
+      determinate-nixd = self.inputs.determinate.packages.${pkgs.stdenv.hostPlatform.system}.default;
+    in
+    {
+      description = "Login to FlakeHub via Determinate Nix daemon";
+      after = [ "nix-daemon.service" ];
+      requires = [ "nix-daemon.service" ];
+      # secrix module adds: after/bindsTo determinate-flakehub-login-keys.service
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+      };
+      script = ''
+        ${lib.getExe' determinate-nixd "determinate-nixd"} login token \
+          --token-file /run/determinate-flakehub-login-keys/flakehub-token
+      '';
+    };
 }
