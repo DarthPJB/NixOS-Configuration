@@ -12,57 +12,7 @@ let
   registry = import /tmp/nixos-planar-topology/lib/topology/mkRegistry.nix { inherit lib; };
   mkHorizons = (import /tmp/nixos-planar-topology/lib/topology/mkHorizons.nix { inherit lib; }).mkHorizons;
 
-  inherit (builtins) elem all length attrNames attrValues filter;
-
-  # Helper: test that horizon has expected structure for a hub host
-  testHubHorizon = hostname: {
-    name = "${hostname}_horizon";
-    pass =
-      let
-        h = mkHorizons { inherit registry; inherit hostname; };
-        hasCoords = (length h.coordinate) > 0;
-        hasIcmp = (length (attrNames h.effective_icmp)) > 0;
-        hasHubOf = (length h.hub_of) > 0;
-        noErrors = h.errors == [ ];
-      in
-      hasCoords && hasIcmp && hasHubOf && noErrors;
-    detail =
-      let
-        h = mkHorizons { inherit registry; inherit hostname; };
-      in
-      {
-        coordinate_count = length h.coordinate;
-        hub_of_count = length h.hub_of;
-        icmp_interface_count = length (attrNames h.effective_icmp);
-        errors = h.errors;
-        warnings = h.warnings;
-      };
-  };
-
-  # Helper: test that horizon works for a leaf host
-  testLeafHorizon = hostname: {
-    name = "${hostname}_leaf_horizon";
-    pass =
-      let
-        h = mkHorizons { inherit registry; inherit hostname; };
-        hasCoords = (length h.coordinate) > 0;
-        hasIcmp = (length (attrNames h.effective_icmp)) > 0;
-        noHubOf = (length h.hub_of) == 0;
-        noErrors = h.errors == [ ];
-      in
-      hasCoords && hasIcmp && noHubOf && noErrors;
-    detail =
-      let
-        h = mkHorizons { inherit registry; inherit hostname; };
-      in
-      {
-        coordinate_count = length h.coordinate;
-        hub_of_count = length h.hub_of;
-        icmp_interface_count = length (attrNames h.effective_icmp);
-        errors = h.errors;
-        warnings = h.warnings;
-      };
-  };
+  inherit (builtins) all length attrNames filter;
 
   # Test: unknown host produces error
   testUnknownHost = {

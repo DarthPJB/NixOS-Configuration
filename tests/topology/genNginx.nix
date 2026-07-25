@@ -48,10 +48,6 @@ let
   hasNoProxyForRoot = hasRoot
     && !(rootEntry.locations."/" ? proxyPass);
 
-  # Check that nginx is enabled
-  nginxEnabled = result.services.nginx.enabled or true
-    || result.services.nginx.enable or false;
-
   # Check that acme group is added
   hasAcmeGroup = builtins.elem "acme" (result.users.users.nginx.extraGroups or [ ]);
 

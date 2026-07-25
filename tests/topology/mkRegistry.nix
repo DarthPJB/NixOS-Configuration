@@ -28,10 +28,6 @@ let
   countErrorsWithSubstr = substr:
     length (filter (e: lib.hasInfix substr e) errors);
 
-  # Helper: count warnings matching a substring
-  countWarningsWithSubstr = substr:
-    length (filter (w: lib.hasInfix substr w) warnings);
-
   # ── Test 1: Host count ──────────────────────────────────────
   testHostsCount =
     let
