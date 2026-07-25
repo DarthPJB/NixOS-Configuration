@@ -22,7 +22,7 @@ let
   inherit (builtins)
     fromJSON readFile pathExists elemAt
     toString attrNames filter head
-    listToAttrs removeAttrs;
+    removeAttrs;
 
   inherit (lib)
     hasPrefix hasSuffix optional mapAttrs'
@@ -88,7 +88,7 @@ let
   # Build interface config from each coordinate entry.
   # Each produces: networking.interfaces.<iface>.ipv4.addresses
   #   = [ { address = ...; prefixLength = ...; } ]
-  interfaceConfig = listToAttrs (map
+  interfaceConfig = builtins.listToAttrs (map
     (c:
       let
         ip = subnetPeerToIP c.subnet c.peer_id;
@@ -408,7 +408,7 @@ in
         allowedTCPPorts = topology.firewall.allowed_tcp_ports or [ ];
         allowedUDPPorts = topology.firewall.allowed_udp_ports or [ ];
         interfaces = lib.mapAttrs
-          (iface: rules: {
+          (_iface: rules: {
             allowedTCPPorts = rules.tcp or [ ];
             allowedUDPPorts = rules.udp or [ ];
           })

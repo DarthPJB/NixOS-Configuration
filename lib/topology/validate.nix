@@ -118,7 +118,7 @@ let
         else
           let
             hosts = topology.lan.hosts;
-            allHostnames = lib.mapAttrsToList (name: host: host.hostname or null) hosts;
+            allHostnames = lib.mapAttrsToList (_name: host: host.hostname or null) hosts;
             validHostnames = filter (h: h != null) allHostnames;
             duplicates = getDuplicates validHostnames;
           in

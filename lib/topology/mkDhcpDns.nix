@@ -20,7 +20,7 @@ let
     let
       entries = lib.mapAttrsToList
         (
-          name: host: if host ? mac && host ? ip && host ? hostname then "${host.mac},${host.ip},${host.hostname},infinite" else null
+          _name: host: if host ? mac && host ? ip && host ? hostname then "${host.mac},${host.ip},${host.hostname},infinite" else null
         )
         topology.lan.hosts;
       validEntries = lib.filter (x: x != null) entries;

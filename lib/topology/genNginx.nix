@@ -26,7 +26,7 @@ let
       vhosts = settings.vhosts or { };
     in
     lib.mapAttrs
-      (vhostName: entries:
+      (_vhostName: entries:
         let
           # Take the first entry (Phase B — one vhost per plane)
           entry = builtins.head entries;
@@ -61,7 +61,7 @@ let
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
       '';
-      mkProxyHost = domain: proxyConfig:
+      mkProxyHost = _domain: proxyConfig:
         let
           isLegacyFormat = builtins.isString proxyConfig;
           backend = if isLegacyFormat then proxyConfig else proxyConfig.backend;
@@ -83,7 +83,7 @@ let
             proxyWebsockets = websockets;
           };
         };
-      mkBaseHost = domain: baseConfig:
+      mkBaseHost = _domain: baseConfig:
         let
           enableACME' = baseConfig.enableACME or false;
           forceSSL' = baseConfig.forceSSL or false;
