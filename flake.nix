@@ -190,12 +190,6 @@
             }
           ];
         };
-      mkLibVirtImage = { config, name, format ? "qcow2", partitionTableType ? "efi", installBootLoader ? true, touchEFIVars ? true, diskSize ? "auto", additionalSpace ? "2048M", copyChannel ? true }:
-        import "${nixpkgs_stable}/nixos/lib/make-disk-image.nix" {
-          pkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
-          lib = nixpkgs_stable.lib;
-          inherit config name format partitionTableType installBootLoader touchEFIVars diskSize additionalSpace copyChannel;
-        };
       mkUncompressedSdImage = config:
         (config.extendModules {
           modules = [{ sdImage.compressImage = false; }];
