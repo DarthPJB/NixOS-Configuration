@@ -509,7 +509,7 @@ in
       cfg);
 
     networking.firewall = mkMerge (mapAttrsToList
-      (name: instanceCfg:
+      (_name: instanceCfg:
         if instanceCfg.enable && (instanceCfg.openFirewall || instanceCfg.openSquaremapFirewall) then {
           allowedTCPPorts =
             optional instanceCfg.openFirewall instanceCfg.gamePort
@@ -519,7 +519,7 @@ in
       cfg);
 
     environment.systemPackages = concatLists (mapAttrsToList
-      (name: instanceCfg:
+      (_name: instanceCfg:
         optionals instanceCfg.enable [ pkgs.mcrcon ]
       )
       cfg);

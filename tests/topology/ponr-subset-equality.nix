@@ -95,24 +95,6 @@ let
 
   # ── Comparison helpers ──────────────────────────────────────
 
-  # Collect a nested attrset from a flat dump format.
-  # The flat dump has keys like "services.nginx" → nginx config.
-  # We need to extract sub-paths like:
-  #   dump["services.nginx"].virtualHosts
-  #   dump["services.nginx"].enable
-  #   dump["services.prometheus"].exporters
-  # NOTE: flatGet preserved for future use — currently unused
-  _flatGet = dump: subkey:
-    let
-      # Walk the dump looking for a key that starts with the path prefix
-      # In the flat format, "services.nginx" contains the entire nginx attrset.
-      # We want to access "services.nginx.virtualHosts" → which is dump["services.nginx"].virtualHosts
-      # But actually in the flat format, services.nginx is a single key with value = nginx attrs.
-      # So we do: dump."services.nginx".virtualHosts
-      # This won't work directly because ."services.nginx" uses a dot in the attr name.
-    in
-      dump.${subkey} or null;
-
   # Compare two values for equality, recursing into attrsets/lists
   # Returns true if equal, false otherwise.
   # Handles special types: null, bool, int, string, list, attrset

@@ -23,7 +23,7 @@ let
   # Collect all warnings
   warnings = lib.flatten (
     lib.mapAttrsToList
-      (hostname: machine:
+      (hostname: _machine:
         if readPubKey hostname == null
         then "Missing public key for ${hostname} at secrets/public_keys/wireguard/wg_${hostname}_pub"
         else [ ]

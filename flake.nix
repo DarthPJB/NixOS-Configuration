@@ -51,7 +51,7 @@
         "${prefix}.${toString coord.peer_id}";
       # Backward-compatible topo attrset derived from JSON registry
       topo = lib.mapAttrs
-        (name: host:
+        (_name: host:
           let
             coords = host.coordinate or [ ];
             wgCoords = builtins.filter (c: c.plane_name == "wg") coords;
@@ -107,7 +107,7 @@
         # Skip nix test suite — OOMs on remote builders during source build.
         # The forked nix (darthpjb/nix-src) builds from source, not from cache.
         ({ pkgs, lib, ... }: {
-          nix.package = lib.mkForce (determinate.inputs.nix.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: { doCheck = false; }));
+          nix.package = lib.mkForce (determinate.inputs.nix.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (_old: { doCheck = false; }));
         })
         {
           programs.ssh.knownHosts = mkKnownHosts self.nixosConfigurations;
@@ -252,7 +252,7 @@
             )
             allMachines);
         in
-        lib.filterAttrs (name: value: value != null) entries;
+        lib.filterAttrs (_name: value: value != null) entries;
 
       # Parallelism control for CI build jobs
       # Only GitHub Actions-level max-parallel — machines use their own nix.conf
