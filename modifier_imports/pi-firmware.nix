@@ -5,17 +5,8 @@
 , ...
 }:
 let
-  inherit (builtins) map;
-  inherit (lib) mkOption getExe;
+  inherit (lib) mkOption;
   inherit (lib.types) listOf str;
-
-  cfg = config.boot.raspi;
-  kernelSrc = pkgs.fetchFromGitHub {
-    owner = "raspberrypi";
-    repo = "linux";
-    rev = "cd92a9591833ea06d1f12391f6b027fcecf436a9";
-    hash = "sha256-+9KpjeYFUeH0YCf40GICfTr/Tz++eNbUPenDOeKy+Vc=";
-  };
 in
 {
   options.boot.raspi.dtoverlays = mkOption {
@@ -26,6 +17,8 @@ in
   config = {
     hardware = {
       deviceTree = {
+        # WIP: Pi firmware overlay implementation (commented out — needs ovmerge tool)
+        # When revived, will need: builtins.map, lib.getExe, cfg = config.boot.raspi, kernelSrc fetch
         /*
           enable = true;
           filter = "*rpi-3*.dtb";

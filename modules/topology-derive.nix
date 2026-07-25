@@ -20,12 +20,12 @@
 
 let
   inherit (builtins)
-    fromJSON readFile pathExists match elemAt
-    toString attrNames filter head tail genList length
-    attrValues listToAttrs removeAttrs;
+    fromJSON readFile pathExists elemAt
+    toString attrNames filter head
+    listToAttrs removeAttrs;
 
   inherit (lib)
-    hasPrefix hasSuffix optional optionals mapAttrs mapAttrs'
+    hasPrefix hasSuffix optional mapAttrs'
     concatStringsSep nameValuePair splitString;
 
   # Read the hostname from the NixOS config (already set by hardware/user config).
@@ -49,6 +49,10 @@ let
     in
     "${prefix}.${toString peer_id}";
 
+  # ── WIP: Interface address derivation ──────────────────────
+  # prefixLengthFromSubnet and interfaceConfig are built but not yet
+  # wired into the module's config output. Preserved for when
+  # coordinate → interface derivation is activated.
   # Extract prefix length from CIDR notation.
   # For "10.88.128.0/24" -> 24
   prefixLengthFromSubnet = subnet:
