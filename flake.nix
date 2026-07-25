@@ -463,7 +463,7 @@
           modules = [
             "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
             "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
-            ./machines/beta/1.nix
+            ./machines/beta-one/1.nix
             {
               _module.args = globalArgs // { hostname = "beta-one"; };
             }
