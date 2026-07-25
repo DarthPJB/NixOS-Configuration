@@ -100,7 +100,9 @@ the overlay pattern warnings. The plan below assumes Category B is fixed.
    `server_services/game_servers/dragonwilds.nix:54`.
 
 2. **A4**: Remove `map`, `getExe`, `cfg`, `kernelSrc` from
-   `modifier_imports/pi-firmware.nix:8-13`. Verify the file still evaluates.
+   `modifier_imports/pi-firmware.nix:8-13`. Add a `# WIP` comment preserving
+   context for the commented-out implementation block. Verify the file still
+   evaluates.
 
 3. **A5**: Remove `mkMerge`, `splitString`, `last` from
    `lib/network-interfaces.nix:7-10`.
@@ -110,7 +112,7 @@ the overlay pattern warnings. The plan below assumes Category B is fixed.
 
 5. **A7**: Remove `utils` and `safeLookup` from
    `lib/topology/mkDnsSettings.nix:8-9`. Also remove the `import ./utils.nix`
-   line if `utils` is the sole consumer.
+   line (the only export consumed was `safeLookup`, which is unused).
 
 6. **A8**: Remove `isInt`, `splitString`, `errors`, `hostLabel`,
    `wgRoutingHosts`, `wgRoutingHostnames` from `lib/topology/validate.nix`.
@@ -118,7 +120,13 @@ the overlay pattern warnings. The plan below assumes Category B is fixed.
 7. **A9**: Remove `hasAttr`, `toString`, `ifaceSubnetMap` from
    `lib/topology/genNftablesMatrix.nix`.
 
-8. **A10**: Remove 10 unused bindings from `modules/topology-derive.nix`.
+8. **A10**: Split into two groups in `modules/topology-derive.nix`:
+   - **A10a (remove)**: 8 over-broad inherit bindings: `match`, `tail`, `genList`,
+     `length`, `listToAttrs`, `attrValues`, `optionals`, `mapAttrs` (lines 23-28)
+   - **A10b (preserve with WIP comment)**: `prefixLengthFromSubnet` (line 54) and
+     `interfaceConfig` (line 87) — these are WIP scaffold code that builds
+     interface address config from JSON topology but is not yet wired into the
+     module's config output. Deleting would force reimplementation.
 
 9. **A11**: Remove `mkLibVirtImage` from `flake.nix:193` (and its entire
    function body if it is self-contained and unused).
@@ -170,6 +178,8 @@ the overlay pattern warnings. The plan below assumes Category B is fixed.
 - All renamed arguments are confirmed unused in their function bodies
 - `nix eval` still succeeds
 - Golden tests unaffected (lambda arg names do not appear in evaluated config)
+- **Explicit**: Run deadnix without `--no-lambda-arg` and confirm zero
+  "Unused lambda argument" warnings remain before proceeding to Phase 3
 
 **Executor**: `bellana-deepseek`
 **Validator**: `tpol-minimax`
@@ -182,8 +192,12 @@ the overlay pattern warnings. The plan below assumes Category B is fixed.
 
 **Steps**:
 
-1. Add `--no-lambda-arg` to the deadnix invocation in `flake.nix:738`:
+1. Add `--no-lambda-arg` to the deadnix invocation in `flake.nix:738` with an
+   audit comment:
    ```nix
+   # NOTE: --no-lambda-arg suppresses ALL unused lambda-arg warnings.
+   # Intentional: handles idiomatic (final: super: {...}) overlay patterns.
+   # Any new dead lambda args will be silently suppressed — audit annually.
    text = ''exec deadnix --fail --no-lambda-arg --no-lambda-pattern-names "${self}"'';
    ```
    This suppresses all unused lambda argument warnings. After Phase 2, the only
@@ -222,14 +236,30 @@ the overlay pattern warnings. The plan below assumes Category B is fixed.
 
 ---
 
+## Commit Strategy
+
+Phase 1 sub-commits by directory for bisection safety:
+
+```
+1a: lib/ + lib/topology/     (A5, A6, A7, A8, A9)
+1b: modules/ + modifier_imports/  (A4, A10)
+1c: server_services/         (A1, A2, A3)
+1d: flake.nix                (A11)
+1e: tests/                   (A12-A17)
+ 2: deadnix: prefix unused lambda args (all B items)
+ 3: deadnix: add --no-lambda-arg + audit comment
+ 4: deadnix: preserve WIP interfaceConfig scaffold
+```
+
 ## Execution Order
 
 ```
-Phase 1 (remove dead bindings)
+Phase 1 (remove dead bindings — 5 sub-commits)
     ↓ tpol-minimax verification gate
 Phase 2 (prefix unused lambda args)
     ↓ tpol-minimax verification gate
-Phase 3 (add --no-lambda-arg)
+    ↓ EXPLICIT: confirm zero lambda-arg warnings BEFORE adding flag
+Phase 3 (add --no-lambda-arg + audit comment)
     ↓ tpol-minimax verification gate
 Phase 4 (full validation)
     ↓ user sign-off
@@ -242,3 +272,47 @@ Phase 4 (full validation)
 - **Low risk**: `--no-lambda-arg` only suppresses warnings; does not change behavior.
 - **Zero risk to goldens**: None of these changes affect the NixOS configuration
   output. Golden tests are a safety net, not expected to fail.
+
+---
+
+## Review Synthesis (2026-07-25)
+
+Two adversarial reviews were conducted: `tpol-minimax` and `bellana-deepseek`.
+Key findings verified and incorporated:
+
+### Corrections to Original Plan
+
+1. **A10 split**: `interfaceConfig` and `prefixLengthFromSubnet` in
+   `topology-derive.nix` are WIP scaffold code (builds interface address
+   config from JSON topology but not wired into module output). Deleting them
+   would force reimplementation. **Action**: Remove only the 8 over-broad
+   inherit bindings. Preserve the two WIP functions with comments.
+
+2. **A7 verification**: `safeLookup` in `mkDnsSettings.nix` was flagged by
+   both reviewers as potentially used. **Verified**: `safeLookup` appears ONLY
+   at line 9 (the inherit). It is genuinely unused in the file body. Deadnix
+   is correct. The plan is correct.
+
+3. **A8 verification**: Reviewer concern about dual-location removal of `errors`
+   (binding + `inherit`) was unfounded. The `inherit warnings errors` is in
+   `mkDnsSettings.nix`, not `validate.nix`. No dual-location issue exists.
+
+4. **A10 binding name**: Reviewer claimed plan had wrong binding name (`match`
+   vs `elemAt`). **Verified**: Fresh deadnix run confirms `match` is the unused
+   binding at line 23, not `elemAt`. The plan is correct.
+
+### Improvements Incorporated
+
+5. **Phase 2→3 gate**: Added explicit step to confirm zero lambda-arg warnings
+   before adding `--no-lambda-arg`, preventing the flag from masking missed
+   Phase 2 renames.
+
+6. **Audit comment**: Added explanatory comment at `--no-lambda-arg` flag in
+   `flake.nix` documenting why the flag exists and the trade-off (permanently
+   suppresses all lambda-arg warnings, including future dead code).
+
+7. **WIP preservation**: A4 (`pi-firmware.nix`) and A10 (`topology-derive.nix`)
+   now preserve WIP scaffold code with comments instead of blind deletion.
+
+8. **Commit strategy**: Per-directory sub-commits for Phase 1 enable precise
+   bisection if a golden test fails.
