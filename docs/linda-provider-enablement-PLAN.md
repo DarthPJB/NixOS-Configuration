@@ -1,8 +1,9 @@
 # Alpha-Three Provider Enablement Plan
 
 **Date:** 2026-07-14
+**Updated:** 2026-07-25
 **Branch:** overlord-II
-**Status:** Executing
+**Status:** COMPLETE — Providers enabled and confirmed working
 **Target:** alpha-three ONLY (no deployment without authorization)
 
 ---

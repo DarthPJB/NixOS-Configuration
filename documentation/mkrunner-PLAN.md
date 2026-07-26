@@ -1,8 +1,9 @@
 # mkRunner — Scalable GitHub Runner Factory
 
 > **Created:** 2026-07-19
+> **Updated:** 2026-07-25
 > **Worktree:** `/tmp/nixos-mkrunner` (branch `feat/mkrunner`)
-> **Status:** PLANNING
+> **Status:** COMPLETE — `lib/mkRunner.nix` implemented, `services/mkRunners.nix` active, deployed on remote-builder
 
 ## Objective
 
