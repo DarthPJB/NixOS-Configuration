@@ -37,7 +37,7 @@
     serviceConfig = {
       Restart = "always";
       ExecStart = ''
-        ${pkgs.xwinwrap}/bin/xwinwrap -ov -fs -- ${pkgs.xscreensaver}/libexec/xscreensaver/galaxy --count 5 --no-tracks --cycles 1000 --delay 20000 --no-spin -root -window-id WID
+        ${lib.getExe pkgs.xwinwrap} -ov -fs -- ${pkgs.xscreensaver}/libexec/xscreensaver/galaxy --count 5 --no-tracks --cycles 1000 --delay 20000 --no-spin -root -window-id WID
       '';
       PassEnvironment = "DISPLAY XAUTHORITY";
     };
