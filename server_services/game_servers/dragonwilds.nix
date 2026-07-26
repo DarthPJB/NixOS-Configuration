@@ -54,7 +54,7 @@ in
         mkdir = lib.getExe' pkgs.coreutils "mkdir";
         cp = lib.getExe' pkgs.coreutils "cp";
         chmod = lib.getExe' pkgs.coreutils "chmod";
-        steamRun = "${pkgs.steam-run}/bin/steam-run";
+        steamRun = "${lib.getExe pkgs.steam-run}";
       in
       {
         description = "RuneScape Dragonwilds Dedicated Server";
