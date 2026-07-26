@@ -85,7 +85,7 @@ testers.runNixOSTest {
       # ── Phase 3: Verify RCON is responsive ──────────────────────────
       with subtest("RCON responds to list command"):
           result = machine.succeed(
-              "${pkgs.mcrcon}/bin/mcrcon -H 127.0.0.1 -P 25575 -p testpassword 'list'"
+              "${lib.getExe pkgs.mcrcon} -H 127.0.0.1 -P 25575 -p testpassword 'list'"
           )
           print(f"RCON list output: {result.strip()}")
           # list command returns player count — even if 0 players, it returns a string
@@ -101,7 +101,7 @@ testers.runNixOSTest {
       with subtest("RCON stop triggers clean shutdown"):
           # Send stop command
           machine.succeed(
-              "${pkgs.mcrcon}/bin/mcrcon -H 127.0.0.1 -P 25575 -p testpassword 'stop'"
+              "${lib.getExe pkgs.mcrcon} -H 127.0.0.1 -P 25575 -p testpassword 'stop'"
           )
           print("RCON stop sent")
 
