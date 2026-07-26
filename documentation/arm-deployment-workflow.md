@@ -106,7 +106,7 @@ Each device needs unique WireGuard keys.
 3. **Add to topology.nix** with WireGuard IP and hub assignment
 4. **Generate golden test:**
    ```bash
-   nix run .#dump-config -- <hostname> | jq -S . > real-topology/golden/<hostname>.json
+   nix run .#dump-config -- <hostname> | jq -S . > goldens/<hostname>.json
    nix run .#check-network -- <hostname>
    ```
 
