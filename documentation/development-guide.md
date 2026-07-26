@@ -16,9 +16,7 @@ Consolidated reference for codebase structure, coding conventions, and developme
   - Each contains `default.nix` for primary config and `hardware-configuration.nix` for auto-generated hardware details
 - `topology/` - Planar topology data (JSON, single source of truth)
   - `<machine>.json` - Per-machine topology (coordinate, planes, hub relationships, DNS, nginx, firewall, WireGuard)
-  - `shared.json` - Cross-host shared data (WireGuard IPs, LAN IPs, hub relationships)
   - `_template.json` - Template for new machines
-  - `external/` - Non-Nix-managed systems (APs, external PCs, WireGuard-only peers)
 - `goldens/` - Golden test files (sacrosanct)
   - `<machine>.json` - Golden test references for each machine
 - `lib/topology/` - Topology transformation functions
@@ -208,32 +206,13 @@ NIX_SSHOPTS="-p 22" nixos-rebuild switch --flake .#<hostname> --target-host depl
 
 ## Troubleshooting
 
-### Build Failures
-- Check syntax with `nix flake check`
-- Verify file paths are correct
-- Check for missing imports
+### Nix-Specific
+- Check syntax: `nix flake check`
 - Review build logs: `nix log <derivation>`
-- Use `nix repl` for debugging
+- Debug expressions: `nix repl`
 
-### Deployment Issues
-- Test SSH: `ssh -p 1108 deploy@10.88.127.X`
-- Verify VPN connectivity
-- Check deploy user permissions
-- Verify secrix paths
-
-### Secret Issues
-- Check secrix configuration
-- Verify public keys exist
-- Test secret decryption
-- Check file permissions
-- Verify secret paths
-
-### Network Issues
-- Check WireGuard status
-- Verify IP assignments
-- Test connectivity between hosts
-- Check firewall rules
-- Verify DNS resolution
+### Deployment, Secret, and Network Issues
+See `documentation/operations-runbooks.md` for common commands covering SSH connectivity, VPN verification, secrix troubleshooting, WireGuard status checks, and firewall debugging.
 
 ---
 
@@ -241,6 +220,6 @@ NIX_SSHOPTS="-p 22" nixos-rebuild switch --flake .#<hostname> --target-host depl
 
 - **Formatter**: `nixpkgs.nixpkgs-fmt` (enforced via `nix flake check`)
 - **Dead code**: `deadnix` (enforced via `nix flake check`)
-- **Golden tests**: `goldens/<machine>.json` — ground truth, only regenerated for intentional changes
+- **Golden tests**: `goldens/<machine>.json` — canonical validation references
 - **Topology**: `topology/<machine>.json` — single source of truth for network configuration
 - **Formatter constraints**: Do NOT run `nix fmt` on entire codebase without explicit permission
