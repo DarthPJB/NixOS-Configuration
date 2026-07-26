@@ -1,3 +1,0 @@
-NAME            SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
-bulk-storage   5.44T  1004G  4.46T        -         -     0%    18%  1.04x    ONLINE  -
-speed-storage  4.53T  2.73T  1.81T        -         -    30%    60%  1.00x    ONLINE  -

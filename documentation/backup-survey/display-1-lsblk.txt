@@ -1,5 +1,0 @@
-NAME          SIZE TYPE MOUNTPOINT
-mmcblk0     119.1G disk 
-├─mmcblk0p1    30M part 
-└─mmcblk0p2   119G part /
-zram0         3.7G disk [SWAP]
