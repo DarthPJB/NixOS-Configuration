@@ -5,9 +5,6 @@
 # Must match production mkDhcpDns.nix data extraction.
 topology:
 let
-  utils = import ./utils.nix { inherit lib; };
-  inherit (utils) safeLookup;
-
   machines = lib.mapAttrs
     (hostname: machine:
       if !(machine ? dns) then null else

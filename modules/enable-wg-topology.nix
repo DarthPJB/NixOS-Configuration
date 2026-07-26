@@ -62,7 +62,7 @@ let
   # ── Build peer list ──────────────────────────────────────────
   # All hosts with a wg coordinate
   allWgHostnames = builtins.attrNames (lib.filterAttrs
-    (name: host:
+    (_name: host:
       builtins.any (c: c.plane_name == "wg") (host.coordinate or [ ])
     )
     registry.hosts);

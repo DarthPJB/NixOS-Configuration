@@ -16,7 +16,7 @@
         ''KERNEL=="sd[a-z]"''
         ''ENV{ID_BUS}!="usb"''
         ''ATTR{queue/rotational}=="1"''
-        ''RUN+="${pkgs.hdparm}/bin/hdparm -B 90 -S 41 /dev/%k"''
+        ''RUN+="${lib.getExe pkgs.hdparm} -B 90 -S 41 /dev/%k"''
       ])
     ]);
   powerManagement.cpuFreqGovernor = "ondemand";

@@ -1,3 +1,9 @@
+# AGENTS.md
+
+**Scope:** Build philosophy, constraints, critical rules, common tasks.
+**Not scope:** Repository structure (see documentation/development-guide.md),
+project planning (see opencode/plans/), deployments (see documentation/operations-runbooks.md).
+
 ## Build Philosophy
 
 This is professional netrunner infrastructure, not a hobby project.
@@ -53,25 +59,25 @@ remote-worker (ad-hoc), gaming-host-1, local-nas, print-controller.
 
 ### Active Architecture (Production)
 
-The production architecture uses per-machine topology files with direct transformation:
+The production architecture uses JSON topology files as the single source of truth,
+loaded through the `topology-derive.nix` module:
 
 **Data Flow:**
 ```
-topology/<machine>.nix (per-machine topology data)
+topology/<machine>.json (per-machine topology data — single source of truth)
 ↓
-lib/topology/*.nix (transformation functions: mkWireguardPeers, mkNginxProxies, mkDhcpDns, etc.)
+modules/topology-derive.nix (reads JSON via commonModules in flake.nix)
 ↓
-modules/core-router.nix (NixOS config generation)
+modules/core-router.nix (hub) or modules/enable-wg-topology.nix (clients)
 ```
 
 **Active Files:**
-- `topology/<machine>.nix` — Per-machine topology data (DNS, nginx, firewall, WG)
-- `topology/shared.nix` — Shared topology data (WireGuard IPs, LAN IPs, hub relationships)
-- `topology/default.nix` — Entry point, imports shared + per-machine files
+- `topology/<machine>.json` — Per-machine topology data (coordinates, planes, DNS, nginx, firewall, WireGuard)
 - `goldens/<machine>.json` — Golden test references (sacrosanct)
+- `modules/topology-derive.nix` — Topology derivation module (imported via `commonModules` at flake.nix:104)
 - `lib/serialize-config.nix` — The one config serializer (used by `dump-config` and `checks.network-config-*`)
 - `lib/golden_coverage.nix` — Coverage tracking (audit tool)
-- `lib/topology/mkNginxProxies.nix` — Nginx proxy configuration (production)
+- `lib/topology/mkNginxProxies.nix` — Nginx proxy configuration
 - `lib/topology/mkWireguardPeers.nix` — WireGuard peer transformation (requires `self`)
 - `lib/topology/mkTailscaleConfig.nix` — Tailscale configuration
 - `lib/topology/mkDhcpDns.nix` — DHCP/DNS configuration
@@ -79,8 +85,8 @@ modules/core-router.nix (NixOS config generation)
 - `lib/topology/mkMonitoringSettings.nix` — Prometheus exporter config
 - `lib/topology/validate.nix` — Topology validation
 - `lib/topology/utils.nix` — Shared utilities
-- `modules/core-router.nix` — Core router module (production)
-- `modules/enable-wg-topology.nix` — WireGuard client module (deployed on 13 machines)
+- `modules/core-router.nix` — Hub router module (production)
+- `modules/enable-wg-topology.nix` — WireGuard client module (deployed on 14 machines)
 
 ### WIP: Two-Layer Topology Architecture
 
@@ -119,8 +125,7 @@ modules/core-router-topology.nix (hub) or modules/enable-wg-topology.nix (client
 - `modules/core-router-topology.nix` — Hub machine module (WIP)
 
 **Status:** `enable-wg-topology.nix` is deployed on 13 client machines.
-`core-router-topology.nix` is imported by cortex-alpha but is the WIP path;
-AGENTS.md previously stated it was unwired — this is stale (see Finalisation Tasks).
+`core-router-topology.nix` is imported by cortex-alpha (WIP path).
 
 ### Topology-Gen Branch (In Progress)
 
@@ -238,12 +243,11 @@ nix run .#dump-config -- cortex-alpha | jq -S . > goldens/cortex-alpha.json
 **Only for intentional configuration changes.** Never during restructuring.
 
 ### Add a New Machine to Topology
-1. Create `topology/<machine-name>.nix` (use existing as template)
-2. Create `topology/<machine-name>.json` (planar-topology format)
-3. Create the machine's config in `flake.nix` (use `mkX86_64` or `mkAarch64`)
-4. Import the appropriate module (`core-router.nix` or `core-router-topology.nix`)
-5. Generate golden: `nix run .#dump-config -- <machine-name> | jq -S . > goldens/<machine-name>.json`
-6. Validate: `nix run .#check-network -- <machine-name>`
+1. Create `topology/<machine-name>.json` (use `_template.json` as reference)
+2. Create the machine's config in `flake.nix` (use `mkX86_64` or `mkAarch64`)
+3. Import the appropriate module (`core-router.nix` or `core-router-topology.nix`)
+4. Generate golden: `nix run .#dump-config -- <machine-name> | jq -S . > goldens/<machine-name>.json`
+5. Validate: `nix run .#check-network -- <machine-name>`
 
 ### Dump Full Configuration
 ```bash
@@ -278,52 +282,10 @@ nix build .#checks.x86_64-linux.bargman-greeter-login-test -L  # golden screensh
 
 ---
 
-## Repository Structure
-- `topology/` — Topology data (cortex-alpha.nix, shared.nix, default.nix; JSON on planar-topology)
-- `goldens/` — Golden test files (sacrosanct; 20 machines)
-- `lib/topology/` — Transformation functions (production + WIP transformers + generators)
-- `lib/serialize-config.nix` — The one config serializer
-- `lib/golden_coverage.nix` — Coverage tracking (audit tool)
-- `modules/` — NixOS modules (core-router.nix, core-router-topology.nix, enable-wg-topology.nix, ssh-multiplex.nix, etc.)
-- `machines/` — Per-machine NixOS configurations (19 machines)
-- `server_services/` — Service definitions (nextcloud, gitolite, hedgedoc, klipper, etc.)
-- `documentation/` — Architecture docs and operational references
-- `snippets/` — Reference snippets, retired configs, archived plans (not active code)
-- `scripts/` — Utility scripts
-- `secrets/` — Encrypted secrets (private keys) and public keys
-- `ci/` — CI pipeline configuration
-
 ## Deployment Flow
 1. Run golden test: `nix run .#check-network -- <machine>`
 2. Verify WireGuard keys exist: `ls secrets/public_keys/wireguard/wg_*_pub`
 3. Check for warnings in nix eval output
 4. Deploy with appropriate caution
 
----
 
-## Finalisation Tasks
-
-Tasks remaining from the cleaning review (2026-07-20) and topology-gen branch
-completion. These are tracked here for visibility; execute in order.
-
-### HIGH — Before topology-gen merge
-
-| # | Task | Evidence |
-|---|---|---|
-| F1 | **Delete `server_services/hedgedoc.nix`** — orphaned service+vhost, zero imports | grep confirms no consumers |
-| F2 | **Fix `AGENTS.md:219,252`** — stale claim that `core-router-topology.nix` "is not yet wired into cortex-alpha" when `machines/cortex-alpha/default.nix` imports it | cortex-alpha/default.nix:23 |
-| F3 | **Delete `snippets/overlord-II-PLAN.md` topology sections** — moved to snippets, topology phases superseded by planar-topology | Done (2026-07-20) |
-
-### MEDIUM — Code quality sweep
-
-| # | Task | Location(s) |
-|---|---|---|
-| F4 | **Extract hardcoded IPs** to `topology/shared.nix` — `193.16.42.101`, `10.0.1.42`, `82.5.173.252` repeated with `#todo` comments | `flake.nix:622-652`, `server_services/nextcloud.nix`, `machines/remote-worker/default.nix` |
-| F5 | **Convert `writeShellScript` → `writeShellApplication`** — 3 instances | `lib/rclone-target.nix:150`, `flake.nix:437`, `modules/sysdiag.nix:43,69` |
-| F6 | **Convert `${pkgs.foo}/bin/foo` → `lib.getExe`** — 9 instances | `cortex-alpha/default.nix:125`, `core-router-topology.nix:126`, `rclone-target.nix:127,129`, `LINDA/default.nix:244`, `terratech.nix:336-338`, `dragonwilds.nix:58`, `energy_saving.nix:19`, `tests/minecraft-server/default.nix:88,104`, `locale/input-methods.nix:127` |
-
-### LOW — Documentation hygiene
-
-| # | Task | Location |
-|---|---|---|
-| F7 | **Update `documentation/plans/overlord-II-PLAN.md`** — references deleted `real-topology/` (lines 80, 90-91, 96, 118) | Moved to snippets; remaining refs stale |

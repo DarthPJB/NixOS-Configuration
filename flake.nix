@@ -51,7 +51,7 @@
         "${prefix}.${toString coord.peer_id}";
       # Backward-compatible topo attrset derived from JSON registry
       topo = lib.mapAttrs
-        (name: host:
+        (_name: host:
           let
             coords = host.coordinate or [ ];
             wgCoords = builtins.filter (c: c.plane_name == "wg") coords;
@@ -107,7 +107,7 @@
         # Skip nix test suite — OOMs on remote builders during source build.
         # The forked nix (darthpjb/nix-src) builds from source, not from cache.
         ({ pkgs, lib, ... }: {
-          nix.package = lib.mkForce (determinate.inputs.nix.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: { doCheck = false; }));
+          nix.package = lib.mkForce (determinate.inputs.nix.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (_old: { doCheck = false; }));
         })
         {
           programs.ssh.knownHosts = mkKnownHosts self.nixosConfigurations;
@@ -190,12 +190,6 @@
             }
           ];
         };
-      mkLibVirtImage = { config, name, format ? "qcow2", partitionTableType ? "efi", installBootLoader ? true, touchEFIVars ? true, diskSize ? "auto", additionalSpace ? "2048M", copyChannel ? true }:
-        import "${nixpkgs_stable}/nixos/lib/make-disk-image.nix" {
-          pkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
-          lib = nixpkgs_stable.lib;
-          inherit config name format partitionTableType installBootLoader touchEFIVars diskSize additionalSpace copyChannel;
-        };
       mkUncompressedSdImage = config:
         (config.extendModules {
           modules = [{ sdImage.compressImage = false; }];
@@ -258,7 +252,7 @@
             )
             allMachines);
         in
-        lib.filterAttrs (name: value: value != null) entries;
+        lib.filterAttrs (_name: value: value != null) entries;
 
       # Parallelism control for CI build jobs
       # Only GitHub Actions-level max-parallel — machines use their own nix.conf
@@ -461,10 +455,14 @@
         bargman-greeter-vm-serial = {
           type = "app";
           program = toString (
-            nixpkgs.writeShellScript "run-bargman-greeter-vm-serial" ''
-              export QEMU_OPTS="-display none -serial mon:stdio ''${QEMU_OPTS:-}"
-              exec ${self.nixosConfigurations.bargman-greeter-vm.config.system.build.vm}/bin/run-bargman-greeter-vm-vm "$@"
-            ''
+            nixpkgs.writeShellApplication {
+              name = "run-bargman-greeter-vm-serial";
+              runtimeInputs = [ ];
+              text = ''
+                export QEMU_OPTS="-display none -serial mon:stdio ''${QEMU_OPTS:-}"
+                exec ${self.nixosConfigurations.bargman-greeter-vm.config.system.build.vm}/bin/run-bargman-greeter-vm-vm "$@"
+              '';
+            }
           );
         };
       };
@@ -735,7 +733,10 @@
           name = "run-deadnix";
           meta.description = "Detect dead Nix code";
           runtimeInputs = [ deadnix.packages.x86_64-linux.default ];
-          text = ''exec deadnix --fail --no-lambda-pattern-names "${self}"'';
+          # NOTE: --no-lambda-arg suppresses ALL unused lambda-arg warnings.
+          # Intentional: handles idiomatic (final: super: {...}) overlay patterns.
+          # Any new dead lambda args will be silently suppressed — audit annually.
+          text = ''exec deadnix --fail --no-lambda-arg --no-lambda-pattern-names "${self}"'';
         };
 
         # Network topology golden check for all machines

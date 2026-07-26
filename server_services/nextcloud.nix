@@ -4,7 +4,6 @@
 , ...
 }:
 let
-  inherit (builtins) readFile;
   fqdn = "nextcloud.johnbargman.net";
   fqdn2 = "nextcloud.johnbargman.com";
 in

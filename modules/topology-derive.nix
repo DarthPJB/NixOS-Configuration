@@ -20,12 +20,12 @@
 
 let
   inherit (builtins)
-    fromJSON readFile pathExists match elemAt
-    toString attrNames filter head tail genList length
-    attrValues listToAttrs removeAttrs;
+    fromJSON readFile pathExists elemAt
+    toString attrNames filter head
+    removeAttrs;
 
   inherit (lib)
-    hasPrefix hasSuffix optional optionals mapAttrs mapAttrs'
+    hasPrefix hasSuffix optional mapAttrs'
     concatStringsSep nameValuePair splitString;
 
   # Read the hostname from the NixOS config (already set by hardware/user config).
@@ -49,15 +49,6 @@ let
     in
     "${prefix}.${toString peer_id}";
 
-  # Extract prefix length from CIDR notation.
-  # For "10.88.128.0/24" -> 24
-  prefixLengthFromSubnet = subnet:
-    let
-      parts = splitString "/" subnet;
-      maskStr = elemAt parts 1;
-    in
-    fromJSON maskStr;
-
   # ── Default exporter ports ────────────────────────────────
   defaultPorts = {
     node = 9100;
@@ -80,26 +71,6 @@ let
     if hasTopology then
       filter (c: !hasPrefix "mac:" (c.interface or "")) (topology.coordinate or [ ])
     else [ ];
-
-  # Build interface config from each coordinate entry.
-  # Each produces: networking.interfaces.<iface>.ipv4.addresses
-  #   = [ { address = ...; prefixLength = ...; } ]
-  interfaceConfig = listToAttrs (map
-    (c:
-      let
-        ip = subnetPeerToIP c.subnet c.peer_id;
-        mask = prefixLengthFromSubnet c.subnet;
-      in
-      nameValuePair c.interface {
-        ipv4.addresses = [
-          {
-            address = ip;
-            prefixLength = mask;
-          }
-        ];
-      }
-    )
-    realCoordinates);
 
   # ── First coordinate IP for listen addresses ──────────────
   firstIP =
@@ -404,7 +375,7 @@ in
         allowedTCPPorts = topology.firewall.allowed_tcp_ports or [ ];
         allowedUDPPorts = topology.firewall.allowed_udp_ports or [ ];
         interfaces = lib.mapAttrs
-          (iface: rules: {
+          (_iface: rules: {
             allowedTCPPorts = rules.tcp or [ ];
             allowedUDPPorts = rules.udp or [ ];
           })
