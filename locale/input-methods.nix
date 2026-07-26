@@ -124,7 +124,7 @@
     wantedBy = [ "graphical-session.target" ];
     partOf = [ "graphical-session.target" ];
     serviceConfig = {
-      ExecStart = "${pkgs.fcitx5}/bin/fcitx5";
+      ExecStart = "${lib.getExe pkgs.fcitx5}";
       Restart = "on-failure";
     };
   };
