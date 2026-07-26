@@ -97,7 +97,8 @@ Each device needs unique WireGuard keys.
    cp /tmp/wg-pub secrets/public_keys/wireguard/wg_<hostname>_pub
    ```
 
-**CRITICAL: Always encrypt with `-u John88` (or `--all-users`). Never encrypt with `-s hostname` only — the operator will be locked out.**
+**Important:** See `documentation/operations-runbooks.md#secrix-fast-encryption-workflow` for the
+`--all-users` encryption policy. This section covers only the ARM-specific key extraction steps.
 
 ## Stage 5: Build Actual Configuration
 
