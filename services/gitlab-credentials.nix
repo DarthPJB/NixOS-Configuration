@@ -1,7 +1,7 @@
 # Shared GitLab credentials module
 # Import this on any machine that needs to fetch private GitLab flake inputs
 # Uses secrix to decrypt the deploy token at runtime, injected via GIT_ASKPASS
-{ config, pkgs, self, ... }:
+{ config, lib, pkgs, self, ... }:
 let
   # User-readable copy of the netrc (secrix decrypts root-only to /run/system-keys/)
   userNetrcPath = "/run/gitlab-netrc";
@@ -11,10 +11,10 @@ let
   gitlabAskpass = pkgs.writeShellScript "gitlab-askpass" ''
     case "$1" in
       *Username*)
-        exec ${pkgs.gnused}/bin/sed -n 's/^login[[:space:]]*//p' ${userNetrcPath}
+        exec ${lib.getExe' pkgs.gnused "sed"} -n 's/^login[[:space:]]*//p' ${userNetrcPath}
         ;;
       *Password*)
-        exec ${pkgs.gnused}/bin/sed -n 's/^password[[:space:]]*//p' ${userNetrcPath}
+        exec ${lib.getExe' pkgs.gnused "sed"} -n 's/^password[[:space:]]*//p' ${userNetrcPath}
         ;;
     esac
   '';

@@ -1,4 +1,5 @@
 { config
+, lib
 , pkgs
 , self
 , ...
@@ -28,7 +29,7 @@ in
       # LiveDNS API and updates your dns record with the IP.
 
       # Gandi LiveDNS API KEY
-      API_KEY=$(${pkgs.coreutils}/bin/cat ${
+      API_KEY=$(${lib.getExe' pkgs.coreutils "cat"} ${
         config.secrix.services."dynamic-${hostname}".secrets.gandi_api_barg_net_token.decrypted.path
       })
 
