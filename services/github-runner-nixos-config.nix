@@ -23,10 +23,10 @@ let
   gitlabAskpass = pkgs.writeShellScript "gitlab-askpass" ''
     case "$1" in
       *Username*)
-        exec ${pkgs.gnused}/bin/sed -n 's/^login[[:space:]]*//p' "${gitlabNetrcPath}"
+        exec ${lib.getExe' pkgs.gnused "sed"} -n 's/^login[[:space:]]*//p' "${gitlabNetrcPath}"
         ;;
       *Password*)
-        exec ${pkgs.gnused}/bin/sed -n 's/^password[[:space:]]*//p' "${gitlabNetrcPath}"
+        exec ${lib.getExe' pkgs.gnused "sed"} -n 's/^password[[:space:]]*//p' "${gitlabNetrcPath}"
         ;;
     esac
   '';
