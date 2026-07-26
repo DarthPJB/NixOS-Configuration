@@ -14,10 +14,10 @@ let
     text = ''
       case "$1" in
         *Username*)
-          exec sed -n 's/^login[[:space:]]*//p' "${userNetrcPath}"
+          exec ${lib.getExe' pkgs.gnused "sed"} -n 's/^login[[:space:]]*//p' "${userNetrcPath}"
           ;;
         *Password*)
-          exec sed -n 's/^password[[:space:]]*//p' "${userNetrcPath}"
+          exec ${lib.getExe' pkgs.gnused "sed"} -n 's/^password[[:space:]]*//p' "${userNetrcPath}"
           ;;
       esac
     '';
@@ -45,8 +45,8 @@ in
         runtimeInputs = [ pkgs.coreutils ];
         text = ''
           umask 022
-          cp /run/system-keys/gitlab_netrc "${userNetrcPath}"
-          chmod 0644 "${userNetrcPath}"
+          ${lib.getExe' pkgs.coreutils "cp"} /run/system-keys/gitlab_netrc "${userNetrcPath}"
+          ${lib.getExe' pkgs.coreutils "chmod"} 0644 "${userNetrcPath}"
         '';
       }}/bin/gitlab-netrc-copy";
     };
