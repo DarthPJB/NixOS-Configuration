@@ -150,10 +150,10 @@
       wiregPS0 = {
         # ensure routes exist to other clients.
         postSetup = ''
-          ${lib.getExe pkgs.iproute2} route add 10.75.69.0/24 dev wiregPS0
+          ${lib.getExe' pkgs.iproute2 "ip"} route add 10.75.69.0/24 dev wiregPS0
         '';
         postShutdown = ''
-          ${lib.getExe pkgs.iproute2} route del 10.75.69.0/24 dev wiregPS0
+          ${lib.getExe' pkgs.iproute2 "ip"} route del 10.75.69.0/24 dev wiregPS0
         '';
         ips = [ "10.75.69.88/32" ];
         listenPort = 2107;
