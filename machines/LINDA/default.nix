@@ -150,10 +150,10 @@
       wiregPS0 = {
         # ensure routes exist to other clients.
         postSetup = ''
-          ${pkgs.iproute2}/bin/ip route add 10.75.69.0/24 dev wiregPS0
+          ${lib.getExe pkgs.iproute2} route add 10.75.69.0/24 dev wiregPS0
         '';
         postShutdown = ''
-          ${pkgs.iproute2}/bin/ip route del 10.75.69.0/24 dev wiregPS0
+          ${lib.getExe pkgs.iproute2} route del 10.75.69.0/24 dev wiregPS0
         '';
         ips = [ "10.75.69.88/32" ];
         listenPort = 2107;
@@ -209,7 +209,7 @@
       serviceConfig = {
         Restart = "always";
         ExecStart = ''
-          ${pkgs.obsidian}/bin/obsidian
+          ${lib.getExe pkgs.obsidian}
         '';
         PassEnvironment = "DISPLAY XAUTHORITY";
       };
@@ -220,7 +220,7 @@
       serviceConfig = {
         Restart = "always";
         ExecStart = ''
-          ${pkgs.dino}/bin/dino
+          ${lib.getExe pkgs.dino}
         '';
         PassEnvironment = "DISPLAY XAUTHORITY";
       };
@@ -231,7 +231,7 @@
       serviceConfig = {
         Restart = "always";
         ExecStart = ''
-          ${pkgs.discord}/bin/discord
+          ${lib.getExe pkgs.discord}
         '';
         PassEnvironment = "DISPLAY XAUTHORITY";
       };
@@ -303,7 +303,7 @@
   services.xserver.enable = true;
   services.xserver.videoDrivers = [ "nvidia" ];
   services.xserver.displayManager.setupCommands = ''
-    ${pkgs.xrandr}/bin/xrandr \
+    ${lib.getExe pkgs.xrandr} \
       --output HDMI-0 --mode 1920x1080 --pos 0x0 --rotate right \
       --output HDMI-1 --primary --mode 3840x2160 --pos 1080x0 --rotate normal \
       --output DP-3 --mode 1920x1080 --pos 4920x0 --rotate left
