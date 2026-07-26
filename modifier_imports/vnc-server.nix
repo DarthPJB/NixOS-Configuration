@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 {
 
   systemd.user.services.x11vnc = {
@@ -7,7 +7,7 @@
     serviceConfig = {
       Restart = "always";
       ExecStart = ''
-        ${pkgs.x11vnc}/bin/x11vnc -display $DISPLAY
+        ${lib.getExe pkgs.x11vnc} -display $DISPLAY
       '';
       PassEnvironment = "DISPLAY XAUTHORITY";
     };

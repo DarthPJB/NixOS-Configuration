@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   environment.systemPackages = [
@@ -12,7 +12,7 @@
     serviceConfig = {
       Restart = "always";
       ExecStart = ''
-        ${pkgs.mumble}/bin/mumble
+        ${lib.getExe pkgs.mumble}
       '';
       PassEnvironment = "DISPLAY XAUTHORITY";
     };

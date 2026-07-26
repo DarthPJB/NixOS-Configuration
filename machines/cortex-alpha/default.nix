@@ -122,7 +122,7 @@ in
     after = [ "network.target" ];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.ethtool}/bin/ethtool -K enp2s0 rx-udp-gro-forwarding on";
+      ExecStart = "${lib.getExe pkgs.ethtool} -K enp2s0 rx-udp-gro-forwarding on";
       RemainAfterExit = true;
     };
   };
