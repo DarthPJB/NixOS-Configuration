@@ -1,6 +1,7 @@
 # LLM-CORE Integration Status
 
 **Date:** 2026-07-13
+**Updated:** 2026-07-25
 **Branch:** overlord-II
 **Status:** Phase 1 Complete — alpha-three deployed as testbed
 
@@ -63,33 +64,14 @@ secrix.system.secretsDir = {
 
 ## Known Issues / Future Work
 
-### CRITICAL: Provider Specification (Next Version)
+### ~~CRITICAL: Provider Specification (Next Version)~~ — RESOLVED
 
-The `opencode-fleet` module does not currently support provider specification for agents. All agents use the model specified in their YAML frontmatter, but there is no mechanism to:
+Provider specification has been implemented and confirmed working.
+The `opencode-fleet` module now supports per-deployment provider configuration.
 
-1. **Override provider configuration** per-deployment
-2. **Specify API keys/endpoints** for different providers
-3. **Route agents to specific providers** based on deployment context
+### ~~LINDA Deployment (Pending Authorization)~~ — RESOLVED
 
-This is critical because:
-- Different machines may have access to different API keys
-- Some providers may be unavailable in certain network contexts
-- Cost optimization requires provider routing
-
-**Required for next version:** A `providers` option in `services.opencode-fleet` that maps provider names to configuration (API keys, endpoints, etc.).
-
-### LINDA Deployment (Pending Authorization)
-
-LINDA has the `opencode-fleet` module and service config pre-written but commented out:
-- `flake.nix`: `# self.inputs.LLM-CORE.nixosModules.opencode-fleet`
-- `machines/LINDA/default.nix`: `# services.opencode-fleet = { ... }`
-
-When authorized:
-1. Uncomment the module import in flake.nix
-2. Uncomment and adapt the service config in LINDA's machine config
-3. Configure MCP paths for LINDA's environment (`/speed-storage`, etc.)
-4. Set secrix token permissions for LINDA's user
-5. Deploy
+LINDA has been deployed with `opencode-fleet` and confirmed working.
 
 ### terminal-zero
 

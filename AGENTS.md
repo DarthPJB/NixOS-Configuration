@@ -119,8 +119,7 @@ modules/core-router-topology.nix (hub) or modules/enable-wg-topology.nix (client
 - `modules/core-router-topology.nix` — Hub machine module (WIP)
 
 **Status:** `enable-wg-topology.nix` is deployed on 13 client machines.
-`core-router-topology.nix` is imported by cortex-alpha but is the WIP path;
-AGENTS.md previously stated it was unwired — this is stale (see Finalisation Tasks).
+`core-router-topology.nix` is imported by cortex-alpha (WIP path).
 
 ### Topology-Gen Branch (In Progress)
 
@@ -306,24 +305,19 @@ nix build .#checks.x86_64-linux.bargman-greeter-login-test -L  # golden screensh
 Tasks remaining from the cleaning review (2026-07-20) and topology-gen branch
 completion. These are tracked here for visibility; execute in order.
 
-### HIGH — Before topology-gen merge
+### Resolved
 
-| # | Task | Evidence |
-|---|---|---|
-| F1 | **Delete `server_services/hedgedoc.nix`** — orphaned service+vhost, zero imports | grep confirms no consumers |
-| F2 | **Fix `AGENTS.md:219,252`** — stale claim that `core-router-topology.nix` "is not yet wired into cortex-alpha" when `machines/cortex-alpha/default.nix` imports it | cortex-alpha/default.nix:23 |
-| F3 | **Delete `snippets/overlord-II-PLAN.md` topology sections** — moved to snippets, topology phases superseded by planar-topology | Done (2026-07-20) |
+| # | Task | Resolution |
+|---|------|------------|
+| F1 | Delete `server_services/hedgedoc.nix` | Done (2026-07-25) |
+| F2 | Fix stale claim about `core-router-topology.nix` | Done (2026-07-25) — claim removed |
+| F3 | Delete `snippets/overlord-II-PLAN.md` topology sections | Done (2026-07-20) |
+| F7 | Update `documentation/plans/overlord-II-PLAN.md` | Stale — file no longer exists |
 
 ### MEDIUM — Code quality sweep
 
 | # | Task | Location(s) |
-|---|---|---|
-| F4 | **Extract hardcoded IPs** to `topology/shared.nix` — `193.16.42.101`, `10.0.1.42`, `82.5.173.252` repeated with `#todo` comments | `flake.nix:622-652`, `server_services/nextcloud.nix`, `machines/remote-worker/default.nix` |
-| F5 | **Convert `writeShellScript` → `writeShellApplication`** — 3 instances | `lib/rclone-target.nix:150`, `flake.nix:437`, `modules/sysdiag.nix:43,69` |
-| F6 | **Convert `${pkgs.foo}/bin/foo` → `lib.getExe`** — 9 instances | `cortex-alpha/default.nix:125`, `core-router-topology.nix:126`, `rclone-target.nix:127,129`, `LINDA/default.nix:244`, `terratech.nix:336-338`, `dragonwilds.nix:58`, `energy_saving.nix:19`, `tests/minecraft-server/default.nix:88,104`, `locale/input-methods.nix:127` |
-
-### LOW — Documentation hygiene
-
-| # | Task | Location |
-|---|---|---|
-| F7 | **Update `documentation/plans/overlord-II-PLAN.md`** — references deleted `real-topology/` (lines 80, 90-91, 96, 118) | Moved to snippets; remaining refs stale |
+|---|------|-------------|
+| F4 | **Extract hardcoded IPs** to `topology/shared.nix` — `193.16.42.101`, `10.0.1.42`, `82.5.173.252` | `flake.nix:656-672`, `server_services/nextcloud.nix:71-84`, `modifier_imports/hosts.nix:20`, `tests/test-hub-of-hubs.nix:7` |
+| F5 | **Convert `writeShellScript` → `writeShellApplication`** — 11 instances | `modules/sysdiag.nix:43,45,69,116`, `lib/rclone-target.nix:150`, `flake.nix:458`, `services/mkRunners.nix:31`, `services/github-runner-nixos-config.nix:23,48`, `services/gitlab-credentials.nix:11,39` |
+| F6 | **Convert `${pkgs.foo}/bin/foo` → `lib.getExe`** — 35 instances | Widespread: `modules/core-router.nix`, `machines/LINDA/default.nix`, `machines/cortex-alpha/default.nix`, `lib/rclone-target.nix`, `server_services/game_servers/terratech.nix`, `server_services/game_servers/dragonwilds.nix`, `modifier_imports/energy_saving.nix`, `locale/input-methods.nix`, `tests/minecraft-server/default.nix`, and others |

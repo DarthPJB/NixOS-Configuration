@@ -6,6 +6,8 @@ Fix all deadnix warnings so that `nix run .#checks.x86_64-linux.deadnix` passes
 with `--fail` enabled. The `--fail` flag has been committed (a69845c); this plan
 covers the cleanup required to make the check green.
 
+**Status:** COMPLETE — all phases executed, deadnix passes with `--fail` (2026-07-25)
+
 ## Reference
 
 - **Deadnix output**: `documentation/deadnix-output.txt` (208 lines, 22 warnings)

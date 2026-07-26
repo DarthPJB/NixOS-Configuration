@@ -100,7 +100,7 @@ The golden files from `v1.9-Golden` tag are byte-identical to the current `golde
 | GitHub runner module | ✅ Complete | Override deployed, hate-filled on remote-builder |
 | LLM-CORE re-enable | ✅ Complete | Enabled in flake inputs, `opencode-fleet` active on LINDA |
 | Documentation update | ✅ Complete | |
-| Phase B: Backup topology | ❌ Not done | `genBackup.nix` exists but not wired into `core-router-topology.nix` |
+| Phase B: Backup topology | ⬜ Deferred | Deferred to overlord-III (user directive 2026-07-25) |
 | remote-builder cache push | ⬜ Pending | Phase 4 of hub plan |
 
 ## Recommendations
