@@ -1,7 +1,7 @@
 # F5: Convert `writeShellScript` → `writeShellApplication` — Execution Plan
 
 **Date:** 2026-07-25
-**Status:** EXECUTING
+**Status:** COMPLETE — all 10 instances converted, flake check passes
 **Review Synthesis:** `/speed-storage/opencode/documentation/2026-07-25-F5-REVIEW/SYNTHESIS.md`
 **Scope:** 10 instances (excluding `rclone-target.nix:150` — user review pending). Deduplication deferred.
 
