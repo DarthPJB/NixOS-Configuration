@@ -240,7 +240,7 @@
       enable = true;
       description = "Scream br0";
       serviceConfig = {
-        ExecStart = "${pkgs.scream}/bin/scream  -u -i  br0 -p 4010";
+        ExecStart = "${lib.getExe pkgs.scream} -u -i br0 -p 4010";
       };
       wantedBy = [ "multi-user.target" ];
       requires = [ "pipewire.service" ];
