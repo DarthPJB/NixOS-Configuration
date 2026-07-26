@@ -559,8 +559,8 @@ let
         ''
       else
         ''
-                ${pkgs.qemu-utils}/bin/qemu-img convert -f raw -O ${format} ${compress} $diskImage $out/${filename}.lrg
-                ${pkgs.qemu-utils}/bin/qemu-img convert -O qcow2 -c $out/${filename}.lrg $out/${filename}
+                ${lib.getExe pkgs.qemu-utils} convert -f raw -O ${format} ${compress} $diskImage $out/${filename}.lrg
+                ${lib.getExe pkgs.qemu-utils} convert -O qcow2 -c $out/${filename}.lrg $out/${filename}
                 rm $out/${filename}.lrg
           #       mv $out/${filename}.lrg $out/${filename}
         ''

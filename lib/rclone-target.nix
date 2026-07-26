@@ -124,9 +124,9 @@
           patternFlags = if target.filterRules != [ ] then filterFlags else excludeFlags;
         in
         if target.mode == "bisync" then
-          "${pkgs.rclone}/bin/rclone ${flags} bisync${resyncFlag} --resilient --recover --max-lock 2m --conflict-resolve newer --check-access${skipLinksFlag}${patternFlags} ${target.filePath} ${target.remoteName}"
+          "${lib.getExe pkgs.rclone} ${flags} bisync${resyncFlag} --resilient --recover --max-lock 2m --conflict-resolve newer --check-access${skipLinksFlag}${patternFlags} ${target.filePath} ${target.remoteName}"
         else
-          "${pkgs.rclone}/bin/rclone ${flags} copy${skipLinksFlag}${patternFlags} ${target.filePath} ${target.remoteName}";
+          "${lib.getExe pkgs.rclone} ${flags} copy${skipLinksFlag}${patternFlags} ${target.filePath} ${target.remoteName}";
 
       mkSecrets = lib.concatMapAttrs
         (name: target: {
