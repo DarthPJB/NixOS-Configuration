@@ -1,7 +1,7 @@
 # F6: Convert `${pkgs.foo}/bin/foo` → `lib.getExe` — Execution Plan
 
 **Date:** 2026-07-25
-**Status:** EXECUTING
+**Status:** COMPLETE — all 28 instances converted, deadnix + formatting pass
 **Audit:** `/speed-storage/opencode/documentation/2026-07-25-F6-REVIEW/getExe-audit.md`
 **Scope:** 28 convertible instances (22 `lib.getExe`, 6 `lib.getExe'`). 7 NOT APPLICABLE excluded. No deduplication (deferred).
 
