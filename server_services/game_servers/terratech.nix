@@ -333,9 +333,9 @@ in
         mkdir = lib.getExe' pkgs.coreutils "mkdir";
         cp = lib.getExe' pkgs.coreutils "cp";
         chmod = lib.getExe' pkgs.coreutils "chmod";
-        steamRun = "${pkgs.steam-run}/bin/steam-run";
-        wine64 = "${pkgs.wineWow64Packages.stable}/bin/wine64";
-        wineboot = "${pkgs.wineWow64Packages.stable}/bin/wineboot";
+        steamRun = "${lib.getExe pkgs.steam-run}";
+        wine64 = "${lib.getExe pkgs.wineWow64Packages.stable}";
+        wineboot = "${lib.getExe' pkgs.wineWow64Packages.stable "wineboot"}";
         configDir = builtins.dirOf (toString cfg.configFile);
         generatedConfig = pkgs.writeText "terratech-dedicated_server_config.json" (builtins.toJSON {
           Port = cfg.port;
