@@ -457,7 +457,7 @@
           program = toString (
             nixpkgs.writeShellApplication {
               name = "run-bargman-greeter-vm-serial";
-              runtimeInputs = [];
+              runtimeInputs = [ ];
               text = ''
                 export QEMU_OPTS="-display none -serial mon:stdio ''${QEMU_OPTS:-}"
                 exec ${self.nixosConfigurations.bargman-greeter-vm.config.system.build.vm}/bin/run-bargman-greeter-vm-vm "$@"

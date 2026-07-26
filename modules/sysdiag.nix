@@ -43,7 +43,13 @@ let
   sysdiagImpl = pkgs.writeShellApplication {
     name = "sysdiag";
     runtimeInputs = with pkgs; [
-      coreutils findutils util-linux procps gnugrep gnused iproute2
+      coreutils
+      findutils
+      util-linux
+      procps
+      gnugrep
+      gnused
+      iproute2
     ];
     text = builtins.readFile ../system-diagnostics/sysdiag.sh;
   };
