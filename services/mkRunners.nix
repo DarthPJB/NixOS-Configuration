@@ -28,12 +28,16 @@ let
   gitlabNetrcPath = "/run/gitlab-netrc";
 
   # GIT_ASKPASS script — runner uses DynamicUser, doesn't inherit session variables
-  gitlabAskpass = pkgs.writeShellScript "gitlab-askpass" ''
-    case "$1" in
-      *Username*) exec ${lib.getExe' pkgs.gnused "sed"} -n 's/^login[[:space:]]*//p' "${gitlabNetrcPath}" ;;
-      *Password*) exec ${lib.getExe' pkgs.gnused "sed"} -n 's/^password[[:space:]]*//p' "${gitlabNetrcPath}" ;;
-    esac
-  '';
+  gitlabAskpass = pkgs.writeShellApplication {
+    name = "gitlab-askpass";
+    runtimeInputs = [ pkgs.gnused ];
+    text = ''
+      case "$1" in
+        *Username*) exec ${lib.getExe' pkgs.gnused "sed"} -n 's/^login[[:space:]]*//p' "${gitlabNetrcPath}" ;;
+        *Password*) exec ${lib.getExe' pkgs.gnused "sed"} -n 's/^password[[:space:]]*//p' "${gitlabNetrcPath}" ;;
+      esac
+    '';
+  };
 
   # PAT for personal repos (shared across disgust, rat-infested, hate-filled)
   patTokenFile = config.secrix.system.secrets.hate-filled-generator.decrypted.path;
