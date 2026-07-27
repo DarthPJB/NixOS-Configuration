@@ -1,20 +1,47 @@
 { lib }:
 # genDns: settings -> hostname -> NixOS services.dnsmasq config
-# Produces the same dnsmasq config as production mkDhcpDns.nix.
-# NixOS module adds conf-file, dhcp-leasefile, resolv-file automatically.
+# Produces the same dnsmasq config as the inline in topology-derive.nix:387-415.
 #
-# Phase 5 (C): Per-subnet auth-server support (gated on field presence).
-# If the settings have `dns.planes` (the new schema), use genDnsmasqHorizons
-# for per-subnet auth-server directives.  Otherwise, fall back to the
-# current behavior.  This path is dormant until a machine has dns.planes
-# in its topology data (useNewPipeline = true in Phase 6).
+# Supports:
+# - topology-direct path (FIRST): when settings has `topology` key (used in Phase 2+)
+#   Reads lan_dhcp.hosts (list), dns.* directly. Must be byte-identical to inline.
+# - New schema: dns.planes (dormant, Phase C)
+# - Legacy: machines.${hostname} via mkDnsSettings (to be removed in Phase C)
 settings: hostname:
-if settings ? dns && settings.dns ? planes then
-# New schema: per-subnet auth-server via genDnsmasqHorizons.
-# The generator reads coordinate from settings to derive listen-addresses
-# and dns.planes.<plane>.zones for auth-server entries (Phase 5 C populates
-# the zones).  The raw dnsmasq settings from the generator are wrapped
-# in the services.dnsmasq.settings attrset expected by the NixOS module.
+if settings ? topology then
+  # Topology-direct path — must match inline logic at topology-derive.nix:387-415 exactly.
+  let
+    t = settings.topology;
+    dhcpIface = t.lan_dhcp.interface or t.dns.dhcp.interface or t.dns.interface or "";
+    dhcpRange = t.lan_dhcp.range or t.dns.dhcp.range or "";
+  in
+  {
+    services.dnsmasq = {
+      enable = true;
+      settings = {
+        interface = [ (t.dns.interface or t.lan_dhcp.interface or "") ];
+        "dhcp-range" = [ "${dhcpIface},${dhcpRange}" ];
+        address = map (entry: "/${entry.domain}/${entry.ip}") (t.dns.static or []);
+        server = t.dns.servers or [];
+        dhcp-host = builtins.sort (a: b: a < b) (
+          map (h: "${h.mac},${h.ip},${h.hostname},infinite")
+            (t.lan_dhcp.hosts or t.dns.dhcp.hosts or [])
+        );
+        domain = [ hostname ];
+        local = [ "/${hostname}/" ];
+        domain-needed = true;
+        bogus-priv = true;
+        no-resolv = true;
+        cache-size = 1000;
+      };
+    };
+  }
+else if settings ? dns && settings.dns ? planes then
+  # New schema: per-subnet auth-server via genDnsmasqHorizons.
+  # The generator reads coordinate from settings to derive listen-addresses
+  # and dns.planes.<plane>.zones for auth-server entries (Phase 5 C populates
+  # the zones).  The raw dnsmasq settings from the generator are wrapped
+  # in the services.dnsmasq.settings attrset expected by the NixOS module.
   let
     generator = import ./genDnsmasqHorizons.nix { inherit lib; };
     dnsmasqSettings = generator settings;
@@ -26,8 +53,8 @@ if settings ? dns && settings.dns ? planes then
     };
   }
 else
-# Legacy path (unchanged): read per-machine flat DNS settings
-# from settings.machines.${hostname}.
+  # Legacy path: read per-machine flat DNS settings
+  # from settings.machines.${hostname}.
   let
     machineSettings = settings.machines.${hostname} or null;
   in

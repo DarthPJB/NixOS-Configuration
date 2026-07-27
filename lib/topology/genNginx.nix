@@ -4,20 +4,36 @@
 # Two-arg generator called by topology-derive.nix or enable-wg-topology.nix.
 # Called as: (import ./genNginx.nix { inherit lib; }) settings hostname
 #
-# Supports two paths:
-#   1. New schema: if settings has `vhosts`, produce per-subnet
-#      vhost stanzas from the vhosts attrset. Each vhost name maps to a list
-#      of { subnet, reason, proxy_to? } entries. Proxy entries emit proxyPass;
-#      static entries emit an empty locations."/" block.
-#   2. Legacy schema: if settings has `machines.${hostname}`, produce virtualHosts
-#      from the machine's nginx.proxies and nginx.baseVhosts (original logic from
-#      production mkNginxProxies.nix). Must produce byte-identical virtualHosts to
-#      the production path.
+# Supports paths (checked in order):
+#   1. topology-direct (Phase 2+): if settings has `topology`, use shared
+#      buildVhost.nix to produce full vhost config from topology JSON.
+#      Replicates inline buildVhost logic (topology-derive.nix:135-276) exactly.
+#   2. New schema: if settings has `vhosts` (partial, for tests/horizons)
+#   3. Legacy: machines.${hostname} (from mkNginxSettings etc)
 #
 # Returns: { services.nginx = { enable, virtualHosts }; users.users.nginx.extraGroups; }
 # or {} if no config exists for the host.
 settings: hostname:
 let
+  # ── Topology-direct path (uses shared buildVhost) ────────────
+  hasTopology = settings ? topology;
+
+  topologyConfig =
+    if !hasTopology then { } else
+    let
+      builder = import ./buildVhost.nix { inherit lib; };
+      b = builder { topology = settings.topology; };
+    in
+    if b.enableNginx then
+      {
+        services.nginx = {
+          enable = true;
+          virtualHosts = b.nginxVhosts;
+        };
+        users.users.nginx.extraGroups = [ "acme" ];
+      }
+    else { };
+
   # ── New schema path (vhosts) ───────────────────────────────
   hasVhosts = settings ? vhosts;
 
@@ -122,7 +138,9 @@ let
       users.users.nginx.extraGroups = [ "acme" ];
     };
 in
-if hasVhosts then
+if hasTopology then
+  topologyConfig
+else if hasVhosts then
   {
     services.nginx = {
       enable = true;
