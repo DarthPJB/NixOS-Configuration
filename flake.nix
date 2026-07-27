@@ -647,7 +647,6 @@
           host = topoIp "remote-worker";
           extraModules = [
             ./users/build.nix
-            # self.inputs.LLM-CORE.nixosModules.opencode-fleet  # Disabled for overlord-I — re-enable as part of overlord-II
             # Topology-derive owns johnbargman.net/.com vhosts (see topology/remote-worker.json).
             # Carmelsite client sites remain machine overlay (merge with topology nginx.enable).
             {

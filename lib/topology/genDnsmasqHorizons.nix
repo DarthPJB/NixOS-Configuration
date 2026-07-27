@@ -20,7 +20,7 @@
 #                     yet.  Phase 5 (C) populates zones from the registry.
 #   server          — Upstream DNS servers (stub for Phase B).
 #
-# Phase 5 (C) wires this into mkDnsSettings and core-router-topology.nix.
+# Phase 5 (C) wires this into mkDnsSettings and topology-derive.nix.
 horizon:
 let
   inherit (builtins) elemAt toString;

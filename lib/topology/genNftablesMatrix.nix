@@ -26,7 +26,7 @@
 #   - DNAT rules are empty (will come from routes.port_forward in Phase 5)
 #
 # Phase 5 (C) wires this into a generator entry point and then into
-# core-router-topology.nix.
+# topology-derive.nix.
 
 let
   inherit (builtins)

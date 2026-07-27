@@ -1,16 +1,14 @@
-# Unit tests for the horizon transformer (mkHorizons.nix)
-# Run with: nix --option builders '' eval --impure --json --expr 'import /tmp/nixos-planar-topology/tests/topology/mkHorizons.nix'
+# Unit tests for the horizon transformer (mkHorizons.nix) — flake check, ${self} is the flake source.
 #
 # These tests validate that mkHorizons produces correct per-machine
 # horizon settings from the registry.
 #
 # Architecture: §4.2 of the planar topology plan (rev 8).
 
+{ self, lib }:
 let
-  pkgs = import <nixpkgs> { };
-  lib = pkgs.lib;
-  registry = import /tmp/nixos-planar-topology/lib/topology/mkRegistry.nix { inherit lib; };
-  mkHorizons = (import /tmp/nixos-planar-topology/lib/topology/mkHorizons.nix { inherit lib; }).mkHorizons;
+  registry = import "${self}/lib/topology/mkRegistry.nix" { inherit lib; };
+  mkHorizons = (import "${self}/lib/topology/mkHorizons.nix" { inherit lib; }).mkHorizons;
 
   inherit (builtins) all length attrNames filter;
 
