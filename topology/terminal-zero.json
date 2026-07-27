@@ -24,5 +24,15 @@
   ],
   "hostname": "terminal-zero",
   "public_key_file": "secrets/public_keys/wireguard/wg_terminal-zero_pub",
-  "trust": 3
+  "trust": 3,
+  "backup": {
+    "configFile": "secrets/rclone-config-file",
+    "targets": {
+      "obsidian-v3": {
+        "filePath": "/home/pokej/88-DB-v3/",
+        "remoteName": "minio:obsidian-v3",
+        "syncInterval": 60
+      }
+    }
+  }
 }

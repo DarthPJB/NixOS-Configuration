@@ -21,5 +21,19 @@
         }
       }
     ]
+  },
+  "backup": {
+    "configFile": "secrets/rclone-config-file",
+    "user": "mc-curseforge-all-the-mons",
+    "targets": {
+      "mc-backups": {
+        "filePath": "/bulk-storage/minecraft/all-the-mons/backups/",
+        "remoteName": "minio:minecraft-backups",
+        "calendar": "*-*-* 06:00:00",
+        "mode": "copy",
+        "bwlimit": "10M",
+        "preExec": "find /bulk-storage/minecraft/all-the-mons/backups/ -name '*.tar.zst' -mtime +14 -delete"
+      }
+    }
   }
 }

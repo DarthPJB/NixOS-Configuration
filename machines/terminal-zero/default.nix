@@ -22,7 +22,6 @@
     ./hardware-configuration.nix
     ../../environments/steam.nix
     ../../modules/enable-wg-topology.nix
-    ../../lib/rclone-target.nix
     ../../modifier_imports/zram.nix
     ../../services/gitlab-credentials.nix
   ];
@@ -32,19 +31,6 @@
 
   #secrix.services.wireguard-wireg0.secrets.terminal-zero.encrypted.file = ../../secrets/wiregaurd/wg_terminal-zero;
   enableWgTopology.enable = true;
-  environment = {
-    rclone-target = {
-      enable = true;
-      configFile = "${self}/secrets/rclone-config-file";
-      targets = {
-        obsidian-v3 = {
-          filePath = "/home/pokej/88-DB-v3/";
-          remoteName = "minio:obsidian-v3";
-          syncInterval = 60; # every minute
-        };
-      };
-    };
-  };
   # Use the GRUB 2 boot loader.
   # Use the systemd-boot EFI boot loader.
   boot.loader = {
