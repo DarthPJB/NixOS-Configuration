@@ -1,7 +1,7 @@
 { lib }:
 # mkFirewallSettings: per-machine topology -> { machines, warnings, errors }
 # Extracts firewall settings directly from topology.firewall.
-# Must match production core-router.nix which uses topology.firewall directly:
+# Must match production topology-derive.nix which uses topology.firewall directly:
 #   networking.firewall = lib.mkOverride 100 topology.firewall;
 topology:
 let

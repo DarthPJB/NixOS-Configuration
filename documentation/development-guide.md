@@ -27,7 +27,7 @@ Consolidated reference for codebase structure, coding conventions, and developme
 - `lib/serialize-config.nix` - The config serializer (used by `dump-config` and `checks.network-config-*`)
 - `lib/golden_coverage.nix` - Coverage audit (checks if every machine has a golden)
 - `modules/` - NixOS modules
-  - `core-router.nix` - Hub machine module (production)
+  - `topology-derive.nix` - Topology-driven network configuration (hub + clients)
   - `enable-wg-topology.nix` - WireGuard client module (deployed on 13 machines)
 - `environments/` - Environment modules for software collections (e.g., `code.nix`, `browsers.nix`)
 - `users/` - User account configurations (one file per user)

@@ -1,5 +1,4 @@
-# Unit tests for the topology registry
-# Run with: nix --option builders '' eval --impure --json --expr 'import /tmp/nixos-planar-topology/tests/topology/mkRegistry.nix'
+# Unit tests for the topology registry — flake check, ${self} is the flake source.
 #
 # These tests lock down the current state of the registry to detect
 # regressions as data quality issues are fixed.
@@ -11,10 +10,9 @@
 #
 # Architecture: §4.1 of the planar topology plan (rev 8).
 
+{ self, lib }:
 let
-  pkgs = import <nixpkgs> { };
-  lib = pkgs.lib;
-  registry = import /tmp/nixos-planar-topology/lib/topology/mkRegistry.nix { inherit lib; };
+  registry = import "${self}/lib/topology/mkRegistry.nix" { inherit lib; };
 
   inherit (builtins) elem all length attrNames attrValues filter;
 

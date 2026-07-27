@@ -1,15 +1,12 @@
-# Unit tests for the genDnsmasqHorizons generator
-# Run with: nix --option builders '' eval --impure --json --expr 'import /tmp/nixos-planar-topology/tests/topology/genDnsmasqHorizons.nix'
+# Unit tests for the genDnsmasqHorizons generator — flake check, ${self} is the flake source.
 #
 # These tests verify that genDnsmasqHorizons produces correct dnsmasq
 # settings from a sample horizon settings input.
 #
 # Architecture: §4.4 of the planar topology plan (rev 8).
 
+{ self, lib }:
 let
-  pkgs = import <nixpkgs> { };
-  lib = pkgs.lib;
-
   # Sample horizon with two coordinate entries (wg + lan)
   horizon = {
     coordinate = [
@@ -21,7 +18,7 @@ let
     vhosts = { };
   };
 
-  result = (import /tmp/nixos-planar-topology/lib/topology/genDnsmasqHorizons.nix { inherit lib; }) horizon;
+  result = (import "${self}/lib/topology/genDnsmasqHorizons.nix" { inherit lib; }) horizon;
 
   isAttrs = builtins.isAttrs result;
   hasListenAddress = result ? listen-address;

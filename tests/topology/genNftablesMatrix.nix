@@ -1,5 +1,4 @@
-# Unit tests for the genNftablesMatrix generator
-# Run with: nix --option builders '' eval --impure --json --expr 'import /tmp/nixos-planar-topology/tests/topology/genNftablesMatrix.nix'
+# Unit tests for the genNftablesMatrix generator — flake check, ${self} is the flake source.
 #
 # These tests verify that genNftablesMatrix produces a valid nftables
 # ruleset string from a sample horizon settings input, and that the
@@ -7,12 +6,10 @@
 #
 # Architecture: §4.4 of the planar topology plan (rev 8).
 
+{ self, lib }:
 let
-  pkgs = import <nixpkgs> { };
-  lib = pkgs.lib;
-
   # Import the module (now returns { genRuleset, isPrivateSubnet })
-  module = import /tmp/nixos-planar-topology/lib/topology/genNftablesMatrix.nix { inherit lib; };
+  module = import "${self}/lib/topology/genNftablesMatrix.nix" { inherit lib; };
   genRuleset = module.genRuleset;
   isPrivateSubnet = module.isPrivateSubnet;
 

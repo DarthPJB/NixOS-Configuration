@@ -4,6 +4,89 @@
 **Not scope:** Repository structure (see documentation/development-guide.md),
 project planning (see opencode/plans/), deployments (see documentation/operations-runbooks.md).
 
+## Current Issues — 2026-07-26
+
+These are the leading issues on `overlord-ii-planar-topology`. The branch will not
+be considered complete or deployable until Phase B core tasks are implemented
+and validated against goldens.
+
+### Architecture Boundary — READ THIS FIRST
+
+The two-layer topology architecture enforces a strict boundary.
+**This boundary must never be violated by any agent, reviewer, or code change.**
+
+```
+topology/<machine>.json  ──→  gen*.nix generators  ──→  minimal skeleton
+  (source of truth)              (topology-derived)       (vhost names, listen
+                                                          addrs, proxy_to, acme)
+                                                              │
+machines/<machine>/default.nix  ──→  user Nix config  ───────┤
+services/*.nix                                             (forceSSL, roots,
+environments/*.nix                                          headers, websockets,
+                                                           returns, packages)
+                                                              │
+                                                   NixOS module merge
+                                                              ↓
+                                                        final config
+                                                              ↓
+                                                   golden = ground truth
+```
+
+**The generator produces ONLY topology-derived fields.**  It does NOT produce
+forceSSL, addSSL, proxyWebsockets, proxy headers, static root resolution,
+return codes, or default vhost flags.  Those come from the machine's Nix
+configuration and are merged via the NixOS module system.
+
+**The golden is the MERGED result of both sources.**  When a generator is
+wired, it replaces the topology-derived portion of the config.  The machine
+config remains unchanged.  The combined output MUST match the golden.
+
+**Any agent that claims a generator is "missing features" that originate
+from user configuration has fundamentally misunderstood the architecture.**
+
+### Phase B — Core Tasks (blocks completion)
+
+**B4. Wire the two-layer topology architecture into machine configs.**
+The Ketchup library (`lib/topology_library.nix`) exports `genDns`, `genFirewall`,
+`genNginx`, `genBackup` generators but **none are wired into any machine config**.
+Only `genWireguard` is wired (via `enable-wg-topology.nix`). Each generator must
+be integrated into `topology-derive.nix` and validated against goldens. This is
+the core Phase B objective of overlord-II.
+
+**B5. Wire backup topology pipeline into a module.**
+`mkBackupSettings.nix` + `genBackup.nix` are first-draft WIP with zero consumers.
+Must be wired into `topology-derive.nix` or a separate module. At minimum one
+machine needs `backup` keys in its topology JSON to validate the pipeline.
+
+### Phase B — Actionable Pending Review
+
+**B1. Cortex-alpha hardcoded IP addresses.**
+`machines/cortex-alpha/default.nix` has `enp3s0.ipv4.addresses` hardcoded to
+`10.88.128.1/24`. Comment says "managed by topology-derive in later phase."
+Data exists in `topology/cortex-alpha.json` — `topology-derive.nix` needs
+interface derivation wired.
+
+**B2. Remote-worker ad-hoc nginx config.**
+`flake.nix` has 3 carmelsite vhosts inline in `extraModules` (lines 653-683).
+This is the anti-pattern identified by multi-horizon gateway plan invariant #4.
+Should move to `topology/remote-worker.json` vhosts.
+
+**B3. Prometheus unlimited retention — no disk monitoring.**
+`services/prometheus.nix` has `retentionTime = "0d"` (unlimited, ~500MB/week
+growth). Needs disk growth alerting or dashboard. Operational decision.
+
+### Phase C — Deferred
+
+**C1. Ketchup/Secret-Sauce/Mayo library split.**
+`lib/topology_library.nix` (53 lines) exists as clean API. `lib/mayo_library.nix`
+(24 lines) is a minimal stub. Full split deferred until Phase B generators are
+wired and validated.
+
+**C2. GitHub runner custom module.**
+Phase 2 goal from overlord-II plan. Not started. Deferred.
+
+---
+
 ## Build Philosophy
 
 This is professional netrunner infrastructure, not a hobby project.
@@ -68,7 +151,7 @@ topology/<machine>.json (per-machine topology data — single source of truth)
 ↓
 modules/topology-derive.nix (reads JSON via commonModules in flake.nix)
 ↓
-modules/core-router.nix (hub) or modules/enable-wg-topology.nix (clients)
+modules/enable-wg-topology.nix (clients — adds WireGuard peer config)
 ```
 
 **Active Files:**
@@ -85,7 +168,6 @@ modules/core-router.nix (hub) or modules/enable-wg-topology.nix (clients)
 - `lib/topology/mkMonitoringSettings.nix` — Prometheus exporter config
 - `lib/topology/validate.nix` — Topology validation
 - `lib/topology/utils.nix` — Shared utilities
-- `modules/core-router.nix` — Hub router module (production)
 - `modules/enable-wg-topology.nix` — WireGuard client module (deployed on 14 machines)
 
 ### WIP: Two-Layer Topology Architecture
@@ -95,13 +177,13 @@ two-layer pattern: **Transformers** → **Generators**.
 
 **Architecture Pattern (WIP):**
 ```
-topology/<machine>.nix (shared + per-machine topology data)
+topology/<machine>.json (shared + per-machine topology data)
 ↓
 lib/topology/mk*Settings.nix (transformers: topology + files → flat pure data)
 ↓
 lib/topology/gen*.nix (generators: settings + hostname → NixOS config)
 ↓
-modules/core-router-topology.nix (hub) or modules/enable-wg-topology.nix (clients)
+modules/topology-derive.nix (hub) or modules/enable-wg-topology.nix (clients)
 ```
 
 **Key Principles:**
@@ -122,14 +204,13 @@ modules/core-router-topology.nix (hub) or modules/enable-wg-topology.nix (client
 - `lib/topology/genDns.nix` — DNS/DHCP generator
 - `lib/topology/mkBackupSettings.nix` — Backup transformer (WIP, no consumer)
 - `lib/topology/genBackup.nix` — Backup generator (WIP, no consumer)
-- `modules/core-router-topology.nix` — Hub machine module (WIP)
 
 **Status:** `enable-wg-topology.nix` is deployed on 13 client machines.
-`core-router-topology.nix` is imported by cortex-alpha (WIP path).
+`topology-derive.nix` handles hub configuration via `commonModules` in flake.nix.
 
-### Topology-Gen Branch (In Progress)
+### Topology-Gen Branch (Merged)
 
-The `planar-topology` branch is actively overhauling the topology system:
+The `planar-topology` / `overlord-ii-planar-topology` branches overhauled the topology system:
 - JSON topology files (`topology/<machine>.json`) replacing `.nix` per-machine data
 - `modules/topology-derive.nix` — derives NixOS config from JSON topology
 - `lib/topology/mkRegistry.nix` — registry pipeline for topology validation
@@ -245,7 +326,7 @@ nix run .#dump-config -- cortex-alpha | jq -S . > goldens/cortex-alpha.json
 ### Add a New Machine to Topology
 1. Create `topology/<machine-name>.json` (use `_template.json` as reference)
 2. Create the machine's config in `flake.nix` (use `mkX86_64` or `mkAarch64`)
-3. Import the appropriate module (`core-router.nix` or `core-router-topology.nix`)
+3. Register in `flake.nix` with `mkX86_64` or `mkAarch64` — topology-derive.nix is imported automatically via `commonModules`
 4. Generate golden: `nix run .#dump-config -- <machine-name> | jq -S . > goldens/<machine-name>.json`
 5. Validate: `nix run .#check-network -- <machine-name>`
 

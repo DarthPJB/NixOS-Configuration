@@ -1,6 +1,4 @@
-# Unit tests for the topology-derive NixOS module
-# Run with: nix --option builders '' eval --impure --json --expr \
-#   'import /tmp/nixos-planar-topology/tests/topology/topology-derive.nix'
+# Unit tests for the topology-derive NixOS module — flake check, ${self} is the flake source.
 #
 # These tests verify that topology-derive.nix correctly transforms
 # topology/<hostname>.json files into NixOS config for:
@@ -15,14 +13,12 @@
 #
 # Architecture: Phase 5-1.3.2 of the planar topology plan.
 
+{ self, lib, types }:
 let
-  pkgs = import <nixpkgs> { };
-  lib = pkgs.lib;
-  types = lib.types;
   inherit (builtins) length elem;
 
   # ── Module under test ─────────────────────────────────────────
-  modulePath = /tmp/nixos-planar-topology/modules/topology-derive.nix;
+  modulePath = "${self}/modules/topology-derive.nix";
 
   # ── Options required by the module but not declared by it ──
   # The module itself declares options.topology.enable.

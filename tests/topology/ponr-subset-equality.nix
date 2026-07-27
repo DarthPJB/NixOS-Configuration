@@ -1,4 +1,4 @@
-# tests/topology/ponr-subset-equality.nix
+# tests/topology/ponr-subset-equality.nix — flake check, ${self} is the flake source.
 # PONR-1.3: Subset equality harness
 #
 # Compares topology-derive output against /tmp/ponr-baseline/ dumps
@@ -7,20 +7,13 @@
 #   - services.nginx.enable
 #   - services.nginx.virtualHosts
 #
-# This is an IMPURE evaluation (reads from /tmp/ponr-baseline/).
-# Run with:
-#   nix --option builders '' eval --impure --json --expr \
-#     'import /tmp/nixos-planar-topology/tests/topology/ponr-subset-equality.nix'
-#
 # Design: topology-derive's output is a SUBSET of the baseline dump.
 # The managed machines have competing sources that add more config,
 # so we only verify that everything topology-derive produces matches
 # the corresponding parts of the baseline.
 
+{ self, lib, types }:
 let
-  pkgs = import <nixpkgs> { };
-  lib = pkgs.lib;
-  types = lib.types;
   inherit (builtins)
     readFile fromJSON pathExists attrNames length;
 
@@ -40,7 +33,7 @@ let
   ];
 
   # ── Topology-derive module ───────────────────────────────────
-  modulePath = /tmp/nixos-planar-topology/modules/topology-derive.nix;
+  modulePath = "${self}/modules/topology-derive.nix";
 
   # Options required by topology-derive but not declared by it
   baseOptions = {

@@ -10,7 +10,7 @@
 #   validate.nix          - Topology structural validation
 #   utils.nix             - Shared utility functions
 #
-# These are imported directly by modules/core-router.nix.
+# These are imported by topology-derive.nix and topology_library.nix.
 { lib }:
 
 {

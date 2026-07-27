@@ -1,15 +1,12 @@
-# Unit tests for the genNginx generator
-# Run with: nix --option builders '' eval --impure --json --expr 'import /tmp/nixos-planar-topology/tests/topology/genNginx.nix'
+# Unit tests for the genNginx generator — flake check, ${self} is the flake source.
 #
 # These tests verify that genNginx produces correct NixOS nginx config
 # from a sample horizon settings input (new schema vhosts path).
 #
 # Architecture: §4.4 of the planar topology plan (rev 8).
 
+{ self, lib }:
 let
-  pkgs = import <nixpkgs> { };
-  lib = pkgs.lib;
-
   # Sample horizon settings with a few vhosts (new schema path)
   horizon = {
     coordinate = [
@@ -28,7 +25,7 @@ let
   };
 
   # Call with two args: settings + hostname (hostname ignored for new schema path)
-  result = (import /tmp/nixos-planar-topology/lib/topology/genNginx.nix { inherit lib; }) horizon "test";
+  result = (import "${self}/lib/topology/genNginx.nix" { inherit lib; }) horizon "test";
 
   # Result should be a NixOS config attrset with services.nginx.virtualHosts
   isConfig = builtins.isAttrs result && result ? services.nginx.virtualHosts;
