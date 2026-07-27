@@ -102,6 +102,7 @@
         secrix.nixosModules.default
         ratty.nixosModules.default
         ./modules/topology-derive.nix
+        ./lib/rclone-target.nix
         ./configuration.nix
         ./modules/ssh-multiplex.nix
         # Skip nix test suite — OOMs on remote builders during source build.
@@ -137,6 +138,7 @@
             else null;
         in
         nixpkgs_stable.lib.nixosSystem {
+          specialArgs = { inherit topologyData; };
           modules = commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${hostname}
             {
@@ -152,7 +154,6 @@
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;
               _module.args = globalArgs // {
                 inherit hostname;
-                inherit topologyData;
                 unstable = import nixpkgs_unstable { localSystem = "x86_64-linux"; config.allowUnfree = true; };
                 nixinate = {
                   inherit host sshUser buildOn;
@@ -171,6 +172,7 @@
             else null;
         in
         nixpkgs_unstable.lib.nixosSystem {
+          specialArgs = { inherit topologyData; };
           modules = [
             "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
@@ -512,14 +514,14 @@
 
       nixosConfigurations = {
         beta-one = nixpkgs_unstable.lib.nixosSystem {
+          specialArgs = { topologyData = null; };
           modules = [
             "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
             "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
             ./machines/beta-one/1.nix
             {
               nixpkgs.hostPlatform = "armv7l-linux";
-              topology._file = null;
-              _module.args = globalArgs // { hostname = "beta-one"; topologyData = null; };
+              _module.args = globalArgs // { hostname = "beta-one"; };
             }
           ];
         };
@@ -543,6 +545,7 @@
         # Generic ARM bootstrap image — reusable for ALL ARM devices
         # No WG, no device-specific config, open SSH on port 22
         arm-bootstrap = nixpkgs_unstable.lib.nixosSystem {
+          specialArgs = { topologyData = null; };
           modules = [
             "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
@@ -559,7 +562,6 @@
               networking.hostName = "arm-bootstrap";
               _module.args = globalArgs // {
                 hostname = "arm-bootstrap";
-                topologyData = null;
                 unstable = import nixpkgs_unstable { localSystem = "aarch64-linux"; config.allowUnfree = true; };
               };
             }
@@ -704,6 +706,7 @@
         };
 
         bargman-greeter-vm = nixpkgs_stable.lib.nixosSystem {
+          specialArgs = { topologyData = null; };
           modules = [
             ./environments/i3wm_darthpjb.nix
             ./environments/bargman-greeter-vm.nix
@@ -711,7 +714,6 @@
               _module.args = {
                 inherit self;
                 inherit bargman-assets;
-                topologyData = null;
               };
               networking.hostName = "bargman-greeter-vm";
               nixpkgs.hostPlatform = "x86_64-linux";
