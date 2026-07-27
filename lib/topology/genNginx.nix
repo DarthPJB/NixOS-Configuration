@@ -1,7 +1,7 @@
 { lib }:
 # genNginx: settings -> hostname -> NixOS services.nginx config
 #
-# Two-arg generator called by modules/core-router-topology.nix:50.
+# Two-arg generator called by topology-derive.nix or enable-wg-topology.nix.
 # Called as: (import ./genNginx.nix { inherit lib; }) settings hostname
 #
 # Supports two paths:

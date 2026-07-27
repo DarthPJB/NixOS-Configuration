@@ -37,7 +37,7 @@ nix run .#validate-ci-workflow
 ```
 
 ### CI Features
-- **19 Machine Coverage**: All machines tested (14 x86_64, 5 ARM)
+- **17 Machine Coverage**: All machines tested (12 x86_64, 5 ARM)
 - **Job Dependencies**: Validation → Security → Builds → Deploy
 - **Artifact Preservation**: 7-day build retention, 30-day logs
 - **Enhanced Security**: Gitleaks + pattern matching + IP validation
@@ -46,7 +46,7 @@ nix run .#validate-ci-workflow
 ### CI Jobs
 1. **Validation** - Formatting, flake check, dead code detection
 2. **Security** - Gitleaks scanning, secret detection, IP validation
-3. **Build x86** - Parallel builds for 14 x86_64 machines
+3. **Build x86** - Parallel builds for 12 x86_64 machines
 4. **Build ARM** - Parallel builds for 5 ARM machines
 5. **Deploy** - Manual trigger for single machine deployment
 

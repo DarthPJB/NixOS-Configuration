@@ -1,6 +1,6 @@
 { lib }:
 # genFirewall: settings -> hostname -> NixOS networking.firewall config
-# Produces the same firewall config as production core-router.nix:
+# Produces the same firewall config as production topology-derive.nix:
 #   networking.firewall = lib.mkOverride 100 topology.firewall;
 settings: hostname:
 let
