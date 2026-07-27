@@ -130,6 +130,12 @@
         }
       ];
       mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108, images ? { } }:
+        let
+          topologyPath = ./topology/${hostname}.json;
+          topologyData = if builtins.pathExists topologyPath
+            then builtins.fromJSON (builtins.readFile topologyPath)
+            else null;
+        in
         nixpkgs_stable.lib.nixosSystem {
           modules = commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${hostname}
@@ -146,6 +152,7 @@
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;
               _module.args = globalArgs // {
                 inherit hostname;
+                inherit topologyData;
                 unstable = import nixpkgs_unstable { localSystem = "x86_64-linux"; config.allowUnfree = true; };
                 nixinate = {
                   inherit host sshUser buildOn;
@@ -157,6 +164,12 @@
           ];
         };
       mkAarch64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
+        let
+          topologyPath = ./topology/${hostname}.json;
+          topologyData = if builtins.pathExists topologyPath
+            then builtins.fromJSON (builtins.readFile topologyPath)
+            else null;
+        in
         nixpkgs_unstable.lib.nixosSystem {
           modules = [
             "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
@@ -505,7 +518,8 @@
             ./machines/beta-one/1.nix
             {
               nixpkgs.hostPlatform = "armv7l-linux";
-              _module.args = globalArgs // { hostname = "beta-one"; };
+              topology._file = null;
+              _module.args = globalArgs // { hostname = "beta-one"; topologyData = null; };
             }
           ];
         };
@@ -545,6 +559,7 @@
               networking.hostName = "arm-bootstrap";
               _module.args = globalArgs // {
                 hostname = "arm-bootstrap";
+                topologyData = null;
                 unstable = import nixpkgs_unstable { localSystem = "aarch64-linux"; config.allowUnfree = true; };
               };
             }
@@ -696,6 +711,7 @@
               _module.args = {
                 inherit self;
                 inherit bargman-assets;
+                topologyData = null;
               };
               networking.hostName = "bargman-greeter-vm";
               nixpkgs.hostPlatform = "x86_64-linux";
