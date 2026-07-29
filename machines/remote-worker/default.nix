@@ -54,20 +54,24 @@ in
         enableACME = true;
         acmeRoot = null;
         forceSSL = true;
-        listenAddresses = [ "193.16.42.101" "10.88.127.50" ];
+        # External IP 193.16.42.101 NATs to 10.0.1.42 (ens3)
+        listenAddresses = [ "10.0.1.42" "10.88.127.50" ];
         locations."/" = {
           root = ../../webroot;
         };
       };
       # johnbargman.com — split-horizon
       # Public: serves release site on external IP
+      # TODO: switch to personal-site.packages once input is stable
       "johnbargman.com" = {
         enableACME = true;
         acmeRoot = null;
         forceSSL = true;
-        listenAddresses = [ "193.16.42.101" ];
+        # External IP 193.16.42.101 NATs to 10.0.1.42 (ens3)
+        listenAddresses = [ "10.0.1.42" ];
         locations."/" = {
-          root = personal-site.packages.${pkgs.stdenv.hostPlatform.system}.personal-site;
+          # root = personal-site.packages.${pkgs.stdenv.hostPlatform.system}.personal-site;
+          root = ../../webroot;
         };
       };
       # WireGuard: serves staging site on WG IP only

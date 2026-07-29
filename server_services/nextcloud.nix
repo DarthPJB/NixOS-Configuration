@@ -68,8 +68,9 @@ in
     forceSSL = true;
     useACMEHost = "johnbargman.com";
     globalRedirect = "nextcloud.johnbargman.net";
+    # External IP 193.16.42.101 NATs to 10.0.1.42 (ens3)
     listenAddresses = [
-      "193.16.42.101"
+      "10.0.1.42"
       "10.88.127.50"
     ];
     extraConfig = "fastcgi_read_timeout 86400;\n";
@@ -77,8 +78,9 @@ in
   services.nginx.virtualHosts.${fqdn} = {
     forceSSL = true;
     useACMEHost = "johnbargman.net";
+    # External IP 193.16.42.101 NATs to 10.0.1.42 (ens3)
     listenAddresses = [
-      "193.16.42.101"
+      "10.0.1.42"
       "10.88.127.50"
     ];
     extraConfig = "fastcgi_read_timeout 86400;\n";
