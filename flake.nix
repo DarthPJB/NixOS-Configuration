@@ -40,6 +40,9 @@
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
       topoRegistry = import ./lib/topology/mkRegistry.nix { inherit lib; };
+      # Topology-to-config: pure JSON → config attrsets
+      mktopology = (import ./lib/topology/mktopology.nix { inherit lib; }).mktopology;
+      topologyConfigs = mktopology ./topology;
       # Helper: derive IP from coordinate (subnet + peer_id)
       coordToIp = coord:
         let
@@ -101,7 +104,6 @@
       commonModules = [
         secrix.nixosModules.default
         ratty.nixosModules.default
-        ./modules/topology-derive.nix
         ./lib/rclone-target.nix
         ./configuration.nix
         ./modules/ssh-multiplex.nix
@@ -136,11 +138,13 @@
           topologyData = if builtins.pathExists topologyPath
             then builtins.fromJSON (builtins.readFile topologyPath)
             else null;
+          topologyConfig = topologyConfigs.${hostname} or { };
         in
         nixpkgs_stable.lib.nixosSystem {
           specialArgs = { inherit topologyData; };
           modules = commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${hostname}
+            topologyConfig  # Merge topology-generated config
             {
               boot.kernelPatches = lib.singleton {
                 name = "disable-backdoor";
@@ -170,6 +174,7 @@
           topologyData = if builtins.pathExists topologyPath
             then builtins.fromJSON (builtins.readFile topologyPath)
             else null;
+          topologyConfig = topologyConfigs.${hostname} or { };
         in
         nixpkgs_unstable.lib.nixosSystem {
           specialArgs = { inherit topologyData; };
@@ -179,6 +184,7 @@
             hardware
           ] ++ commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${hostname}
+            topologyConfig  # Merge topology-generated config
             {
               nixpkgs.overlays = [
                 (final: super: {
@@ -289,6 +295,7 @@
       ci-generator = import ./ci/generate-workflow.nix { inherit self lib; pkgs = nixpkgs; };
     in
     {
+      inherit topologyConfigs;
       formatter."x86_64-linux" = nixpkgs.nixpkgs-fmt;
       apps."x86_64-linux" = { secrix = secrix.secrix self; } // (nixinate.lib.genDeploy.x86_64-linux self) // {
         # Check network config against golden
