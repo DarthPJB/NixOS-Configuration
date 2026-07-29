@@ -1364,11 +1364,11 @@
         "nixpkgs": "nixpkgs_14"
       },
       "locked": {
-        "lastModified": 1785253541,
-        "narHash": "sha256-2tY3unNiAz+ig4tNelmDigtd6/Wa/OM/E+3l1WuCbjc=",
+        "lastModified": 1785342915,
+        "narHash": "sha256-Sy4qaemi8fglo8It+n5uqOBPKspXW3DXtecKk/0Sl9I=",
         "ref": "refs/heads/main",
-        "rev": "37f9bb93239220827ecbd8deab05a929bf84fe45",
-        "revCount": 60,
+        "rev": "bcebab7dd007e2e6741b86cf54d6b3db47261afb",
+        "revCount": 76,
         "type": "git",
         "url": "https://gitlab.com/mecha-team-zero/bargman-website.git"
       },

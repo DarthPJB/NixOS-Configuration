@@ -62,7 +62,6 @@ in
       };
       # johnbargman.com — split-horizon
       # Public: serves release site on external IP
-      # TODO: switch to personal-site.packages once input is stable
       "johnbargman.com" = {
         enableACME = true;
         acmeRoot = null;
@@ -70,8 +69,7 @@ in
         # External IP 193.16.42.101 NATs to 10.0.1.42 (ens3)
         listenAddresses = [ "10.0.1.42" ];
         locations."/" = {
-          # root = personal-site.packages.${pkgs.stdenv.hostPlatform.system}.personal-site;
-          root = ../../webroot;
+          root = personal-site.packages.${pkgs.stdenv.hostPlatform.system}.personal-site;
         };
       };
       # WireGuard: serves staging site on WG IP only
