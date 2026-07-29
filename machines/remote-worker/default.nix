@@ -60,17 +60,17 @@ in
         };
       };
       # johnbargman.com — split-horizon
-      # Public: serves existing webroot on external IP
+      # Public: serves release site on external IP
       "johnbargman.com" = {
         enableACME = true;
         acmeRoot = null;
         forceSSL = true;
         listenAddresses = [ "193.16.42.101" ];
         locations."/" = {
-          root = ../../webroot;
+          root = personal-site.packages.${pkgs.stdenv.hostPlatform.system}.personal-site;
         };
       };
-      # WireGuard: serves personal-site on WG IP only
+      # WireGuard: serves staging site on WG IP only
       "johnbargman.com-lan" = {
         serverName = "johnbargman.com";
         enableACME = true;
@@ -78,7 +78,7 @@ in
         forceSSL = true;
         listenAddresses = [ "10.88.127.50" ];
         locations."/" = {
-          root = personal-site.packages.${pkgs.stdenv.hostPlatform.system}.webroot;
+          root = personal-site.packages.${pkgs.stdenv.hostPlatform.system}.personal-site-staging;
         };
       };
     };
