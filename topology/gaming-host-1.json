@@ -23,7 +23,7 @@
     ]
   },
   "backup": {
-    "configFile": "secrets/rclone-config-file",
+    "configFile": "../secrets/rclone-config-file",
     "user": "mc-curseforge-all-the-mons",
     "targets": {
       "mc-backups": {

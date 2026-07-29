@@ -55,9 +55,6 @@
     ],
     "johnbargman.net": [
       {
-        "static": {
-          "root": "../../webroot"
-        },
         "acme": {
           "enable": true,
           "acmeRoot": null
@@ -67,9 +64,6 @@
     ],
     "johnbargman.com": [
       {
-        "static": {
-          "root": "../../webroot"
-        },
         "acme": {
           "enable": true,
           "acmeRoot": null
@@ -80,9 +74,6 @@
     "johnbargman.com-wg": [
       {
         "plane": "wg",
-        "static": {
-          "root": "../../webroot"
-        },
         "acme": {
           "enable": true,
           "acmeRoot": null

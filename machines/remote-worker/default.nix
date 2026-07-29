@@ -78,10 +78,20 @@ in
   #     };
   #   };
   # };
-  # Overlay: personalsite root for WG split-horizon (rewrite NOT portable as relative path in JSON alone).
-  # Topology owns base vhost flags; this sets the derivation root.
-  services.nginx.virtualHosts."johnbargman.com-wg" = {
-    locations."/".root = lib.mkForce personal-site.packages.${pkgs.stdenv.hostPlatform.system}.webroot;
+  # Overlay: webroot paths for static vhosts
+  # Topology owns base vhost flags (ACME, forceSSL, listen addresses);
+  # user config sets the filesystem root.
+  services.nginx.virtualHosts = {
+    "johnbargman.net" = {
+      locations."/".root = lib.mkForce ../../webroot;
+    };
+    "johnbargman.com" = {
+      locations."/".root = lib.mkForce ../../webroot;
+    };
+    # WireGuard split-horizon: personal-site derivation root
+    "johnbargman.com-wg" = {
+      locations."/".root = lib.mkForce personal-site.packages.${pkgs.stdenv.hostPlatform.system}.webroot;
+    };
   };
 
   # Overlay: nextcloud exporter credentials (secrix paths; topology delivers enable+port)

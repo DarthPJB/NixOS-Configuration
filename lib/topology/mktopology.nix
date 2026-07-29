@@ -210,6 +210,27 @@
             (topology.vhosts or { });
         };
 
+      # ── Backup configFile resolution ─────────────────────────
+      # genBackup expects an absolute path for configFile. Since
+      # topology JSON references paths relative to the topology/
+      # directory (e.g., "secrets/rclone-config-file"), we resolve
+      # them here — same pattern as resolveStaticRoots above.
+      resolveBackupPaths = topology:
+        if topology ? backup && topology.backup ? configFile then
+          let
+            configFile = topology.backup.configFile;
+            absConfigFile =
+              if lib.hasPrefix "/" configFile then configFile
+              else
+                builtins.path {
+                  path = topologyDir + ("/${configFile}");
+                };
+          in
+          topology // {
+            backup = topology.backup // { configFile = absConfigFile; };
+          }
+        else topology;
+
       # ── Build single-machine config ──────────────────────────
       # Calls each pure generator conditionally based on which sections
       # the topology JSON has, then merges results with lib.mkMerge.
@@ -245,7 +266,7 @@
             (genNginx (resolveStaticRoots topology))
 
             # ── Backup (conditional on topology.backup) ──────────
-            (if topology ? backup then genBackup topology.backup else { })
+            (if topology ? backup then genBackup (resolveBackupPaths topology).backup else { })
 
             # ── WireGuard (conditional on topology.wireguard) ───
             # Uses the cross-machine registry for peer discovery.
