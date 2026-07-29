@@ -70,9 +70,8 @@ in
     globalRedirect = "nextcloud.johnbargman.net";
     listenAddresses = [
       "193.16.42.101"
-      "10.0.1.42"
       "10.88.127.50"
-    ]; # todo: handle this assignment in a fixed fashion 82.5.173.252
+    ];
     extraConfig = "fastcgi_read_timeout 86400;\n";
   };
   services.nginx.virtualHosts.${fqdn} = {
@@ -80,9 +79,8 @@ in
     useACMEHost = "johnbargman.net";
     listenAddresses = [
       "193.16.42.101"
-      "10.0.1.42"
       "10.88.127.50"
-    ]; # todo: handle this assignment in a fixed fashion 82.5.173.252
+    ];
     extraConfig = "fastcgi_read_timeout 86400;\n";
   };
   # services.phpfpm.pools.nextcloud = {

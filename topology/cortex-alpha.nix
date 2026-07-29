@@ -488,6 +488,13 @@
         domain = "minio.johnbargman.net";
         ip = "10.88.128.1";
       }
+      # Split-DNS: internal clients resolve johnbargman.com to remote-worker
+      # WireGuard IP, which serves personal-site. External resolves to public
+      # IP (193.16.42.101) which serves webroot.
+      {
+        domain = "johnbargman.com";
+        ip = "10.88.127.50";
+      }
     ];
     dhcp = {
       range = "10.88.128.128,10.88.128.254,24h";
@@ -509,12 +516,18 @@
       "10.88.127.1" # WireGuard IP
       "82.5.173.252" # WAN IP
     ];
+    # Proxy vhosts listen on both LAN and WireGuard subnets
+    proxyListenAddresses = [
+      "10.88.128.1" # LAN gateway
+      "10.88.127.1" # WireGuard IP
+    ];
 
     # Base virtual hosts that serve static content or default responses
     baseVhosts = {
       "_" = {
         default = true;
         useACMEHost = null;
+        listenAddresses = [ "0.0.0.0" ];
         locations."/".return = "444";
       };
       "johnbargman.net" = {
@@ -559,6 +572,11 @@
       };
       "ap.johnbargman.net" = {
         backend = "http://10.88.128.2:80";
+        forceSSL = false;
+        websockets = true;
+      };
+      "minio.johnbargman.net" = {
+        backend = "http://10.88.127.3:2223";
         forceSSL = false;
         websockets = true;
       };

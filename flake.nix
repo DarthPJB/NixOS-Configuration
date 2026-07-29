@@ -612,30 +612,27 @@
                   "csfinancialconsulting.com" = {
                     forceSSL = true;
                     enableACME = true;
-                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
+                    listenAddresses = [ "193.16.42.101" ];
                     locations."/" = {
                       root = carmelsite.packages.x86_64-linux.default;
-                      #proxywebsockets = false; # needed if you need to use websocket
                     };
                   };
                   "csfincon.us" = {
                     forceSSL = true;
                     enableACME = true;
-                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
+                    listenAddresses = [ "193.16.42.101" ];
                     locations."/" = {
                       root = carmelsite.packages.x86_64-linux.default;
-                      #proxywebsockets = false; # needed if you need to use websocket
                     };
                   };
-                  "carmel-staging.johnbargman.net" = {
-                    useACMEHost = "johnbargman.net";
-                    forceSSL = true;
-                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
-                    locations."/" = {
-                      root = carmelsite.packages.x86_64-linux.default;
-                      #proxywebsockets = false; # needed if you need to use websocket
-                    };
-                  };
+                  # "carmel-staging.johnbargman.net" = {
+                  #   useACMEHost = "johnbargman.net";
+                  #   forceSSL = true;
+                  #   listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
+                  #   locations."/" = {
+                  #     root = carmelsite.packages.x86_64-linux.default;
+                  #   };
+                  # };
                 };
               };
             }

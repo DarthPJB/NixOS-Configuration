@@ -54,25 +54,24 @@ in
         enableACME = true;
         acmeRoot = null;
         forceSSL = true;
-        listenAddresses = [ "0.0.0.0" ];
+        listenAddresses = [ "193.16.42.101" "10.88.127.50" ];
         locations."/" = {
           root = ../../webroot;
-          #proxyWebsockets = false; # needed if you need to use websocket
         };
       };
       # johnbargman.com — split-horizon
-      # Public: serves existing webroot on all interfaces
+      # Public: serves existing webroot on external IP
       "johnbargman.com" = {
         enableACME = true;
         acmeRoot = null;
         forceSSL = true;
-        listenAddresses = [ "0.0.0.0" ];
+        listenAddresses = [ "193.16.42.101" ];
         locations."/" = {
           root = ../../webroot;
         };
       };
       # WireGuard: serves personal-site on WG IP only
-      "johnbargman.com-wg" = {
+      "johnbargman.com-lan" = {
         serverName = "johnbargman.com";
         enableACME = true;
         acmeRoot = null;
