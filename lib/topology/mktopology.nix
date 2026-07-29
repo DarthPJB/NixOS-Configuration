@@ -188,22 +188,26 @@
       # - This mirrors the same pattern in topology-derive.nix
       resolveStaticRoots = topology:
         topology // {
-          vhosts = lib.mapAttrs (_vhostName: entries:
-            map (entry:
-              if entry ? static && entry.static ? root then
-                let
-                  staticRoot = entry.static.root;
-                  absRoot =
-                    if lib.hasPrefix "/" staticRoot then staticRoot
-                    else
-                      builtins.path {
-                        path = topologyDir + ("/${staticRoot}");
-                      };
-                in
-                entry // { static = entry.static // { root = absRoot; }; }
-              else entry
-            ) entries
-          ) (topology.vhosts or { });
+          vhosts = lib.mapAttrs
+            (_vhostName: entries:
+              map
+                (entry:
+                  if entry ? static && entry.static ? root then
+                    let
+                      staticRoot = entry.static.root;
+                      absRoot =
+                        if lib.hasPrefix "/" staticRoot then staticRoot
+                        else
+                          builtins.path {
+                            path = topologyDir + ("/${staticRoot}");
+                          };
+                    in
+                    entry // { static = entry.static // { root = absRoot; }; }
+                  else entry
+                )
+                entries
+            )
+            (topology.vhosts or { });
         };
 
       # ── Build single-machine config ──────────────────────────
@@ -214,34 +218,34 @@
       mkMachineConfig = hostname: topology:
         # Fold with recursiveUpdate to produce a PLAIN attrset (not a mkMerge type).
         # The module system requires plain attrsets or module functions in modules = [...].
-        builtins.foldl' lib.recursiveUpdate {} (
+        builtins.foldl' lib.recursiveUpdate { } (
 
           # Filter out empty configs — no-op for recursiveUpdate but keeps it clean
-          builtins.filter (x: x != {}) [
+          builtins.filter (x: x != { }) [
 
             # ── Firewall (conditional on topology.firewall) ───────
-            (if topology ? firewall then genFirewall topology.firewall else {})
+            (if topology ? firewall then genFirewall topology.firewall else { })
 
             # ── DNS/DHCP (conditional on topology.dns or lan_dhcp) ─
             (if topology ? dns || topology ? lan_dhcp then
               let
                 dnsConfig = genDns { inherit (topology) dns lan_dhcp; };
               in
-                dnsConfig // {
-                  services.dnsmasq = dnsConfig.services.dnsmasq // {
-                    settings = dnsConfig.services.dnsmasq.settings // {
-                      domain = [ hostname ];
-                      local = [ "/${hostname}/" ];
-                    };
+              dnsConfig // {
+                services.dnsmasq = dnsConfig.services.dnsmasq // {
+                  settings = dnsConfig.services.dnsmasq.settings // {
+                    domain = [ hostname ];
+                    local = [ "/${hostname}/" ];
                   };
-                }
-             else {})
+                };
+              }
+            else { })
 
             # ── Nginx (always — returns {} if no vhosts) ─────────
             (genNginx (resolveStaticRoots topology))
 
             # ── Backup (conditional on topology.backup) ──────────
-            (if topology ? backup then genBackup topology.backup else {})
+            (if topology ? backup then genBackup topology.backup else { })
 
             # ── WireGuard (conditional on topology.wireguard) ───
             # Uses the cross-machine registry for peer discovery.
@@ -251,7 +255,7 @@
               lib.recursiveUpdate
                 (genWireguard wireguardSettings hostname)
                 { networking.wireguard.enable = true; }
-             else {})
+            else { })
 
           ]
 

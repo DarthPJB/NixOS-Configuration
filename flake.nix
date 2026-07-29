@@ -135,7 +135,8 @@
       mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108, images ? { } }:
         let
           topologyPath = ./topology/${hostname}.json;
-          topologyData = if builtins.pathExists topologyPath
+          topologyData =
+            if builtins.pathExists topologyPath
             then builtins.fromJSON (builtins.readFile topologyPath)
             else null;
           topologyConfig = topologyConfigs.${hostname} or { };
@@ -144,7 +145,7 @@
           specialArgs = { inherit topologyData; };
           modules = commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${hostname}
-            topologyConfig  # Merge topology-generated config
+            topologyConfig # Merge topology-generated config
             {
               boot.kernelPatches = lib.singleton {
                 name = "disable-backdoor";
@@ -171,7 +172,8 @@
       mkAarch64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
         let
           topologyPath = ./topology/${hostname}.json;
-          topologyData = if builtins.pathExists topologyPath
+          topologyData =
+            if builtins.pathExists topologyPath
             then builtins.fromJSON (builtins.readFile topologyPath)
             else null;
           topologyConfig = topologyConfigs.${hostname} or { };
@@ -184,7 +186,7 @@
             hardware
           ] ++ commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${hostname}
-            topologyConfig  # Merge topology-generated config
+            topologyConfig # Merge topology-generated config
             {
               nixpkgs.overlays = [
                 (final: super: {

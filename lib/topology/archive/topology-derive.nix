@@ -178,26 +178,32 @@ in
     # not in the pure generator. The generator doesn't know about
     # filesystem paths — it's a pure JSON-to-attrset function.
     (lib.mkIf hasTopology
-      (let
-        # Resolve static root paths in vhost entries before passing to generator
-        resolvedTopology = topology // {
-          vhosts = lib.mapAttrs (_vhostName: entries:
-            map (entry:
-              if entry ? static && entry.static ? root then
-                let
-                  staticRoot = entry.static.root;
-                  absRoot =
-                    if lib.hasPrefix "/" staticRoot then staticRoot
-                    else if lib.hasSuffix "webroot" staticRoot then ../webroot
-                    else ../topology + ("/${staticRoot}");
-                in
-                entry // { static = entry.static // { root = absRoot; }; }
-              else entry
-            ) entries
-          ) (topology.vhosts or { });
-        };
-      in
-      genNginx resolvedTopology))
+      (
+        let
+          # Resolve static root paths in vhost entries before passing to generator
+          resolvedTopology = topology // {
+            vhosts = lib.mapAttrs
+              (_vhostName: entries:
+                map
+                  (entry:
+                    if entry ? static && entry.static ? root then
+                      let
+                        staticRoot = entry.static.root;
+                        absRoot =
+                          if lib.hasPrefix "/" staticRoot then staticRoot
+                          else if lib.hasSuffix "webroot" staticRoot then ../webroot
+                          else ../topology + ("/${staticRoot}");
+                      in
+                      entry // { static = entry.static // { root = absRoot; }; }
+                    else entry
+                  )
+                  entries
+              )
+              (topology.vhosts or { });
+          };
+        in
+        genNginx resolvedTopology
+      ))
 
     # ── Backup (via genBackup) ──────────────────────────────
     (if hasTopology && topology ? backup then
