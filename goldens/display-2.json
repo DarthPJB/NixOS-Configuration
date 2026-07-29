@@ -176,7 +176,7 @@
         "enable": false,
         "tries": 3
       },
-      "configurationLimit": 5,
+      "configurationLimit": null,
       "consoleMode": "keep",
       "editor": true,
       "edk2-uefi-shell": {
@@ -245,7 +245,7 @@
     "<derivation:pciutils-3.15.0>",
     "<derivation:lshw-02.20>",
     "<derivation:usbutils-019>",
-    "<derivation:determinate-nixd-3.21.8>",
+    "<derivation:determinate-nixd-3.21.5>",
     "<derivation:nix-build-all>",
     "<derivation:tmux-3.6a>",
     "<derivation:progress-0.17>",
@@ -291,7 +291,7 @@
     "<derivation:xf86-input-evdev-2.11.0>",
     "<derivation:lightdm-1.32.0>",
     "<derivation:kmscon-10.0.0>",
-    "<derivation:determinate-nix-3.21.8>",
+    "<derivation:determinate-nix-3.21.5>",
     "<derivation:nix-info>",
     "<derivation:nix-bash-completions-0.6.8>",
     "<derivation:dbus-1.16.2>",
@@ -976,9 +976,7 @@
         "hostNames": [
           "remote-worker",
           "remote-worker.johnbargman.net",
-          "10.88.127.50",
-          "10.0.1.42",
-          "193.16.42.101"
+          "10.88.127.50"
         ],
         "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M\n",
         "publicKeyFile": null

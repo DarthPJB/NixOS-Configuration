@@ -211,7 +211,7 @@
     "vfat": true
   },
   "environment.systemPackages": [
-    "<derivation:determinate-nixd-3.21.8>",
+    "<derivation:determinate-nixd-3.21.5>",
     "<derivation:nixos-version>",
     "<derivation:nixos-rebuild-ng-26.11-aarch64-unknown-linux-gnu>",
     "<derivation:nixos-option>",
@@ -228,7 +228,7 @@
     "<derivation:systemd-aarch64-unknown-linux-gnu-260.2>",
     "<derivation:kmod-aarch64-unknown-linux-gnu-31>",
     "<derivation:kexec-tools-aarch64-unknown-linux-gnu-2.0.32>",
-    "<derivation:determinate-nix-3.21.8>",
+    "<derivation:determinate-nix-3.21.5>",
     "<derivation:nix-info-aarch64-unknown-linux-gnu>",
     "<derivation:nix-bash-completions-aarch64-unknown-linux-gnu-0.6.8>",
     "<derivation:dbus-aarch64-unknown-linux-gnu-1.16.2>",
@@ -923,9 +923,7 @@
         "hostNames": [
           "remote-worker",
           "remote-worker.johnbargman.net",
-          "10.88.127.50",
-          "10.0.1.42",
-          "193.16.42.101"
+          "10.88.127.50"
         ],
         "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M\n",
         "publicKeyFile": null

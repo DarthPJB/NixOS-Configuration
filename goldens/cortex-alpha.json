@@ -175,7 +175,7 @@
     },
     "supportsInitrdSecrets": true,
     "systemd-boot": {
-      "configurationLimit": 5,
+      "configurationLimit": null,
       "consoleMode": "keep",
       "editor": true,
       "edk2-uefi-shell": {
@@ -223,7 +223,7 @@
     "<derivation:lshw-02.20>",
     "<derivation:usbutils-019>",
     "<derivation:ethtool-7.0>",
-    "<derivation:determinate-nixd-3.21.8>",
+    "<derivation:determinate-nixd-3.21.7>",
     "<derivation:neovim-0.12.4>",
     "<derivation:nix-build-all>",
     "<derivation:tmux-3.6a>",
@@ -251,7 +251,7 @@
     "<derivation:kmod-31>",
     "<derivation:kexec-tools-2.0.32>",
     "<derivation:kmscon-9.3.5>",
-    "<derivation:determinate-nix-3.21.8>",
+    "<derivation:determinate-nix-3.21.7>",
     "<derivation:nix-info>",
     "<derivation:nix-bash-completions-0.6.8>",
     "<derivation:dbus-1.16.2>",
@@ -692,19 +692,6 @@
           },
           {
             "allowedIPs": [
-              "10.88.127.43/32"
-            ],
-            "dynamicEndpointRefreshRestartSeconds": null,
-            "dynamicEndpointRefreshSeconds": null,
-            "endpoint": null,
-            "name": "yYNKv\\x2bgdmPETV6rYFRx1kb3I9KvqwCJZ-tIl2pDClVw\\x3d",
-            "persistentKeepalive": null,
-            "presharedKey": null,
-            "presharedKeyFile": null,
-            "publicKey": "yYNKv+gdmPETV6rYFRx1kb3I9KvqwCJZ/tIl2pDClVw="
-          },
-          {
-            "allowedIPs": [
               "10.88.127.211/32"
             ],
             "dynamicEndpointRefreshRestartSeconds": null,
@@ -715,6 +702,19 @@
             "presharedKey": null,
             "presharedKeyFile": null,
             "publicKey": "QSZUXdngUsh/i/icjMbEqzDw4IRRoh5kJFxXiXaI3gQ="
+          },
+          {
+            "allowedIPs": [
+              "10.88.127.1/32"
+            ],
+            "dynamicEndpointRefreshRestartSeconds": null,
+            "dynamicEndpointRefreshSeconds": null,
+            "endpoint": null,
+            "name": "lMo4Rf3nlXqd8rIX7rNMedygdsHTZqh\\x2bNLxre\\x2bvwYH8\\x3d",
+            "persistentKeepalive": null,
+            "presharedKey": null,
+            "presharedKeyFile": null,
+            "publicKey": "lMo4Rf3nlXqd8rIX7rNMedygdsHTZqh+NLxre+vwYH8="
           },
           {
             "allowedIPs": [
@@ -754,6 +754,19 @@
             "presharedKey": null,
             "presharedKeyFile": null,
             "publicKey": "+JqIec2p63rRbYQpD8h2tm3EXYUzWkZHBuax91hOb28="
+          },
+          {
+            "allowedIPs": [
+              "10.88.127.43/32"
+            ],
+            "dynamicEndpointRefreshRestartSeconds": null,
+            "dynamicEndpointRefreshSeconds": null,
+            "endpoint": null,
+            "name": "yYNKv\\x2bgdmPETV6rYFRx1kb3I9KvqwCJZ-tIl2pDClVw\\x3d",
+            "persistentKeepalive": null,
+            "presharedKey": null,
+            "presharedKeyFile": null,
+            "publicKey": "yYNKv+gdmPETV6rYFRx1kb3I9KvqwCJZ/tIl2pDClVw="
           },
           {
             "allowedIPs": [
@@ -1887,9 +1900,7 @@
         "hostNames": [
           "remote-worker",
           "remote-worker.johnbargman.net",
-          "10.88.127.50",
-          "10.0.1.42",
-          "193.16.42.101"
+          "10.88.127.50"
         ],
         "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M\n",
         "publicKeyFile": null
@@ -3735,6 +3746,7 @@
   },
   "systemd.services.tailscale-udp-gro": {
     "after": [
+      "network.target",
       "network.target"
     ],
     "aliases": [],
@@ -3795,12 +3807,13 @@
     "startLimitIntervalSec": "<eval-error>",
     "stopIfChanged": true,
     "unitConfig": {
-      "After": "network.target",
+      "After": "network.target network.target",
       "Description": "Enable UDP GRO forwarding for tailscale performance on enp2s0"
     },
     "upheldBy": [],
     "upholds": [],
     "wantedBy": [
+      "multi-user.target",
       "multi-user.target"
     ],
     "wants": []
