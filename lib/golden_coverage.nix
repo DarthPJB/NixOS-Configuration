@@ -3,7 +3,7 @@
 let
   topology = import ../topology/shared.nix { };
   topologyMachines = builtins.attrNames topology;
-  nixosMachines = builtins.attrNames (builtins.removeAttrs self.nixosConfigurations [ "beta-one" "display-0" "display-1" "display-2" "print-controller" "bargman-greeter-vm" "arm-bootstrap" ]);
+  nixosMachines = builtins.attrNames (builtins.removeAttrs self.nixosConfigurations [ "beta-one" "display-0" "display-1" "display-2" "print-controller" "bargman-greeter-vm" "arm-bootstrap" "cluster-box" ]);
 
   goldenDir = ../goldens;
   goldenFiles = builtins.readDir goldenDir;
