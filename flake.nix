@@ -300,22 +300,25 @@
       inherit topologyConfigs;
       formatter."x86_64-linux" = nixpkgs.nixpkgs-fmt;
       apps."x86_64-linux" = { secrix = secrix.secrix self; } // (nixinate.lib.genDeploy.x86_64-linux self) // {
-        # Check network config against golden
-        check-network = {
+        # Validate machine config against golden files
+        # NOTE: Golden tests validate that config hasn't changed from prior state.
+        # This is regression testing — completely separate from topology generation.
+        # Topology generates config; goldens validate config. Related but unrelated.
+        validate-goldens = {
           type = "app";
-          meta.description = "Check network config against golden file";
+          meta.description = "Validate machine config against golden files";
           program = lib.getExe (nixpkgs.writeShellApplication {
-            name = "check-network";
+            name = "validate-goldens";
             runtimeInputs = [ nixpkgs.jq ];
             text = ''
               MACHINE="''${1:-cortex-alpha}"
-              echo "Checking network config for $MACHINE..."
-              nix run .#dump-config -- "$MACHINE" | jq -S . > /tmp/current-network.json
+              echo "Validating $MACHINE against golden..."
+              nix run .#dump-config -- "$MACHINE" | jq -S . > /tmp/current-config.json
                 
-              if diff -u "${self}/goldens/$MACHINE.json" /tmp/current-network.json; then
-                echo "✓ Network config matches golden for $MACHINE"
+              if diff -u "${self}/goldens/$MACHINE.json" /tmp/current-config.json; then
+                echo "✓ $MACHINE matches golden"
               else
-                echo "✗ Network configuration has changed from golden!"
+                echo "✗ $MACHINE differs from golden!"
                 echo "If intentional, update with:"
                 echo "  nix run .#dump-config -- $MACHINE > goldens/$MACHINE.json"
                 exit 1
@@ -765,9 +768,10 @@
           text = ''exec deadnix --fail --no-lambda-arg --no-lambda-pattern-names "${self}"'';
         };
 
-        # Network topology golden check for all machines
-        # Pure Nix evaluation — compares serialized config against golden files at build time
-        network-config =
+        # Golden validation for all machines
+        # Compares serialized NixOS config against golden files at build time.
+        # This is regression testing — completely separate from topology generation.
+        golden-validation =
           let
             machines = builtins.attrNames self.nixosConfigurations;
             serializer = import ./lib/serialize-config.nix { inherit lib; };
@@ -780,10 +784,10 @@
                   builtins.toJSON (serializer.serializeConfig config)
                 );
               in
-              builtins.toFile "network-config-${machine}.json" json
+              builtins.toFile "golden-validation-${machine}.json" json
             );
           in
-          nixpkgs.runCommand "network-config-golden-check"
+          nixpkgs.runCommand "golden-validation"
             {
               buildInputs = [ nixpkgs.jq nixpkgs.diffutils ];
               goldenSrc = "${self}/goldens";
@@ -792,7 +796,7 @@
               PASS=true
               ${lib.concatMapStringsSep "\n" (machine: ''
                 if [ -f "$goldenSrc/${machine}.json" ]; then
-                  echo "Checking ${machine}..."
+                  echo "Validating ${machine}..."
                   ${lib.getExe nixpkgs.jq} -S . < "${machineJsonFiles.${machine}}" > /tmp/current.json
                   if ${lib.getExe' nixpkgs.diffutils "diff"} -u "$goldenSrc/${machine}.json" /tmp/current.json; then
                     echo "  ✓ ${machine} matches golden"
@@ -806,12 +810,12 @@
               '') machines}
               if [ "$PASS" != "true" ]; then
                 echo ""
-                echo "Golden check failed. If changes are intentional, update with:"
+                echo "Golden validation failed. If changes are intentional, update with:"
                 echo "  nix run .#dump-config -- <machine> > goldens/<machine>.json"
                 exit 1
               fi
               echo ""
-              echo "All golden checks passed"
+              echo "All golden validations passed"
               touch $out
             '';
 

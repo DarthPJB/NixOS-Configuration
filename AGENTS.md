@@ -273,13 +273,15 @@ git worktree remove /tmp/nixos-<descriptive-name>
 The golden test is our primary integrity mechanism.
 
 **Philosophy:**
-- Golden tests represent the best possible working state
+- Golden tests validate that configuration hasn't changed from prior state
+- This is regression testing — completely separate from topology generation
+- Topology generates config; goldens validate config. Related but unrelated.
 - All failures are errors — no silent failure; deployment is blocked
 - Intended changes require manual golden update
 - Coverage grows over time — every new machine eventually gets a golden
 
 ```bash
-nix run .#check-network -- cortex-alpha
+nix run .#validate-goldens -- cortex-alpha
 ```
 **DO NOT DEPLOY** if golden test fails.
 
@@ -288,7 +290,7 @@ nix run .#check-network -- cortex-alpha
 **Rules:**
 - Golden regeneration is ONLY for intentional configuration changes
 - Code restructuring must NEVER require golden regeneration
-- If `check-network` fails after refactoring, the refactoring introduced a side effect
+- If `validate-goldens` fails after refactoring, the refactoring introduced a side effect
 - The user explicitly authorizes all golden updates
 
 ### WireGuard Public Keys
@@ -319,14 +321,14 @@ networking.wireguard.interfaces.wireg0.privateKeyFile =
 
 ### Validate Against Golden Test
 ```bash
-nix run .#check-network -- cortex-alpha
+nix run .#validate-goldens -- cortex-alpha
 ```
 **Golden tests are sacrosanct** — if this fails, the code is wrong.
 
 ### Validate All Machines
 ```bash
 for m in $(ls machines/); do
-  nix run .#check-network -- "$m" 2>&1 | tail -1
+  nix run .#validate-goldens -- "$m" 2>&1 | tail -1
 done
 ```
 
@@ -341,7 +343,7 @@ nix run .#dump-config -- cortex-alpha | jq -S . > goldens/cortex-alpha.json
 2. Create the machine's config in `flake.nix` (use `mkX86_64` or `mkAarch64`)
 3. Register in `flake.nix` with `mkX86_64` or `mkAarch64` — topology config is automatically merged via `topologyConfigs`
 4. Generate golden: `nix run .#dump-config -- <machine-name> | jq -S . > goldens/<machine-name>.json`
-5. Validate: `nix run .#check-network -- <machine-name>`
+5. Validate: `nix run .#validate-goldens -- <machine-name>`
 
 ### Dump Full Configuration
 ```bash
@@ -377,7 +379,7 @@ nix build .#checks.x86_64-linux.bargman-greeter-login-test -L  # golden screensh
 ---
 
 ## Deployment Flow
-1. Run golden test: `nix run .#check-network -- <machine>`
+1. Run golden test: `nix run .#validate-goldens -- <machine>`
 2. Verify WireGuard keys exist: `ls secrets/public_keys/wireguard/wg_*_pub`
 3. Check for warnings in nix eval output
 4. Deploy with appropriate caution
