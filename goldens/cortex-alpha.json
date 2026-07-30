@@ -994,7 +994,8 @@
         "/prometheus.johnbargman.net/10.88.128.1",
         "/grafana.johnbargman.net/10.88.128.1",
         "/print-controller.johnbargman.net/10.88.128.1",
-        "/minio.johnbargman.net/10.88.128.1"
+        "/minio.johnbargman.net/10.88.128.1",
+        "/johnbargman.com/10.88.127.50"
       ],
       "bogus-priv": [
         true
@@ -1509,6 +1510,58 @@
         "sslCertificateKey": "<eval-error>",
         "sslTrustedCertificate": null,
         "useACMEHost": null
+      },
+      "minio.johnbargman.net": {
+        "acmeFallbackHost": null,
+        "acmeRoot": "/var/lib/acme/acme-challenge",
+        "addSSL": true,
+        "basicAuth": {},
+        "basicAuthFile": null,
+        "default": false,
+        "enableACME": false,
+        "extraConfig": "",
+        "forceSSL": false,
+        "globalRedirect": null,
+        "http2": true,
+        "http3": true,
+        "http3_hq": false,
+        "kTLS": false,
+        "listen": [],
+        "listenAddresses": [
+          "10.88.128.1",
+          "10.88.127.1"
+        ],
+        "locations": {
+          "~/": {
+            "alias": null,
+            "basicAuth": {},
+            "basicAuthFile": null,
+            "extraConfig": "proxy_set_header Host $host;\nproxy_set_header X-Real-IP $remote_addr;\nproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\nproxy_set_header X-Forwarded-Proto $scheme;\nproxy_set_header Upgrade $http_upgrade;\nproxy_set_header Connection $connection_upgrade;\n",
+            "fastcgiParams": {},
+            "index": null,
+            "priority": 1000,
+            "proxyPass": "http://10.88.127.3:2223",
+            "proxyWebsockets": true,
+            "recommendedProxySettings": false,
+            "recommendedUwsgiSettings": false,
+            "return": null,
+            "root": null,
+            "tryFiles": null,
+            "uwsgiPass": null
+          }
+        },
+        "onlySSL": false,
+        "quic": false,
+        "redirectCode": 301,
+        "rejectSSL": false,
+        "reuseport": false,
+        "root": null,
+        "serverAliases": [],
+        "serverName": null,
+        "sslCertificate": "<eval-error>",
+        "sslCertificateKey": "<eval-error>",
+        "sslTrustedCertificate": null,
+        "useACMEHost": "johnbargman.net"
       },
       "print-controller.johnbargman.net": {
         "acmeFallbackHost": null,

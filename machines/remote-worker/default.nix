@@ -85,11 +85,12 @@ in
       locations."/".root = lib.mkForce ../../webroot;
     };
     "johnbargman.com" = {
-      locations."/".root = lib.mkForce ../../webroot;
+      # Public: serves release site
+      locations."/".root = lib.mkForce personal-site.packages.${pkgs.stdenv.hostPlatform.system}.personal-site;
     };
-    # WireGuard split-horizon: personal-site derivation root
-    "johnbargman.com-wg" = {
-      locations."/".root = lib.mkForce personal-site.packages.${pkgs.stdenv.hostPlatform.system}.webroot;
+    # WireGuard split-horizon: staging site on WG IP only
+    "johnbargman.com-lan" = {
+      locations."/".root = lib.mkForce personal-site.packages.${pkgs.stdenv.hostPlatform.system}.personal-site-staging;
     };
   };
 

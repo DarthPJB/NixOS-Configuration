@@ -59,7 +59,8 @@
           "enable": true,
           "acmeRoot": null
         },
-        "forceSSL": true
+        "forceSSL": true,
+        "listenAddresses": ["10.0.1.42", "10.88.127.50"]
       }
     ],
     "johnbargman.com": [
@@ -68,10 +69,11 @@
           "enable": true,
           "acmeRoot": null
         },
-        "forceSSL": true
+        "forceSSL": true,
+        "listenAddresses": ["10.0.1.42"]
       }
     ],
-    "johnbargman.com-wg": [
+    "johnbargman.com-lan": [
       {
         "plane": "wg",
         "acme": {

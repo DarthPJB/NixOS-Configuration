@@ -124,7 +124,8 @@
       { "domain": "prometheus.johnbargman.net", "ip": "10.88.128.1" },
       { "domain": "grafana.johnbargman.net", "ip": "10.88.128.1" },
       { "domain": "print-controller.johnbargman.net", "ip": "10.88.128.1" },
-      { "domain": "minio.johnbargman.net", "ip": "10.88.128.1" }
+      { "domain": "minio.johnbargman.net", "ip": "10.88.128.1" },
+      { "domain": "johnbargman.com", "ip": "10.88.127.50" }
     ],
     "dhcp": {
       "range": "10.88.128.128,10.88.128.254,24h",
@@ -200,6 +201,13 @@
   "ap.johnbargman.net": [
     {
       "proxy_to": "10.88.128.2:80",
+      "regex_prefix": true,
+      "proxy_headers": true
+    }
+  ],
+  "minio.johnbargman.net": [
+    {
+      "proxy_to": "10.88.127.3:2223",
       "regex_prefix": true,
       "proxy_headers": true
     }

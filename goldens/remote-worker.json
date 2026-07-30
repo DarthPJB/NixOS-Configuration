@@ -1018,9 +1018,7 @@
         "kTLS": false,
         "listen": [],
         "listenAddresses": [
-          "193.16.42.101",
-          "10.0.1.42",
-          "10.88.127.50"
+          "10.0.1.42"
         ],
         "locations": {
           "/": {
@@ -1036,7 +1034,7 @@
             "recommendedProxySettings": false,
             "recommendedUwsgiSettings": false,
             "return": null,
-            "root": "<path>",
+            "root": "<derivation:personal-site-release>",
             "tryFiles": null,
             "uwsgiPass": null
           }
@@ -1054,7 +1052,7 @@
         "sslTrustedCertificate": null,
         "useACMEHost": null
       },
-      "johnbargman.com-wg": {
+      "johnbargman.com-lan": {
         "acmeFallbackHost": null,
         "acmeRoot": null,
         "addSSL": false,
@@ -1087,7 +1085,7 @@
             "recommendedProxySettings": false,
             "recommendedUwsgiSettings": false,
             "return": null,
-            "root": "<derivation:personal-site-webroot-0.1.0>",
+            "root": "<derivation:personal-site-staging>",
             "tryFiles": null,
             "uwsgiPass": null
           }
@@ -1122,7 +1120,6 @@
         "kTLS": false,
         "listen": [],
         "listenAddresses": [
-          "193.16.42.101",
           "10.0.1.42",
           "10.88.127.50"
         ],
@@ -1230,7 +1227,6 @@
         "kTLS": false,
         "listen": [],
         "listenAddresses": [
-          "193.16.42.101",
           "10.0.1.42",
           "10.88.127.50"
         ],
@@ -1265,7 +1261,6 @@
         "kTLS": false,
         "listen": [],
         "listenAddresses": [
-          "193.16.42.101",
           "10.0.1.42",
           "10.88.127.50"
         ],
