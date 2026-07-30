@@ -689,7 +689,21 @@
         # DO NOT add this machine to managed topology transforms, golden tests,
         # or CI build jobs. The configuration lifecycle is managed externally.
         # See: documents/architecture-passthrough.md in the Malayalam repo.
-        cluster-box = malayalam.nixosConfigurations.cluster-box;
+        #
+        # extendModules overrides nixinate args for WireGuard deployment from
+        # this flake. The system derivation is identical — only _module.args.nixinate
+        # changes, which is deployment metadata consumed by nixinate.lib.genDeploy,
+        # not by any build script or service.
+        cluster-box = malayalam.nixosConfigurations.cluster-box.extendModules {
+          modules = [
+            { _module.args.nixinate = lib.mkForce {
+                host = topoIp "cluster-box";   # "10.88.127.211" from topology/shared.nix
+                sshUser = "deploy";
+                port = 1108;
+              };
+            }
+          ];
+        };
       };
 
       # Dormant machines: configuration preserved for golden tests but excluded
