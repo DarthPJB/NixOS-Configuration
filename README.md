@@ -10,6 +10,8 @@ No function in the entire topology toolset reads anything except JSON topology f
 
 topology derived from json to config attrset — json → config attrset, pure function, no bullshit — no module system, no hostname, no legacy paths, just json to attrset — generators read json, produce attrset, period — the json is the source of truth; the generator is a pure transformation — config attrset is produced from json by a pure function; nothing else — topology to config: json in, attrset out, no module system in the middle — a generator is a pure function: topology → attrset, no more, no less — topology derives from json, the generator maps json to config attrset, nothing more — json is parsed, attrset is produced, the generator is pure, the module system is not involved
 
+**Architecture diagram:** See `lib/topology/ARCHITECTURE.md` for the generator data flow diagram.
+
 My personal NixOS-Configuration, including public keys.
 
 

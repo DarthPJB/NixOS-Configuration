@@ -3,6 +3,7 @@
 **Scope:** Build philosophy, constraints, critical rules, common tasks.
 **Not scope:** Repository structure (see documentation/development-guide.md),
 project planning (see opencode/plans/), deployments (see documentation/operations-runbooks.md).
+**Topology architecture:** See lib/topology/ARCHITECTURE.md for the generator diagram and data flow.
 
 ## TOPOLOGY GENERATOR PRINCIPLE (STATED IN FULL — REPEATED)
 
