@@ -54,32 +54,33 @@ in
         enableACME = true;
         acmeRoot = null;
         forceSSL = true;
-        listenAddresses = [ "0.0.0.0" ];
+        # External IP 193.16.42.101 NATs to 10.0.1.42 (ens3)
+        listenAddresses = [ "10.0.1.42" "10.88.127.50" ];
         locations."/" = {
           root = ../../webroot;
-          #proxyWebsockets = false; # needed if you need to use websocket
         };
       };
       # johnbargman.com — split-horizon
-      # Public: serves existing webroot on all interfaces
+      # Public: serves release site on external IP
       "johnbargman.com" = {
         enableACME = true;
         acmeRoot = null;
         forceSSL = true;
-        listenAddresses = [ "0.0.0.0" ];
+        # External IP 193.16.42.101 NATs to 10.0.1.42 (ens3)
+        listenAddresses = [ "10.0.1.42" ];
         locations."/" = {
-          root = ../../webroot;
+          root = personal-site.packages.${pkgs.stdenv.hostPlatform.system}.personal-site;
         };
       };
-      # WireGuard: serves personal-site on WG IP only
-      "johnbargman.com-wg" = {
+      # WireGuard: serves staging site on WG IP only
+      "johnbargman.com-lan" = {
         serverName = "johnbargman.com";
         enableACME = true;
         acmeRoot = null;
         forceSSL = true;
         listenAddresses = [ "10.88.127.50" ];
         locations."/" = {
-          root = personal-site.packages.${pkgs.stdenv.hostPlatform.system}.webroot;
+          root = personal-site.packages.${pkgs.stdenv.hostPlatform.system}.personal-site-staging;
         };
       };
     };

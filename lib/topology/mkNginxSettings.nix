@@ -24,8 +24,9 @@ let
         # Global listen addresses (used by base hosts by default)
         listenAddresses = safeLookup nginx "listenAddresses" [ ];
 
-        # Default listen addresses for proxy hosts — [gateway, host-IP]
-        defaultListenAddresses = [
+        # Default listen addresses for proxy hosts
+        # Uses explicit proxyListenAddresses if set, otherwise [gateway, host-IP]
+        defaultListenAddresses = safeLookup nginx "proxyListenAddresses" [
           (lan.gateway or "0.0.0.0")
           ((lan.hosts or { }).${machine.hostname or ""}.ip or "0.0.0.0")
         ];

@@ -34,8 +34,13 @@
     denton-glasses.url = "git+https://gitlab.com/mecha-team-zero/denton-glasses.git";
     personal-site = { url = "git+https://gitlab.com/mecha-team-zero/bargman-website.git"; };
     LLM-CORE = { url = "gitlab:mecha-team-zero/llm-core"; inputs.nixpkgs.follows = "nixpkgs_llm"; inputs.nix-mcp-servers.inputs.nixpkgs.follows = "nixpkgs_stable"; };
+    # cluster-box (dlyon's on-site machine) — passthrough from Malayalam flake.
+    # Uses git+https for netrc token authentication. The configuration is owned
+    # and operated by dlyon; John88 has architectural authority only.
+    # See: https://gitlab.com/mecha-team-zero/Malayalam/blob/main/documents/architecture-passthrough.md
+    malayalam.url = "git+https://gitlab.com/mecha-team-zero/Malayalam.git";
   };
-  outputs = { self, deadnix, determinate, disko, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE }:
+  outputs = { self, deadnix, determinate, disko, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE, malayalam }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
@@ -612,30 +617,29 @@
                   "csfinancialconsulting.com" = {
                     forceSSL = true;
                     enableACME = true;
-                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
+                    # External IP 193.16.42.101 NATs to 10.0.1.42 (ens3)
+                    listenAddresses = [ "10.0.1.42" ];
                     locations."/" = {
                       root = carmelsite.packages.x86_64-linux.default;
-                      #proxywebsockets = false; # needed if you need to use websocket
                     };
                   };
                   "csfincon.us" = {
                     forceSSL = true;
                     enableACME = true;
-                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
+                    # External IP 193.16.42.101 NATs to 10.0.1.42 (ens3)
+                    listenAddresses = [ "10.0.1.42" ];
                     locations."/" = {
                       root = carmelsite.packages.x86_64-linux.default;
-                      #proxywebsockets = false; # needed if you need to use websocket
                     };
                   };
-                  "carmel-staging.johnbargman.net" = {
-                    useACMEHost = "johnbargman.net";
-                    forceSSL = true;
-                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ]; #todo: handle this assignment in a fixed fashion 82.5.173.252
-                    locations."/" = {
-                      root = carmelsite.packages.x86_64-linux.default;
-                      #proxywebsockets = false; # needed if you need to use websocket
-                    };
-                  };
+                  # "carmel-staging.johnbargman.net" = {
+                  #   useACMEHost = "johnbargman.net";
+                  #   forceSSL = true;
+                  #   listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
+                  #   locations."/" = {
+                  #     root = carmelsite.packages.x86_64-linux.default;
+                  #   };
+                  # };
                 };
               };
             }
@@ -659,6 +663,45 @@
               networking.hostName = "bargman-greeter-vm";
               nixpkgs.hostPlatform = "x86_64-linux";
               system.stateVersion = "25.11";
+            }
+          ];
+        };
+
+        # ---- cluster-box (Malayalam passthrough) ----
+        # UNMANAGED FLEET MEMBER — configuration owned by dlyon (GitLab).
+        # This is a verbatim passthrough of Malayalam's nixosConfigurations.cluster-box.
+        # No mkX86_64, no commonModules, no extraModules — the derivation is defined
+        # entirely in the Malayalam repo. Both deploy paths (dlyon via LAN, John88 via
+        # WireGuard) produce the identical system closure.
+        #
+        # Operational authority: dlyon (on-site, LAN deploy, push to GitLab)
+        # Architectural authority: John88 (WireGuard deploy, approval of structural changes)
+        #
+        # nixinate uses Malayalam's LAN address (192.168.0.210:22) for dlyon's local deploys.
+        # John88 deploys via WireGuard by cloning Malayalam directly and overriding nixinate
+        # host at the command line, or by deploying from the Malayalam repo on LINDA.
+        # The derivation is identical regardless of deploy path — same flake.lock inputs,
+        # same NixOS configuration, same store path.
+        #
+        # Topology: 10.88.127.211 (WireGuard), 192.168.0.210 (LAN, eno1)
+        # Hub: cortex-alpha
+        #
+        # DO NOT add this machine to managed topology transforms, golden tests,
+        # or CI build jobs. The configuration lifecycle is managed externally.
+        # See: documents/architecture-passthrough.md in the Malayalam repo.
+        #
+        # extendModules overrides nixinate args for WireGuard deployment from
+        # this flake. The system derivation is identical — only _module.args.nixinate
+        # changes, which is deployment metadata consumed by nixinate.lib.genDeploy,
+        # not by any build script or service.
+        cluster-box = malayalam.nixosConfigurations.cluster-box.extendModules {
+          modules = [
+            {
+              _module.args.nixinate = lib.mkForce {
+                host = topoIp "cluster-box"; # "10.88.127.211" from topology/shared.nix
+                sshUser = "deploy";
+                port = 1108;
+              };
             }
           ];
         };
