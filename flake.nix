@@ -696,8 +696,9 @@
         # not by any build script or service.
         cluster-box = malayalam.nixosConfigurations.cluster-box.extendModules {
           modules = [
-            { _module.args.nixinate = lib.mkForce {
-                host = topoIp "cluster-box";   # "10.88.127.211" from topology/shared.nix
+            {
+              _module.args.nixinate = lib.mkForce {
+                host = topoIp "cluster-box"; # "10.88.127.211" from topology/shared.nix
                 sshUser = "deploy";
                 port = 1108;
               };
