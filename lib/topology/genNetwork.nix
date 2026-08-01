@@ -69,7 +69,8 @@ let
   # Non-hub machines (VPS, cloud) — hosting provider manages the network.
   coords = topology.coordinate or [ ];
   isHub = topology ? wireguard;
-  lanCoords = if !isHub then [ ] else filter
+  lanCoords = if !isHub then [ ] else
+  filter
     (c:
       (c.plane_name or "") != "wg"
       && (c.plane_name or "") != "tailscale-platonic"
