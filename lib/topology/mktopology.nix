@@ -52,6 +52,7 @@
       genNginx = import ./genNginx.nix { inherit lib; };
       genBackup = import ./genBackup.nix { inherit lib; };
       genWireguard = import ./genWireguard.nix { inherit lib; };
+      genNetwork = import ./genNetwork.nix { inherit lib; };
 
       # ── Cross-machine Registry ─────────────────────────────────
       # WireGuard peer discovery is inherently cross-machine — the hub
@@ -246,6 +247,11 @@
 
             # ── Firewall (conditional on topology.firewall) ───────
             (if topology ? firewall then genFirewall topology.firewall else { })
+
+            # ── Network interfaces (always — derives IPs from coordinates) ─
+            # Produces networking.interfaces.<name>.ipv4.addresses from
+            # topology coordinate data. Filters out WG/Tailscale/MAC interfaces.
+            (genNetwork topology)
 
             # ── DNS/DHCP (conditional on topology.dns or lan_dhcp) ─
             (if topology ? dns || topology ? lan_dhcp then

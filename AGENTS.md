@@ -70,19 +70,18 @@ keys in its topology JSON to validate the pipeline (pending).
 ### Phase B — Actionable Pending Review
 
 **B1. Cortex-alpha hardcoded IP addresses.**
-`machines/cortex-alpha/default.nix` has `enp3s0.ipv4.addresses` hardcoded to
-`10.88.128.1/24`. Comment says "managed by topology-derive in later phase."
-Data exists in `topology/cortex-alpha.json` — interface derivation requires
-a new generator (genNetwork) or manual fix. Deferred to overlord-iii.
+**RESOLVED.** `genNetwork.nix` now derives interface addresses from topology
+coordinates for hub machines. Hardcoded IP removed from `machines/cortex-alpha/default.nix`.
+Validated against golden — all 19 machines pass.
 
 **B2. Remote-worker ad-hoc nginx config.**
-`flake.nix` has 3 carmelsite vhosts inline in `extraModules` (lines 653-683).
-This is the anti-pattern identified by multi-horizon gateway plan invariant #4.
-Should move to `topology/remote-worker.json` vhosts.
+**BY DESIGN.** Webroot is set in user Nix config; only topology is defined in JSON.
+Carmelsite vhosts remain in `extraModules` because they reference a flake input package
+(`carmelsite.packages.x86_64-linux.default`) — not a path resolvable from topology JSON.
 
 **B3. Prometheus unlimited retention — no disk monitoring.**
-`services/prometheus.nix` has `retentionTime = "0d"` (unlimited, ~500MB/week
-growth). Needs disk growth alerting or dashboard. Operational decision.
+**BY DESIGN.** This is a black box recorder. Unlimited retention is intentional.
+`retentionTime = "0d"` stays.
 
 ### Phase C — Deferred
 

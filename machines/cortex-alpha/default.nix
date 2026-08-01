@@ -98,15 +98,9 @@ in
     wireguard.interfaces.wireg0.privateKeyFile =
       config.secrix.services.wireguard-wireg0.secrets.cortex-alpha.decrypted.path;
     # TOPOLOGY-DERIVED: see topology/cortex-alpha.json coordinate
-    # Addresses managed by topology-derive in later phase.
+    # enp3s0 address derived by genNetwork from topology coordinates.
     interfaces.enp3s0 = {
       useDHCP = lib.mkDefault false;
-      ipv4.addresses = [
-        {
-          address = "10.88.128.1";
-          prefixLength = 24;
-        }
-      ];
     };
     interfaces.enp2s0 = {
       useDHCP = lib.mkDefault true;
