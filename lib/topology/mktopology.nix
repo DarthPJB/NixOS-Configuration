@@ -53,6 +53,7 @@
       genBackup = import ./genBackup.nix { inherit lib; };
       genWireguard = import ./genWireguard.nix { inherit lib; };
       genNetwork = import ./genNetwork.nix { inherit lib; };
+      genForwarding = import ./genForwarding.nix { inherit lib; };
 
       # ── Cross-machine Registry ─────────────────────────────────
       # WireGuard peer discovery is inherently cross-machine — the hub
@@ -252,6 +253,10 @@
             # Produces networking.interfaces.<name>.ipv4.addresses from
             # topology coordinate data. Filters out WG/Tailscale/MAC interfaces.
             (genNetwork topology)
+
+            # ── Forwarding/NAT (conditional on topology.routes) ───
+            # Generates nftables NAT table for port forwarding (DNAT) and masquerade.
+            (if topology ? routes then genForwarding topology else { })
 
             # ── DNS/DHCP (conditional on topology.dns or lan_dhcp) ─
             (if topology ? dns || topology ? lan_dhcp then

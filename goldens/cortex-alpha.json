@@ -619,7 +619,7 @@
     "enable": true,
     "extraDeletions": "",
     "flattenRulesetFile": false,
-    "flushRuleset": false,
+    "flushRuleset": true,
     "preCheckRuleset": "",
     "rulesetFile": null,
     "tables": {
