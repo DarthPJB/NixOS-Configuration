@@ -117,4 +117,23 @@
       "level-seed" = "4240772663413292738";
     };
   };
+
+  # Scheduled restart: every 2 days at 5:00 AM
+  systemd.timers.minecraft-restart = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      # Every 2nd day (odd-numbered days) at 05:00 — closest systemd approximation
+      # to "every 2 days" using calendar syntax
+      OnCalendar = "*-*-01/2 05:00:00";
+      Persistent = true;
+      RandomizedDelaySec = 0;
+    };
+  };
+  systemd.services.minecraft-restart = {
+    description = "Scheduled restart for all-the-mons";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${lib.getExe' pkgs.systemd "systemctl"} restart mc-curseforge-all-the-mons.service";
+    };
+  };
 }

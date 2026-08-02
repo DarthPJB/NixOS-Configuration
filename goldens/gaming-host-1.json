@@ -700,6 +700,7 @@
         "kTLS": false,
         "listen": [],
         "listenAddresses": [
+          "65.108.141.32",
           "10.88.127.52"
         ],
         "locations": {

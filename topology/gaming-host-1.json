@@ -16,6 +16,7 @@
       {
         "proxy_to": "127.0.0.1:8080",
         "forceSSL": true,
+        "listenAddresses": ["65.108.141.32", "10.88.127.52"],
         "acme": {
           "host": "gaming-host-1.johnbargman.net"
         }
