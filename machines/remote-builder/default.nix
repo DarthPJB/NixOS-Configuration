@@ -18,6 +18,7 @@
     ../../modifier_imports/remote-builder.nix
     ../../users/build.nix
     ../../modules/enable-wg-topology.nix
+    ../../services/nix-cache-serve.nix
   ];
   # Virtual disk devices — smartctl/smartd not applicable
   services.smartd.enable = lib.mkForce false;
