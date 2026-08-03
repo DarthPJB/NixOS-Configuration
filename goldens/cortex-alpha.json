@@ -13,7 +13,7 @@
     "net.ipv4.conf.enp3s0.proxy_arp": false,
     "net.ipv4.ping_group_range": "0 2147483647",
     "net.ipv6.conf.all.disable_ipv6": false,
-    "net.ipv6.conf.all.forwarding": false,
+    "net.ipv6.conf.all.forwarding": true,
     "net.ipv6.conf.default.disable_ipv6": false,
     "net.ipv6.conf.default.use_tempaddr": "2",
     "net.ipv6.conf.enp2s0.use_tempaddr": "2",
@@ -257,6 +257,7 @@
     "<derivation:dbus-1.16.2>",
     "<derivation:dbus-broker-37>",
     "<derivation:wireguard-tools-1.0.20260223>",
+    "<derivation:tailscale-1.98.5>",
     "<derivation:nftables-1.1.6>",
     "<derivation:nftables-1.1.6>",
     "<derivation:nixos-firewall-tool>",
@@ -2367,14 +2368,14 @@
         "user": "dmarc-exporter"
       },
       "dnsmasq": {
-        "dnsmasqListenAddress": "localhost:53",
-        "enable": false,
+        "dnsmasqListenAddress": "10.88.128.1:53",
+        "enable": true,
         "extraFlags": [],
         "firewallFilter": null,
         "firewallRules": null,
         "group": "dnsmasq-exporter",
-        "leasesPath": "/var/lib/dnsmasq/dnsmasq.leases",
-        "listenAddress": "0.0.0.0",
+        "leasesPath": "/dev/null",
+        "listenAddress": "10.88.127.1",
         "openFirewall": false,
         "port": 9153,
         "user": "dnsmasq-exporter"
@@ -3767,9 +3768,11 @@
     },
     "disableTaildrop": false,
     "disableUpstreamLogging": false,
-    "enable": false,
+    "enable": true,
     "extraDaemonFlags": [],
-    "extraSetFlags": [],
+    "extraSetFlags": [
+      "--advertise-routes=10.88.128.88/32,10.88.127.107/32,10.88.128.248/32,10.88.128.247/32"
+    ],
     "extraUpFlags": [],
     "interfaceName": "tailscale0",
     "openFirewall": false,
@@ -3781,7 +3784,7 @@
       "enable": false,
       "services": {}
     },
-    "useRoutingFeatures": "none"
+    "useRoutingFeatures": "server"
   },
   "systemd.services.tailscale-udp-gro": {
     "after": [

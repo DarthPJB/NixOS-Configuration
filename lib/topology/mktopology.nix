@@ -54,6 +54,8 @@
       genWireguard = import ./genWireguard.nix { inherit lib; };
       genNetwork = import ./genNetwork.nix { inherit lib; };
       genForwarding = import ./genForwarding.nix { inherit lib; };
+      genTailscale = import ./genTailscale.nix { inherit lib; };
+      genMonitoring = import ./genMonitoring.nix { inherit lib; };
 
       # ── Cross-machine Registry ─────────────────────────────────
       # WireGuard peer discovery is inherently cross-machine — the hub
@@ -257,6 +259,12 @@
             # ── Forwarding/NAT (conditional on topology.routes) ───
             # Generates nftables NAT table for port forwarding (DNAT) and masquerade.
             (if topology ? routes then genForwarding topology else { })
+
+            # ── Tailscale (conditional on advertised_tailscale_routes or tailscale coord) ─
+            (genTailscale topology)
+
+            # ── Prometheus exporters (conditional on topology.exporters) ─
+            (if topology ? exporters then genMonitoring topology else { })
 
             # ── DNS/DHCP (conditional on topology.dns or lan_dhcp) ─
             (if topology ? dns || topology ? lan_dhcp then

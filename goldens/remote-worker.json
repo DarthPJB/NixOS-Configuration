@@ -2713,7 +2713,7 @@
         "user": "nats-exporter"
       },
       "nextcloud": {
-        "enable": false,
+        "enable": true,
         "extraFlags": [],
         "firewallFilter": null,
         "firewallRules": null,
@@ -2721,7 +2721,7 @@
         "listenAddress": "0.0.0.0",
         "openFirewall": false,
         "passwordFile": "/run/system-keys/nextcloud_password_file",
-        "port": 9205,
+        "port": 3106,
         "timeout": "5s",
         "tokenFile": null,
         "url": "https://nextcloud.johnbargman.net",
@@ -2736,7 +2736,7 @@
           }
         ],
         "constLabels": [],
-        "enable": false,
+        "enable": true,
         "extraFlags": [],
         "firewallFilter": null,
         "firewallRules": null,
@@ -2744,7 +2744,7 @@
         "insecure": "<eval-error>",
         "listenAddress": "0.0.0.0",
         "openFirewall": false,
-        "port": 9113,
+        "port": 3105,
         "scrapeUri": "http://localhost/nginx_status",
         "sslVerify": true,
         "telemetryEndpoint": "/metrics",
