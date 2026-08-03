@@ -690,7 +690,8 @@
                   "csfinancialconsulting.com" = {
                     forceSSL = true;
                     enableACME = true;
-                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
+                    # External IP 193.16.42.101 NATs to 10.0.1.42 (ens3)
+                    listenAddresses = [ "10.0.1.42" ];
                     locations."/" = {
                       root = carmelsite.packages.x86_64-linux.default;
                     };
@@ -698,19 +699,20 @@
                   "csfincon.us" = {
                     forceSSL = true;
                     enableACME = true;
-                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
+                    # External IP 193.16.42.101 NATs to 10.0.1.42 (ens3)
+                    listenAddresses = [ "10.0.1.42" ];
                     locations."/" = {
                       root = carmelsite.packages.x86_64-linux.default;
                     };
                   };
-                  "carmel-staging.johnbargman.net" = {
-                    useACMEHost = "johnbargman.net";
-                    forceSSL = true;
-                    listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
-                    locations."/" = {
-                      root = carmelsite.packages.x86_64-linux.default;
-                    };
-                  };
+                  # "carmel-staging.johnbargman.net" = {
+                  #   useACMEHost = "johnbargman.net";
+                  #   forceSSL = true;
+                  #   listenAddresses = [ "193.16.42.101" "10.0.1.42" "10.88.127.50" ];
+                  #   locations."/" = {
+                  #     root = carmelsite.packages.x86_64-linux.default;
+                  #   };
+                  # };
                 };
               };
             }

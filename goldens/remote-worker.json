@@ -789,59 +789,6 @@
     "uwsgiTimeout": "60s",
     "validateConfigFile": true,
     "virtualHosts": {
-      "carmel-staging.johnbargman.net": {
-        "acmeFallbackHost": null,
-        "acmeRoot": "/var/lib/acme/acme-challenge",
-        "addSSL": false,
-        "basicAuth": {},
-        "basicAuthFile": null,
-        "default": false,
-        "enableACME": false,
-        "extraConfig": "",
-        "forceSSL": true,
-        "globalRedirect": null,
-        "http2": true,
-        "http3": true,
-        "http3_hq": false,
-        "kTLS": false,
-        "listen": [],
-        "listenAddresses": [
-          "193.16.42.101",
-          "10.0.1.42",
-          "10.88.127.50"
-        ],
-        "locations": {
-          "/": {
-            "alias": null,
-            "basicAuth": {},
-            "basicAuthFile": null,
-            "extraConfig": "",
-            "fastcgiParams": {},
-            "index": null,
-            "priority": 1000,
-            "proxyPass": null,
-            "proxyWebsockets": false,
-            "recommendedProxySettings": false,
-            "recommendedUwsgiSettings": false,
-            "return": null,
-            "root": "<derivation:carmel-webroot>",
-            "tryFiles": null,
-            "uwsgiPass": null
-          }
-        },
-        "onlySSL": false,
-        "quic": false,
-        "redirectCode": 301,
-        "rejectSSL": false,
-        "reuseport": false,
-        "root": null,
-        "serverAliases": [],
-        "serverName": null,
-        "sslCertificate": "<eval-error>",
-        "sslCertificateKey": "<eval-error>",
-        "sslTrustedCertificate": null,
-        "useACMEHost": "johnbargman.net"
-      },
       "csfinancialconsulting.com": {
         "acmeFallbackHost": null,
         "acmeRoot": "/var/lib/acme/acme-challenge",
@@ -859,9 +806,7 @@
         "kTLS": false,
         "listen": [],
         "listenAddresses": [
-          "193.16.42.101",
-          "10.0.1.42",
-          "10.88.127.50"
+          "10.0.1.42"
         ],
         "locations": {
           "/": {
@@ -912,9 +857,7 @@
         "kTLS": false,
         "listen": [],
         "listenAddresses": [
-          "193.16.42.101",
-          "10.0.1.42",
-          "10.88.127.50"
+          "10.0.1.42"
         ],
         "locations": {
           "/": {
