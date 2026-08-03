@@ -10,7 +10,6 @@ let
     isString
     isAttrs
     isList
-    isInt
     elem
     length
     filter
@@ -22,7 +21,6 @@ let
     flatten
     unique
     mapAttrsToList
-    splitString
     ;
   inherit (utils) isIP isCIDR isIPv4 isMAC isPort;
 
@@ -70,7 +68,6 @@ let
   validateTopology =
     topology:
     let
-      errors = [ ];
       warnings = [ ];
 
       # DHCP completeness warnings
@@ -87,7 +84,6 @@ let
                   hasMac = hasAttr "mac" host && host.mac != null;
                   hasIp = hasAttr "ip" host;
                   hasHostname = hasAttr "hostname" host;
-                  hostLabel = host.hostname or name;
                   ip = host.ip or "";
                   # WireGuard-only / non-LAN entries are not DHCP candidates.
                   # Do not emit "no mac" noise for 10.88.127.0/24 or routing.wireguard hosts.
@@ -122,7 +118,7 @@ let
         else
           let
             hosts = topology.lan.hosts;
-            allHostnames = lib.mapAttrsToList (name: host: host.hostname or null) hosts;
+            allHostnames = lib.mapAttrsToList (_name: host: host.hostname or null) hosts;
             validHostnames = filter (h: h != null) allHostnames;
             duplicates = getDuplicates validHostnames;
           in
@@ -367,11 +363,6 @@ let
       gatewayIP = topology.lan.gateway or null;
       validIPs = lanIPs ++ wgIPs ++ (if gatewayIP != null then [ gatewayIP ] else [ ]);
       validHostnames = attrNames allHosts;
-
-      # Helper: Get hosts with routing.wireguard enabled
-      wgRoutingHosts =
-        lib.filterAttrs (n: h: h ? routing && h.routing ? wireguard && h.routing.wireguard) allHosts;
-      wgRoutingHostnames = attrNames wgRoutingHosts;
 
       # Get LAN subnet for reachability checks
       lanSubnet = topology.lan.subnet or null;

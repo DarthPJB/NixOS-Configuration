@@ -173,7 +173,7 @@
     },
     "supportsInitrdSecrets": true,
     "systemd-boot": {
-      "configurationLimit": null,
+      "configurationLimit": 5,
       "consoleMode": "keep",
       "editor": true,
       "edk2-uefi-shell": {
@@ -249,8 +249,6 @@
     "<derivation:inotify-tools-4.25.9.0>",
     "<derivation:rsync-3.4.4>",
     "<derivation:git-2.54.0>",
-    "<derivation:opencode-1.15.10>",
-    "<derivation:crush-0.70.0>",
     "<derivation:obsidian-1.12.7>",
     "<derivation:vivaldi-8.0.4033.54>",
     "<derivation:chromium-150.0.7871.114>",
@@ -277,7 +275,7 @@
     "<derivation:google-chrome-150.0.7871.100>",
     "<derivation:brave-1.92.134>",
     "<derivation:moonlight-qt-6.1.0>",
-    "<derivation:determinate-nixd-3.21.7>",
+    "<derivation:determinate-nixd-3.21.8>",
     "<derivation:parsec-150-90c>",
     "<derivation:nix-build-all>",
     "<derivation:tmux-3.6a>",
@@ -323,7 +321,7 @@
     "<derivation:picom-13>",
     "<derivation:lightdm-1.32.0>",
     "<derivation:kmscon-9.3.5>",
-    "<derivation:determinate-nix-3.21.7>",
+    "<derivation:determinate-nix-3.21.8>",
     "<derivation:nix-info>",
     "<derivation:nix-bash-completions-0.6.8>",
     "<derivation:dbus-1.16.2>",
@@ -1065,7 +1063,9 @@
         "hostNames": [
           "remote-worker",
           "remote-worker.johnbargman.net",
-          "10.88.127.50"
+          "10.88.127.50",
+          "10.0.1.42",
+          "193.16.42.101"
         ],
         "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPPSFI0IBhhtyMRcMtvHmMBbwklzXiOXw0OPVD3SEC+M\n",
         "publicKeyFile": null

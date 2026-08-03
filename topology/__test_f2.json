@@ -1,0 +1,34 @@
+{
+  "hostname": "__test_f2",
+  "trust": 3,
+  "coordinate": [
+    {
+      "plane_name": "cortex-alpha.lan",
+      "subnet": "10.88.128.0/24",
+      "peer_id": 241,
+      "trust": 1,
+      "interface": "lan0"
+    }
+  ],
+  "exporters": {
+    "node": {},
+    "disk": {}
+  },
+  "default_response": "444",
+  "vhosts": {
+    "johnbargman.net": [
+      {
+        "static": {
+          "root": "../webroot"
+        },
+        "forceSSL": true
+      }
+    ],
+    "code.johnbargman.net": [
+      {
+        "proxy_to": "10.88.127.3:80",
+        "regex_prefix": true
+      }
+    ]
+  }
+}

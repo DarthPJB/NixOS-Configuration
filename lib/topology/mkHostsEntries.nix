@@ -1,26 +1,43 @@
 # lib/topology/mkHostsEntries.nix
 # Generates /etc/hosts entries from topology data
-# Single source of truth: topology/shared.nix
+# Reads from the JSON registry (mkRegistry.nix) which has coordinate data.
 { lib }:
 
 let
-  # Generate hosts entries from topology attrset
-  # Each machine with a wireguard IP gets an entry
+  # Helper: derive IP from coordinate (subnet + peer_id)
+  coordToIp = coord:
+    let
+      parts = lib.splitString "/" coord.subnet;
+      ip = builtins.head parts;
+      octets = lib.splitString "." ip;
+      prefix = lib.concatStringsSep "." (lib.init octets);
+    in
+    "${prefix}.${toString coord.peer_id}";
+
+  # Generate hosts entries from topology registry
+  # Each machine with a wireguard coordinate gets an entry
   mkHostsEntries = topology:
     let
-      # Extract all machines with wireguard IPs
       machinesWithWireguard = lib.filterAttrs
-        (name: cfg: cfg ? wireguard && cfg.wireguard != null)
+        (_name: host:
+          builtins.any (c: c.plane_name == "wg") (host.coordinate or [ ])
+        )
         topology;
 
-      # Generate "IP hostname" entries
       entries = lib.mapAttrsToList
-        (name: cfg: "${cfg.wireguard} ${name}")
+        (name: host:
+          let
+            wgCoords = builtins.filter (c: c.plane_name == "wg") (host.coordinate or [ ]);
+            wgCoord = if wgCoords != [ ] then builtins.head wgCoords else null;
+            wgIp = if wgCoord != null then coordToIp wgCoord else null;
+          in
+          if wgIp != null then "${wgIp} ${name}" else null
+        )
         machinesWithWireguard;
 
-      # Join with newlines
+      validEntries = builtins.filter (e: e != null) entries;
     in
-    lib.concatStringsSep "\n" entries;
+    lib.concatStringsSep "\n" validEntries;
 in
 {
   inherit mkHostsEntries;

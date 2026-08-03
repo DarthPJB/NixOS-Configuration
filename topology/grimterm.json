@@ -1,0 +1,14 @@
+{
+  "coordinate": [
+    {
+      "interface": "wireg0",
+      "peer_id": 212,
+      "plane_name": "wg",
+      "subnet": "10.88.127.0/24",
+      "trust": 3
+    }
+  ],
+  "hostname": "grimterm",
+  "public_key_file": "secrets/public_keys/wireguard/wg_grimterm_pub",
+  "trust": 3
+}

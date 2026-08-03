@@ -1,0 +1,14 @@
+{
+  "coordinate": [
+    {
+      "plane_name": "cortex-alpha.lan",
+      "subnet": "10.88.128.0/24",
+      "peer_id": 247,
+      "trust": 1,
+      "interface": "mac:60:45:2e:9d:42:ac"
+    }
+  ],
+  "hostname": "michel-wifi-247",
+  "public_key_file": null,
+  "trust": 3
+}

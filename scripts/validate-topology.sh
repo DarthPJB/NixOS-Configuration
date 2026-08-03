@@ -22,18 +22,22 @@ report() {
 }
 
 check_topology() {
-  echo "1/4 topology/shared.nix existence and parse"
-  local topology_file="${PROJECT_ROOT}/topology/shared.nix"
-  if [ ! -f "$topology_file" ]; then
-    echo "   FAIL: topology/shared.nix is missing at $topology_file"
+  echo "1/4 topology registry and JSON files"
+  local registry_file="${PROJECT_ROOT}/lib/topology/mkRegistry.nix"
+  if [ ! -f "$registry_file" ]; then
+    echo "   FAIL: topology registry not found at $registry_file"
     failures=$((failures + 1))
     return
   fi
 
-  if nix --option builders '' eval --json --impure --expr 'let lib = (import <nixpkgs> {}).lib; in import ./topology/shared.nix { inherit lib; }' >/dev/null 2>&1; then
-    echo "   PASS: topology/shared.nix imported successfully"
+  if nix --option builders '' eval --json --expr "
+    let lib = (import <nixpkgs> {}).lib;
+        registry = import ${PROJECT_ROOT}/lib/topology/mkRegistry.nix { inherit lib; };
+    in builtins.length (builtins.attrNames registry.hosts)
+  " >/dev/null 2>&1; then
+    echo "   PASS: topology registry imported successfully"
   else
-    echo "   FAIL: topology/shared.nix failed to parse"
+    echo "   FAIL: topology registry failed to parse"
     failures=$((failures + 1))
   fi
 }

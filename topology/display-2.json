@@ -1,0 +1,14 @@
+{
+  "coordinate": [
+    {
+      "interface": "wireg0",
+      "peer_id": 42,
+      "plane_name": "wg",
+      "subnet": "10.88.127.0/24",
+      "trust": 3
+    }
+  ],
+  "hostname": "display-2",
+  "public_key_file": "secrets/public_keys/wireguard/wg_display-2_pub",
+  "trust": 3
+}

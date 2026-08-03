@@ -1,7 +1,0 @@
-NAME     SIZE TYPE MOUNTPOINT
-sda    698.6G disk 
-├─sda1 690.7G part /
-├─sda2   7.5G part [SWAP]
-└─sda3   487M part /boot
-sdb        0B disk 
-sr0     1024M rom  

@@ -1,0 +1,40 @@
+{
+  "coordinate": [
+    {
+      "interface": "wireg0",
+      "peer_id": 52,
+      "plane_name": "wg",
+      "subnet": "10.88.127.0/24",
+      "trust": 3
+    }
+  ],
+  "hostname": "gaming-host-1",
+  "public_key_file": "secrets/public_keys/wireguard/wg_gaming-host-1_pub",
+  "trust": 3,
+  "vhosts": {
+    "gaming-host-1.johnbargman.net": [
+      {
+        "proxy_to": "127.0.0.1:8080",
+        "forceSSL": true,
+        "listenAddresses": ["65.108.141.32", "10.88.127.52"],
+        "acme": {
+          "host": "gaming-host-1.johnbargman.net"
+        }
+      }
+    ]
+  },
+  "backup": {
+    "configFile": "../secrets/rclone-config-file",
+    "user": "mc-curseforge-all-the-mons",
+    "targets": {
+      "mc-backups": {
+        "filePath": "/bulk-storage/minecraft/all-the-mons/backups/",
+        "remoteName": "minio:minecraft-backups",
+        "calendar": "*-*-* 06:00:00",
+        "mode": "copy",
+        "bwlimit": "10M",
+        "preExec": "find /bulk-storage/minecraft/all-the-mons/backups/ -name '*.tar.zst' -mtime +14 -delete"
+      }
+    }
+  }
+}

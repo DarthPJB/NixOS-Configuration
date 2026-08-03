@@ -44,10 +44,57 @@
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
-      # Import topology to derive deployment IPs from single source of truth
-      topo = import ./topology/shared.nix { inherit lib; };
-      # Get wireguard IP for a machine from topology
-      topoIp = machineName: topo.${machineName}.wireguard;
+      topoRegistry = import ./lib/topology/mkRegistry.nix { inherit lib; };
+      # Topology-to-config: pure JSON → config attrsets
+      mktopology = (import ./lib/topology/mktopology.nix { inherit lib; }).mktopology;
+      topologyConfigs = mktopology ./topology;
+      # Helper: derive IP from coordinate (subnet + peer_id)
+      coordToIp = coord:
+        let
+          parts = lib.splitString "/" coord.subnet;
+          ip = builtins.head parts;
+          octets = lib.splitString "." ip;
+          prefix = lib.concatStringsSep "." (lib.init octets);
+        in
+        "${prefix}.${toString coord.peer_id}";
+      # Backward-compatible topo attrset derived from JSON registry
+      topo = lib.mapAttrs
+        (_name: host:
+          let
+            coords = host.coordinate or [ ];
+            wgCoords = builtins.filter (c: c.plane_name == "wg") coords;
+            wgCoord = if wgCoords != [ ] then builtins.head wgCoords else null;
+            # Filter to only include standard network interfaces (skip MAC-based aliases)
+            otherCoords = builtins.filter
+              (c:
+                c.plane_name != "wg" && c.plane_name != "tailscale-platonic"
+                && !lib.hasPrefix "mac:" c.interface
+              )
+              coords;
+            lan = lib.listToAttrs (map
+              (c: {
+                name = coordToIp c;
+                value = c.interface;
+              })
+              otherCoords);
+          in
+          (if wgCoord != null then { wireguard = coordToIp wgCoord; } else { })
+          // (if lan != { } then { inherit lan; } else { })
+        )
+        topoRegistry.hosts;
+      # Get wireguard IP for a machine from topology registry
+      topoIp = machineName:
+        let
+          host = topoRegistry.hosts.${machineName} or null;
+          wgCoords =
+            if host != null then
+              builtins.filter (c: c.plane_name == "wg") (host.coordinate or [ ])
+            else [ ];
+          wgCoord = if wgCoords != [ ] then builtins.head wgCoords else null;
+        in
+        if wgCoord != null then
+          coordToIp wgCoord
+        else throw "topoIp: ${machineName} has no WG coordinate in topology JSON";
       globalArgs = {
         inherit self;
         inherit ikbaeb-th;
@@ -62,12 +109,13 @@
       commonModules = [
         secrix.nixosModules.default
         ratty.nixosModules.default
+        ./lib/rclone-target.nix
         ./configuration.nix
         ./modules/ssh-multiplex.nix
         # Skip nix test suite — OOMs on remote builders during source build.
         # The forked nix (darthpjb/nix-src) builds from source, not from cache.
         ({ pkgs, lib, ... }: {
-          nix.package = lib.mkForce (determinate.inputs.nix.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: { doCheck = false; }));
+          nix.package = lib.mkForce (determinate.inputs.nix.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (_old: { doCheck = false; }));
         })
         {
           programs.ssh.knownHosts = mkKnownHosts self.nixosConfigurations;
@@ -90,9 +138,19 @@
         }
       ];
       mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108, images ? { } }:
+        let
+          topologyPath = ./topology/${hostname}.json;
+          topologyData =
+            if builtins.pathExists topologyPath
+            then builtins.fromJSON (builtins.readFile topologyPath)
+            else null;
+          topologyConfig = topologyConfigs.${hostname} or { };
+        in
         nixpkgs_stable.lib.nixosSystem {
+          specialArgs = { inherit topologyData; };
           modules = commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${hostname}
+            topologyConfig # Merge topology-generated config
             {
               boot.kernelPatches = lib.singleton {
                 name = "disable-backdoor";
@@ -117,13 +175,23 @@
           ];
         };
       mkAarch64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, hardware ? nixos-hardware.nixosModules.raspberry-pi-4 }:
+        let
+          topologyPath = ./topology/${hostname}.json;
+          topologyData =
+            if builtins.pathExists topologyPath
+            then builtins.fromJSON (builtins.readFile topologyPath)
+            else null;
+          topologyConfig = topologyConfigs.${hostname} or { };
+        in
         nixpkgs_unstable.lib.nixosSystem {
+          specialArgs = { inherit topologyData; };
           modules = [
             "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
             hardware
           ] ++ commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${hostname}
+            topologyConfig # Merge topology-generated config
             {
               nixpkgs.overlays = [
                 (final: super: {
@@ -149,12 +217,6 @@
               };
             }
           ];
-        };
-      mkLibVirtImage = { config, name, format ? "qcow2", partitionTableType ? "efi", installBootLoader ? true, touchEFIVars ? true, diskSize ? "auto", additionalSpace ? "2048M", copyChannel ? true }:
-        import "${nixpkgs_stable}/nixos/lib/make-disk-image.nix" {
-          pkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
-          lib = nixpkgs_stable.lib;
-          inherit config name format partitionTableType installBootLoader touchEFIVars diskSize additionalSpace copyChannel;
         };
       mkUncompressedSdImage = config:
         (config.extendModules {
@@ -218,7 +280,7 @@
             )
             allMachines);
         in
-        lib.filterAttrs (name: value: value != null) entries;
+        lib.filterAttrs (_name: value: value != null) entries;
 
       # Parallelism control for CI build jobs
       # Only GitHub Actions-level max-parallel — machines use their own nix.conf
@@ -240,24 +302,28 @@
       ci-generator = import ./ci/generate-workflow.nix { inherit self lib; pkgs = nixpkgs; };
     in
     {
+      inherit topologyConfigs;
       formatter."x86_64-linux" = nixpkgs.nixpkgs-fmt;
       apps."x86_64-linux" = { secrix = secrix.secrix self; } // (nixinate.lib.genDeploy.x86_64-linux self) // {
-        # Check network config against golden
-        check-network = {
+        # Validate machine config against golden files
+        # NOTE: Golden tests validate that config hasn't changed from prior state.
+        # This is regression testing — completely separate from topology generation.
+        # Topology generates config; goldens validate config. Related but unrelated.
+        validate-goldens = {
           type = "app";
-          meta.description = "Check network config against golden file";
+          meta.description = "Validate machine config against golden files";
           program = lib.getExe (nixpkgs.writeShellApplication {
-            name = "check-network";
+            name = "validate-goldens";
             runtimeInputs = [ nixpkgs.jq ];
             text = ''
               MACHINE="''${1:-cortex-alpha}"
-              echo "Checking network config for $MACHINE..."
-              nix run .#dump-config -- "$MACHINE" | jq -S . > /tmp/current-network.json
+              echo "Validating $MACHINE against golden..."
+              nix run .#dump-config -- "$MACHINE" | jq -S . > /tmp/current-config.json
                 
-              if diff -u "${self}/goldens/$MACHINE.json" /tmp/current-network.json; then
-                echo "✓ Network config matches golden for $MACHINE"
+              if diff -u "${self}/goldens/$MACHINE.json" /tmp/current-config.json; then
+                echo "✓ $MACHINE matches golden"
               else
-                echo "✗ Network configuration has changed from golden!"
+                echo "✗ $MACHINE differs from golden!"
                 echo "If intentional, update with:"
                 echo "  nix run .#dump-config -- $MACHINE > goldens/$MACHINE.json"
                 exit 1
@@ -421,10 +487,14 @@
         bargman-greeter-vm-serial = {
           type = "app";
           program = toString (
-            nixpkgs.writeShellScript "run-bargman-greeter-vm-serial" ''
-              export QEMU_OPTS="-display none -serial mon:stdio ''${QEMU_OPTS:-}"
-              exec ${self.nixosConfigurations.bargman-greeter-vm.config.system.build.vm}/bin/run-bargman-greeter-vm-vm "$@"
-            ''
+            nixpkgs.writeShellApplication {
+              name = "run-bargman-greeter-vm-serial";
+              runtimeInputs = [ ];
+              text = ''
+                export QEMU_OPTS="-display none -serial mon:stdio ''${QEMU_OPTS:-}"
+                exec ${self.nixosConfigurations.bargman-greeter-vm.config.system.build.vm}/bin/run-bargman-greeter-vm-vm "$@"
+              '';
+            }
           );
         };
       };
@@ -461,10 +531,11 @@
 
       nixosConfigurations = {
         beta-one = nixpkgs_unstable.lib.nixosSystem {
+          specialArgs = { topologyData = null; };
           modules = [
             "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
             "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
-            ./machines/beta/1.nix
+            ./machines/beta-one/1.nix
             {
               nixpkgs.hostPlatform = "armv7l-linux";
               _module.args = globalArgs // { hostname = "beta-one"; };
@@ -491,6 +562,7 @@
         # Generic ARM bootstrap image — reusable for ALL ARM devices
         # No WG, no device-specific config, open SSH on port 22
         arm-bootstrap = nixpkgs_unstable.lib.nixosSystem {
+          specialArgs = { topologyData = null; };
           modules = [
             "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
             "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
@@ -609,10 +681,11 @@
           host = topoIp "remote-worker";
           extraModules = [
             ./users/build.nix
-            # self.inputs.LLM-CORE.nixosModules.opencode-fleet  # Disabled for overlord-I — re-enable as part of overlord-II
+            # Topology-derive owns johnbargman.net/.com vhosts (see topology/remote-worker.json).
+            # Carmelsite client sites remain machine overlay (merge with topology nginx.enable).
             {
               services.nginx = {
-                enable = true;
+                statusPage = true;
                 virtualHosts = {
                   "csfinancialconsulting.com" = {
                     forceSSL = true;
@@ -652,6 +725,7 @@
         };
 
         bargman-greeter-vm = nixpkgs_stable.lib.nixosSystem {
+          specialArgs = { topologyData = null; };
           modules = [
             ./environments/i3wm_darthpjb.nix
             ./environments/bargman-greeter-vm.nix
@@ -734,33 +808,66 @@
           name = "run-deadnix";
           meta.description = "Detect dead Nix code";
           runtimeInputs = [ deadnix.packages.x86_64-linux.default ];
-          text = ''exec deadnix --no-lambda-pattern-names "${self}"'';
+          # NOTE: --no-lambda-arg suppresses ALL unused lambda-arg warnings.
+          # Intentional: handles idiomatic (final: super: {...}) overlay patterns.
+          # Any new dead lambda args will be silently suppressed — audit annually.
+          text = ''exec deadnix --fail --no-lambda-arg --no-lambda-pattern-names "${self}"'';
         };
 
-        # Network topology golden check for cortex-alpha (manual run)
-        network-config-cortex-alpha = nixpkgs.writeShellApplication {
-          name = "network-config-cortex-alpha";
-          meta.description = "Check network config against golden file";
-          runtimeInputs = [ nixpkgs.jq ];
-          text = ''
-            echo "Generating current network config for cortex-alpha..."
-            nix run .#dump-config -- cortex-alpha | jq -S . > /tmp/current-network.json
-
-            echo "Comparing with golden..."
-            if diff -u ${self}/goldens/cortex-alpha.json /tmp/current-network.json; then
-              echo "✓ Network config matches golden for cortex-alpha"
-            else
-              echo "✗ Network configuration has changed from golden!"
-              echo "If intentional, update with:"
-              echo "  nix run .#dump-config -- cortex-alpha > goldens/cortex-alpha.json"
-              exit 1
-            fi
-          '';
-        };
+        # Golden validation for all machines
+        # Compares serialized NixOS config against golden files at build time.
+        # This is regression testing — completely separate from topology generation.
+        golden-validation =
+          let
+            machines = builtins.attrNames self.nixosConfigurations;
+            serializer = import ./lib/serialize-config.nix { inherit lib; };
+            # Pre-compute JSON for each machine at eval time
+            # unsafeDiscardStringContext strips derivation references so builtins.toFile accepts the string
+            machineJsonFiles = lib.genAttrs machines (machine:
+              let
+                config = self.nixosConfigurations.${machine}.config;
+                json = builtins.unsafeDiscardStringContext (
+                  builtins.toJSON (serializer.serializeConfig config)
+                );
+              in
+              builtins.toFile "golden-validation-${machine}.json" json
+            );
+          in
+          nixpkgs.runCommand "golden-validation"
+            {
+              buildInputs = [ nixpkgs.jq nixpkgs.diffutils ];
+              goldenSrc = "${self}/goldens";
+            }
+            ''
+              PASS=true
+              ${lib.concatMapStringsSep "\n" (machine: ''
+                if [ -f "$goldenSrc/${machine}.json" ]; then
+                  echo "Validating ${machine}..."
+                  ${lib.getExe nixpkgs.jq} -S . < "${machineJsonFiles.${machine}}" > /tmp/current.json
+                  if ${lib.getExe' nixpkgs.diffutils "diff"} -u "$goldenSrc/${machine}.json" /tmp/current.json; then
+                    echo "  ✓ ${machine} matches golden"
+                  else
+                    echo "  ✗ ${machine} differs from golden!"
+                    PASS=false
+                  fi
+                else
+                  echo "Skipping ${machine} (no golden file)"
+                fi
+              '') machines}
+              if [ "$PASS" != "true" ]; then
+                echo ""
+                echo "Golden validation failed. If changes are intentional, update with:"
+                echo "  nix run .#dump-config -- <machine> > goldens/<machine>.json"
+                exit 1
+              fi
+              echo ""
+              echo "All golden validations passed"
+              touch $out
+            '';
 
         topology-coverage =
           let
-            coverage = import ./lib/golden_coverage.nix { inherit self; };
+            coverage = import ./lib/golden_coverage.nix { inherit self lib; };
           in
           if !coverage.isComplete then
             throw "Topology coverage incomplete. Missing: ${builtins.toJSON coverage.missing}"

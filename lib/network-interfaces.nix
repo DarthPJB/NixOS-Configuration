@@ -4,10 +4,7 @@ let
     mkOption
     mkIf
     types
-    mkMerge
     mapAttrs
-    splitString
-    last
     ;
 in
 {
@@ -42,7 +39,7 @@ in
   # Generate networking.interfaces from environment.interfaces
   config = mkIf (config.environment.interfaces != { }) {
     networking.interfaces = mapAttrs
-      (name: iface: {
+      (_name: iface: {
         ipv4.addresses = [
           {
             address = "${iface.ipv4.prefix}.${iface.ipv4.postfix}";

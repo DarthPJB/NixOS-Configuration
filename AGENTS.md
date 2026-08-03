@@ -1,3 +1,100 @@
+# AGENTS.md
+
+**Scope:** Build philosophy, constraints, critical rules, common tasks.
+**Not scope:** Repository structure (see documentation/development-guide.md),
+project planning (see opencode/plans/), deployments (see documentation/operations-runbooks.md).
+**Topology architecture:** See lib/topology/ARCHITECTURE.md for the generator diagram and data flow.
+
+## TOPOLOGY GENERATOR PRINCIPLE (STATED IN FULL — REPEATED)
+
+No function in the entire topology toolset reads anything except JSON topology files. It is exclusive, totally isolated, and never touches a single user Nix file. The generators are pure JSON-to-attrset functions. They take JSON data and produce config attrsets. They do not reference, read, access, view, or manipulate any NixOS config, any module system state, or any user Nix file. The resulting attrsets are merged later with system config by the NixOS module system.
+
+No function in the entire topology toolset reads anything except JSON topology files. It is exclusive, totally isolated, and never touches a single user Nix file. The generators are pure JSON-to-attrset functions. They take JSON data and produce config attrsets. They do not reference, read, access, view, or manipulate any NixOS config, any module system state, or any user Nix file. The resulting attrsets are merged later with system config by the NixOS module system.
+
+No function in the entire topology toolset reads anything except JSON topology files. It is exclusive, totally isolated, and never touches a single user Nix file. The generators are pure JSON-to-attrset functions. They take JSON data and produce config attrsets. They do not reference, read, access, view, or manipulate any NixOS config, any module system state, or any user Nix file. The resulting attrsets are merged later with system config by the NixOS module system.
+
+topology derived from json to config attrset — json → config attrset, pure function, no bullshit — no module system, no hostname, no legacy paths, just json to attrset — generators read json, produce attrset, period — the json is the source of truth; the generator is a pure transformation — config attrset is produced from json by a pure function; nothing else — topology to config: json in, attrset out, no module system in the middle — a generator is a pure function: topology → attrset, no more, no less — topology derives from json, the generator maps json to config attrset, nothing more — json is parsed, attrset is produced, the generator is pure, the module system is not involved
+
+## Current Issues — 2026-07-26
+
+These are the leading issues on `overlord-ii-planar-topology`. The branch will not
+be considered complete or deployable until Phase B core tasks are implemented
+and validated against goldens.
+
+### Architecture Boundary — READ THIS FIRST
+
+The two-layer topology architecture enforces a strict boundary.
+**This boundary must never be violated by any agent, reviewer, or code change.**
+
+```
+topology/<machine>.json  ──→  gen*.nix generators  ──→  minimal skeleton
+  (source of truth)              (topology-derived)       (vhost names, listen
+                                                          addrs, proxy_to, acme)
+                                                              │
+machines/<machine>/default.nix  ──→  user Nix config  ───────┤
+services/*.nix                                             (forceSSL, roots,
+environments/*.nix                                          headers, websockets,
+                                                           returns, packages)
+                                                              │
+                                                   NixOS module merge
+                                                              ↓
+                                                        final config
+                                                              ↓
+                                                   golden = ground truth
+```
+
+**The generator produces ONLY topology-derived fields.**  It does NOT produce
+forceSSL, addSSL, proxyWebsockets, proxy headers, static root resolution,
+return codes, or default vhost flags.  Those come from the machine's Nix
+configuration and are merged via the NixOS module system.
+
+**The golden is the MERGED result of both sources.**  When a generator is
+wired, it replaces the topology-derived portion of the config.  The machine
+config remains unchanged.  The combined output MUST match the golden.
+
+**Any agent that claims a generator is "missing features" that originate
+from user configuration has fundamentally misunderstood the architecture.**
+
+### Phase B — Core Tasks (blocks completion)
+
+**B4. Wire the two-layer topology architecture into machine configs.**
+**COMPLETED.** The `mktopology` function (`lib/topology/mktopology.nix`) wires
+`genFirewall`, `genDns`, `genNginx`, and `genBackup` into all machine configs
+at the flake level. `genWireguard` is deferred to overlord-iii (see below).
+
+**B5. Wire backup topology pipeline into a module.**
+**COMPLETED.** `genBackup.nix` is wired into `mktopology.nix` and activates
+conditionally on `topology.backup` keys. At minimum one machine needs `backup`
+keys in its topology JSON to validate the pipeline (pending).
+
+### Phase B — Actionable Pending Review
+
+**B1. Cortex-alpha hardcoded IP addresses.**
+**RESOLVED.** `genNetwork.nix` now derives interface addresses from topology
+coordinates for hub machines. Hardcoded IP removed from `machines/cortex-alpha/default.nix`.
+Validated against golden — all 19 machines pass.
+
+**B2. Remote-worker ad-hoc nginx config.**
+**BY DESIGN.** Webroot is set in user Nix config; only topology is defined in JSON.
+Carmelsite vhosts remain in `extraModules` because they reference a flake input package
+(`carmelsite.packages.x86_64-linux.default`) — not a path resolvable from topology JSON.
+
+**B3. Prometheus unlimited retention — no disk monitoring.**
+**BY DESIGN.** This is a black box recorder. Unlimited retention is intentional.
+`retentionTime = "0d"` stays.
+
+### Phase C — Deferred
+
+**C1. Ketchup/Secret-Sauce/Mayo library split.**
+`lib/topology_library.nix` (53 lines) exists as clean API. `lib/mayo_library.nix`
+(24 lines) is a minimal stub. Full split deferred until Phase B generators are
+wired and validated.
+
+**C2. GitHub runner custom module.**
+Phase 2 goal from overlord-II plan. Not started. Deferred.
+
+---
+
 ## Build Philosophy
 
 This is professional netrunner infrastructure, not a hobby project.
@@ -53,87 +150,88 @@ remote-worker (ad-hoc), gaming-host-1, local-nas, print-controller.
 
 ### Active Architecture (Production)
 
-The production architecture uses per-machine topology files with direct transformation:
+The production architecture uses JSON topology files as the single source of truth,
+processed through the `mktopology` pure function at the flake level:
 
 **Data Flow:**
 ```
-topology/<machine>.nix (per-machine topology data)
+topology/<machine>.json (per-machine topology data — single source of truth)
 ↓
-lib/topology/*.nix (transformation functions: mkWireguardPeers, mkNginxProxies, mkDhcpDns, etc.)
+lib/topology/mktopology.nix (flake-level pure function: JSON → config attrset)
 ↓
-modules/core-router.nix (NixOS config generation)
+topologyConfigs (attrset of hostname → config attrset, merged into modules list)
 ```
 
 **Active Files:**
-- `topology/<machine>.nix` — Per-machine topology data (DNS, nginx, firewall, WG)
-- `topology/shared.nix` — Shared topology data (WireGuard IPs, LAN IPs, hub relationships)
-- `topology/default.nix` — Entry point, imports shared + per-machine files
+- `topology/<machine>.json` — Per-machine topology data (coordinates, planes, DNS, nginx, firewall, WireGuard)
 - `goldens/<machine>.json` — Golden test references (sacrosanct)
-- `lib/serialize-config.nix` — The one config serializer (used by `dump-config` and `checks.network-config-*`)
-- `lib/golden_coverage.nix` — Coverage tracking (audit tool)
-- `lib/topology/mkNginxProxies.nix` — Nginx proxy configuration (production)
-- `lib/topology/mkWireguardPeers.nix` — WireGuard peer transformation (requires `self`)
-- `lib/topology/mkTailscaleConfig.nix` — Tailscale configuration
-- `lib/topology/mkDhcpDns.nix` — DHCP/DNS configuration
-- `lib/topology/mkForwarding.nix` — nftables forwarding rules
-- `lib/topology/mkMonitoringSettings.nix` — Prometheus exporter config
+- `lib/topology/mktopology.nix` — Flake-level topology-to-config function (called at flake.nix:44)
+- `lib/topology/genFirewall.nix` — Firewall generator (conditional on topology.firewall)
+- `lib/topology/genDns.nix` — DNS/DHCP generator (conditional on topology.dns / lan_dhcp)
+- `lib/topology/genNginx.nix` — Nginx proxy generator
+- `lib/topology/genBackup.nix` — Backup generator (conditional on topology.backup)
+- `lib/topology/genWireguard.nix` — WireGuard generator (wired separately, deferred to overlord-iii)
+- `lib/topology/mkRegistry.nix` — Registry pipeline for topology validation
 - `lib/topology/validate.nix` — Topology validation
 - `lib/topology/utils.nix` — Shared utilities
-- `modules/core-router.nix` — Core router module (production)
-- `modules/enable-wg-topology.nix` — WireGuard client module (deployed on 13 machines)
+- `lib/topology/PRINCIPLE.md` — Canonical architecture principle
+- `lib/serialize-config.nix` — The one config serializer (used by `dump-config` and `checks.network-config-*`)
+- `lib/golden_coverage.nix` — Coverage tracking (audit tool)
+- `modules/enable-wg-topology.nix` — WireGuard client module (deployed on 14 machines; pending migration to genWireguard in overlord-iii)
+- `topologyConfigs` — Attrset merged into each `nixosConfiguration` via `modules` list (flake.nix:147, 187)
 
-### WIP: Two-Layer Topology Architecture
+### Two-Layer Topology Architecture (Active)
 
-The WIP architecture introduces a **single topology source of truth** with a
-two-layer pattern: **Transformers** → **Generators**.
+The mktopology architecture implements the pure JSON-to-config generator pattern
+at the flake level, eliminating the need for a NixOS module for topology. The
+architecture uses pure generators (gen*.nix) called by the `mktopology` function:
 
-**Architecture Pattern (WIP):**
+**Architecture Pattern:**
 ```
-topology/<machine>.nix (shared + per-machine topology data)
+topology/<machine>.json (single source of truth — JSON data)
 ↓
-lib/topology/mk*Settings.nix (transformers: topology + files → flat pure data)
+gen*.nix generators (pure functions: JSON → config attrset)
 ↓
-lib/topology/gen*.nix (generators: settings + hostname → NixOS config)
+mktopology.nix (orchestrator: merges generator outputs per machine)
 ↓
-modules/core-router-topology.nix (hub) or modules/enable-wg-topology.nix (clients)
+topologyConfigs (attrset of hostname → config attrset)
+↓
+flake.nix (merges into each nixosConfiguration's modules list)
+│
+NixOS module merge (user machine config + topology config)
+↓
+final configuration
 ```
 
 **Key Principles:**
-- Transformers + generators must produce **identical output** to the production path.
-  Golden tests enforce this.
-- Integration is done **one machine at a time**, not all at once.
-- Until wired into a machine's config, the WIP code is dead code. When wired,
-  it MUST pass `check-network`.
+- Generators are pure JSON-to-attrset functions — no module system, no user Nix
+- mktopology is a pure function: `path → { hostname = config attrset; ... }`
+- WireGuard is NOT wired into mktopology — deferred to overlord-iii
+- `specialArgs = { inherit topologyData; }` still passes raw JSON to machines for backward compat
 
-**WIP Files:**
-- `lib/topology/mkWireguardSettings.nix` — WireGuard transformer
-- `lib/topology/genWireguard.nix` — WireGuard generator
-- `lib/topology/mkNginxSettings.nix` — Nginx transformer
-- `lib/topology/genNginx.nix` — Nginx generator
-- `lib/topology/mkFirewallSettings.nix` — Firewall transformer
-- `lib/topology/genFirewall.nix` — Firewall generator
-- `lib/topology/mkDnsSettings.nix` — DNS/DHCP transformer
-- `lib/topology/genDns.nix` — DNS/DHCP generator
-- `lib/topology/mkBackupSettings.nix` — Backup transformer (WIP, no consumer)
-- `lib/topology/genBackup.nix` — Backup generator (WIP, no consumer)
-- `modules/core-router-topology.nix` — Hub machine module (WIP)
+**Generator Files:**
+- `lib/topology/genFirewall.nix` — Firewall generator (conditional)
+- `lib/topology/genDns.nix` — DNS/DHCP generator (conditional)
+- `lib/topology/genNginx.nix` — Nginx proxy generator (always active)
+- `lib/topology/genBackup.nix` — Backup generator (conditional)
+- `lib/topology/genWireguard.nix` — WireGuard generator (deferred to overlord-iii)
 
-**Status:** `enable-wg-topology.nix` is deployed on 13 client machines.
-`core-router-topology.nix` is imported by cortex-alpha but is the WIP path;
-AGENTS.md previously stated it was unwired — this is stale (see Finalisation Tasks).
+**Status:** `mktopology` is live for all machines with topology JSON files.
+`enable-wg-topology.nix` remains deployed for WireGuard (pending migration in overlord-iii).
+`topology-derive.nix` is archived at `lib/topology/archive/topology-derive.nix`.
 
-### Topology-Gen Branch (In Progress)
+### Topology-Gen Branch (Merged)
 
-The `planar-topology` branch is actively overhauling the topology system:
+The `planar-topology` / `overlord-ii-planar-topology` branches overhauled the topology system:
 - JSON topology files (`topology/<machine>.json`) replacing `.nix` per-machine data
-- `modules/topology-derive.nix` — derives NixOS config from JSON topology
-- `lib/topology/mkRegistry.nix` — registry pipeline for topology validation
+- `lib/topology/mktopology.nix` — flake-level pure function replaces topology-derive.nix module
+- `lib/topology/gen*.nix` — pure generators (firewall, DNS, nginx, backup, wireguard)
+- Generators wired via `topologyConfigs` in flake.nix, not via commonModules
+- `topology-derive.nix` archived to `lib/topology/archive/`
+- WireGuard integration deferred to overlord-iii
 - Goldens regenerated for all 19 machines
 - `genNginx.nix` ACME propagation bug fixed
 - Extensive test coverage added
-
-**When merged:** The production architecture section above will be superseded.
-Until then, both paths coexist.
 
 ---
 
@@ -174,13 +272,15 @@ git worktree remove /tmp/nixos-<descriptive-name>
 The golden test is our primary integrity mechanism.
 
 **Philosophy:**
-- Golden tests represent the best possible working state
+- Golden tests validate that configuration hasn't changed from prior state
+- This is regression testing — completely separate from topology generation
+- Topology generates config; goldens validate config. Related but unrelated.
 - All failures are errors — no silent failure; deployment is blocked
 - Intended changes require manual golden update
 - Coverage grows over time — every new machine eventually gets a golden
 
 ```bash
-nix run .#check-network -- cortex-alpha
+nix run .#validate-goldens -- cortex-alpha
 ```
 **DO NOT DEPLOY** if golden test fails.
 
@@ -189,7 +289,7 @@ nix run .#check-network -- cortex-alpha
 **Rules:**
 - Golden regeneration is ONLY for intentional configuration changes
 - Code restructuring must NEVER require golden regeneration
-- If `check-network` fails after refactoring, the refactoring introduced a side effect
+- If `validate-goldens` fails after refactoring, the refactoring introduced a side effect
 - The user explicitly authorizes all golden updates
 
 ### WireGuard Public Keys
@@ -220,14 +320,14 @@ networking.wireguard.interfaces.wireg0.privateKeyFile =
 
 ### Validate Against Golden Test
 ```bash
-nix run .#check-network -- cortex-alpha
+nix run .#validate-goldens -- cortex-alpha
 ```
 **Golden tests are sacrosanct** — if this fails, the code is wrong.
 
 ### Validate All Machines
 ```bash
 for m in $(ls machines/); do
-  nix run .#check-network -- "$m" 2>&1 | tail -1
+  nix run .#validate-goldens -- "$m" 2>&1 | tail -1
 done
 ```
 
@@ -238,12 +338,11 @@ nix run .#dump-config -- cortex-alpha | jq -S . > goldens/cortex-alpha.json
 **Only for intentional configuration changes.** Never during restructuring.
 
 ### Add a New Machine to Topology
-1. Create `topology/<machine-name>.nix` (use existing as template)
-2. Create `topology/<machine-name>.json` (planar-topology format)
-3. Create the machine's config in `flake.nix` (use `mkX86_64` or `mkAarch64`)
-4. Import the appropriate module (`core-router.nix` or `core-router-topology.nix`)
-5. Generate golden: `nix run .#dump-config -- <machine-name> | jq -S . > goldens/<machine-name>.json`
-6. Validate: `nix run .#check-network -- <machine-name>`
+1. Create `topology/<machine-name>.json` (use `_template.json` as reference)
+2. Create the machine's config in `flake.nix` (use `mkX86_64` or `mkAarch64`)
+3. Register in `flake.nix` with `mkX86_64` or `mkAarch64` — topology config is automatically merged via `topologyConfigs`
+4. Generate golden: `nix run .#dump-config -- <machine-name> | jq -S . > goldens/<machine-name>.json`
+5. Validate: `nix run .#validate-goldens -- <machine-name>`
 
 ### Dump Full Configuration
 ```bash
@@ -278,52 +377,10 @@ nix build .#checks.x86_64-linux.bargman-greeter-login-test -L  # golden screensh
 
 ---
 
-## Repository Structure
-- `topology/` — Topology data (cortex-alpha.nix, shared.nix, default.nix; JSON on planar-topology)
-- `goldens/` — Golden test files (sacrosanct; 20 machines)
-- `lib/topology/` — Transformation functions (production + WIP transformers + generators)
-- `lib/serialize-config.nix` — The one config serializer
-- `lib/golden_coverage.nix` — Coverage tracking (audit tool)
-- `modules/` — NixOS modules (core-router.nix, core-router-topology.nix, enable-wg-topology.nix, ssh-multiplex.nix, etc.)
-- `machines/` — Per-machine NixOS configurations (19 machines)
-- `server_services/` — Service definitions (nextcloud, gitolite, hedgedoc, klipper, etc.)
-- `documentation/` — Architecture docs and operational references
-- `snippets/` — Reference snippets, retired configs, archived plans (not active code)
-- `scripts/` — Utility scripts
-- `secrets/` — Encrypted secrets (private keys) and public keys
-- `ci/` — CI pipeline configuration
-
 ## Deployment Flow
-1. Run golden test: `nix run .#check-network -- <machine>`
+1. Run golden test: `nix run .#validate-goldens -- <machine>`
 2. Verify WireGuard keys exist: `ls secrets/public_keys/wireguard/wg_*_pub`
 3. Check for warnings in nix eval output
 4. Deploy with appropriate caution
 
----
 
-## Finalisation Tasks
-
-Tasks remaining from the cleaning review (2026-07-20) and topology-gen branch
-completion. These are tracked here for visibility; execute in order.
-
-### HIGH — Before topology-gen merge
-
-| # | Task | Evidence |
-|---|---|---|
-| F1 | **Delete `server_services/hedgedoc.nix`** — orphaned service+vhost, zero imports | grep confirms no consumers |
-| F2 | **Fix `AGENTS.md:219,252`** — stale claim that `core-router-topology.nix` "is not yet wired into cortex-alpha" when `machines/cortex-alpha/default.nix` imports it | cortex-alpha/default.nix:23 |
-| F3 | **Delete `snippets/overlord-II-PLAN.md` topology sections** — moved to snippets, topology phases superseded by planar-topology | Done (2026-07-20) |
-
-### MEDIUM — Code quality sweep
-
-| # | Task | Location(s) |
-|---|---|---|
-| F4 | **Extract hardcoded IPs** to `topology/shared.nix` — `193.16.42.101`, `10.0.1.42`, `82.5.173.252` repeated with `#todo` comments | `flake.nix:622-652`, `server_services/nextcloud.nix`, `machines/remote-worker/default.nix` |
-| F5 | **Convert `writeShellScript` → `writeShellApplication`** — 3 instances | `lib/rclone-target.nix:150`, `flake.nix:437`, `modules/sysdiag.nix:43,69` |
-| F6 | **Convert `${pkgs.foo}/bin/foo` → `lib.getExe`** — 9 instances | `cortex-alpha/default.nix:125`, `core-router-topology.nix:126`, `rclone-target.nix:127,129`, `LINDA/default.nix:244`, `terratech.nix:336-338`, `dragonwilds.nix:58`, `energy_saving.nix:19`, `tests/minecraft-server/default.nix:88,104`, `locale/input-methods.nix:127` |
-
-### LOW — Documentation hygiene
-
-| # | Task | Location |
-|---|---|---|
-| F7 | **Update `documentation/plans/overlord-II-PLAN.md`** — references deleted `real-topology/` (lines 80, 90-91, 96, 118) | Moved to snippets; remaining refs stale |

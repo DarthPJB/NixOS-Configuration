@@ -20,16 +20,20 @@ let
   gitlabNetrcPath = config.secrix.services.github-runner-hate-filled.secrets.gitlab_netrc.decrypted.path;
 
   # GIT_ASKPASS script that reads credentials from netrc file
-  gitlabAskpass = pkgs.writeShellScript "gitlab-askpass" ''
-    case "$1" in
-      *Username*)
-        exec ${pkgs.gnused}/bin/sed -n 's/^login[[:space:]]*//p' "${gitlabNetrcPath}"
-        ;;
-      *Password*)
-        exec ${pkgs.gnused}/bin/sed -n 's/^password[[:space:]]*//p' "${gitlabNetrcPath}"
-        ;;
-    esac
-  '';
+  gitlabAskpass = pkgs.writeShellApplication {
+    name = "gitlab-askpass";
+    runtimeInputs = [ pkgs.gnused ];
+    text = ''
+      case "$1" in
+        *Username*)
+          exec ${lib.getExe' pkgs.gnused "sed"} -n 's/^login[[:space:]]*//p' "${gitlabNetrcPath}"
+          ;;
+        *Password*)
+          exec ${lib.getExe' pkgs.gnused "sed"} -n 's/^password[[:space:]]*//p' "${gitlabNetrcPath}"
+          ;;
+      esac
+    '';
+  };
 
   # ────────────────────────────────────────────────────────────────────
   # Service identity (must match the attribute name below)
@@ -45,13 +49,22 @@ let
 
   # Helper to create the three ExecStartPre scripts
   writeScript = scriptName: body:
-    pkgs.writeShellScript "${svcName}-${scriptName}.sh" ''
-      set -euo pipefail
-      STATE_DIRECTORY="$1"
-      WORK_DIRECTORY="$2"
-      LOGS_DIRECTORY="$3"
-      ${body}
-    '';
+    let
+      drv = pkgs.writeShellApplication {
+        name = "${svcName}-${scriptName}";
+        runtimeInputs = [ pkgs.coreutils pkgs.findutils ];
+        text = ''
+          : "''${1?Missing STATE_DIRECTORY}"
+          : "''${2?Missing WORK_DIRECTORY}"
+          : "''${3?Missing LOGS_DIRECTORY}"
+          STATE_DIRECTORY="$1"
+          WORK_DIRECTORY="$2"
+          LOGS_DIRECTORY="$3"
+          ${body}
+        '';
+      };
+    in
+    "${drv}/bin/${svcName}-${scriptName}";
 
   # ────────────────────────────────────────────────────────────────────
   # Script 1: unconfigure (PRESERVE registration)
@@ -138,7 +151,7 @@ in
 
     # GitLab authentication for private flake inputs
     extraEnvironment = {
-      GIT_ASKPASS = "${gitlabAskpass}";
+      GIT_ASKPASS = "${gitlabAskpass}/bin/gitlab-askpass";
     };
     extraLabels = [ "self-hosted" ];
 

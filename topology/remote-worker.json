@@ -1,0 +1,88 @@
+{
+  "hostname": "remote-worker",
+  "trust": 5,
+  "hub_of": [
+    {
+      "plane_name": "remote-worker.wan",
+      "subnet": "193.16.42.0/24"
+    },
+    {
+      "plane_name": "remote-worker.lan",
+      "subnet": "10.0.1.0/24"
+    }
+  ],
+  "coordinate": [
+    {
+      "interface": "eth0",
+      "peer_id": 101,
+      "plane_name": "remote-worker.wan",
+      "subnet": "193.16.42.0/24",
+      "trust": 6
+    },
+    {
+      "interface": "eth0",
+      "peer_id": 42,
+      "plane_name": "remote-worker.lan",
+      "subnet": "10.0.1.0/24",
+      "trust": 4
+    },
+    {
+      "interface": "wireg0",
+      "peer_id": 50,
+      "plane_name": "wg",
+      "subnet": "10.88.127.0/24",
+      "trust": 3
+    }
+  ],
+  "public_key_file": "secrets/public_keys/wireguard/wg_remote-worker_pub",
+  "advertised_tailscale_routes": [],
+  "exporters": {
+    "nextcloud": {
+      "port": 3106,
+      "listenAddress": "0.0.0.0"
+    },
+    "nginx": {
+      "port": 3105,
+      "listenAddress": "0.0.0.0"
+    }
+  },
+  "vhosts": {
+    "default": [
+      {
+        "default": true,
+        "return": "444"
+      }
+    ],
+    "johnbargman.net": [
+      {
+        "acme": {
+          "enable": true,
+          "acmeRoot": null
+        },
+        "forceSSL": true,
+        "listenAddresses": ["10.0.1.42", "10.88.127.50"]
+      }
+    ],
+    "johnbargman.com": [
+      {
+        "acme": {
+          "enable": true,
+          "acmeRoot": null
+        },
+        "forceSSL": true,
+        "listenAddresses": ["10.0.1.42"]
+      }
+    ],
+    "johnbargman.com-lan": [
+      {
+        "plane": "wg",
+        "acme": {
+          "enable": true,
+          "acmeRoot": null
+        },
+        "forceSSL": true,
+        "server_name": "johnbargman.com"
+      }
+    ]
+  }
+}

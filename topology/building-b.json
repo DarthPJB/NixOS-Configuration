@@ -1,0 +1,27 @@
+{
+  "coordinate": [
+    {
+      "interface": "wireg0",
+      "peer_id": 100,
+      "plane_name": "wg",
+      "subnet": "10.88.127.0/24",
+      "trust": 3
+    },
+    {
+      "interface": "enp3s0",
+      "peer_id": 1,
+      "plane_name": "building-b-lan",
+      "subnet": "10.89.128.0/24",
+      "trust": 1
+    }
+  ],
+  "hub_of": [
+    {
+      "plane_name": "building-b-lan",
+      "subnet": "10.89.128.0/24"
+    }
+  ],
+  "hostname": "building-b",
+  "public_key_file": null,
+  "trust": 3
+}

@@ -14,7 +14,6 @@
     ../../services/litellm.nix
     ../../services/gitlab-credentials.nix
     ../../modules/enable-wg-topology.nix
-    ../../lib/rclone-target.nix
     ../../environments/i3wm_darthpjb.nix
     ../../environments/steam.nix
     ../../environments/code.nix
@@ -48,101 +47,6 @@
       ControlPath /run/ssh-mux/%r@%h:%p
       ControlPersist 600
   '';
-  environment = {
-    rclone-target = {
-      enable = true;
-      configFile = "${self}/secrets/rclone-config-file";
-      targets = {
-        obsidian-v3 = {
-          filePath = "/bulk-storage/88-DB-v3/";
-          remoteName = "minio:obsidian-v3";
-          syncInterval = 60; # every minute
-        };
-        "88-FS-V3" = {
-          filePath = "/bulk-storage/88-FS-V3/";
-          remoteName = "minio:fs-v3-88";
-          mode = "copy";
-          calendar = "*-*-* 0/2:30:00"; # every 2 hours at half past
-          bwlimit = "10M";
-        };
-        bargman-tech = {
-          filePath = "/speed-storage/bargman-tech/";
-          remoteName = "minio:bargman-tech";
-          mode = "copy";
-          calendar = "*-*-* *:15:00"; # every hour at 15 past
-          bwlimit = "10M";
-        };
-        downloads = {
-          filePath = "/speed-storage/Downloads/";
-          remoteName = "minio:downloads";
-          mode = "copy";
-          calendar = "*-*-* 05:00:00"; # daily at 5AM
-          bwlimit = "10M";
-        };
-        home = {
-          filePath = "/home/pokej/";
-          remoteName = "minio:linda-home";
-          mode = "copy";
-          calendar = "*-*-* 0/6:00:00"; # every 6 hours
-          bwlimit = "10M";
-          filterRules = [
-            # Include Vivaldi browser data
-            "+ .config/vivaldi/Default/**"
-            "+ .config/vivaldi/Profile*/**"
-            "+ .config/vivaldi/Local State"
-            "+ .config/vivaldi/search_engines.json"
-            "+ .config/vivaldi/search_engines_prompt.json"
-            "- .config/vivaldi/**"
-            "- .config/**"
-            "- .gnupg/**"
-            "- .ssh/**"
-            "- .mozilla/**"
-            "- .thunderbird/**"
-            "+ Pictures/**"
-            "0 Monero/**"
-            # Exclude everything else
-            "- .cache/**"
-            "- .local/**"
-            "- .ollama/**"
-            "- Games/**"
-            "- .steam/**"
-            "- .minecraft/**"
-            "- .android/**"
-            "- .java/**"
-            "- .cargo/**"
-            "- .rustup/**"
-            "- .bun/**"
-            "- .conan2/**"
-            "- .dotnet/**"
-            "- .emacs.d/**"
-            "- .stack/**"
-            "- .venv/**"
-            "- .npm/**"
-            "- .nuget/**"
-            "- .platformio/**"
-            "- .pulsar/**"
-            "- .vscode/**"
-            "- .atom/**"
-            "- .gitkraken/**"
-            "- .gk/**"
-            "- result"
-            "- *.iso"
-            "- *.tar.zst"
-            "- *.tar.gz"
-            "- *.zip"
-            "- *.mp4"
-            "- *.bmp"
-            "- *.xcf"
-            "- Selection_*.bmp"
-            "- Workspaces_*.bmp"
-            "- y2mate.is*"
-            "- nixos-*.iso"
-            "- .bash_history-*"
-          ];
-        };
-      };
-    };
-  };
 
   networking.wireguard = {
     enable = true;
@@ -150,10 +54,10 @@
       wiregPS0 = {
         # ensure routes exist to other clients.
         postSetup = ''
-          ${pkgs.iproute2}/bin/ip route add 10.75.69.0/24 dev wiregPS0
+          ${lib.getExe' pkgs.iproute2 "ip"} route add 10.75.69.0/24 dev wiregPS0
         '';
         postShutdown = ''
-          ${pkgs.iproute2}/bin/ip route del 10.75.69.0/24 dev wiregPS0
+          ${lib.getExe' pkgs.iproute2 "ip"} route del 10.75.69.0/24 dev wiregPS0
         '';
         ips = [ "10.75.69.88/32" ];
         listenPort = 2107;
@@ -209,7 +113,7 @@
       serviceConfig = {
         Restart = "always";
         ExecStart = ''
-          ${pkgs.obsidian}/bin/obsidian
+          ${lib.getExe pkgs.obsidian}
         '';
         PassEnvironment = "DISPLAY XAUTHORITY";
       };
@@ -220,7 +124,7 @@
       serviceConfig = {
         Restart = "always";
         ExecStart = ''
-          ${pkgs.dino}/bin/dino
+          ${lib.getExe pkgs.dino}
         '';
         PassEnvironment = "DISPLAY XAUTHORITY";
       };
@@ -231,7 +135,7 @@
       serviceConfig = {
         Restart = "always";
         ExecStart = ''
-          ${pkgs.discord}/bin/discord
+          ${lib.getExe pkgs.discord}
         '';
         PassEnvironment = "DISPLAY XAUTHORITY";
       };
@@ -240,7 +144,7 @@
       enable = true;
       description = "Scream br0";
       serviceConfig = {
-        ExecStart = "${pkgs.scream}/bin/scream  -u -i  br0 -p 4010";
+        ExecStart = "${lib.getExe pkgs.scream} -u -i br0 -p 4010";
       };
       wantedBy = [ "multi-user.target" ];
       requires = [ "pipewire.service" ];
@@ -303,7 +207,7 @@
   services.xserver.enable = true;
   services.xserver.videoDrivers = [ "nvidia" ];
   services.xserver.displayManager.setupCommands = ''
-    ${pkgs.xorg.xrandr}/bin/xrandr \
+    ${lib.getExe pkgs.xrandr} \
       --output HDMI-0 --mode 1920x1080 --pos 0x0 --rotate right \
       --output HDMI-1 --primary --mode 3840x2160 --pos 1080x0 --rotate normal \
       --output DP-3 --mode 1920x1080 --pos 4920x0 --rotate left

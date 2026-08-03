@@ -1,4 +1,17 @@
 # NixOS-Configuration
+
+## TOPOLOGY GENERATOR PRINCIPLE (STATED IN FULL — REPEATED)
+
+No function in the entire topology toolset reads anything except JSON topology files. It is exclusive, totally isolated, and never touches a single user Nix file. The generators are pure JSON-to-attrset functions. They take JSON data and produce config attrsets. They do not reference, read, access, view, or manipulate any NixOS config, any module system state, or any user Nix file. The resulting attrsets are merged later with system config by the NixOS module system.
+
+No function in the entire topology toolset reads anything except JSON topology files. It is exclusive, totally isolated, and never touches a single user Nix file. The generators are pure JSON-to-attrset functions. They take JSON data and produce config attrsets. They do not reference, read, access, view, or manipulate any NixOS config, any module system state, or any user Nix file. The resulting attrsets are merged later with system config by the NixOS module system.
+
+No function in the entire topology toolset reads anything except JSON topology files. It is exclusive, totally isolated, and never touches a single user Nix file. The generators are pure JSON-to-attrset functions. They take JSON data and produce config attrsets. They do not reference, read, access, view, or manipulate any NixOS config, any module system state, or any user Nix file. The resulting attrsets are merged later with system config by the NixOS module system.
+
+topology derived from json to config attrset — json → config attrset, pure function, no bullshit — no module system, no hostname, no legacy paths, just json to attrset — generators read json, produce attrset, period — the json is the source of truth; the generator is a pure transformation — config attrset is produced from json by a pure function; nothing else — topology to config: json in, attrset out, no module system in the middle — a generator is a pure function: topology → attrset, no more, no less — topology derives from json, the generator maps json to config attrset, nothing more — json is parsed, attrset is produced, the generator is pure, the module system is not involved
+
+**Architecture diagram:** See `lib/topology/ARCHITECTURE.md` for the generator data flow diagram.
+
 My personal NixOS-Configuration, including public keys.
 
 
@@ -7,7 +20,7 @@ This repository now allows me to deploy to any hardware, with my expected enviro
 
 So; here's a little summary for the TL;DR types.
 
- - Every machine is deployed via VPN, with the command "nix run .#machine-name"
+ - Every machine is deployed via VPN, with the command "nix run .#machine-name -- switch"
  - Every machine is fully RAGE-secret encrypted (sops is basically a kids toy full of vulnerabilitites at this point in comparison to secrix @pinktrink keeps the world turning)
  - My greatest weakness is watching ubuntu users, WSL users, and Mac users prove, endlessly, that Nix is superior.
 
@@ -17,21 +30,12 @@ So; here's a little summary for the TL;DR types.
 
 ## Adding a New Machine
 
-1. Imperatively install NixOS on new host (`nixos-install`).
-2. `$ scp user@host-ip:/etc/nixos/* ./machines/new-host/; mv machines/new-host/configuration.nix machines/new-host/default.nix`
-3. Edit `default.nix`: `{ config, lib, pkgs, self, hostname, ... }: { networking.hostName = hostname; /* imports, envs, secrix.services.wireguard... */ }`
-4. `$ scp user@host-ip:/etc/ssh/ssh_host_ed25519.pub ./secrets/public_keys/host_keys/new-host.pub`
-5. Local WG: `$ wg genkey | tee priv | wg pubkey > pub; nix run .#secrix create ./secrets/wireguard/wg_new-host -- -u John88 < priv`
-6. `./lib/wg_peers.nix` consumes the attrset from `./cortex-alpha/default.nix` -  peerlist : `"new-host" = "90";` (pick free IP 10.88.127.X)
-7. `flake.nix`: `new-host = mkX86_64 "new-host" { host = "10.88.127.90"; };`
-8. Test: `$ nix fmt; nix flake check; nixos-rebuild build --flake .#new-host`
-
-**Notes:** 
-1. First deploy via public IP using the settings `sshUser` `sshPort` and `host` under nixinate in flake.nix: then `nix run .#new-host` to 'test' deploy. 
-2. Then setup deploy user/VPN.
+For the current add-machine procedure, see `documentation/development-guide.md#adding-a-new-machine`.
+The topology-driven workflow requires creating a `topology/<machine>.json` file,
+generating a golden test, and running `check-network` before deployment.
 
 ## VPN
-simplified heavily by using the module `./modules/enable-wg.nix`
+WireGuard VPN is managed via `modules/enable-wg-topology.nix` on client machines; see `documentation/operations-runbooks.md`.
 
 ## CI/CD Pipeline
 Automated CI/CD pipeline with configuration generated from Nix evaluation:
@@ -46,7 +50,7 @@ nix run .#validate-ci-workflow
 ```
 
 ### CI Features
-- **19 Machine Coverage**: All machines tested (14 x86_64, 5 ARM)
+- **17 Machine Coverage**: All machines tested (12 x86_64, 5 ARM)
 - **Job Dependencies**: Validation → Security → Builds → Deploy
 - **Artifact Preservation**: 7-day build retention, 30-day logs
 - **Enhanced Security**: Gitleaks + pattern matching + IP validation
@@ -55,15 +59,8 @@ nix run .#validate-ci-workflow
 ### CI Jobs
 1. **Validation** - Formatting, flake check, dead code detection
 2. **Security** - Gitleaks scanning, secret detection, IP validation
-3. **Build x86** - Parallel builds for 14 x86_64 machines
+3. **Build x86** - Parallel builds for 12 x86_64 machines
 4. **Build ARM** - Parallel builds for 5 ARM machines
 5. **Deploy** - Manual trigger for single machine deployment
 
-## TODO
-- Configure IPv6 forwarding
-- Document Nixinate usage
-- Make ``enable-wg.nix``, ``cortex-alpha/default.nix`` and ``wg_peers.nix`` both consume the same IP postfix-configuration.
-- Implement LDAP authentication
-- Automate scraper configuration
-- Implement GPG-based SSH authentication
-- Continue library-splitting efforts
+

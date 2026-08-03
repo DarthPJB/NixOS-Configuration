@@ -1,0 +1,14 @@
+{
+  "coordinate": [
+    {
+      "interface": "wireg0",
+      "peer_id": 101,
+      "plane_name": "wg",
+      "subnet": "10.88.127.0/24",
+      "trust": 3
+    }
+  ],
+  "hostname": "office-1",
+  "public_key_file": null,
+  "trust": 3
+}

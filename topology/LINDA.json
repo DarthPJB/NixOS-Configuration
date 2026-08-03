@@ -1,0 +1,119 @@
+{
+  "coordinate": [
+    {
+      "interface": "wireg0",
+      "peer_id": 88,
+      "plane_name": "wg",
+      "subnet": "10.88.127.0/24",
+      "trust": 3
+    },
+    {
+      "interface": "enp0s31f6",
+      "peer_id": 88,
+      "plane_name": "cortex-alpha.lan",
+      "subnet": "10.88.128.0/24",
+      "trust": 1
+    },
+    {
+      "interface": "tailscale0",
+      "peer_id": 88,
+      "plane_name": "tailscale-platonic",
+      "subnet": "100.64.0.0/10",
+      "trust": 2
+    }
+  ],
+  "hostname": "LINDA",
+  "public_key_file": "secrets/public_keys/wireguard/wg_LINDA_pub",
+  "trust": 3,
+  "backup": {
+    "configFile": "../secrets/rclone-config-file",
+    "user": "John88",
+    "targets": {
+      "obsidian-v3": {
+        "filePath": "/bulk-storage/88-DB-v3/",
+        "remoteName": "minio:obsidian-v3",
+        "syncInterval": 60
+      },
+      "88-FS-V3": {
+        "filePath": "/bulk-storage/88-FS-V3/",
+        "remoteName": "minio:fs-v3-88",
+        "mode": "copy",
+        "calendar": "*-*-* 0/2:30:00",
+        "bwlimit": "10M"
+      },
+      "bargman-tech": {
+        "filePath": "/speed-storage/bargman-tech/",
+        "remoteName": "minio:bargman-tech",
+        "mode": "copy",
+        "calendar": "*-*-* *:15:00",
+        "bwlimit": "10M"
+      },
+      "downloads": {
+        "filePath": "/speed-storage/Downloads/",
+        "remoteName": "minio:downloads",
+        "mode": "copy",
+        "calendar": "*-*-* 05:00:00",
+        "bwlimit": "10M"
+      },
+      "home": {
+        "filePath": "/home/pokej/",
+        "remoteName": "minio:linda-home",
+        "mode": "copy",
+        "calendar": "*-*-* 0/6:00:00",
+        "bwlimit": "10M",
+        "filterRules": [
+          "+ .config/vivaldi/Default/**",
+          "+ .config/vivaldi/Profile*/**",
+          "+ .config/vivaldi/Local State",
+          "+ .config/vivaldi/search_engines.json",
+          "+ .config/vivaldi/search_engines_prompt.json",
+          "- .config/vivaldi/**",
+          "- .config/**",
+          "- .gnupg/**",
+          "- .ssh/**",
+          "- .mozilla/**",
+          "- .thunderbird/**",
+          "+ Pictures/**",
+          "0 Monero/**",
+          "- .cache/**",
+          "- .local/**",
+          "- .ollama/**",
+          "- Games/**",
+          "- .steam/**",
+          "- .minecraft/**",
+          "- .android/**",
+          "- .java/**",
+          "- .cargo/**",
+          "- .rustup/**",
+          "- .bun/**",
+          "- .conan2/**",
+          "- .dotnet/**",
+          "- .emacs.d/**",
+          "- .stack/**",
+          "- .venv/**",
+          "- .npm/**",
+          "- .nuget/**",
+          "- .platformio/**",
+          "- .pulsar/**",
+          "- .vscode/**",
+          "- .atom/**",
+          "- .gitkraken/**",
+          "- .gk/**",
+          "- result",
+          "- *.iso",
+          "- *.tar.zst",
+          "- *.tar.gz",
+          "- *.zip",
+          "- *.mp4",
+          "- *.bmp",
+          "- *.xcf",
+          "- Selection_*.bmp",
+          "- Workspaces_*.bmp",
+          "- y2mate.is*",
+          "- nixos-*.iso",
+          "- .bash_history-*"
+        ]
+      }
+    }
+  }
+}

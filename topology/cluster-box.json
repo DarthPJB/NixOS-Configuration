@@ -1,0 +1,14 @@
+{
+  "coordinate": [
+    {
+      "interface": "wireg0",
+      "peer_id": 211,
+      "plane_name": "wg",
+      "subnet": "10.88.127.0/24",
+      "trust": 3
+    }
+  ],
+  "hostname": "cluster-box",
+  "public_key_file": "secrets/public_keys/wireguard/wg_cluster-box_pub",
+  "trust": 3
+}

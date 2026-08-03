@@ -17,8 +17,6 @@
     ../../server_services/game_servers/terratech.nix
     ../../server_services/game_servers/minecraft-curseforge.nix
     (import ../../services/acme_server.nix { fqdn = "gaming-host-1.johnbargman.net"; })
-    ../../lib/rclone-target.nix
-    ../../services/minecraft-backup.nix
   ];
   security.acme.defaults.email = "commander@johnbargman.net";
   enableWgTopology.enable = true;
@@ -62,20 +60,27 @@
 
   environment.systemPackages = with pkgs; [ ];
 
-  # ── Nginx reverse proxy for squaremap ──────────────────────────────
+  # TOPOLOGY-DERIVED: see topology/gaming-host-1.json vhosts
+  # Nginx-level settings NOT managed by topology-derive — preserved here
   services.nginx = {
-    enable = true;
     recommendedProxySettings = true;
     recommendedTlsSettings = true;
-    virtualHosts."gaming-host-1.johnbargman.net" = {
-      forceSSL = true;
-      useACMEHost = "gaming-host-1.johnbargman.net";
-      locations."/" = {
-        proxyPass = "http://127.0.0.1:8080";
-        proxyWebsockets = true;
-      };
-    };
+    # enable and virtualHosts come from topology-derive
   };
+  # ── Nginx reverse proxy for squaremap ──────────────────────────────
+  # services.nginx = {
+  #   enable = true;
+  #   recommendedProxySettings = true;
+  #   recommendedTlsSettings = true;
+  #   virtualHosts."gaming-host-1.johnbargman.net" = {
+  #     forceSSL = true;
+  #     useACMEHost = "gaming-host-1.johnbargman.net";
+  #     locations."/" = {
+  #       proxyPass = "http://127.0.0.1:8080";
+  #       proxyWebsockets = true;
+  #     };
+  #   };
+  # };
 
   # Allow nginx through the firewall
   networking.firewall.allowedTCPPorts = [ 80 443 ];
@@ -110,6 +115,25 @@
       "difficulty" = "normal";
       "gamemode" = "survival";
       "level-seed" = "4240772663413292738";
+    };
+  };
+
+  # Scheduled restart: every 2 days at 5:00 AM
+  systemd.timers.minecraft-restart = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      # Every 2nd day (odd-numbered days) at 05:00 — closest systemd approximation
+      # to "every 2 days" using calendar syntax
+      OnCalendar = "*-*-01/2 05:00:00";
+      Persistent = true;
+      RandomizedDelaySec = 0;
+    };
+  };
+  systemd.services.minecraft-restart = {
+    description = "Scheduled restart for all-the-mons";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${lib.getExe' pkgs.systemd "systemctl"} restart mc-curseforge-all-the-mons.service";
     };
   };
 }

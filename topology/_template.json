@@ -1,0 +1,25 @@
+{
+  "hostname": "<MACHINE_NAME>",
+  "trust": 3,
+  "coordinate": [
+    {
+      "plane_name": "<PLANE_NAME>",
+      "subnet": "<SUBNET_CIDR>",
+      "peer_id": 0,
+      "trust": 0,
+      "interface": "<INTERFACE>"
+    }
+  ],
+  "hub_of": [],
+  "icmp_defaults": {
+    "pmtud": true,
+    "ping": false
+  },
+  "icmp_override": {},
+  "routes": [],
+  "requires_routes": [],
+  "public_key_file": "secrets/public_keys/wireguard/wg_<MACHINE_NAME>_pub",
+  "exporters": {},
+  "vhosts": {},
+  "advertised_tailscale_routes": []
+}
