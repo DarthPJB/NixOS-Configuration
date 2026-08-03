@@ -48,9 +48,10 @@ let
     coords;
 
   # Build extraSetFlags with advertised routes
-  routeFlags = if routes != [ ] then
-    [ "--advertise-routes=${concatStringsSep "," routes}" ]
-  else [ ];
+  routeFlags =
+    if routes != [ ] then
+      [ "--advertise-routes=${concatStringsSep "," routes}" ]
+    else [ ];
 
 in
 if routes != [ ] then {
