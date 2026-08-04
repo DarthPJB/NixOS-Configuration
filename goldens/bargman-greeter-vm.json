@@ -101,10 +101,6 @@
       "zfsPackage": "<derivation:zfs-user-2.4.3>",
       "zfsSupport": false
     },
-    "gummiboot": {
-      "enable": false,
-      "timeout": 5
-    },
     "initScript": {
       "enable": false
     },
@@ -120,7 +116,6 @@
       "extraConfig": "",
       "extraEntries": "",
       "force": false,
-      "forceMbr": false,
       "maxGenerations": null,
       "package": "<derivation:limine-12.4.1>",
       "panicOnChecksumMismatch": false,
@@ -543,13 +538,6 @@
     "enableReload": false,
     "eventsConfig": "",
     "experimentalZstdSettings": false,
-    "gitweb": {
-      "enable": false,
-      "group": "nginx",
-      "location": "/gitweb",
-      "user": "nginx",
-      "virtualHost": "_"
-    },
     "group": "nginx",
     "httpConfig": "",
     "logError": "stderr",
@@ -668,21 +656,9 @@
     "authorizedKeysCommandUser": "nobody",
     "authorizedKeysFiles": [],
     "authorizedKeysInHomedir": true,
-    "banner": "<eval-error>",
-    "challengeResponseAuthentication": true,
-    "ciphers": [
-      "chacha20-poly1305@openssh.com",
-      "aes256-gcm@openssh.com",
-      "aes128-gcm@openssh.com",
-      "aes256-ctr",
-      "aes192-ctr",
-      "aes128-ctr"
-    ],
     "enable": false,
     "enableRecommendedAlgorithms": true,
     "extraConfig": "",
-    "forwardX11": false,
-    "gatewayPorts": "no",
     "generateHostKeys": false,
     "hostKeys": [
       {
@@ -695,28 +671,11 @@
         "type": "ed25519"
       }
     ],
-    "kbdInteractiveAuthentication": true,
-    "kexAlgorithms": [
-      "mlkem768x25519-sha256",
-      "sntrup761x25519-sha512",
-      "sntrup761x25519-sha512@openssh.com",
-      "curve25519-sha256",
-      "curve25519-sha256@libssh.org",
-      "diffie-hellman-group-exchange-sha256"
-    ],
     "knownHosts": {},
     "listenAddresses": [],
-    "logLevel": "INFO",
-    "macs": [
-      "hmac-sha2-512-etm@openssh.com",
-      "hmac-sha2-256-etm@openssh.com",
-      "umac-128-etm@openssh.com"
-    ],
     "moduliFile": "<eval-error>",
     "openFirewall": true,
     "package": "<derivation:openssh-10.4p1>",
-    "passwordAuthentication": true,
-    "permitRootLogin": "prohibit-password",
     "ports": [
       22
     ],
@@ -762,8 +721,7 @@
     },
     "sftpFlags": [],
     "sftpServerExecutable": "<eval-error>",
-    "startWhenNeeded": false,
-    "useDns": false
+    "startWhenNeeded": false
   },
   "services.prometheus": {
     "alertmanager": {
@@ -1470,7 +1428,6 @@
         "user": "kafka-exporter"
       },
       "kea": {
-        "controlSocketPaths": [],
         "enable": false,
         "extraFlags": [],
         "firewallFilter": null,
@@ -1714,7 +1671,6 @@
         "port": 9113,
         "scrapeUri": "http://localhost/nginx_status",
         "sslVerify": true,
-        "telemetryEndpoint": "/metrics",
         "telemetryPath": "/metrics",
         "user": "nginx-exporter",
         "warnings": []
@@ -2481,6 +2437,57 @@
       "services": {}
     },
     "useRoutingFeatures": "none"
+  },
+  "services.unifi-poller": {
+    "enable": false,
+    "influxdb": {
+      "db": "unifi",
+      "disable": false,
+      "interval": "30s",
+      "pass": "file:///nix/store/35813biqzdgcrb0aqm562vz8vk4smfgf-unpoller-influxdb-default.password",
+      "url": "http://127.0.0.1:8086",
+      "user": "unifipoller",
+      "verify_ssl": true
+    },
+    "loki": {
+      "interval": "2m",
+      "pass": "file:///nix/store/i2cd7qzxicmdxmsagdca5gw1ql118nhj-unpoller-loki-default.password",
+      "tenant_id": "",
+      "timeout": "10s",
+      "url": "",
+      "user": "",
+      "verify_ssl": false
+    },
+    "poller": {
+      "debug": false,
+      "plugins": [],
+      "quiet": false
+    },
+    "prometheus": {
+      "disable": false,
+      "http_listen": "[::]:9130",
+      "report_errors": false
+    },
+    "unifi": {
+      "controllers": [],
+      "defaults": {
+        "hash_pii": false,
+        "pass": "file:///nix/store/8bfrhkb2z7alrcb0vrva7gk7sg0q0x6y-unpoller-unifi-default.password",
+        "save_alarms": false,
+        "save_anomalies": false,
+        "save_dpi": false,
+        "save_events": false,
+        "save_ids": false,
+        "save_sites": true,
+        "sites": [
+          "all"
+        ],
+        "url": "https://unifi:8443",
+        "user": "unifi",
+        "verify_ssl": true
+      },
+      "dynamic": false
+    }
   },
   "systemd.services.tailscale-udp-gro": null,
   "time.timeZone": null

@@ -815,56 +815,37 @@
           text = ''exec deadnix --fail --no-lambda-arg --no-lambda-pattern-names "${self}"'';
         };
 
-        # Golden validation for all machines
-        # Compares serialized NixOS config against golden files at build time.
-        # This is regression testing — completely separate from topology generation.
-        golden-validation =
-          let
-            machines = builtins.attrNames self.nixosConfigurations;
-            serializer = import ./lib/serialize-config.nix { inherit lib; };
-            # Pre-compute JSON for each machine at eval time
-            # unsafeDiscardStringContext strips derivation references so builtins.toFile accepts the string
-            machineJsonFiles = lib.genAttrs machines (machine:
-              let
-                config = self.nixosConfigurations.${machine}.config;
-                json = builtins.unsafeDiscardStringContext (
-                  builtins.toJSON (serializer.serializeConfig config)
-                );
-              in
-              builtins.toFile "golden-validation-${machine}.json" json
-            );
-          in
-          nixpkgs.runCommand "golden-validation"
-            {
-              buildInputs = [ nixpkgs.jq nixpkgs.diffutils ];
-              goldenSrc = "${self}/goldens";
-            }
-            ''
-              PASS=true
-              ${lib.concatMapStringsSep "\n" (machine: ''
-                if [ -f "$goldenSrc/${machine}.json" ]; then
-                  echo "Validating ${machine}..."
-                  ${lib.getExe nixpkgs.jq} -S . < "${machineJsonFiles.${machine}}" > /tmp/current.json
-                  if ${lib.getExe' nixpkgs.diffutils "diff"} -u "$goldenSrc/${machine}.json" /tmp/current.json; then
-                    echo "  ✓ ${machine} matches golden"
-                  else
-                    echo "  ✗ ${machine} differs from golden!"
-                    PASS=false
-                  fi
-                else
-                  echo "Skipping ${machine} (no golden file)"
-                fi
-              '') machines}
-              if [ "$PASS" != "true" ]; then
-                echo ""
-                echo "Golden validation failed. If changes are intentional, update with:"
-                echo "  nix run .#dump-config -- <machine> > goldens/<machine>.json"
-                exit 1
+        golden-validation = nixpkgs.writeShellApplication {
+          name = "run-golden-validation";
+          meta.description = "Validate all machine configs against golden files";
+          runtimeInputs = [ nixpkgs.jq nixpkgs.diffutils ];
+          text = ''
+            PASS=true
+            for machine in ${lib.concatStringsSep " " (builtins.attrNames self.nixosConfigurations)}; do
+              golden="${self}/goldens/$machine.json"
+              if [ ! -f "$golden" ]; then
+                echo "Skipping $machine (no golden file)"
+                continue
               fi
+              echo "Validating $machine..."
+              current=$(nix run .#dump-config -- "$machine" | ${lib.getExe nixpkgs.jq} -S .)
+              if echo "$current" | ${lib.getExe' nixpkgs.diffutils "diff"} -u "$golden" -; then
+                echo "  ✓ $machine matches golden"
+              else
+                echo "  ✗ $machine differs from golden!"
+                PASS=false
+              fi
+            done
+            if [ "$PASS" != "true" ]; then
               echo ""
-              echo "All golden validations passed"
-              touch $out
-            '';
+              echo "Golden validation failed. If intentional, update with:"
+              echo "  nix run .#dump-config -- <machine> > goldens/<machine>.json"
+              exit 1
+            fi
+            echo ""
+            echo "All golden validations passed"
+          '';
+        };
 
         topology-coverage =
           let
