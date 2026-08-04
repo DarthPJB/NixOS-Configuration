@@ -60,11 +60,11 @@ in
       count = 1;
       extraLabels = [ "self-hosted" ];
     }) //
-    # entropy-is-origin — Bargman-Tech org (gitlab-aware for private flake inputs)
+    # entropy-is-origin — Bargman-Tech org (PAT, gitlab-aware for private flake inputs)
     (mkRunner {
       namePrefix = "entropy-is-origin";
       url = "https://github.com/Bargman-Tech";
-      tokenFile = config.secrix.services.github-runner-entropy-is-origin.secrets.github_org_runner_token.decrypted.path;
+      tokenFile = patTokenFile;
       count = 1;
       extraLabels = [ "self-hosted" ];
       extraEnvironment = { GIT_ASKPASS = "${gitlabAskpass}"; };
@@ -92,10 +92,6 @@ in
   # PAT for runner registration — system secret (decrypted at boot to /run/system-keys/)
   secrix.system.secrets.hate-filled-generator.encrypted.file =
     "${self}/secrets/hate-filled-generator";
-
-  # Org runner token for Bargman-Tech (entropy-is-origin)
-  secrix.services.github-runner-entropy-is-origin.secrets.github_org_runner_token.encrypted.file =
-    "${self}/secrets/github_org_runner_token";
 
   # Ensure /nix/cache exists and is writable by the build user.
   # This persists eval-cache and flake input cache across CI jobs.
