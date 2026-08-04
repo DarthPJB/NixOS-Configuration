@@ -9,7 +9,7 @@
   services.nix-serve = {
     enable = true;
     secretKeyFile = config.secrix.services.nix-serve.secrets.cache-priv-key.decrypted.path;
-    bindAddress = "10.88.127.51";   # WireGuard IP only — not reachable from public internet
+    bindAddress = "0.0.0.0";
     port = 5001;
   };
 
