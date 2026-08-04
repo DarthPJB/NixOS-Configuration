@@ -143,9 +143,11 @@ in
       builders-use-substitutes = true;
 
       trusted-substituters = [
+        "https://cache.johnbargman.net"
         "https://cache.nixos.org"
       ];
       trusted-public-keys = [
+        "cache.johnbargman.net:IV8N1T7Yk4hkAlkywdrGhh2H9uQ40ftG4gaPdqa9PWI="
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
       ];
     };
