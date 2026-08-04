@@ -106,7 +106,7 @@
         inherit denton-glasses;
         inherit personal-site;
         inherit LLM-CORE;
-        pkgs_llm = nixpkgs_llm.legacyPackages.x86_64-linux;
+        pkgs_llm = import nixpkgs_llm { system = "x86_64-linux"; config.allowUnfree = true; };
       };
       minecraft-curseforge-builder = nixpkgs.callPackage ./pkgs/minecraft-curseforge { };
       prometheus-mcp-server-builder = nixpkgs.callPackage ./pkgs/prometheus-mcp-server { };
