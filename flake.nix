@@ -7,7 +7,7 @@
       "https://install.determinate.systems"
     ];
     extra-trusted-public-keys = [
-      "cache.johnbargman.net:IV8N1T7Yk4hkAlkywdrGhh2H9uQ40ftG4gaPdqa9PWI="
+      "cache.johnbargman.net:A4GtVLF/JKtEcHHcT/4rBPvjg1b+xIH1AaHvxhSzUSk="
       "cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM="
       "install.determinate.systems:a7GMGXFqz7lFjOE45sTRq1g/RX6KFHRKHXOHTi1uFhM="
     ];
