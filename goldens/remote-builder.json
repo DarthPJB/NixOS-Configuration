@@ -337,7 +337,8 @@
         "allowedTCPPortRanges": [],
         "allowedTCPPorts": [
           1108,
-          2108
+          2108,
+          5001
         ],
         "allowedUDPPortRanges": [],
         "allowedUDPPorts": [
@@ -360,7 +361,8 @@
     "allowedTCPPortRanges": [],
     "allowedTCPPorts": [
       1108,
-      2108
+      2108,
+      5001
     ],
     "allowedUDPPortRanges": [],
     "allowedUDPPorts": [
