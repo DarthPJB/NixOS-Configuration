@@ -2,8 +2,12 @@
   description = "A NixOS flake for John Bargman's machine provisioning";
 
   nixConfig = {
-    extra-substituters = [ "https://install.determinate.systems" ];
+    extra-substituters = [
+      "https://cache.johnbargman.net"
+      "https://install.determinate.systems"
+    ];
     extra-trusted-public-keys = [
+      "cache.johnbargman.net:A4GtVLF/JKtEcHHcT/4rBPvjg1b+xIH1AaHvxhSzUSk="
       "cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM="
       "install.determinate.systems:a7GMGXFqz7lFjOE45sTRq1g/RX6KFHRKHXOHTi1uFhM="
     ];
@@ -102,7 +106,7 @@
         inherit denton-glasses;
         inherit personal-site;
         inherit LLM-CORE;
-        pkgs_llm = nixpkgs_llm.legacyPackages.x86_64-linux;
+        pkgs_llm = import nixpkgs_llm { system = "x86_64-linux"; config.allowUnfree = true; };
       };
       minecraft-curseforge-builder = nixpkgs.callPackage ./pkgs/minecraft-curseforge { };
       prometheus-mcp-server-builder = nixpkgs.callPackage ./pkgs/prometheus-mcp-server { };

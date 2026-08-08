@@ -18,7 +18,11 @@
     ../../modifier_imports/remote-builder.nix
     ../../users/build.nix
     ../../modules/enable-wg-topology.nix
+    ../../services/nix-cache-serve.nix
   ];
+  # Nix binary cache — open port 5001 on WAN
+  networking.firewall.allowedTCPPorts = [ 5001 ];
+
   # Virtual disk devices — smartctl/smartd not applicable
   services.smartd.enable = lib.mkForce false;
   services.prometheus.exporters.smartctl.enable = lib.mkForce false;
