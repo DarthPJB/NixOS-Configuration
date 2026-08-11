@@ -61,16 +61,18 @@ let
     merged;
 
   # Format nix settings as --option flags for CLI injection.
-  # Always emits --option builders '' (Prime Directive 17).
-  # Other options only emitted when explicitly configured.
+  # Only emits options that are explicitly configured — no defaults injected.
+  # NOTE: --option builders '' is a LOCAL-DEV directive (Prime Directive 17).
+  # CI runners ARE the builders — injecting this flag in workflows would break builds.
   formatNixOptions = machine: system: parallelism:
     let
       settings = resolveNixSettings machine system parallelism;
       maxJobs = settings.max-jobs or null;
       cores = settings.cores or null;
+      builders = settings.builders or null;
     in
     lib.concatStringsSep " " (lib.filter (s: s != "") [
-      "--option builders ''"
+      (if builders != null then "--option builders ${toString builders}" else "")
       (if maxJobs != null then "--option max-jobs ${toString maxJobs}" else "")
       (if cores != null then "--option cores ${toString cores}" else "")
     ]);

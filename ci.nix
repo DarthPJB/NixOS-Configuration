@@ -1,9 +1,12 @@
 # CI Configuration Module for NixOS Configuration Repository
-# Generates GitHub Actions workflow from Nix evaluation
-{ lib
+# Generates GitHub Actions workflow from Nix evaluation.
+#
+# Accepts `self` (the flake) and automatically derives machine lists,
+# packages, and checks from nixosConfigurations. No hardcoded lists.
+{ self
+, lib
 , pkgs
 , parallelism ? { }
-, machines ? { }
 , ...
 }:
 
@@ -11,58 +14,46 @@ let
   # Import ketchup CI library for generic functions
   ciLib = import ./lib/ci_library.nix { inherit lib pkgs; };
 
-  # Machine categories for CI matrix.
-  # Derived from the flake's nixosConfigurations (single source of truth) via the
-  # `machines` parameter ({ x86, armNative, armCross }) passed from flake.nix.
-  # Falls back to these hardcoded lists when `machines` is not provided
-  # (backward compatibility for imports without the new parameter).
-  defaultMachines = {
-    x86 = [
-      "terminal-zero"
-      "terminal-nx-01"
-      "cortex-alpha"
-      "local-nas"
-      "alpha-one"
-      "alpha-three"
-      "LINDA"
-      "gaming-host-1"
-      "remote-worker"
-      "remote-builder"
-    ];
+  # --- Machine list derivation (single source of truth) ---
+  #
+  # Machines excluded from CI builds (passthrough configs, test VMs, etc.)
+  ciExclusions = [
+    "cluster-box" # Malayalam passthrough — DO NOT build in CI (see flake.nix comment)
+    "bargman-greeter-vm" # Test VM — not a deployment target
+  ];
 
-    # Native aarch64 builds — evaluated on aarch64 runner
-    armNative = [
-      "display-1"
-      "display-2"
-      "print-controller"
-    ];
+  # Categorize machines by inspecting host/build platform:
+  #   x86_64-linux host          → x86       (native x86_64)
+  #   host == build (aarch64)    → armNative (built natively on aarch64 runner)
+  #   host != build (ARM target) → armCross  (cross-compiled from x86_64)
+  categorised = lib.mapAttrsToList
+    (name: cfg:
+      let
+        hostPlatform = cfg.config.nixpkgs.hostPlatform.system;
+        buildPlatform = cfg.config.nixpkgs.buildPlatform.system;
+      in
+      {
+        inherit name;
+        category =
+          if hostPlatform == "x86_64-linux" then "x86"
+          else if hostPlatform == buildPlatform then "armNative"
+          else "armCross";
+      })
+    (lib.filterAttrs (name: _cfg: !(builtins.elem name ciExclusions)) self.nixosConfigurations);
 
-    # Cross-compiled from x86_64 — evaluated on x86_64 runner, targets ARM
-    armCross = [
-      "arm-builder" # aarch64, buildPlatform=x86_64-linux
-      "beta-one" # armv7l, buildPlatform=x86_64-linux
-    ];
-  };
+  select = category: map (m: m.name) (builtins.filter (m: m.category == category) categorised);
 
-  # Machine categories used by CI jobs. Derived lists take precedence when
-  # `machines` is provided; per-field fallback keeps partial attrsets working.
-  x86Machines = machines.x86 or defaultMachines.x86;
-
-  # Native aarch64 builds — evaluated on aarch64 runner
-  armNativeMachines = machines.armNative or defaultMachines.armNative;
-
-  # Cross-compiled from x86_64 — evaluated on x86_64 runner, targets ARM
-  armCrossMachines = machines.armCross or defaultMachines.armCross;
-
-  # All ARM machines (for workflow_dispatch input)
+  x86Machines = select "x86";
+  armNativeMachines = select "armNative";
+  armCrossMachines = select "armCross";
   armMachines = armNativeMachines ++ armCrossMachines;
 
-  # Pre-computed nix options per system type
+  # --- Nix options per system type ---
   x86NixOptions = ciLib.formatNixOptions "x86-default" "x86_64-linux" parallelism;
   armNativeNixOptions = ciLib.formatNixOptions "arm-native" "aarch64-linux" parallelism;
   armCrossNixOptions = ciLib.formatNixOptions "arm-cross" "x86_64-linux" parallelism;
 
-  # Pre-computed GitHub Actions max-parallel per system
+  # --- GitHub Actions max-parallel per system ---
   x86Settings = ciLib.resolveNixSettings "x86-default" "x86_64-linux" parallelism;
   armNativeSettings = ciLib.resolveNixSettings "arm-native" "aarch64-linux" parallelism;
   armCrossSettings = ciLib.resolveNixSettings "arm-cross" "x86_64-linux" parallelism;
@@ -70,7 +61,7 @@ let
   armNativeMaxParallel = armNativeSettings.max-parallel or null;
   armCrossMaxParallel = armCrossSettings.max-parallel or null;
 
-  # CI job definitions
+  # --- CI job definitions ---
   ciJobs = {
     # Validation jobs (run on all PRs)
     # Uses self-hosted runner for private flake input access

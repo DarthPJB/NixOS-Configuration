@@ -18,7 +18,7 @@
         },
         {
           "name": "Build configuration",
-          "run": "nix build --option builders '' .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
+          "run": "nix build  .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
         }
       ],
       "strategy": {
@@ -48,7 +48,7 @@
         },
         {
           "name": "Build configuration",
-          "run": "nix build --option builders '' .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
+          "run": "nix build  .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
         }
       ],
       "strategy": {
@@ -78,7 +78,7 @@
         },
         {
           "name": "Build configuration",
-          "run": "nix build --option builders '' .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
+          "run": "nix build  .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
         }
       ],
       "strategy": {
@@ -119,7 +119,7 @@
         },
         {
           "name": "Build configuration",
-          "run": "MACHINE=\"${{ github.event.inputs.machine }}\"\nARM_NATIVE=\"display-1 display-2 print-controller\"\nARM_CROSS=\"arm-bootstrap arm-builder beta-one\"\n\nif echo \"$ARM_NATIVE\" | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"--option builders ''\"\nelif echo \"$ARM_CROSS\" | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"--option builders ''\"\nelse\n  NIX_OPTS=\"--option builders ''\"\nfi\nnix build \"$NIX_OPTS\" \".#nixosConfigurations.$MACHINE.config.system.build.toplevel\"\n"
+          "run": "MACHINE=\"${{ github.event.inputs.machine }}\"\nARM_NATIVE=\"display-1 display-2 print-controller\"\nARM_CROSS=\"arm-bootstrap arm-builder beta-one\"\n\nif echo \"$ARM_NATIVE\" | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"\"\nelif echo \"$ARM_CROSS\" | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"\"\nelse\n  NIX_OPTS=\"\"\nfi\nnix build \"$NIX_OPTS\" \".#nixosConfigurations.$MACHINE.config.system.build.toplevel\"\n"
         },
         {
           "if": "github.event.inputs.action == 'test'",
