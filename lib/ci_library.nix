@@ -121,7 +121,7 @@ let
       text = ''
         set -euo pipefail
 
-        nix eval --json ${workflowAttrPath} | jq '{name, on, permissions, jobs, concurrency}' | json2yaml
+        nix eval --json ${workflowAttrPath} 2>/dev/null | jq '{name, on, permissions, jobs, concurrency}' | json2yaml
       '';
     };
 
