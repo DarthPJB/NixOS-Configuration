@@ -303,7 +303,7 @@
       ci = import ./ci.nix { inherit self lib; pkgs = nixpkgs; parallelism = ciParallelism; };
 
       # CI Generator Scripts
-      ci-generator = import ./ci/generate-workflow.nix { inherit self lib; pkgs = nixpkgs; };
+      ci-generator = import ./ci/generate-workflow.nix { inherit self lib; pkgs = nixpkgs; parallelism = ciParallelism; };
     in
     {
       inherit topologyConfigs;
