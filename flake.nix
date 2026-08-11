@@ -299,11 +299,45 @@
         };
       };
 
+      # CI machine lists — derived from nixosConfigurations (single source of truth).
+      # Categorization by inspecting each machine's host/build platform:
+      #   x86_64-linux host          → x86       (native x86_64)
+      #   host == build (aarch64)    → armNative (built natively on aarch64 runner)
+      #   host != build (ARM target) → armCross  (cross-compiled from x86_64)
+      ciMachines =
+        let
+          # Machines excluded from CI builds (passthrough configs, test VMs, etc.)
+          ciExclusions = [
+            "cluster-box" # Malayalam passthrough — DO NOT build in CI (see flake.nix comment)
+            "bargman-greeter-vm" # Test VM — not a deployment target
+          ];
+          categorised = lib.mapAttrsToList
+            (name: cfg:
+              let
+                hostPlatform = cfg.config.nixpkgs.hostPlatform.system;
+                buildPlatform = cfg.config.nixpkgs.buildPlatform.system;
+              in
+              {
+                inherit name;
+                category =
+                  if hostPlatform == "x86_64-linux" then "x86"
+                  else if hostPlatform == buildPlatform then "armNative"
+                  else "armCross";
+              })
+            (lib.filterAttrs (name: _cfg: !(builtins.elem name ciExclusions)) self.nixosConfigurations);
+          select = category: map (m: m.name) (builtins.filter (m: m.category == category) categorised);
+        in
+        {
+          x86 = select "x86";
+          armNative = select "armNative";
+          armCross = select "armCross";
+        };
+
       # CI/CD Configuration
-      ci = import ./ci.nix { inherit lib; pkgs = nixpkgs; parallelism = ciParallelism; };
+      ci = import ./ci.nix { inherit lib; pkgs = nixpkgs; parallelism = ciParallelism; machines = ciMachines; };
 
       # CI Generator Scripts
-      ci-generator = import ./ci/generate-workflow.nix { inherit self lib; pkgs = nixpkgs; };
+      ci-generator = import ./ci/generate-workflow.nix { inherit self lib; pkgs = nixpkgs; ciMachines = ciMachines; };
     in
     {
       inherit topologyConfigs;

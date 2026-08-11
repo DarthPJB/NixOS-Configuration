@@ -18,19 +18,21 @@
         },
         {
           "name": "Build configuration",
-          "run": "nix build  .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
+          "run": "nix build --option builders '' .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
         }
       ],
       "strategy": {
         "fail-fast": false,
         "matrix": {
           "machine": [
+            "arm-bootstrap",
             "arm-builder",
             "beta-one"
           ]
         },
         "max-parallel": 10
-      }
+      },
+      "timeout-minutes": 360
     },
     "build-arm-native": {
       "name": "Build ARM (native aarch64)",
@@ -46,7 +48,7 @@
         },
         {
           "name": "Build configuration",
-          "run": "nix build  .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
+          "run": "nix build --option builders '' .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
         }
       ],
       "strategy": {
@@ -59,7 +61,8 @@
           ]
         },
         "max-parallel": 2
-      }
+      },
+      "timeout-minutes": 360
     },
     "build-x86": {
       "name": "Build x86_64 Configurations",
@@ -75,27 +78,28 @@
         },
         {
           "name": "Build configuration",
-          "run": "nix build  .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
+          "run": "nix build --option builders '' .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel"
         }
       ],
       "strategy": {
         "fail-fast": false,
         "matrix": {
           "machine": [
-            "terminal-zero",
-            "terminal-nx-01",
-            "cortex-alpha",
-            "local-nas",
+            "LINDA",
             "alpha-one",
             "alpha-three",
-            "LINDA",
+            "cortex-alpha",
             "gaming-host-1",
+            "local-nas",
+            "remote-builder",
             "remote-worker",
-            "remote-builder"
+            "terminal-nx-01",
+            "terminal-zero"
           ]
         },
         "max-parallel": 10
-      }
+      },
+      "timeout-minutes": 720
     },
     "deploy-prep": {
       "if": "github.event_name == 'workflow_dispatch'",
@@ -115,7 +119,7 @@
         },
         {
           "name": "Build configuration",
-          "run": "MACHINE=\"${{ github.event.inputs.machine }}\"\nARM_NATIVE=\"display-1 display-2 print-controller\"\nARM_CROSS=\"arm-builder beta-one\"\n\nif echo \"$ARM_NATIVE\" | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"\"\nelif echo \"$ARM_CROSS\" | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"\"\nelse\n  NIX_OPTS=\"\"\nfi\nnix build \"$NIX_OPTS\" \".#nixosConfigurations.$MACHINE.config.system.build.toplevel\"\n"
+          "run": "MACHINE=\"${{ github.event.inputs.machine }}\"\nARM_NATIVE=\"display-1 display-2 print-controller\"\nARM_CROSS=\"arm-bootstrap arm-builder beta-one\"\n\nif echo \"$ARM_NATIVE\" | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"--option builders ''\"\nelif echo \"$ARM_CROSS\" | grep -qw \"$MACHINE\"; then\n  NIX_OPTS=\"--option builders ''\"\nelse\n  NIX_OPTS=\"--option builders ''\"\nfi\nnix build \"$NIX_OPTS\" \".#nixosConfigurations.$MACHINE.config.system.build.toplevel\"\n"
         },
         {
           "if": "github.event.inputs.action == 'test'",
@@ -228,19 +232,20 @@
         "machine": {
           "description": "Machine to deploy",
           "options": [
-            "terminal-zero",
-            "terminal-nx-01",
-            "cortex-alpha",
-            "local-nas",
+            "LINDA",
             "alpha-one",
             "alpha-three",
-            "LINDA",
+            "cortex-alpha",
             "gaming-host-1",
-            "remote-worker",
+            "local-nas",
             "remote-builder",
+            "remote-worker",
+            "terminal-nx-01",
+            "terminal-zero",
             "display-1",
             "display-2",
             "print-controller",
+            "arm-bootstrap",
             "arm-builder",
             "beta-one"
           ],

@@ -1,11 +1,11 @@
 # GitHub Actions Workflow Generator — Wiring
 # Imports ketchup library and Bargman-specific CI data.
 # All logic lives in lib/ci_library.nix (Ketchup) and ci.nix (Secret-Sauce).
-{ self, lib, pkgs, ... }:
+{ self, lib, pkgs, ciMachines ? { }, ... }:
 
 let
   ciLib = import ../lib/ci_library.nix { inherit lib pkgs; };
-  ci = import ../ci.nix { inherit lib pkgs; };
+  ci = import ../ci.nix { inherit lib pkgs; machines = ciMachines; };
 in
 {
   # Scripts for CI management (from ketchup library)

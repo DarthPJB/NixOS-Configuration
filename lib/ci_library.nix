@@ -61,16 +61,16 @@ let
     merged;
 
   # Format nix settings as --option flags for CLI injection.
-  # Only emits options that are explicitly configured — no defaults injected.
+  # Always emits --option builders '' (Prime Directive 17).
+  # Other options only emitted when explicitly configured.
   formatNixOptions = machine: system: parallelism:
     let
       settings = resolveNixSettings machine system parallelism;
       maxJobs = settings.max-jobs or null;
       cores = settings.cores or null;
-      builders = settings.builders or null;
     in
     lib.concatStringsSep " " (lib.filter (s: s != "") [
-      (if builders != null then "--option builders ${toString builders}" else "")
+      "--option builders ''"
       (if maxJobs != null then "--option max-jobs ${toString maxJobs}" else "")
       (if cores != null then "--option cores ${toString cores}" else "")
     ]);
@@ -119,7 +119,7 @@ let
       text = ''
         set -euo pipefail
 
-        nix eval --json ${workflowAttrPath} 2>/dev/null | jq '{name, on, permissions, jobs, concurrency}' | json2yaml
+        nix eval --json ${workflowAttrPath} | jq '{name, on, permissions, jobs, concurrency}' | json2yaml
       '';
     };
 

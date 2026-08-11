@@ -3,6 +3,7 @@
 { lib
 , pkgs
 , parallelism ? { }
+, machines ? { }
 , ...
 }:
 
@@ -10,32 +11,48 @@ let
   # Import ketchup CI library for generic functions
   ciLib = import ./lib/ci_library.nix { inherit lib pkgs; };
 
-  # Machine categories for CI matrix
-  x86Machines = [
-    "terminal-zero"
-    "terminal-nx-01"
-    "cortex-alpha"
-    "local-nas"
-    "alpha-one"
-    "alpha-three"
-    "LINDA"
-    "gaming-host-1"
-    "remote-worker"
-    "remote-builder"
-  ];
+  # Machine categories for CI matrix.
+  # Derived from the flake's nixosConfigurations (single source of truth) via the
+  # `machines` parameter ({ x86, armNative, armCross }) passed from flake.nix.
+  # Falls back to these hardcoded lists when `machines` is not provided
+  # (backward compatibility for imports without the new parameter).
+  defaultMachines = {
+    x86 = [
+      "terminal-zero"
+      "terminal-nx-01"
+      "cortex-alpha"
+      "local-nas"
+      "alpha-one"
+      "alpha-three"
+      "LINDA"
+      "gaming-host-1"
+      "remote-worker"
+      "remote-builder"
+    ];
+
+    # Native aarch64 builds — evaluated on aarch64 runner
+    armNative = [
+      "display-1"
+      "display-2"
+      "print-controller"
+    ];
+
+    # Cross-compiled from x86_64 — evaluated on x86_64 runner, targets ARM
+    armCross = [
+      "arm-builder" # aarch64, buildPlatform=x86_64-linux
+      "beta-one" # armv7l, buildPlatform=x86_64-linux
+    ];
+  };
+
+  # Machine categories used by CI jobs. Derived lists take precedence when
+  # `machines` is provided; per-field fallback keeps partial attrsets working.
+  x86Machines = machines.x86 or defaultMachines.x86;
 
   # Native aarch64 builds — evaluated on aarch64 runner
-  armNativeMachines = [
-    "display-1"
-    "display-2"
-    "print-controller"
-  ];
+  armNativeMachines = machines.armNative or defaultMachines.armNative;
 
   # Cross-compiled from x86_64 — evaluated on x86_64 runner, targets ARM
-  armCrossMachines = [
-    "arm-builder" # aarch64, buildPlatform=x86_64-linux
-    "beta-one" # armv7l, buildPlatform=x86_64-linux
-  ];
+  armCrossMachines = machines.armCross or defaultMachines.armCross;
 
   # All ARM machines (for workflow_dispatch input)
   armMachines = armNativeMachines ++ armCrossMachines;
@@ -212,8 +229,8 @@ let
           name = "Build configuration";
           run = ''
             MACHINE="''${{ github.event.inputs.machine }}"
-            ARM_NATIVE="display-1 display-2 print-controller"
-            ARM_CROSS="arm-builder beta-one"
+            ARM_NATIVE="${lib.concatStringsSep " " armNativeMachines}"
+            ARM_CROSS="${lib.concatStringsSep " " armCrossMachines}"
 
             if echo "$ARM_NATIVE" | grep -qw "$MACHINE"; then
               NIX_OPTS="${armNativeNixOptions}"
