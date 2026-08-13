@@ -11,11 +11,11 @@
         "pure-nix-mcp": "pure-nix-mcp"
       },
       "locked": {
-        "lastModified": 1786649879,
-        "narHash": "sha256-ZlYuNJAz+u/XjG/788OQnSav3mXVLtpHyNcGK6FB/Lk=",
+        "lastModified": 1786652107,
+        "narHash": "sha256-xYQy8rPUc3nl3woRUtUhNxAN3ktfKr/izvQQN66R/AA=",
         "owner": "mecha-team-zero",
         "repo": "llm-core",
-        "rev": "4d82119b41d6e0a6861ccb09bad876bcb78aef93",
+        "rev": "8455047e6e536d47b7823cca8ee3470db0776bca",
         "type": "gitlab"
       },
       "original": {
@@ -1137,15 +1137,16 @@
         "nixpkgs-regression": "nixpkgs-regression_3"
       },
       "locked": {
-        "lastModified": 1786114274,
-        "narHash": "sha256-Quqthts9sCdYDCelos6cVrlxgJgkGcJNtQmWwFwvPQw=",
-        "owner": "DeterminateSystems",
+        "lastModified": 1785943348,
+        "narHash": "sha256-QXRKNiAA5CHLsZKufrhF2Um19p9Yb2H6wNNrxJNeOTc=",
+        "owner": "darthpjb",
         "repo": "nix-src",
-        "rev": "c9c272f5ab1a99fb149ab2b152bd8cd8d6fa1186",
+        "rev": "0d2935e32715db81d881378388bc38bf8939a5d5",
         "type": "github"
       },
       "original": {
-        "owner": "DeterminateSystems",
+        "owner": "darthpjb",
+        "ref": "fix/ssh-master-localcommand-protocol-leak",
         "repo": "nix-src",
         "type": "github"
       }
