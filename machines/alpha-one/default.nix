@@ -41,6 +41,7 @@
     graphics.enable = true;
     graphics.enable32Bit = true;
     nvidia = {
+      package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
       nvidiaSettings = true;
       open = false;
       modesetting.enable = false;
