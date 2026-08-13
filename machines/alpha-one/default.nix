@@ -132,6 +132,7 @@
       enable = true;
       prometheusUrl = "http://10.88.127.3:8080";
     };
+    mcp.nix-mcp.enable = true;
     providers.openrouter = {
       enable = true;
       apiKeyFile = config.secrix.system.secrets.openrouter-master-token.decrypted.path;
