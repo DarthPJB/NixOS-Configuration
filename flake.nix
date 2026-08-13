@@ -299,11 +299,11 @@
         };
       };
 
-      # CI/CD Configuration
-      ci = import ./ci.nix { inherit lib; pkgs = nixpkgs; parallelism = ciParallelism; };
+      # CI/CD Configuration — ci.nix accepts self and auto-derives machines from nixosConfigurations
+      ci = import ./ci.nix { inherit self lib; pkgs = nixpkgs; parallelism = ciParallelism; };
 
       # CI Generator Scripts
-      ci-generator = import ./ci/generate-workflow.nix { inherit self lib; pkgs = nixpkgs; };
+      ci-generator = import ./ci/generate-workflow.nix { inherit self lib; pkgs = nixpkgs; parallelism = ciParallelism; };
     in
     {
       inherit topologyConfigs;

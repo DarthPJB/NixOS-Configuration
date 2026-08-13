@@ -62,6 +62,8 @@ let
 
   # Format nix settings as --option flags for CLI injection.
   # Only emits options that are explicitly configured — no defaults injected.
+  # NOTE: --option builders '' is a LOCAL-DEV directive (Prime Directive 17).
+  # CI runners ARE the builders — injecting this flag in workflows would break builds.
   formatNixOptions = machine: system: parallelism:
     let
       settings = resolveNixSettings machine system parallelism;
