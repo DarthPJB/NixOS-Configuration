@@ -406,6 +406,7 @@
   services.opencode-fleet = {
     enable = true;
     user = "John88";
+    home = "/home/John88";
     mcp.git = {
       enable = true;
       extraArgs = [ "--repository" "/home/pokej/NixOS-Configuration" ];
