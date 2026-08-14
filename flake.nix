@@ -21,9 +21,9 @@
       url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
       inputs.nix.follows = "nix-src";
     };
-    disko = { url = "https://flakehub.com/f/nix-community/disko/1"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
+    disko = { url = "https://flakehub.com/f/nix-community/disko/1"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     secrix.url = "github:Platonic-Systems/secrix";
-    nixinate = { url = "github:Bargman-Tech/nixinate"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
+    nixinate = { url = "github:Bargman-Tech/nixinate?ref=test-new-awk"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
     nixpkgs_llm.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
@@ -188,11 +188,11 @@
             else null;
           topologyConfig = topologyConfigs.${hostname} or { };
         in
-        nixpkgs_unstable.lib.nixosSystem {
+        nixpkgs_stable.lib.nixosSystem {
           specialArgs = { inherit topologyData; };
           modules = [
-            "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-            "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
+            "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
             hardware
           ] ++ commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${hostname}
@@ -535,11 +535,11 @@
       };
 
       nixosConfigurations = {
-        beta-one = nixpkgs_unstable.lib.nixosSystem {
+        beta-one = nixpkgs_stable.lib.nixosSystem {
           specialArgs = { topologyData = null; };
           modules = [
-            "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
-            "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
+            "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
+            "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
             ./machines/beta-one/1.nix
             {
               nixpkgs.hostPlatform = "armv7l-linux";
@@ -566,11 +566,11 @@
         };
         # Generic ARM bootstrap image — reusable for ALL ARM devices
         # No WG, no device-specific config, open SSH on port 22
-        arm-bootstrap = nixpkgs_unstable.lib.nixosSystem {
+        arm-bootstrap = nixpkgs_stable.lib.nixosSystem {
           specialArgs = { topologyData = null; };
           modules = [
-            "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-            "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
+            "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
             nixos-hardware.nixosModules.raspberry-pi-4
             secrix.nixosModules.default
             ./machines/arm-bootstrap
