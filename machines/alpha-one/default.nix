@@ -41,6 +41,7 @@
     graphics.enable = true;
     graphics.enable32Bit = true;
     nvidia = {
+      package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
       nvidiaSettings = true;
       open = false;
       modesetting.enable = false;
@@ -107,6 +108,7 @@
   services.opencode-fleet = {
     enable = true;
     user = "John88";
+    home = "/home/John88";
     shipOverride = [ "voyager" ];
     mcp.git = {
       enable = true;
@@ -131,6 +133,7 @@
       enable = true;
       prometheusUrl = "http://10.88.127.3:8080";
     };
+    mcp.nix-mcp.enable = true;
     providers.openrouter = {
       enable = true;
       apiKeyFile = config.secrix.system.secrets.openrouter-master-token.decrypted.path;

@@ -3,7 +3,7 @@
     "fs.inotify.max_user_instances": 524288,
     "fs.inotify.max_user_watches": 524288,
     "kernel.kptr_restrict": 1,
-    "kernel.poweroff_cmd": "<store>/ilnr8qyjwxf0n9gi05hv6584vvd5di1r-systemd-armv7l-unknown-linux-gnueabihf-260.2/sbin/poweroff",
+    "kernel.poweroff_cmd": "<store>/8yddd47ifx5v12jwr4fi8sagzi66pv4s-systemd-armv7l-unknown-linux-gnueabihf-261/sbin/poweroff",
     "kernel.printk": 7,
     "net.core.rmem_max": null,
     "net.core.wmem_max": null,
@@ -34,7 +34,7 @@
           "path": "/boot"
         }
       ],
-      "populateCmd": "<store>/y1f13d3nr5p0wf2krp8nwfgip9jzfv6i-extlinux-conf-builder.sh -g 20 -t 5",
+      "populateCmd": "<store>/0f66mb5kwf3hc5gg1z9j9fg5j2xdnvqy-extlinux-conf-builder.sh -g 20 -t 5",
       "useGenerationDeviceTree": true
     },
     "grub": {
@@ -60,7 +60,7 @@
       "extraInstallCommands": "",
       "extraPerEntryConfig": "",
       "extraPrepareConfig": "",
-      "font": "<store>/gpck3ai3k35azbj5mcyi4xd658315y2m-grub-armv7l-unknown-linux-gnueabihf-2.12/share/grub/unicode.pf2",
+      "font": "<store>/qn0vgkflqih4w800xl50i0h2dc3mkln9-grub-armv7l-unknown-linux-gnueabihf-2.12/share/grub/unicode.pf2",
       "fontSize": null,
       "forceInstall": false,
       "forcei686": false,
@@ -75,7 +75,7 @@
         "params": []
       },
       "mirroredBoots": [],
-      "splashImage": "<store>/2y9w0mpf1d8bkdf3pyhaap5b6x6xxsf7-simple-dark-gray-bootloader-armv7l-unknown-linux-gnueabihf-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png",
+      "splashImage": "<store>/y3s1ha52jrbf8hrzm56r8nlkmsvsfqj9-simple-dark-gray-bootloader-armv7l-unknown-linux-gnueabihf-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png",
       "splashMode": "normal",
       "storePath": "/nix/store",
       "subEntryOptions": "--class nixos",
@@ -88,10 +88,6 @@
       "version": "<eval-error>",
       "zfsPackage": "<derivation:zfs-user-2.4.3-armv7l-unknown-linux-gnueabihf>",
       "zfsSupport": false
-    },
-    "gummiboot": {
-      "enable": false,
-      "timeout": 5
     },
     "initScript": {
       "enable": false
@@ -109,9 +105,8 @@
       "extraEntries": "",
       "extraInstallCommands": "",
       "force": false,
-      "forceMbr": false,
       "maxGenerations": null,
-      "package": "<derivation:limine-armv7l-unknown-linux-gnueabihf-12.3.3>",
+      "package": "<derivation:limine-armv7l-unknown-linux-gnueabihf-12.4.1>",
       "panicOnChecksumMismatch": false,
       "partitionIndex": null,
       "resolution": null,
@@ -153,7 +148,7 @@
         },
         "wallpaperStyle": "stretched",
         "wallpapers": [
-          "<store>/2y9w0mpf1d8bkdf3pyhaap5b6x6xxsf7-simple-dark-gray-bootloader-armv7l-unknown-linux-gnueabihf-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png"
+          "<store>/y3s1ha52jrbf8hrzm56r8nlkmsvsfqj9-simple-dark-gray-bootloader-armv7l-unknown-linux-gnueabihf-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png"
         ]
       },
       "validateChecksums": true
@@ -215,16 +210,16 @@
     "<derivation:nixos-generate-config>",
     "<derivation:nixos-enter>",
     "<derivation:nixos-build-vms>",
-    "<derivation:lvm2-armv7l-unknown-linux-gnueabihf-2.03.39>",
+    "<derivation:lvm2-armv7l-unknown-linux-gnueabihf-2.03.41>",
     "<derivation:dosfstools-armv7l-unknown-linux-gnueabihf-4.2>",
     "<derivation:mtools-armv7l-unknown-linux-gnueabihf-4.0.49>",
     "<derivation:e2fsprogs-armv7l-unknown-linux-gnueabihf-1.47.4>",
     "<derivation:dosfstools-armv7l-unknown-linux-gnueabihf-4.2>",
     "<derivation:bcache-tools-armv7l-unknown-linux-gnueabihf-1.1>",
-    "<derivation:systemd-armv7l-unknown-linux-gnueabihf-260.2>",
+    "<derivation:systemd-armv7l-unknown-linux-gnueabihf-261>",
     "<derivation:kmod-armv7l-unknown-linux-gnueabihf-31>",
     "<derivation:kexec-tools-armv7l-unknown-linux-gnueabihf-2.0.32>",
-    "<derivation:nix-armv7l-unknown-linux-gnueabihf-2.34.7>",
+    "<derivation:nix-armv7l-unknown-linux-gnueabihf-2.34.8>",
     "<derivation:nix-info-armv7l-unknown-linux-gnueabihf>",
     "<derivation:nix-bash-completions-armv7l-unknown-linux-gnueabihf-0.6.8>",
     "<derivation:dbus-armv7l-unknown-linux-gnueabihf-1.16.2>",
@@ -233,11 +228,11 @@
     "<derivation:nixos-firewall-tool-26.11>",
     "<derivation:dhcpcd-armv7l-unknown-linux-gnueabihf-10.3.2>",
     "<derivation:sudo-armv7l-unknown-linux-gnueabihf-1.9.17p2>",
-    "<derivation:linux-pam-armv7l-unknown-linux-gnueabihf-1.7.1>",
+    "<derivation:linux-pam-armv7l-unknown-linux-gnueabihf-1.7.2>",
     "<derivation:shadow-armv7l-unknown-linux-gnueabihf-4.19.4>",
     "<derivation:bash-interactive-armv7l-unknown-linux-gnueabihf-5.3p9>",
     "<derivation:nano-armv7l-unknown-linux-gnueabihf-9.1>",
-    "<derivation:less-armv7l-unknown-linux-gnueabihf-692>",
+    "<derivation:less-armv7l-unknown-linux-gnueabihf-704>",
     "<derivation:shadow-armv7l-unknown-linux-gnueabihf-4.19.4>",
     "<derivation:shadow-armv7l-unknown-linux-gnueabihf-4.19.4>",
     "<derivation:shadow-armv7l-unknown-linux-gnueabihf-4.19.4>",
@@ -282,7 +277,7 @@
     "<derivation:shadow-armv7l-unknown-linux-gnueabihf-4.19.4>",
     "<derivation:bind-armv7l-unknown-linux-gnueabihf-9.20.24>",
     "<derivation:hostname-hostname-debian-armv7l-unknown-linux-gnueabihf-3.25>",
-    "<derivation:iproute2-armv7l-unknown-linux-gnueabihf-7.0.0>",
+    "<derivation:iproute2-armv7l-unknown-linux-gnueabihf-7.1.0>",
     "<derivation:iputils-armv7l-unknown-linux-gnueabihf-20250605>",
     "<derivation:openssh-armv7l-unknown-linux-gnueabihf-10.3p1>",
     "<derivation:acl-armv7l-unknown-linux-gnueabihf-2.3.2>",
@@ -291,7 +286,7 @@
     "<derivation:bzip2-armv7l-unknown-linux-gnueabihf-1.0.8>",
     "<derivation:coreutils-full-armv7l-unknown-linux-gnueabihf-9.11>",
     "<derivation:cpio-armv7l-unknown-linux-gnueabihf-2.15>",
-    "<derivation:curl-armv7l-unknown-linux-gnueabihf-8.20.0>",
+    "<derivation:curl-armv7l-unknown-linux-gnueabihf-8.21.0>",
     "<derivation:diffutils-armv7l-unknown-linux-gnueabihf-3.12>",
     "<derivation:findutils-armv7l-unknown-linux-gnueabihf-4.10.0>",
     "<derivation:gawk-armv7l-unknown-linux-gnueabihf-5.4.0>",
@@ -299,25 +294,25 @@
     "<derivation:getconf-glibc-armv7l-unknown-linux-gnueabihf-2.42-67>",
     "<derivation:gnugrep-armv7l-unknown-linux-gnueabihf-3.12>",
     "<derivation:patch-armv7l-unknown-linux-gnueabihf-2.8>",
-    "<derivation:gnused-armv7l-unknown-linux-gnueabihf-4.9>",
+    "<derivation:gnused-armv7l-unknown-linux-gnueabihf-4.10>",
     "<derivation:gnutar-armv7l-unknown-linux-gnueabihf-1.35>",
     "<derivation:gzip-armv7l-unknown-linux-gnueabihf-1.14>",
     "<derivation:xz-armv7l-unknown-linux-gnueabihf-5.8.3>",
-    "<derivation:less-armv7l-unknown-linux-gnueabihf-692>",
-    "<derivation:libcap-armv7l-unknown-linux-gnueabihf-2.77>",
+    "<derivation:less-armv7l-unknown-linux-gnueabihf-704>",
+    "<derivation:libcap-armv7l-unknown-linux-gnueabihf-2.78>",
     "<derivation:ncurses-armv7l-unknown-linux-gnueabihf-6.6>",
     "<derivation:libressl-armv7l-unknown-linux-gnueabihf-4.2.1>",
     "<derivation:mkpasswd-armv7l-unknown-linux-gnueabihf-5.6.6>",
     "<derivation:procps-armv7l-unknown-linux-gnueabihf-4.0.6>",
     "<derivation:shadow-armv7l-unknown-linux-gnueabihf-4.19.4>",
     "<derivation:time-armv7l-unknown-linux-gnueabihf-1.10>",
-    "<derivation:util-linux-armv7l-unknown-linux-gnueabihf-2.42>",
-    "<derivation:which-armv7l-unknown-linux-gnueabihf-2.23>",
+    "<derivation:util-linux-armv7l-unknown-linux-gnueabihf-2.42.2>",
+    "<derivation:which-armv7l-unknown-linux-gnueabihf-2.25>",
     "<derivation:zstd-armv7l-unknown-linux-gnueabihf-1.5.7>",
     "<derivation:glibc-armv7l-unknown-linux-gnueabihf-2.42-67>",
     "<derivation:openresolv-armv7l-unknown-linux-gnueabihf-3.17.0>",
     "<derivation:glibc-locales-armv7l-unknown-linux-gnueabihf-2.42-67>",
-    "<derivation:fontconfig-armv7l-unknown-linux-gnueabihf-2.17.1>",
+    "<derivation:fontconfig-armv7l-unknown-linux-gnueabihf-2.18.1>",
     "<derivation:kbd-armv7l-unknown-linux-gnueabihf-2.9.0>"
   ],
   "networking.domain": null,
@@ -381,8 +376,8 @@
     "checkRuleset": true,
     "checkRulesetRedirects": {
       "/etc/hosts": "<derivation:hosts>",
-      "/etc/protocols": "<store>/9qxsy9yl1piffvj37n1nbk4glyjx48f5-iana-etc-20251215/etc/protocols",
-      "/etc/services": "<store>/9qxsy9yl1piffvj37n1nbk4glyjx48f5-iana-etc-20251215/etc/services"
+      "/etc/protocols": "<store>/6rj16kk3dgli5n8n7xhn2j9cicfdz0qw-iana-etc-20251215/etc/protocols",
+      "/etc/services": "<store>/6rj16kk3dgli5n8n7xhn2j9cicfdz0qw-iana-etc-20251215/etc/services"
     },
     "enable": false,
     "extraDeletions": "",
@@ -463,21 +458,15 @@
       "0.0.0.0",
       "[::0]"
     ],
-    "defaultMimeTypes": "<store>/v9iabw35vg7jrp80ny0rr7qr7zdwjni6-mailcap-armv7l-unknown-linux-gnueabihf-2.1.54/etc/nginx/mime.types",
+    "defaultMimeTypes": "<store>/50zcxshrdw1cyqh6hnm5g4734c1qvjf8-mailcap-armv7l-unknown-linux-gnueabihf-2.1.54/etc/nginx/mime.types",
     "defaultSSLListenPort": 443,
     "enable": false,
     "enableQuicBPF": false,
     "enableReload": false,
     "eventsConfig": "",
     "experimentalZstdSettings": false,
-    "gitweb": {
-      "enable": false,
-      "group": "nginx",
-      "location": "/gitweb",
-      "user": "nginx",
-      "virtualHost": "_"
-    },
     "group": "nginx",
+    "gunicornArgs": "<eval-error>",
     "httpConfig": "",
     "logError": "stderr",
     "lua": {
@@ -530,7 +519,7 @@
       "enable": false,
       "expectedTailnet": "",
       "group": "tailscale-nginx-auth",
-      "package": "<derivation:tailscale-nginx-auth-armv7l-unknown-linux-gnueabihf-1.98.5>",
+      "package": "<derivation:tailscale-nginx-auth-armv7l-unknown-linux-gnueabihf-1.98.8>",
       "socketPath": "/run/tailscale-nginx-auth/tailscale-nginx-auth.sock",
       "user": "tailscale-nginx-auth",
       "virtualHosts": []
@@ -598,21 +587,9 @@
     "authorizedKeysCommandUser": "nobody",
     "authorizedKeysFiles": [],
     "authorizedKeysInHomedir": true,
-    "banner": "<eval-error>",
-    "challengeResponseAuthentication": true,
-    "ciphers": [
-      "chacha20-poly1305@openssh.com",
-      "aes256-gcm@openssh.com",
-      "aes128-gcm@openssh.com",
-      "aes256-ctr",
-      "aes192-ctr",
-      "aes128-ctr"
-    ],
     "enable": false,
     "enableRecommendedAlgorithms": true,
     "extraConfig": "",
-    "forwardX11": false,
-    "gatewayPorts": "no",
     "generateHostKeys": false,
     "hostKeys": [
       {
@@ -625,28 +602,11 @@
         "type": "ed25519"
       }
     ],
-    "kbdInteractiveAuthentication": true,
-    "kexAlgorithms": [
-      "mlkem768x25519-sha256",
-      "sntrup761x25519-sha512",
-      "sntrup761x25519-sha512@openssh.com",
-      "curve25519-sha256",
-      "curve25519-sha256@libssh.org",
-      "diffie-hellman-group-exchange-sha256"
-    ],
     "knownHosts": {},
     "listenAddresses": [],
-    "logLevel": "INFO",
-    "macs": [
-      "hmac-sha2-512-etm@openssh.com",
-      "hmac-sha2-256-etm@openssh.com",
-      "umac-128-etm@openssh.com"
-    ],
     "moduliFile": "<eval-error>",
     "openFirewall": true,
     "package": "<derivation:openssh-armv7l-unknown-linux-gnueabihf-10.3p1>",
-    "passwordAuthentication": true,
-    "permitRootLogin": "prohibit-password",
     "ports": [
       22
     ],
@@ -692,8 +652,7 @@
     },
     "sftpFlags": [],
     "sftpServerExecutable": "<eval-error>",
-    "startWhenNeeded": false,
-    "useDns": false
+    "startWhenNeeded": false
   },
   "services.prometheus": {
     "alertmanager": {
@@ -709,7 +668,7 @@
       "logFormat": null,
       "logLevel": "warn",
       "openFirewall": false,
-      "package": "<derivation:alertmanager-armv7l-unknown-linux-gnueabihf-0.31.1>",
+      "package": "<derivation:alertmanager-armv7l-unknown-linux-gnueabihf-0.33.0>",
       "port": 9093,
       "user": "<eval-error>",
       "webExternalUrl": null
@@ -1400,7 +1359,6 @@
         "user": "kafka-exporter"
       },
       "kea": {
-        "controlSocketPaths": [],
         "enable": false,
         "extraFlags": [],
         "firewallFilter": null,
@@ -1432,7 +1390,7 @@
         "listenAddress": "0.0.0.0",
         "moonrakerApiKey": "",
         "openFirewall": false,
-        "package": "<derivation:prometheus-klipper-exporter-armv7l-unknown-linux-gnueabihf-0.15.0>",
+        "package": "<derivation:prometheus-klipper-exporter-armv7l-unknown-linux-gnueabihf-0.16.0>",
         "port": 9101,
         "user": "klipper-exporter"
       },
@@ -1682,7 +1640,6 @@
         "port": 9113,
         "scrapeUri": "http://localhost/nginx_status",
         "sslVerify": true,
-        "telemetryEndpoint": "/metrics",
         "telemetryPath": "/metrics",
         "user": "nginx-exporter",
         "warnings": []
@@ -2233,7 +2190,7 @@
         },
         "loki": {
           "interval": "2m",
-          "pass": "file:///nix/store/ljbml423jl2ak1fca1w07wh482xsl11x-unpoller-loki-default.password",
+          "pass": "file:///nix/store/ya9i5x82y19lbvdbyyq5xprqzc74r6vk-unpoller-loki-default.password",
           "tenant_id": "",
           "timeout": "10s",
           "url": "",
@@ -2259,7 +2216,7 @@
         },
         "loki": {
           "interval": "2m",
-          "pass": "file:///nix/store/ljbml423jl2ak1fca1w07wh482xsl11x-unpoller-loki-default.password",
+          "pass": "file:///nix/store/ya9i5x82y19lbvdbyyq5xprqzc74r6vk-unpoller-loki-default.password",
           "tenant_id": "",
           "timeout": "10s",
           "url": "",
@@ -2377,7 +2334,7 @@
       "scrape_timeout": null
     },
     "listenAddress": "0.0.0.0",
-    "package": "<derivation:prometheus-armv7l-unknown-linux-gnueabihf-3.12.0>",
+    "package": "<derivation:prometheus-armv7l-unknown-linux-gnueabihf-3.13.0>",
     "port": 9090,
     "pushgateway": {
       "enable": false,
@@ -2432,7 +2389,7 @@
       "domain": "<eval-error>",
       "enable": false,
       "openFirewall": true,
-      "package": "<derivation:tailscale-armv7l-unknown-linux-gnueabihf-1.98.5>",
+      "package": "<derivation:tailscale-armv7l-unknown-linux-gnueabihf-1.98.8>",
       "port": 8010,
       "stunPort": 3478,
       "verifyClients": false
@@ -2445,7 +2402,7 @@
     "extraUpFlags": [],
     "interfaceName": "tailscale0",
     "openFirewall": false,
-    "package": "<derivation:tailscale-armv7l-unknown-linux-gnueabihf-1.98.5>",
+    "package": "<derivation:tailscale-armv7l-unknown-linux-gnueabihf-1.98.8>",
     "permitCertUid": null,
     "port": 41641,
     "serve": {
@@ -2454,6 +2411,57 @@
       "services": {}
     },
     "useRoutingFeatures": "none"
+  },
+  "services.unifi-poller": {
+    "enable": false,
+    "influxdb": {
+      "db": "unifi",
+      "disable": false,
+      "interval": "30s",
+      "pass": "file:///nix/store/0a021ii62qrr5w60r2z3ypjinrrhlgdy-unpoller-influxdb-default.password",
+      "url": "http://127.0.0.1:8086",
+      "user": "unifipoller",
+      "verify_ssl": true
+    },
+    "loki": {
+      "interval": "2m",
+      "pass": "file:///nix/store/ya9i5x82y19lbvdbyyq5xprqzc74r6vk-unpoller-loki-default.password",
+      "tenant_id": "",
+      "timeout": "10s",
+      "url": "",
+      "user": "",
+      "verify_ssl": false
+    },
+    "poller": {
+      "debug": false,
+      "plugins": [],
+      "quiet": false
+    },
+    "prometheus": {
+      "disable": false,
+      "http_listen": "[::]:9130",
+      "report_errors": false
+    },
+    "unifi": {
+      "controllers": [],
+      "defaults": {
+        "hash_pii": false,
+        "pass": "file:///nix/store/48zxrh3v7bnpmyw5cyr5rldgp28zh89y-unpoller-unifi-default.password",
+        "save_alarms": false,
+        "save_anomalies": false,
+        "save_dpi": false,
+        "save_events": false,
+        "save_ids": false,
+        "save_sites": true,
+        "sites": [
+          "all"
+        ],
+        "url": "https://unifi:8443",
+        "user": "unifi",
+        "verify_ssl": true
+      },
+      "dynamic": false
+    }
   },
   "systemd.services.tailscale-udp-gro": null,
   "time.timeZone": null

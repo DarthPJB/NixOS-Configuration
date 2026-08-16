@@ -4,7 +4,7 @@
     "fs.inotify.max_user_watches": 524288,
     "kernel.kptr_restrict": 1,
     "kernel.pid_max": 4194304,
-    "kernel.poweroff_cmd": "<store>/rd05syhv5v5999907a2n1r37sgi19vpd-systemd-260.2/sbin/poweroff",
+    "kernel.poweroff_cmd": "<store>/vv5bna641lxwxm0nqgy20134y7wivsvp-systemd-260.2/sbin/poweroff",
     "kernel.printk": "7 7 7 7",
     "net.core.rmem_max": null,
     "net.core.wmem_max": null,
@@ -67,7 +67,7 @@
       "extraInstallCommands": "",
       "extraPerEntryConfig": "",
       "extraPrepareConfig": "",
-      "font": "<store>/vx3l94jmflz9nfmqngv6gp15hj7z4l0n-grub-2.12/share/grub/unicode.pf2",
+      "font": "<store>/j3j5mhgy5nbzgdri8vpw6bz093vnlspl-grub-2.12/share/grub/unicode.pf2",
       "fontSize": null,
       "forceInstall": false,
       "forcei686": false,
@@ -82,7 +82,7 @@
         "params": []
       },
       "mirroredBoots": [],
-      "splashImage": "<store>/9qhcl1sms7bxa5pcf9k4fj9wvq7fjh1r-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png",
+      "splashImage": "<store>/z6dhhmy6afwq5mlhhl7m9cjmmyxq9b43-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png",
       "splashMode": "normal",
       "storePath": "/nix/store",
       "subEntryOptions": "--class nixos",
@@ -93,12 +93,8 @@
       "useOSProber": false,
       "users": {},
       "version": "<eval-error>",
-      "zfsPackage": "<derivation:zfs-user-2.4.2>",
+      "zfsPackage": "<derivation:zfs-user-2.4.3>",
       "zfsSupport": false
-    },
-    "gummiboot": {
-      "enable": true,
-      "timeout": 5
     },
     "initScript": {
       "enable": false
@@ -115,9 +111,8 @@
       "extraConfig": "",
       "extraEntries": "",
       "force": false,
-      "forceMbr": false,
       "maxGenerations": null,
-      "package": "<derivation:limine-12.4.0>",
+      "package": "<derivation:limine-12.4.1>",
       "panicOnChecksumMismatch": false,
       "partitionIndex": null,
       "resolution": null,
@@ -159,7 +154,7 @@
         },
         "wallpaperStyle": "stretched",
         "wallpapers": [
-          "<store>/9qhcl1sms7bxa5pcf9k4fj9wvq7fjh1r-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png"
+          "<store>/z6dhhmy6afwq5mlhhl7m9cjmmyxq9b43-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png"
         ]
       },
       "validateChecksums": true
@@ -235,7 +230,7 @@
     "<derivation:neovim-0.12.4>",
     "<derivation:progress-0.17>",
     "<derivation:bind-9.20.23>",
-    "<derivation:openssl-3.6.2>",
+    "<derivation:openssl-3.6.3>",
     "<derivation:tmate-unstable-2022-08-07>",
     "<derivation:terminator-2.1.5>",
     "<derivation:terminology-1.14.0>",
@@ -260,11 +255,11 @@
     "<derivation:sdrpp-1.3.0-unstable-2026-03-24>",
     "<derivation:gnuradio-wrapped-3.10.12.0>",
     "<derivation:obsidian-1.12.7>",
-    "<derivation:vivaldi-8.0.4033.54>",
-    "<derivation:chromium-150.0.7871.114>",
-    "<derivation:brave-1.92.134>",
-    "<derivation:jq-1.8.1>",
-    "<derivation:ffmpeg-full-8.1.1>",
+    "<derivation:vivaldi-8.1.4087.48>",
+    "<derivation:chromium-150.0.7871.181>",
+    "<derivation:brave-1.92.139>",
+    "<derivation:jq-1.8.2>",
+    "<derivation:ffmpeg-full-8.1.2>",
     "<derivation:btop-1.4.7>",
     "<derivation:nano-9.1>",
     "<derivation:wget-1.25.0>",
@@ -277,7 +272,7 @@
     "<derivation:lshw-02.20>",
     "<derivation:usbutils-019>",
     "<derivation:moonlight-qt-6.1.0>",
-    "<derivation:determinate-nixd-3.21.8>",
+    "<derivation:determinate-nixd-3.21.9>",
     "<derivation:nix-build-all>",
     "<derivation:tmux-3.6a>",
     "<derivation:progress-0.17>",
@@ -300,7 +295,7 @@
     "<derivation:mtools-4.0.49>",
     "<derivation:e2fsprogs-1.47.4>",
     "<derivation:dosfstools-4.2>",
-    "<derivation:cpupower-6.18.38>",
+    "<derivation:cpupower-6.18.39>",
     "<derivation:bcache-tools-1.1>",
     "<derivation:systemd-260.2>",
     "<derivation:plymouth-26.134.222>",
@@ -322,7 +317,7 @@
     "<derivation:picom-13>",
     "<derivation:lightdm-1.32.0>",
     "<derivation:kmscon-9.3.5>",
-    "<derivation:determinate-nix-3.21.8>",
+    "<derivation:determinate-nix-3.21.9>",
     "<derivation:nix-info>",
     "<derivation:nix-bash-completions-0.6.8>",
     "<derivation:dbus-1.16.2>",
@@ -342,16 +337,16 @@
     "<derivation:xf86-input-libinput-1.5.0>",
     "<derivation:bluez-5.86>",
     "<derivation:wireplumber-0.5.14>",
-    "<derivation:pipewire-1.6.5>",
+    "<derivation:pipewire-1.6.6>",
     "<derivation:blueman-2.4.6>",
     "<derivation:accountsservice-23.13.9>",
     "<derivation:speech-dispatcher-0.12.1>",
     "<derivation:sudo-1.9.17p2>",
     "<derivation:polkit-127>",
     "<derivation:polkit-127>",
-    "<derivation:linux-pam-1.7.1>",
-    "<derivation:steam-1.0.0.87>",
-    "<derivation:steam-run-1.0.0.87>",
+    "<derivation:linux-pam-1.7.2>",
+    "<derivation:steam-1.0.0.85>",
+    "<derivation:steam-run-1.0.0.85>",
     "<derivation:shadow-4.19.4>",
     "<derivation:bash-interactive-5.3p9>",
     "<derivation:nano-9.1>",
@@ -397,14 +392,14 @@
     "<derivation:hostname-hostname-debian-3.25>",
     "<derivation:iproute2-7.0.0>",
     "<derivation:iputils-20250605>",
-    "<derivation:openssh-10.3p1>",
-    "<derivation:acl-2.3.2>",
-    "<derivation:attr-2.5.2>",
+    "<derivation:openssh-10.4p1>",
+    "<derivation:acl-2.4.0>",
+    "<derivation:attr-2.6.0>",
     "<derivation:bash-interactive-5.3p9>",
     "<derivation:bzip2-1.0.8>",
     "<derivation:coreutils-full-9.11>",
     "<derivation:cpio-2.15>",
-    "<derivation:curl-8.20.0>",
+    "<derivation:curl-8.21.0>",
     "<derivation:diffutils-3.12>",
     "<derivation:findutils-4.10.0>",
     "<derivation:gawk-5.4.0>",
@@ -412,7 +407,7 @@
     "<derivation:getconf-glibc-2.42-67>",
     "<derivation:gnugrep-3.12>",
     "<derivation:patch-2.8>",
-    "<derivation:gnused-4.9>",
+    "<derivation:gnused-4.10>",
     "<derivation:gnutar-1.35>",
     "<derivation:gzip-1.14>",
     "<derivation:xz-5.8.3>",
@@ -424,7 +419,7 @@
     "<derivation:procps-4.0.6>",
     "<derivation:shadow-4.19.4>",
     "<derivation:time-1.10>",
-    "<derivation:util-linux-2.42>",
+    "<derivation:util-linux-2.42.2>",
     "<derivation:which-2.23>",
     "<derivation:zstd-1.5.7>",
     "<derivation:glibc-2.42-67>",
@@ -651,8 +646,8 @@
     "checkRuleset": true,
     "checkRulesetRedirects": {
       "/etc/hosts": "<derivation:hosts>",
-      "/etc/protocols": "<store>/d8jrr4rj6827s0d5b9baqxrsyafqk6zd-iana-etc-20251215/etc/protocols",
-      "/etc/services": "<store>/d8jrr4rj6827s0d5b9baqxrsyafqk6zd-iana-etc-20251215/etc/services"
+      "/etc/protocols": "<store>/55k5zhs3hsxzbwp0acyh0sw8sslgcqig-iana-etc-20251215/etc/protocols",
+      "/etc/services": "<store>/55k5zhs3hsxzbwp0acyh0sw8sslgcqig-iana-etc-20251215/etc/services"
     },
     "enable": false,
     "extraDeletions": "",
@@ -773,26 +768,19 @@
       "0.0.0.0",
       "[::0]"
     ],
-    "defaultMimeTypes": "<store>/xakkd7mhg6dindq35ji8smr4j9ypwpn7-mailcap-2.1.54/etc/nginx/mime.types",
+    "defaultMimeTypes": "<store>/46d8jsib4f3adj7qv0ga8929826wlhy8-mailcap-2.1.54/etc/nginx/mime.types",
     "defaultSSLListenPort": 443,
     "enable": false,
     "enableQuicBPF": false,
     "enableReload": false,
     "eventsConfig": "",
     "experimentalZstdSettings": false,
-    "gitweb": {
-      "enable": false,
-      "group": "nginx",
-      "location": "/gitweb",
-      "user": "nginx",
-      "virtualHost": "_"
-    },
     "group": "nginx",
     "httpConfig": "",
     "logError": "stderr",
     "mapHashBucketSize": null,
     "mapHashMaxSize": null,
-    "package": "<derivation:nginx-1.30.3>",
+    "package": "<derivation:nginx-1.30.4>",
     "preStart": "",
     "prependConfig": "",
     "proxyResolveWhileRunning": false,
@@ -908,36 +896,15 @@
       "/etc/ssh/authorized_keys.d/%u"
     ],
     "authorizedKeysInHomedir": true,
-    "banner": "<eval-error>",
-    "challengeResponseAuthentication": false,
-    "ciphers": [
-      "chacha20-poly1305@openssh.com",
-      "aes256-gcm@openssh.com",
-      "aes128-gcm@openssh.com",
-      "aes256-ctr",
-      "aes192-ctr",
-      "aes128-ctr"
-    ],
     "enable": true,
     "enableRecommendedAlgorithms": true,
-    "extraConfig": "AddressFamily any\nPort 1108\nListenAddress 10.88.127.20:1108\nXAuthLocation /nix/store/xljjnnfq7fc5dcfvq6ypvqwnv12d2jx0-xauth-1.1.5/bin/xauth\nSubsystem sftp /nix/store/ww2wf5b928m0b53dp2bdifpgqqyfshvb-openssh-10.3p1/libexec/sftp-server \nAuthorizedKeysFile %h/.ssh/authorized_keys /etc/ssh/authorized_keys.d/%u\nHostKey /etc/ssh/ssh_host_ed25519_key\nMatch LocalPort 1108 User inspect Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication no\n\nMatch LocalPort 1108 User deploy Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n",
-    "forwardX11": false,
-    "gatewayPorts": "no",
+    "extraConfig": "AddressFamily any\nPort 1108\nListenAddress 10.88.127.20:1108\nXAuthLocation /nix/store/v8g0jrwj694rlh071fvmzhkwyv999k7d-xauth-1.1.5/bin/xauth\nSubsystem sftp /nix/store/hv4l15j1pzpf7qi4ci7fr9k4hfg56mj1-openssh-10.4p1/libexec/sftp-server \nAuthorizedKeysFile %h/.ssh/authorized_keys /etc/ssh/authorized_keys.d/%u\nHostKey /etc/ssh/ssh_host_ed25519_key\nMatch LocalPort 1108 User inspect Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication no\n\nMatch LocalPort 1108 User deploy Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n",
     "generateHostKeys": true,
     "hostKeys": [
       {
         "path": "/etc/ssh/ssh_host_ed25519_key",
         "type": "ed25519"
       }
-    ],
-    "kbdInteractiveAuthentication": false,
-    "kexAlgorithms": [
-      "mlkem768x25519-sha256",
-      "sntrup761x25519-sha512",
-      "sntrup761x25519-sha512@openssh.com",
-      "curve25519-sha256",
-      "curve25519-sha256@libssh.org",
-      "diffie-hellman-group-exchange-sha256"
     ],
     "knownHosts": {
       "LINDA": {
@@ -1166,17 +1133,9 @@
         "port": 1108
       }
     ],
-    "logLevel": "INFO",
-    "macs": [
-      "hmac-sha2-512-etm@openssh.com",
-      "hmac-sha2-256-etm@openssh.com",
-      "umac-128-etm@openssh.com"
-    ],
-    "moduliFile": "<store>/ww2wf5b928m0b53dp2bdifpgqqyfshvb-openssh-10.3p1/etc/ssh/moduli",
+    "moduliFile": "<store>/hv4l15j1pzpf7qi4ci7fr9k4hfg56mj1-openssh-10.4p1/etc/ssh/moduli",
     "openFirewall": true,
-    "package": "<derivation:openssh-10.3p1>",
-    "passwordAuthentication": false,
-    "permitRootLogin": "no",
+    "package": "<derivation:openssh-10.4p1>",
     "ports": [
       1108
     ],
@@ -1231,9 +1190,8 @@
       "X11Forwarding": false
     },
     "sftpFlags": [],
-    "sftpServerExecutable": "<store>/ww2wf5b928m0b53dp2bdifpgqqyfshvb-openssh-10.3p1/libexec/sftp-server",
-    "startWhenNeeded": true,
-    "useDns": false
+    "sftpServerExecutable": "<store>/hv4l15j1pzpf7qi4ci7fr9k4hfg56mj1-openssh-10.4p1/libexec/sftp-server",
+    "startWhenNeeded": true
   },
   "services.prometheus": {
     "alertmanager": {
@@ -1940,7 +1898,6 @@
         "user": "kafka-exporter"
       },
       "kea": {
-        "controlSocketPaths": [],
         "enable": false,
         "extraFlags": [],
         "firewallFilter": null,
@@ -2184,7 +2141,6 @@
         "port": 9113,
         "scrapeUri": "http://localhost/nginx_status",
         "sslVerify": true,
-        "telemetryEndpoint": "/metrics",
         "telemetryPath": "/metrics",
         "user": "nginx-exporter",
         "warnings": []
@@ -2761,7 +2717,7 @@
         },
         "loki": {
           "interval": "2m",
-          "pass": "file:///nix/store/7f6gqg68ki7i05b4n24wvsgfmaf21f47-unpoller-loki-default.password",
+          "pass": "file:///nix/store/i2cd7qzxicmdxmsagdca5gw1ql118nhj-unpoller-loki-default.password",
           "tenant_id": "",
           "timeout": "10s",
           "url": "",
@@ -2787,7 +2743,7 @@
         },
         "loki": {
           "interval": "2m",
-          "pass": "file:///nix/store/7f6gqg68ki7i05b4n24wvsgfmaf21f47-unpoller-loki-default.password",
+          "pass": "file:///nix/store/i2cd7qzxicmdxmsagdca5gw1ql118nhj-unpoller-loki-default.password",
           "tenant_id": "",
           "timeout": "10s",
           "url": "",
@@ -2965,6 +2921,57 @@
       "services": {}
     },
     "useRoutingFeatures": "none"
+  },
+  "services.unifi-poller": {
+    "enable": false,
+    "influxdb": {
+      "db": "unifi",
+      "disable": false,
+      "interval": "30s",
+      "pass": "file:///nix/store/35813biqzdgcrb0aqm562vz8vk4smfgf-unpoller-influxdb-default.password",
+      "url": "http://127.0.0.1:8086",
+      "user": "unifipoller",
+      "verify_ssl": true
+    },
+    "loki": {
+      "interval": "2m",
+      "pass": "file:///nix/store/i2cd7qzxicmdxmsagdca5gw1ql118nhj-unpoller-loki-default.password",
+      "tenant_id": "",
+      "timeout": "10s",
+      "url": "",
+      "user": "",
+      "verify_ssl": false
+    },
+    "poller": {
+      "debug": false,
+      "plugins": [],
+      "quiet": false
+    },
+    "prometheus": {
+      "disable": false,
+      "http_listen": "[::]:9130",
+      "report_errors": false
+    },
+    "unifi": {
+      "controllers": [],
+      "defaults": {
+        "hash_pii": false,
+        "pass": "file:///nix/store/8bfrhkb2z7alrcb0vrva7gk7sg0q0x6y-unpoller-unifi-default.password",
+        "save_alarms": false,
+        "save_anomalies": false,
+        "save_dpi": false,
+        "save_events": false,
+        "save_ids": false,
+        "save_sites": true,
+        "sites": [
+          "all"
+        ],
+        "url": "https://unifi:8443",
+        "user": "unifi",
+        "verify_ssl": true
+      },
+      "dynamic": false
+    }
   },
   "systemd.services.tailscale-udp-gro": null,
   "time.timeZone": "Etc/UTC"

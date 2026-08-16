@@ -91,7 +91,7 @@ in
       tokenFile = config.secrix.system.secrets.github_org_runner_token.decrypted.path;
       count = 1;
       extraLabels = [ "self-hosted" ];
-      extraEnvironment = { GIT_ASKPASS = "${gitlabAskpass}"; };
+      extraEnvironment = { GIT_ASKPASS = lib.getExe gitlabAskpass; };
       gitlabNetrcPath' = gitlabNetrcPath;
     }) //
     # hate-filled — DarthPJB/NixOS-Configuration (gitlab-aware + eval cache)
@@ -102,7 +102,7 @@ in
       count = 2;
       extraLabels = [ "self-hosted" ];
       extraEnvironment = {
-        GIT_ASKPASS = "${gitlabAskpass}";
+        GIT_ASKPASS = lib.getExe gitlabAskpass;
         # Persist eval cache and flake input cache across jobs.
         # Runner HOME is tmpfs (/run/github-runner/...) — ephemeral.
         # /nix/cache survives reboots and is on the 295GB store disk.

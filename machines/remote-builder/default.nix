@@ -19,9 +19,21 @@
     ../../users/build.nix
     ../../modules/enable-wg-topology.nix
     ../../services/nix-cache-serve.nix
+    (import ../../services/acme_server.nix { fqdn = "cache.johnbargman.net"; })
   ];
   # Nix binary cache — open port 5001 on WAN
-  networking.firewall.allowedTCPPorts = [ 5001 ];
+  # Ports 80/443 for nginx TLS termination (ACME + HTTPS cache)
+  networking.firewall.allowedTCPPorts = [ 80 443 5001 ];
+
+  # TLS termination for cache.johnbargman.net → nix-serve on localhost:5001
+  services.nginx = {
+    enable = true;
+    virtualHosts."cache.johnbargman.net" = {
+      enableACME = true;
+      forceSSL = true;
+      locations."/".proxyPass = "http://127.0.0.1:5001";
+    };
+  };
 
   # Virtual disk devices — smartctl/smartd not applicable
   services.smartd.enable = lib.mkForce false;

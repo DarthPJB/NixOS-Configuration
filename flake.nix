@@ -16,13 +16,14 @@
   inputs = {
     carmelsite.url = "git+https://gitlab.com/mecha-team-zero/carmelsite.git";
     deadnix.url = "https://flakehub.com/f/astro/deadnix/1";
+    nix-src.url = "github:darthpjb/nix-src/fix/ssh-master-localcommand-protocol-leak";
     determinate = {
       url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
-      inputs.nix.url = "github:darthpjb/nix-src/fix/ssh-master-localcommand-protocol-leak";
+      inputs.nix.follows = "nix-src";
     };
-    disko = { url = "https://flakehub.com/f/nix-community/disko/1"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
+    disko = { url = "https://flakehub.com/f/nix-community/disko/1"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     secrix.url = "github:Platonic-Systems/secrix";
-    nixinate = { url = "github:Bargman-Tech/nixinate"; inputs.nixpkgs.follows = "nixpkgs_unstable"; };
+    nixinate = { url = "github:Bargman-Tech/nixinate?ref=test-new-awk"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
     nixpkgs_llm.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
@@ -32,7 +33,7 @@
     hype-train-outlaw.url = "git+https://gitlab.com/mecha-team-zero/macha-orchestration";
     star-citizen.url = "github:LovingMelody/nix-citizen";
     xlibre-overlay.url = "git+https://codeberg.org/takagemacoed/xlibre-overlay";
-    ratty.url = "github:DarthPJB/ratty/fix/nix-module-improvements";
+    ratty.url = "github:orhun/ratty";
     ikbaeb-th = { url = "github:DarthPJB/IKBAEB-th"; };
     bargman-assets.url = "git+https://gitlab.com/mecha-team-zero/bargman-assets.git";
     denton-glasses.url = "git+https://gitlab.com/mecha-team-zero/denton-glasses.git";
@@ -44,7 +45,7 @@
     # See: https://gitlab.com/mecha-team-zero/Malayalam/blob/main/documents/architecture-passthrough.md
     malayalam.url = "git+https://gitlab.com/mecha-team-zero/Malayalam.git";
   };
-  outputs = { self, deadnix, determinate, disko, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE, malayalam }:
+  outputs = { self, deadnix, determinate, disko, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE, malayalam, nix-src }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
@@ -187,11 +188,11 @@
             else null;
           topologyConfig = topologyConfigs.${hostname} or { };
         in
-        nixpkgs_unstable.lib.nixosSystem {
+        nixpkgs_stable.lib.nixosSystem {
           specialArgs = { inherit topologyData; };
           modules = [
-            "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-            "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
+            "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
             hardware
           ] ++ commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${hostname}
@@ -534,11 +535,11 @@
       };
 
       nixosConfigurations = {
-        beta-one = nixpkgs_unstable.lib.nixosSystem {
+        beta-one = nixpkgs_stable.lib.nixosSystem {
           specialArgs = { topologyData = null; };
           modules = [
-            "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
-            "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
+            "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-armv7l-multiplatform.nix"
+            "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
             ./machines/beta-one/1.nix
             {
               nixpkgs.hostPlatform = "armv7l-linux";
@@ -565,11 +566,11 @@
         };
         # Generic ARM bootstrap image — reusable for ALL ARM devices
         # No WG, no device-specific config, open SSH on port 22
-        arm-bootstrap = nixpkgs_unstable.lib.nixosSystem {
+        arm-bootstrap = nixpkgs_stable.lib.nixosSystem {
           specialArgs = { topologyData = null; };
           modules = [
-            "${nixpkgs_unstable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
-            "${nixpkgs_unstable}/nixos/modules/profiles/minimal.nix"
+            "${nixpkgs_stable}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            "${nixpkgs_stable}/nixos/modules/profiles/minimal.nix"
             nixos-hardware.nixosModules.raspberry-pi-4
             secrix.nixosModules.default
             ./machines/arm-bootstrap
@@ -818,56 +819,37 @@
           text = ''exec deadnix --fail --no-lambda-arg --no-lambda-pattern-names "${self}"'';
         };
 
-        # Golden validation for all machines
-        # Compares serialized NixOS config against golden files at build time.
-        # This is regression testing — completely separate from topology generation.
-        golden-validation =
-          let
-            machines = builtins.attrNames self.nixosConfigurations;
-            serializer = import ./lib/serialize-config.nix { inherit lib; };
-            # Pre-compute JSON for each machine at eval time
-            # unsafeDiscardStringContext strips derivation references so builtins.toFile accepts the string
-            machineJsonFiles = lib.genAttrs machines (machine:
-              let
-                config = self.nixosConfigurations.${machine}.config;
-                json = builtins.unsafeDiscardStringContext (
-                  builtins.toJSON (serializer.serializeConfig config)
-                );
-              in
-              builtins.toFile "golden-validation-${machine}.json" json
-            );
-          in
-          nixpkgs.runCommand "golden-validation"
-            {
-              buildInputs = [ nixpkgs.jq nixpkgs.diffutils ];
-              goldenSrc = "${self}/goldens";
-            }
-            ''
-              PASS=true
-              ${lib.concatMapStringsSep "\n" (machine: ''
-                if [ -f "$goldenSrc/${machine}.json" ]; then
-                  echo "Validating ${machine}..."
-                  ${lib.getExe nixpkgs.jq} -S . < "${machineJsonFiles.${machine}}" > /tmp/current.json
-                  if ${lib.getExe' nixpkgs.diffutils "diff"} -u "$goldenSrc/${machine}.json" /tmp/current.json; then
-                    echo "  ✓ ${machine} matches golden"
-                  else
-                    echo "  ✗ ${machine} differs from golden!"
-                    PASS=false
-                  fi
-                else
-                  echo "Skipping ${machine} (no golden file)"
-                fi
-              '') machines}
-              if [ "$PASS" != "true" ]; then
-                echo ""
-                echo "Golden validation failed. If changes are intentional, update with:"
-                echo "  nix run .#dump-config -- <machine> > goldens/<machine>.json"
-                exit 1
+        golden-validation = nixpkgs.writeShellApplication {
+          name = "run-golden-validation";
+          meta.description = "Validate all machine configs against golden files";
+          runtimeInputs = [ nixpkgs.jq nixpkgs.diffutils ];
+          text = ''
+            PASS=true
+            for machine in ${lib.concatStringsSep " " (builtins.attrNames self.nixosConfigurations)}; do
+              golden="${self}/goldens/$machine.json"
+              if [ ! -f "$golden" ]; then
+                echo "Skipping $machine (no golden file)"
+                continue
               fi
+              echo "Validating $machine..."
+              current=$(nix run .#dump-config -- "$machine" | ${lib.getExe nixpkgs.jq} -S .)
+              if echo "$current" | ${lib.getExe' nixpkgs.diffutils "diff"} -u "$golden" -; then
+                echo "  ✓ $machine matches golden"
+              else
+                echo "  ✗ $machine differs from golden!"
+                PASS=false
+              fi
+            done
+            if [ "$PASS" != "true" ]; then
               echo ""
-              echo "All golden validations passed"
-              touch $out
-            '';
+              echo "Golden validation failed. If intentional, update with:"
+              echo "  nix run .#dump-config -- <machine> > goldens/<machine>.json"
+              exit 1
+            fi
+            echo ""
+            echo "All golden validations passed"
+          '';
+        };
 
         topology-coverage =
           let

@@ -406,6 +406,7 @@
   services.opencode-fleet = {
     enable = true;
     user = "John88";
+    home = "/home/John88";
     mcp.git = {
       enable = true;
       extraArgs = [ "--repository" "/home/pokej/NixOS-Configuration" ];
@@ -429,6 +430,7 @@
       enable = true;
       prometheusUrl = "http://10.88.127.3:8080";
     };
+    mcp.nix-mcp.enable = true;
     providers.openrouter = {
       enable = true;
       apiKeyFile = config.secrix.system.secrets.openrouter-master-token.decrypted.path;
