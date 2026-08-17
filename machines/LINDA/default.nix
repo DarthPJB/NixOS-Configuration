@@ -11,7 +11,6 @@
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
     ../../services/ollama.nix
-    ../../services/litellm.nix
     ../../services/gitlab-credentials.nix
     ../../modules/enable-wg-topology.nix
     ../../environments/i3wm_darthpjb.nix

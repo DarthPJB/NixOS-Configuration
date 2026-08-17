@@ -10,5 +10,23 @@
   ],
   "hostname": "alpha-three",
   "public_key_file": "secrets/public_keys/wireguard/wg_alpha-three_pub",
-  "trust": 3
+  "trust": 3,
+  "firewall": {
+    "interfaces": {
+      "wireg0": { "tcp": [ 443 ] }
+    }
+  },
+  "vhosts": {
+    "agentic-gateway.johnbargman.net": [
+      {
+        "proxy_to": "127.0.0.1:8080",
+        "proxy_headers": true,
+        "acme": {
+          "host": "johnbargman.net"
+        },
+        "forceSSL": true,
+        "listenAddresses": ["10.88.127.107"]
+      }
+    ]
+  }
 }

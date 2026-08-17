@@ -20,8 +20,45 @@
     ../../environments/code.nix
     ../../environments/neovim.nix
     ../../services/gitlab-credentials.nix
+    ../../services/litellm.nix
+    (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
   ];
   enableWgTopology.enable = true;
+  security.acme.defaults.email = "commander@johnbargman.net";
+  # Wildcard cert serves agentic-gateway.johnbargman.net via useACMEHost (topology vhost)
+  security.acme.certs."johnbargman.net".extraDomainNames = [ "*.johnbargman.net" ];
+
+  # ── Fleet LLM Gateway ──────────────────────────────────────────
+  # Backends on the WireGuard plane (10.88.127.0/24):
+  #   linda       = 10.88.127.88  (qwen fleet)
+  #   cluster-box = 10.88.127.211 (Malayalam: laguna/ornith; dlyon-operated)
+  services.litellm = {
+    environmentFileSecret = ../../secrets/litellm-env-alpha-three;
+    backends = {
+      linda = {
+        url = "http://10.88.127.88:11434";
+        models = [
+          "qwen2.5:1.5b"
+          "qwen2.5:7b"
+          "qwen2.5:7b-16k"
+          "qwen2.5-coder:7b"
+          "qwen2.5-coder:7b-16k"
+          "qwen2.5:32b-instruct-q5_K_M"
+          "qwen2.5-coder:32b-instruct-q5_K_M"
+          "qwen3-coder:30b"
+          "qwen3-coder:30b-instruct-q5_K_M"
+        ];
+      };
+      cluster-box = {
+        url = "http://10.88.127.211:11434";
+        models = [
+          "laguna-xs-2.1:q4_K_M"
+          "ornith:9b"
+          "ornith:35b"
+        ];
+      };
+    };
+  };
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;

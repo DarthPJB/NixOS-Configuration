@@ -367,10 +367,12 @@
     "<derivation:hicolor-icon-theme-0.18>",
     "<derivation:fallback-cursor-theme>",
     "<derivation:bash-interactive-5.3p9>",
+    "<derivation:shadow-4.19.4>",
     "<derivation:bash-interactive-5.3p9>",
     "<derivation:bash-interactive-5.3p9>",
     "<derivation:shadow-4.19.4>",
     "<derivation:bash-interactive-5.3p9>",
+    "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
@@ -446,6 +448,7 @@
         "allowedTCPPortRanges": [],
         "allowedTCPPorts": [
           22,
+          443,
           3103,
           3107,
           3111,
@@ -483,6 +486,7 @@
         "allowedTCPPortRanges": [],
         "allowedTCPPorts": [
           22,
+          443,
           3103,
           3107,
           3111,
@@ -584,17 +588,56 @@
     "useNetworkd": false
   },
   "security.acme": {
-    "acceptTerms": false,
+    "acceptTerms": true,
     "activationDelay": "<eval-error>",
-    "certs": {},
+    "certs": {
+      "johnbargman.net": {
+        "allowKeysForGroup": "_mkRemovedOptionModule",
+        "credentialFiles": {},
+        "csr": null,
+        "csrKey": null,
+        "directory": "/var/lib/acme/johnbargman.net",
+        "dnsPropagationCheck": false,
+        "dnsProvider": "gandiv5",
+        "dnsResolver": null,
+        "domain": "johnbargman.net",
+        "email": "commander@johnbargman.net",
+        "enableDebugLogs": true,
+        "environmentFile": "/run/system-keys/dns01",
+        "extraDomainNames": [
+          "*.johnbargman.net"
+        ],
+        "extraDomains": "_mkMergedOptionModule",
+        "extraLegoFlags": [],
+        "extraLegoRenewFlags": [],
+        "extraLegoRunFlags": [],
+        "group": "nginx",
+        "inheritDefaults": true,
+        "keyType": "ec256",
+        "listenHTTP": null,
+        "ocspMustStaple": false,
+        "postRun": "",
+        "profile": null,
+        "reloadServices": [
+          "nginx.service"
+        ],
+        "renewInterval": "daily",
+        "renewJitter": "24h",
+        "s3Bucket": null,
+        "server": "https://acme-v02.api.letsencrypt.org/directory",
+        "user": "_mkRemovedOptionModule",
+        "validMinDays": null,
+        "webroot": null
+      }
+    },
     "defaults": {
       "credentialFiles": {},
-      "dnsPropagationCheck": true,
-      "dnsProvider": null,
+      "dnsPropagationCheck": false,
+      "dnsProvider": "gandiv5",
       "dnsResolver": null,
-      "email": null,
+      "email": "commander@johnbargman.net",
       "enableDebugLogs": true,
-      "environmentFile": null,
+      "environmentFile": "/run/system-keys/dns01",
       "extraLegoFlags": [],
       "extraLegoRenewFlags": [],
       "extraLegoRunFlags": [],
@@ -650,7 +693,7 @@
     ],
     "defaultMimeTypes": "<store>/46d8jsib4f3adj7qv0ga8929826wlhy8-mailcap-2.1.54/etc/nginx/mime.types",
     "defaultSSLListenPort": 443,
-    "enable": false,
+    "enable": true,
     "enableQuicBPF": false,
     "enableReload": false,
     "eventsConfig": "",
@@ -717,7 +760,7 @@
     "uwsgiTimeout": "60s",
     "validateConfigFile": true,
     "virtualHosts": {
-      "localhost": {
+      "agentic-gateway.johnbargman.net": {
         "acmeFallbackHost": null,
         "acmeRoot": "/var/lib/acme/acme-challenge",
         "addSSL": false,
@@ -726,15 +769,35 @@
         "default": false,
         "enableACME": false,
         "extraConfig": "",
-        "forceSSL": false,
+        "forceSSL": true,
         "globalRedirect": null,
         "http2": true,
         "http3": true,
         "http3_hq": false,
         "kTLS": false,
         "listen": [],
-        "listenAddresses": [],
-        "locations": {},
+        "listenAddresses": [
+          "10.88.127.107"
+        ],
+        "locations": {
+          "/": {
+            "alias": null,
+            "basicAuth": {},
+            "basicAuthFile": null,
+            "extraConfig": "proxy_set_header Host $host;\nproxy_set_header X-Real-IP $remote_addr;\nproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\nproxy_set_header X-Forwarded-Proto $scheme;\nproxy_set_header Upgrade $http_upgrade;\nproxy_set_header Connection $connection_upgrade;\n",
+            "fastcgiParams": {},
+            "index": null,
+            "priority": 1000,
+            "proxyPass": "http://127.0.0.1:8080",
+            "proxyWebsockets": true,
+            "recommendedProxySettings": false,
+            "recommendedUwsgiSettings": false,
+            "return": null,
+            "root": null,
+            "tryFiles": null,
+            "uwsgiPass": null
+          }
+        },
         "onlySSL": false,
         "quic": false,
         "redirectCode": 301,
@@ -746,7 +809,7 @@
         "sslCertificate": "<eval-error>",
         "sslCertificateKey": "<eval-error>",
         "sslTrustedCertificate": null,
-        "useACMEHost": null
+        "useACMEHost": "johnbargman.net"
       }
     }
   },

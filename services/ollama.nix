@@ -13,6 +13,7 @@
   };
   services.ollama = {
     port = 11434;
+    host = "0.0.0.0";
     enable = true;
     # acceleration = "cuda";
     models = "/speed-storage/ollama";
