@@ -166,7 +166,7 @@ in
     #      Compared to the 30,000+ hours to brute force some key? Doesn't matter.
     #    P.S. Thx to crash giving me wiregaurd, I look forward to your pinging my IPV4 range :)
     enable = true;
-    hwRender = true; # Enable hardware rendering
+    config.hwaccel = true; # Enable hardware rendering
     # extraConfig = ''
     # font-size=16
     #xterm-resolution=1920x1080 # Set desired resolution
