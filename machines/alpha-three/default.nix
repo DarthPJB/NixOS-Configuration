@@ -33,7 +33,7 @@
   #   linda       = 10.88.127.88  (qwen fleet)
   #   cluster-box = 10.88.127.211 (Malayalam: laguna/ornith; dlyon-operated)
   services.litellm = {
-    environmentFileSecret = ../../secrets/litellm-env-alpha-three;
+    environmentFileSecret = ../../secrets/litellm-env;
     backends = {
       linda = {
         url = "http://10.88.127.88:11434";
