@@ -400,6 +400,14 @@
       mode = "0440";
     };
   };
+  secrix.system.secrets.litellm-master = {
+    encrypted.file = "${self}/secrets/litellm-master";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
 
   # OpenCode fleet configuration — full fleet with MCP servers
   services.opencode-fleet = {
@@ -445,6 +453,10 @@
     providers.xai = {
       enable = true;
       apiKeyFile = config.secrix.system.secrets.LINDA-xAI-token.decrypted.path;
+    };
+    providers.litellm = {
+      enable = true;
+      apiKeyFile = config.secrix.system.secrets.litellm-master.decrypted.path;
     };
   };
 
