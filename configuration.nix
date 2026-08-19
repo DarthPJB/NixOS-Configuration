@@ -166,7 +166,6 @@ in
     #      Compared to the 30,000+ hours to brute force some key? Doesn't matter.
     #    P.S. Thx to crash giving me wiregaurd, I look forward to your pinging my IPV4 range :)
     enable = true;
-    hwRender = true; # Enable hardware rendering
     # extraConfig = ''
     # font-size=16
     #xterm-resolution=1920x1080 # Set desired resolution
@@ -182,7 +181,13 @@ in
     #       package = pkgs.source-code-pro;
     #     }
     #   ];
-  };
+  } // (lib.optionalAttrs (lib.versionAtLeast pkgs.lib.version "26.06") {
+    # nixpkgs >= 26.11 refactored kmscon: hwRender -> config.hwaccel
+    # (fleet straddles stable 26.05 x86_64 and unstable 26.11 aarch64)
+    config.hwaccel = true; # Enable hardware rendering
+  }) // (lib.optionalAttrs (lib.versionOlder pkgs.lib.version "26.06") {
+    hwRender = true; # Enable hardware rendering
+  });
   # Required for kmscon hwaccel (unstable nixpkgs assertion)
   hardware.graphics.enable = lib.mkDefault true;
   services.getty.autologinUser = "John88";

@@ -25,6 +25,11 @@
   "hostname": "LINDA",
   "public_key_file": "secrets/public_keys/wireguard/wg_LINDA_pub",
   "trust": 3,
+  "firewall": {
+    "interfaces": {
+      "wireg0": { "tcp": [ 11434 ] }
+    }
+  },
   "backup": {
     "configFile": "../secrets/rclone-config-file",
     "user": "John88",

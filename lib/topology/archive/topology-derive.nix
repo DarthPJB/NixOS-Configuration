@@ -13,7 +13,7 @@
 # topology derives from json, the generator maps json to config attrset, nothing more
 # json is parsed, attrset is produced, the generator is pure, the module system is not involved
 #
-# See lib/topology/PRINCIPLE.md for the full repeated statement of this law.
+# See documentation/topology-principle.md for the full repeated statement of this law.
 # modules/topology-derive.nix
 # Topology-driven configuration from JSON.
 #

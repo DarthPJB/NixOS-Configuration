@@ -90,6 +90,10 @@
       "zfsPackage": "<derivation:zfs-user-2.4.3>",
       "zfsSupport": false
     },
+    "gummiboot": {
+      "enable": true,
+      "timeout": 5
+    },
     "initScript": {
       "enable": false
     },
@@ -105,6 +109,7 @@
       "extraConfig": "",
       "extraEntries": "",
       "force": false,
+      "forceMbr": false,
       "maxGenerations": null,
       "package": "<derivation:limine-12.4.1>",
       "panicOnChecksumMismatch": false,
@@ -298,7 +303,7 @@
     "<derivation:moonlight-qt-6.1.0>",
     "<derivation:determinate-nixd-3.21.9>",
     "<derivation:parsec-150-90c>",
-    "<derivation:opencode-1.18.4>",
+    "<derivation:opencode-1.18.18>",
     "<derivation:mcp-server-git-0.6.2>",
     "<derivation:mcp-server-filesystem-0.6.2>",
     "<derivation:mcp-server-time-0.6.2>",
@@ -307,6 +312,7 @@
     "<derivation:mcp-server-gitlab-0.6.2>",
     "<derivation:mcp-server-playwright-0.0.10>",
     "<derivation:prometheus-mcp-server-0.18.0>",
+    "<derivation:nix-mcp-1.2.0>",
     "<derivation:nix-build-all>",
     "<derivation:tmux-3.6a>",
     "<derivation:progress-0.17>",
@@ -436,8 +442,8 @@
     "<derivation:linux-pam-1.7.2>",
     "<derivation:xfconf-4.20.0>",
     "<derivation:thunar-4.20.9>",
-    "<derivation:steam-1.0.0.85>",
-    "<derivation:steam-run-1.0.0.85>",
+    "<derivation:steam-1.0.0.87>",
+    "<derivation:steam-run-1.0.0.87>",
     "<derivation:shadow-4.19.4>",
     "<derivation:bash-interactive-5.3p9>",
     "<derivation:nano-9.1>",
@@ -456,8 +462,8 @@
     "<derivation:nixos-manual-html>",
     "<derivation:nixos-help>",
     "<derivation:switcheroo-control-3.0>",
-    "<derivation:nvidia-x11-595.71.05>",
-    "<derivation:nvidia-settings-595.71.05>",
+    "<derivation:nvidia-x11-580.173.02>",
+    "<derivation:nvidia-settings-580.173.02>",
     "<derivation:rtl-sdr-blog-1.3.5>",
     "<derivation:sound-theme-freedesktop-0.8>",
     "<derivation:xdg-desktop-portal-1.20.4>",
@@ -756,6 +762,13 @@
     "enableReload": false,
     "eventsConfig": "",
     "experimentalZstdSettings": false,
+    "gitweb": {
+      "enable": false,
+      "group": "nginx",
+      "location": "/gitweb",
+      "user": "nginx",
+      "virtualHost": "_"
+    },
     "group": "nginx",
     "httpConfig": "",
     "logError": "stderr",
@@ -877,15 +890,36 @@
       "/etc/ssh/authorized_keys.d/%u"
     ],
     "authorizedKeysInHomedir": true,
+    "banner": "<eval-error>",
+    "challengeResponseAuthentication": false,
+    "ciphers": [
+      "chacha20-poly1305@openssh.com",
+      "aes256-gcm@openssh.com",
+      "aes128-gcm@openssh.com",
+      "aes256-ctr",
+      "aes192-ctr",
+      "aes128-ctr"
+    ],
     "enable": true,
     "enableRecommendedAlgorithms": true,
     "extraConfig": "AddressFamily any\nPort 1108\nListenAddress 10.88.127.108:1108\nListenAddress 10.88.127.108:22\nXAuthLocation /nix/store/v8g0jrwj694rlh071fvmzhkwyv999k7d-xauth-1.1.5/bin/xauth\nSubsystem sftp /nix/store/hv4l15j1pzpf7qi4ci7fr9k4hfg56mj1-openssh-10.4p1/libexec/sftp-server \nAuthorizedKeysFile %h/.ssh/authorized_keys /etc/ssh/authorized_keys.d/%u\nHostKey /etc/ssh/ssh_host_ed25519_key\nMatch LocalPort 1108 User inspect Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication no\n\nMatch LocalPort 1108 User deploy Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n\nMatch LocalPort 22 User build Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n\nMatch LocalPort 22\n  AllowUsers build\n",
+    "forwardX11": false,
+    "gatewayPorts": "no",
     "generateHostKeys": true,
     "hostKeys": [
       {
         "path": "/etc/ssh/ssh_host_ed25519_key",
         "type": "ed25519"
       }
+    ],
+    "kbdInteractiveAuthentication": false,
+    "kexAlgorithms": [
+      "mlkem768x25519-sha256",
+      "sntrup761x25519-sha512",
+      "sntrup761x25519-sha512@openssh.com",
+      "curve25519-sha256",
+      "curve25519-sha256@libssh.org",
+      "diffie-hellman-group-exchange-sha256"
     ],
     "knownHosts": {
       "LINDA": {
@@ -1107,9 +1141,17 @@
         "port": 22
       }
     ],
+    "logLevel": "INFO",
+    "macs": [
+      "hmac-sha2-512-etm@openssh.com",
+      "hmac-sha2-256-etm@openssh.com",
+      "umac-128-etm@openssh.com"
+    ],
     "moduliFile": "<store>/hv4l15j1pzpf7qi4ci7fr9k4hfg56mj1-openssh-10.4p1/etc/ssh/moduli",
     "openFirewall": true,
     "package": "<derivation:openssh-10.4p1>",
+    "passwordAuthentication": false,
+    "permitRootLogin": "no",
     "ports": [
       1108
     ],
@@ -1166,7 +1208,8 @@
     },
     "sftpFlags": [],
     "sftpServerExecutable": "<store>/hv4l15j1pzpf7qi4ci7fr9k4hfg56mj1-openssh-10.4p1/libexec/sftp-server",
-    "startWhenNeeded": true
+    "startWhenNeeded": true,
+    "useDns": false
   },
   "services.prometheus": {
     "alertmanager": {
@@ -1873,6 +1916,7 @@
         "user": "kafka-exporter"
       },
       "kea": {
+        "controlSocketPaths": [],
         "enable": false,
         "extraFlags": [],
         "firewallFilter": null,
@@ -2116,6 +2160,7 @@
         "port": 9113,
         "scrapeUri": "http://localhost/nginx_status",
         "sslVerify": true,
+        "telemetryEndpoint": "/metrics",
         "telemetryPath": "/metrics",
         "user": "nginx-exporter",
         "warnings": []
@@ -2896,57 +2941,6 @@
       "services": {}
     },
     "useRoutingFeatures": "none"
-  },
-  "services.unifi-poller": {
-    "enable": false,
-    "influxdb": {
-      "db": "unifi",
-      "disable": false,
-      "interval": "30s",
-      "pass": "file:///nix/store/35813biqzdgcrb0aqm562vz8vk4smfgf-unpoller-influxdb-default.password",
-      "url": "http://127.0.0.1:8086",
-      "user": "unifipoller",
-      "verify_ssl": true
-    },
-    "loki": {
-      "interval": "2m",
-      "pass": "file:///nix/store/i2cd7qzxicmdxmsagdca5gw1ql118nhj-unpoller-loki-default.password",
-      "tenant_id": "",
-      "timeout": "10s",
-      "url": "",
-      "user": "",
-      "verify_ssl": false
-    },
-    "poller": {
-      "debug": false,
-      "plugins": [],
-      "quiet": false
-    },
-    "prometheus": {
-      "disable": false,
-      "http_listen": "[::]:9130",
-      "report_errors": false
-    },
-    "unifi": {
-      "controllers": [],
-      "defaults": {
-        "hash_pii": false,
-        "pass": "file:///nix/store/8bfrhkb2z7alrcb0vrva7gk7sg0q0x6y-unpoller-unifi-default.password",
-        "save_alarms": false,
-        "save_anomalies": false,
-        "save_dpi": false,
-        "save_events": false,
-        "save_ids": false,
-        "save_sites": true,
-        "sites": [
-          "all"
-        ],
-        "url": "https://unifi:8443",
-        "user": "unifi",
-        "verify_ssl": true
-      },
-      "dynamic": false
-    }
   },
   "systemd.services.tailscale-udp-gro": null,
   "time.timeZone": "Etc/UTC"

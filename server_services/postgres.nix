@@ -13,8 +13,7 @@
       dataDir = "/bulk-storage/postgres/${config.services.postgresql.package.psqlSchema}";
       authentication = ''
         local all all trust
-        host all all 10.88.127.88/32 trust
-        host all all 10.88.128.88/32 trust
+        host all all 10.88.127.0/24 trust
       '';
       ensureUsers = [
         {

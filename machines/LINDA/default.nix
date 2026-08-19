@@ -11,7 +11,6 @@
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
     ../../services/ollama.nix
-    ../../services/litellm.nix
     ../../services/gitlab-credentials.nix
     ../../modules/enable-wg-topology.nix
     ../../environments/i3wm_darthpjb.nix
@@ -401,6 +400,14 @@
       mode = "0440";
     };
   };
+  secrix.system.secrets.litellm-master = {
+    encrypted.file = "${self}/secrets/litellm-master";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
 
   # OpenCode fleet configuration — full fleet with MCP servers
   services.opencode-fleet = {
@@ -446,6 +453,10 @@
     providers.xai = {
       enable = true;
       apiKeyFile = config.secrix.system.secrets.LINDA-xAI-token.decrypted.path;
+    };
+    providers.litellm = {
+      enable = true;
+      apiKeyFile = config.secrix.system.secrets.litellm-master.decrypted.path;
     };
   };
 
