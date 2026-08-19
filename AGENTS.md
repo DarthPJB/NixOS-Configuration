@@ -3,17 +3,8 @@
 **Scope:** Build philosophy, constraints, critical rules, common tasks.
 **Not scope:** Repository structure (see documentation/development-guide.md),
 project planning (see opencode/plans/), deployments (see documentation/operations-runbooks.md).
-**Topology architecture:** See lib/topology/ARCHITECTURE.md for the generator diagram and data flow.
-
-## TOPOLOGY GENERATOR PRINCIPLE (STATED IN FULL — REPEATED)
-
-No function in the entire topology toolset reads anything except JSON topology files. It is exclusive, totally isolated, and never touches a single user Nix file. The generators are pure JSON-to-attrset functions. They take JSON data and produce config attrsets. They do not reference, read, access, view, or manipulate any NixOS config, any module system state, or any user Nix file. The resulting attrsets are merged later with system config by the NixOS module system.
-
-No function in the entire topology toolset reads anything except JSON topology files. It is exclusive, totally isolated, and never touches a single user Nix file. The generators are pure JSON-to-attrset functions. They take JSON data and produce config attrsets. They do not reference, read, access, view, or manipulate any NixOS config, any module system state, or any user Nix file. The resulting attrsets are merged later with system config by the NixOS module system.
-
-No function in the entire topology toolset reads anything except JSON topology files. It is exclusive, totally isolated, and never touches a single user Nix file. The generators are pure JSON-to-attrset functions. They take JSON data and produce config attrsets. They do not reference, read, access, view, or manipulate any NixOS config, any module system state, or any user Nix file. The resulting attrsets are merged later with system config by the NixOS module system.
-
-topology derived from json to config attrset — json → config attrset, pure function, no bullshit — no module system, no hostname, no legacy paths, just json to attrset — generators read json, produce attrset, period — the json is the source of truth; the generator is a pure transformation — config attrset is produced from json by a pure function; nothing else — topology to config: json in, attrset out, no module system in the middle — a generator is a pure function: topology → attrset, no more, no less — topology derives from json, the generator maps json to config attrset, nothing more — json is parsed, attrset is produced, the generator is pure, the module system is not involved
+**Topology architecture:** See documentation/topology-architecture.md for the generator diagram and data flow.
+**Topology principle:** See documentation/topology-principle.md for the canonical architecture principle.
 
 ## Current Issues — 2026-07-26
 
@@ -121,7 +112,7 @@ source within our controlled environment unless a specific exception is granted.
 **Planned: In-House Binary Cache.** We will operate our own Nix binary cache
 server within the closed environment, dogfooding our infrastructure
 capabilities. Until the cache is operational, builds complete from source.
-No third-party cache is configured in CI. See `ci/README.md` for status.
+No third-party cache is configured in CI. See `documentation/ci-readme.md` for status.
 
 ### Golden Tests Are Ground Truth
 Golden tests represent the canonical correct state. If a golden test fails,
@@ -174,7 +165,7 @@ topologyConfigs (attrset of hostname → config attrset, merged into modules lis
 - `lib/topology/mkRegistry.nix` — Registry pipeline for topology validation
 - `lib/topology/validate.nix` — Topology validation
 - `lib/topology/utils.nix` — Shared utilities
-- `lib/topology/PRINCIPLE.md` — Canonical architecture principle
+- `documentation/topology-principle.md` — Canonical architecture principle
 - `lib/serialize-config.nix` — The one config serializer (used by `dump-config` and `checks.network-config-*`)
 - `lib/golden_coverage.nix` — Coverage tracking (audit tool)
 - `modules/enable-wg-topology.nix` — WireGuard client module (deployed on 14 machines; pending migration to genWireguard in overlord-iii)

@@ -38,15 +38,8 @@
       linda = {
         url = "http://10.88.127.88:11434";
         models = [
-          "qwen2.5:1.5b"
-          "qwen2.5:7b"
-          "qwen2.5:7b-16k"
-          "qwen2.5-coder:7b"
-          "qwen2.5-coder:7b-16k"
-          "qwen2.5:32b-instruct-q5_K_M"
+          "qwen3.8:27b-q4_K_M"
           "qwen2.5-coder:32b-instruct-q5_K_M"
-          "qwen3-coder:30b"
-          "qwen3-coder:30b-instruct-q5_K_M"
         ];
       };
       cluster-box = {

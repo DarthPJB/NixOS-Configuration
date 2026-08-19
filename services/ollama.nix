@@ -19,13 +19,8 @@
     models = "/speed-storage/ollama";
     package = unstable.ollama-cuda;
     loadModels = [
-      "qwen3-coder:30b-instruct-q5_K_M"
+      "qwen3.8:27b-q4_K_M"
       "qwen2.5-coder:32b-instruct-q5_K_M"
-      "qwen2.5:32b-instruct-q5_K_M"
-      "qwen3-coder:30b"
-      "qwen2.5-coder:7b"
-      "qwen2.5:7b"
-      "qwen2.5:1.5b"
     ];
     environmentVariables = {
       # The fragging LLM told me to set these and I did it; I question not the machine spirits

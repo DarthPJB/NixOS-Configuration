@@ -13,7 +13,7 @@
 # topology derives from json, the generator maps json to config attrset, nothing more
 # json is parsed, attrset is produced, the generator is pure, the module system is not involved
 #
-# See lib/topology/PRINCIPLE.md for the full repeated statement of this law.
+# See documentation/topology-principle.md for the full repeated statement of this law.
 # modules/enable-wg-topology.nix
 # Topology-driven WireGuard module for client machines
 # Phase M-1: Reads from JSON registry (mkRegistry.nix) instead of shared.nix

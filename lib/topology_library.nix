@@ -23,7 +23,7 @@
 # topology derives from json, the generator maps json to config attrset, nothing more
 # json is parsed, attrset is produced, the generator is pure, the module system is not involved
 #
-# See lib/topology/PRINCIPLE.md — this principle appears in full at the top of every generator, module, and doc.
+# See documentation/topology-principle.md — this principle appears in full at the top of every generator, module, and doc.
 # ═══════════════════════════════════════════════════════════════════════════════
 #
 # Usage:
