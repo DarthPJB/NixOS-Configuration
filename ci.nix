@@ -303,8 +303,13 @@ in
 {
   # Export CI configuration
   ci = {
-    # GitHub Actions workflow
+    # GitHub Actions workflow (attrset)
     github-actions = generateGitHubActions;
+
+    # GitHub Actions workflow (filtered attrset) — for JSON eval + yq pipeline
+    github-actions-filtered = {
+      inherit (generateGitHubActions) name on permissions jobs concurrency;
+    };
 
     # Machine lists for external use
     machines = {

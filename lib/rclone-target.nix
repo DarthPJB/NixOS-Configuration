@@ -141,29 +141,46 @@
         cfg.targets;
 
       mkServices = lib.concatMapAttrs
-        (name: target: {
-          "rclone-sync-${name}" = {
-            description = "Rclone ${target.mode} service for ${name}";
-            serviceConfig = {
-              Type = "oneshot";
-              ExecStartPre = lib.optionalString (target.preExec != "") (
-                pkgs.writeShellScript "rclone-sync-${name}-pre" target.preExec
-              );
-              ExecStart = mkCommand name target false;
-              User = cfg.user;
+        (name: target:
+          let
+            # Pre-transfer hook — writeShellApplication provides set -euo pipefail
+            # and ShellCheck validation. runtimeInputs cover the standard shell
+            # toolkit that operator-supplied preExec commands may rely on.
+            execStartPre = lib.optionalString (target.preExec != "") (
+              lib.getExe (pkgs.writeShellApplication {
+                name = "rclone-sync-${name}-pre";
+                runtimeInputs = [
+                  pkgs.coreutils
+                  pkgs.findutils
+                  pkgs.gnused
+                  pkgs.gnugrep
+                  pkgs.gawk
+                ];
+                text = target.preExec;
+              })
+            );
+          in
+          {
+            "rclone-sync-${name}" = {
+              description = "Rclone ${target.mode} service for ${name}";
+              serviceConfig = {
+                Type = "oneshot";
+                ExecStartPre = execStartPre;
+                ExecStart = mkCommand name target false;
+                User = cfg.user;
+              };
+              onFailure = lib.optionals (target.mode == "bisync") [ "rclone-sync-${name}-resync.service" ];
             };
-            onFailure = lib.optionals (target.mode == "bisync") [ "rclone-sync-${name}-resync.service" ];
-          };
-        } // lib.optionalAttrs (target.mode == "bisync") {
-          "rclone-sync-${name}-resync" = {
-            description = "Rclone bisync resync service for ${name}";
-            serviceConfig = {
-              Type = "oneshot";
-              ExecStart = mkCommand name target true;
-              User = cfg.user;
+          } // lib.optionalAttrs (target.mode == "bisync") {
+            "rclone-sync-${name}-resync" = {
+              description = "Rclone bisync resync service for ${name}";
+              serviceConfig = {
+                Type = "oneshot";
+                ExecStart = mkCommand name target true;
+                User = cfg.user;
+              };
             };
-          };
-        })
+          })
         cfg.targets;
 
       mkTimers = lib.mapAttrs'
