@@ -97,15 +97,15 @@ let
   # --- Serialization pipeline (generic) ---
 
   # Generate GitHub Actions workflow YAML from Nix evaluation.
-  # Uses lib.generators.toYAML (Nix-native) — no Python or jq needed.
-  # The YAML attribute is produced by ci.nix (ci.ci.github-actions-yaml).
-  generateWorkflowScript = { workflowAttrPath ? ".#ci.ci.github-actions-yaml" }:
+  # Uses Nix for field filtering, yq for JSON → YAML conversion.
+  # The filtered attrset is produced by ci.nix (ci.ci.github-actions-filtered).
+  generateWorkflowScript = { workflowAttrPath ? ".#ci.ci.github-actions-filtered" }:
     pkgs.writeShellApplication {
       name = "generate-ci-workflow";
-      runtimeInputs = [ pkgs.nix ];
+      runtimeInputs = [ pkgs.nix pkgs.yq ];
       text = ''
         set -euo pipefail
-        nix eval --raw ${workflowAttrPath} 2>/dev/null
+        nix eval --json ${workflowAttrPath} 2>/dev/null | ${lib.getExe pkgs.yq} -y --indentless-lists .
       '';
     };
 

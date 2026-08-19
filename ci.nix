@@ -306,8 +306,8 @@ in
     # GitHub Actions workflow (attrset)
     github-actions = generateGitHubActions;
 
-    # GitHub Actions workflow (YAML string) — for direct file output
-    github-actions-yaml = lib.generators.toYAML { } {
+    # GitHub Actions workflow (filtered attrset) — for JSON eval + yq pipeline
+    github-actions-filtered = {
       inherit (generateGitHubActions) name on permissions jobs concurrency;
     };
 
