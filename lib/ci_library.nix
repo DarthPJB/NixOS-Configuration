@@ -96,32 +96,16 @@ let
 
   # --- Serialization pipeline (generic) ---
 
-  # Python script for JSON to YAML conversion via PyYAML.
-  json2yaml = pkgs.writeScriptBin "json2yaml" ''
-    #!${pkgs.python3}/bin/python3
-    import sys
-    import json
-    sys.path.append("${pkgs.python3Packages.pyyaml}/${pkgs.python3.sitePackages}")
-    import yaml
-
-    data = json.load(sys.stdin)
-    print(yaml.dump(data, default_flow_style=False, sort_keys=True))
-  '';
-
   # Generate GitHub Actions workflow YAML from Nix evaluation.
-  # Parameterized to allow different workflow attribute paths.
-  generateWorkflowScript = { workflowAttrPath ? ".#ci.ci.github-actions" }:
+  # Uses lib.generators.toYAML (Nix-native) — no Python or jq needed.
+  # The YAML attribute is produced by ci.nix (ci.ci.github-actions-yaml).
+  generateWorkflowScript = { workflowAttrPath ? ".#ci.ci.github-actions-yaml" }:
     pkgs.writeShellApplication {
       name = "generate-ci-workflow";
-      runtimeInputs = [
-        pkgs.nix
-        pkgs.jq
-        json2yaml
-      ];
+      runtimeInputs = [ pkgs.nix ];
       text = ''
         set -euo pipefail
-
-        nix eval --json ${workflowAttrPath} 2>/dev/null | jq '{name, on, permissions, jobs, concurrency}' | json2yaml
+        nix eval --raw ${workflowAttrPath} 2>/dev/null
       '';
     };
 
@@ -181,5 +165,5 @@ in
   inherit generateGitHubActions;
 
   # Serialization pipeline
-  inherit json2yaml generateWorkflowScript validateWorkflowScript;
+  inherit generateWorkflowScript validateWorkflowScript;
 }

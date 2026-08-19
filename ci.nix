@@ -303,8 +303,13 @@ in
 {
   # Export CI configuration
   ci = {
-    # GitHub Actions workflow
+    # GitHub Actions workflow (attrset)
     github-actions = generateGitHubActions;
+
+    # GitHub Actions workflow (YAML string) — for direct file output
+    github-actions-yaml = lib.generators.toYAML { } {
+      inherit (generateGitHubActions) name on permissions jobs concurrency;
+    };
 
     # Machine lists for external use
     machines = {
