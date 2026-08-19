@@ -11,11 +11,11 @@
         "pure-nix-mcp": "pure-nix-mcp"
       },
       "locked": {
-        "lastModified": 1787012664,
-        "narHash": "sha256-y10xtjRfmIjEhZ8GDrAZYtKRSyvREmbdVNaED8Bidtw=",
+        "lastModified": 1787120594,
+        "narHash": "sha256-Wp6TLITAnoYYFFLt1t53ncHMVNMa1yt8qlyPplDmoS8=",
         "owner": "mecha-team-zero",
         "repo": "llm-core",
-        "rev": "03ebb0fd86b816a9c1acf35b898c3ebb21f5916a",
+        "rev": "1ef313aae1c240b74b04fac693c1c3684044259c",
         "type": "gitlab"
       },
       "original": {
@@ -1912,11 +1912,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1784623450,
-        "narHash": "sha256-1XcePqMB4XXK6KLWe04H9oZ2vpbi20k5zw2bID/Nfes=",
+        "lastModified": 1786607522,
+        "narHash": "sha256-Che3soX0JLRzIWTimB3xBC3qBT9r8fK4c+BtyNgBqKg=",
         "owner": "Bargman-tech",
         "repo": "opencode-flake",
-        "rev": "024f4a9c4afbb79c22230dace813571fb3cf7dc0",
+        "rev": "d640e99dd423c1579f18b3772fb6b96b6aedef9d",
         "type": "github"
       },
       "original": {
@@ -2021,11 +2021,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1787012619,
-        "narHash": "sha256-fC0pphvBAlEx0mxOefhcTAbwoymG9ymoY1JiohNZ7mk=",
+        "lastModified": 1787120371,
+        "narHash": "sha256-Td5KJNQXckM9GwGptMf7QiIDFef1+AO3YHXl2Xlzp0g=",
         "owner": "mecha-team-zero",
         "repo": "pure-nix-mcp",
-        "rev": "92ffbf45eef99b5ed4ba70db12cebda6c41647f3",
+        "rev": "fe1a2499c9da7509d4a0638fe92aae4048c7ccd8",
         "type": "gitlab"
       },
       "original": {
