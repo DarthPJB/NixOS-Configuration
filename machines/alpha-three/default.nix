@@ -121,6 +121,14 @@
       mode = "0440";
     };
   };
+  secrix.system.secrets.litellm-master = {
+    encrypted.file = "${self}/secrets/litellm-master";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
 
   # OpenCode fleet configuration — full fleet with MCP servers
   services.opencode-fleet = {
@@ -162,6 +170,10 @@
     providers.xiaomi-token-plan-sgp = {
       enable = true;
       apiKeyFile = config.secrix.system.secrets.mimo-token-plan-ai-key.decrypted.path;
+    };
+    providers.litellm = {
+      enable = true;
+      apiKeyFile = config.secrix.system.secrets.litellm-master.decrypted.path;
     };
   };
 }

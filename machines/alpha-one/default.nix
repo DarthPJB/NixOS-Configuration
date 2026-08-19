@@ -103,6 +103,14 @@
       mode = "0440";
     };
   };
+  secrix.system.secrets.litellm-master = {
+    encrypted.file = "${self}/secrets/litellm-master";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
 
   # OpenCode fleet — Voyager only (client machine) with full provider and MCP config
   services.opencode-fleet = {
@@ -149,6 +157,10 @@
     providers.xai = {
       enable = true;
       apiKeyFile = config.secrix.system.secrets.general-xai-key.decrypted.path;
+    };
+    providers.litellm = {
+      enable = true;
+      apiKeyFile = config.secrix.system.secrets.litellm-master.decrypted.path;
     };
   };
 }
