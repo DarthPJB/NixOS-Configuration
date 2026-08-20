@@ -1,7 +1,7 @@
 { config
 , lib
 , pkgs
-, unstable
+, pkgs_llm
 , self
 , ...
 }:
@@ -17,7 +17,7 @@
     enable = true;
     # acceleration = "cuda";
     models = "/speed-storage/ollama";
-    package = unstable.ollama-cuda;
+    package = pkgs_llm.ollama-cuda;
     loadModels = [
       "qwen3.8:27b-q4_K_M"
       "qwen2.5-coder:32b-instruct-q5_K_M"
