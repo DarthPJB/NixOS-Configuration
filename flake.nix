@@ -170,6 +170,7 @@
               _module.args = globalArgs // {
                 inherit hostname;
                 unstable = import nixpkgs_unstable { localSystem = "x86_64-linux"; config.allowUnfree = true; };
+                pkgs_llm = import nixpkgs_llm { localSystem = "x86_64-linux"; config.allowUnfree = true; };
                 nixinate = {
                   inherit host sshUser buildOn;
                   port = sshPort;
