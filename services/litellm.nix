@@ -45,7 +45,7 @@
             (m: {
               model_name = "${name}/${m}";
               litellm_params = {
-                model = "ollama/${m}";
+                model = "ollama_chat/${m}";
                 api_base = cfg.url;
               } // lib.optionalAttrs (cfg.additional_drop_params != [ ]) {
                 additional_drop_params = cfg.additional_drop_params;
