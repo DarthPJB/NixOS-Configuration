@@ -116,7 +116,7 @@
   services.opencode-fleet = {
     enable = true;
     user = "John88";
-    home = "/home/John88";
+    home = "/home/pokej";
     shipOverride = [ "voyager" ];
     mcp.git = {
       enable = true;
