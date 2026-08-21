@@ -94,6 +94,10 @@
       "zfsPackage": "<derivation:zfs-user-2.4.3>",
       "zfsSupport": true
     },
+    "gummiboot": {
+      "enable": true,
+      "timeout": 5
+    },
     "initScript": {
       "enable": false
     },
@@ -109,6 +113,7 @@
       "extraConfig": "",
       "extraEntries": "",
       "force": false,
+      "forceMbr": false,
       "maxGenerations": null,
       "package": "<derivation:limine-12.4.1>",
       "panicOnChecksumMismatch": false,
@@ -660,6 +665,13 @@
     "enableReload": false,
     "eventsConfig": "",
     "experimentalZstdSettings": false,
+    "gitweb": {
+      "enable": false,
+      "group": "nginx",
+      "location": "/gitweb",
+      "user": "nginx",
+      "virtualHost": "_"
+    },
     "group": "nginx",
     "httpConfig": "",
     "logError": "stderr",
@@ -858,15 +870,36 @@
       "/etc/ssh/authorized_keys.d/%u"
     ],
     "authorizedKeysInHomedir": true,
+    "banner": "<eval-error>",
+    "challengeResponseAuthentication": false,
+    "ciphers": [
+      "chacha20-poly1305@openssh.com",
+      "aes256-gcm@openssh.com",
+      "aes128-gcm@openssh.com",
+      "aes256-ctr",
+      "aes192-ctr",
+      "aes128-ctr"
+    ],
     "enable": true,
     "enableRecommendedAlgorithms": true,
     "extraConfig": "AddressFamily any\nPort 1108\nListenAddress 10.88.127.3:1108\nListenAddress 10.88.127.3:22\nSubsystem sftp /nix/store/hv4l15j1pzpf7qi4ci7fr9k4hfg56mj1-openssh-10.4p1/libexec/sftp-server \nAuthorizedKeysFile %h/.ssh/authorized_keys /etc/ssh/authorized_keys.d/%u\nHostKey /etc/ssh/ssh_host_ed25519_key\n# Only this block applies to connections on port 22\n    Match LocalPort 22\n      # Allow only git from the VPN subnet\n      AllowUsers git@10.88.127.0/24\n\n      # Explicitly reinforce (optional but clearer)\n      PermitRootLogin no\n      PasswordAuthentication no\n\nMatch LocalPort 1108 User inspect Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication no\n\nMatch LocalPort 1108 User deploy Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n",
+    "forwardX11": false,
+    "gatewayPorts": "no",
     "generateHostKeys": true,
     "hostKeys": [
       {
         "path": "/etc/ssh/ssh_host_ed25519_key",
         "type": "ed25519"
       }
+    ],
+    "kbdInteractiveAuthentication": false,
+    "kexAlgorithms": [
+      "mlkem768x25519-sha256",
+      "sntrup761x25519-sha512",
+      "sntrup761x25519-sha512@openssh.com",
+      "curve25519-sha256",
+      "curve25519-sha256@libssh.org",
+      "diffie-hellman-group-exchange-sha256"
     ],
     "knownHosts": {
       "LINDA": {
@@ -1088,9 +1121,17 @@
         "port": 22
       }
     ],
+    "logLevel": "INFO",
+    "macs": [
+      "hmac-sha2-512-etm@openssh.com",
+      "hmac-sha2-256-etm@openssh.com",
+      "umac-128-etm@openssh.com"
+    ],
     "moduliFile": "<store>/hv4l15j1pzpf7qi4ci7fr9k4hfg56mj1-openssh-10.4p1/etc/ssh/moduli",
     "openFirewall": true,
     "package": "<derivation:openssh-10.4p1>",
+    "passwordAuthentication": false,
+    "permitRootLogin": "no",
     "ports": [
       1108
     ],
@@ -1146,7 +1187,8 @@
     },
     "sftpFlags": [],
     "sftpServerExecutable": "<store>/hv4l15j1pzpf7qi4ci7fr9k4hfg56mj1-openssh-10.4p1/libexec/sftp-server",
-    "startWhenNeeded": true
+    "startWhenNeeded": true,
+    "useDns": false
   },
   "services.prometheus": {
     "alertmanager": {
@@ -1853,6 +1895,7 @@
         "user": "kafka-exporter"
       },
       "kea": {
+        "controlSocketPaths": [],
         "enable": false,
         "extraFlags": [],
         "firewallFilter": null,
@@ -2096,6 +2139,7 @@
         "port": 9113,
         "scrapeUri": "http://localhost/nginx_status",
         "sslVerify": true,
+        "telemetryEndpoint": "/metrics",
         "telemetryPath": "/metrics",
         "user": "nginx-exporter",
         "warnings": []
@@ -3469,6 +3513,311 @@
         "tls_config": null,
         "triton_sd_configs": null,
         "uyuni_sd_configs": null
+      },
+      {
+        "authorization": null,
+        "azure_sd_configs": null,
+        "basic_auth": null,
+        "bearer_token": null,
+        "bearer_token_file": null,
+        "body_size_limit": null,
+        "consul_sd_configs": null,
+        "digitalocean_sd_configs": null,
+        "dns_sd_configs": null,
+        "docker_sd_configs": null,
+        "dockerswarm_sd_configs": null,
+        "ec2_sd_configs": null,
+        "eureka_sd_configs": null,
+        "fallback_scrape_protocol": null,
+        "file_sd_configs": null,
+        "gce_sd_configs": null,
+        "hetzner_sd_configs": null,
+        "honor_labels": null,
+        "honor_timestamps": null,
+        "http_sd_configs": null,
+        "job_name": "malayalam-node",
+        "kubernetes_sd_configs": null,
+        "kuma_sd_configs": null,
+        "label_limit": null,
+        "label_name_length_limit": null,
+        "label_value_length_limit": null,
+        "lightsail_sd_configs": null,
+        "linode_sd_configs": null,
+        "marathon_sd_configs": null,
+        "metric_relabel_configs": null,
+        "metrics_path": null,
+        "nerve_sd_configs": null,
+        "openstack_sd_configs": null,
+        "params": null,
+        "proxy_url": null,
+        "puppetdb_sd_configs": null,
+        "relabel_configs": null,
+        "sample_limit": null,
+        "scaleway_sd_configs": null,
+        "scheme": null,
+        "scrape_interval": "30s",
+        "scrape_protocols": null,
+        "scrape_timeout": null,
+        "serverset_sd_configs": null,
+        "static_configs": [
+          {
+            "labels": {
+              "hostname": "cluster-box",
+              "role": "cuda-inference"
+            },
+            "targets": [
+              "10.88.127.211:3100"
+            ]
+          }
+        ],
+        "target_limit": null,
+        "tls_config": null,
+        "triton_sd_configs": null,
+        "uyuni_sd_configs": null
+      },
+      {
+        "authorization": null,
+        "azure_sd_configs": null,
+        "basic_auth": null,
+        "bearer_token": null,
+        "bearer_token_file": null,
+        "body_size_limit": null,
+        "consul_sd_configs": null,
+        "digitalocean_sd_configs": null,
+        "dns_sd_configs": null,
+        "docker_sd_configs": null,
+        "dockerswarm_sd_configs": null,
+        "ec2_sd_configs": null,
+        "eureka_sd_configs": null,
+        "fallback_scrape_protocol": null,
+        "file_sd_configs": null,
+        "gce_sd_configs": null,
+        "hetzner_sd_configs": null,
+        "honor_labels": null,
+        "honor_timestamps": null,
+        "http_sd_configs": null,
+        "job_name": "malayalam-nvidia",
+        "kubernetes_sd_configs": null,
+        "kuma_sd_configs": null,
+        "label_limit": null,
+        "label_name_length_limit": null,
+        "label_value_length_limit": null,
+        "lightsail_sd_configs": null,
+        "linode_sd_configs": null,
+        "marathon_sd_configs": null,
+        "metric_relabel_configs": null,
+        "metrics_path": null,
+        "nerve_sd_configs": null,
+        "openstack_sd_configs": null,
+        "params": null,
+        "proxy_url": null,
+        "puppetdb_sd_configs": null,
+        "relabel_configs": null,
+        "sample_limit": null,
+        "scaleway_sd_configs": null,
+        "scheme": null,
+        "scrape_interval": "10s",
+        "scrape_protocols": null,
+        "scrape_timeout": null,
+        "serverset_sd_configs": null,
+        "static_configs": [
+          {
+            "labels": {
+              "hostname": "cluster-box",
+              "role": "cuda-inference"
+            },
+            "targets": [
+              "10.88.127.211:3103"
+            ]
+          }
+        ],
+        "target_limit": null,
+        "tls_config": null,
+        "triton_sd_configs": null,
+        "uyuni_sd_configs": null
+      },
+      {
+        "authorization": null,
+        "azure_sd_configs": null,
+        "basic_auth": null,
+        "bearer_token": null,
+        "bearer_token_file": null,
+        "body_size_limit": null,
+        "consul_sd_configs": null,
+        "digitalocean_sd_configs": null,
+        "dns_sd_configs": null,
+        "docker_sd_configs": null,
+        "dockerswarm_sd_configs": null,
+        "ec2_sd_configs": null,
+        "eureka_sd_configs": null,
+        "fallback_scrape_protocol": null,
+        "file_sd_configs": null,
+        "gce_sd_configs": null,
+        "hetzner_sd_configs": null,
+        "honor_labels": null,
+        "honor_timestamps": null,
+        "http_sd_configs": null,
+        "job_name": "hyperhyper-node",
+        "kubernetes_sd_configs": null,
+        "kuma_sd_configs": null,
+        "label_limit": null,
+        "label_name_length_limit": null,
+        "label_value_length_limit": null,
+        "lightsail_sd_configs": null,
+        "linode_sd_configs": null,
+        "marathon_sd_configs": null,
+        "metric_relabel_configs": null,
+        "metrics_path": null,
+        "nerve_sd_configs": null,
+        "openstack_sd_configs": null,
+        "params": null,
+        "proxy_url": null,
+        "puppetdb_sd_configs": null,
+        "relabel_configs": null,
+        "sample_limit": null,
+        "scaleway_sd_configs": null,
+        "scheme": null,
+        "scrape_interval": "30s",
+        "scrape_protocols": null,
+        "scrape_timeout": null,
+        "serverset_sd_configs": null,
+        "static_configs": [
+          {
+            "labels": {
+              "hostname": "hyperhyper",
+              "role": "ci-builder"
+            },
+            "targets": [
+              "100.107.101.14:9100"
+            ]
+          }
+        ],
+        "target_limit": null,
+        "tls_config": null,
+        "triton_sd_configs": null,
+        "uyuni_sd_configs": null
+      },
+      {
+        "authorization": null,
+        "azure_sd_configs": null,
+        "basic_auth": null,
+        "bearer_token": null,
+        "bearer_token_file": null,
+        "body_size_limit": null,
+        "consul_sd_configs": null,
+        "digitalocean_sd_configs": null,
+        "dns_sd_configs": null,
+        "docker_sd_configs": null,
+        "dockerswarm_sd_configs": null,
+        "ec2_sd_configs": null,
+        "eureka_sd_configs": null,
+        "fallback_scrape_protocol": null,
+        "file_sd_configs": null,
+        "gce_sd_configs": null,
+        "hetzner_sd_configs": null,
+        "honor_labels": null,
+        "honor_timestamps": null,
+        "http_sd_configs": null,
+        "job_name": "hyperhyper-systemd",
+        "kubernetes_sd_configs": null,
+        "kuma_sd_configs": null,
+        "label_limit": null,
+        "label_name_length_limit": null,
+        "label_value_length_limit": null,
+        "lightsail_sd_configs": null,
+        "linode_sd_configs": null,
+        "marathon_sd_configs": null,
+        "metric_relabel_configs": null,
+        "metrics_path": null,
+        "nerve_sd_configs": null,
+        "openstack_sd_configs": null,
+        "params": null,
+        "proxy_url": null,
+        "puppetdb_sd_configs": null,
+        "relabel_configs": null,
+        "sample_limit": null,
+        "scaleway_sd_configs": null,
+        "scheme": null,
+        "scrape_interval": "15s",
+        "scrape_protocols": null,
+        "scrape_timeout": null,
+        "serverset_sd_configs": null,
+        "static_configs": [
+          {
+            "labels": {
+              "hostname": "hyperhyper",
+              "role": "ci-builder"
+            },
+            "targets": [
+              "100.107.101.14:9558"
+            ]
+          }
+        ],
+        "target_limit": null,
+        "tls_config": null,
+        "triton_sd_configs": null,
+        "uyuni_sd_configs": null
+      },
+      {
+        "authorization": null,
+        "azure_sd_configs": null,
+        "basic_auth": null,
+        "bearer_token": null,
+        "bearer_token_file": null,
+        "body_size_limit": null,
+        "consul_sd_configs": null,
+        "digitalocean_sd_configs": null,
+        "dns_sd_configs": null,
+        "docker_sd_configs": null,
+        "dockerswarm_sd_configs": null,
+        "ec2_sd_configs": null,
+        "eureka_sd_configs": null,
+        "fallback_scrape_protocol": null,
+        "file_sd_configs": null,
+        "gce_sd_configs": null,
+        "hetzner_sd_configs": null,
+        "honor_labels": null,
+        "honor_timestamps": null,
+        "http_sd_configs": null,
+        "job_name": "hyperhyper-zfs",
+        "kubernetes_sd_configs": null,
+        "kuma_sd_configs": null,
+        "label_limit": null,
+        "label_name_length_limit": null,
+        "label_value_length_limit": null,
+        "lightsail_sd_configs": null,
+        "linode_sd_configs": null,
+        "marathon_sd_configs": null,
+        "metric_relabel_configs": null,
+        "metrics_path": null,
+        "nerve_sd_configs": null,
+        "openstack_sd_configs": null,
+        "params": null,
+        "proxy_url": null,
+        "puppetdb_sd_configs": null,
+        "relabel_configs": null,
+        "sample_limit": null,
+        "scaleway_sd_configs": null,
+        "scheme": null,
+        "scrape_interval": "30s",
+        "scrape_protocols": null,
+        "scrape_timeout": null,
+        "serverset_sd_configs": null,
+        "static_configs": [
+          {
+            "labels": {
+              "hostname": "hyperhyper",
+              "role": "ci-builder"
+            },
+            "targets": [
+              "100.107.101.14:9134"
+            ]
+          }
+        ],
+        "target_limit": null,
+        "tls_config": null,
+        "triton_sd_configs": null,
+        "uyuni_sd_configs": null
       }
     ],
     "stateDir": "prometheus2",
@@ -3514,57 +3863,6 @@
       "services": {}
     },
     "useRoutingFeatures": "none"
-  },
-  "services.unifi-poller": {
-    "enable": false,
-    "influxdb": {
-      "db": "unifi",
-      "disable": false,
-      "interval": "30s",
-      "pass": "file:///nix/store/35813biqzdgcrb0aqm562vz8vk4smfgf-unpoller-influxdb-default.password",
-      "url": "http://127.0.0.1:8086",
-      "user": "unifipoller",
-      "verify_ssl": true
-    },
-    "loki": {
-      "interval": "2m",
-      "pass": "file:///nix/store/i2cd7qzxicmdxmsagdca5gw1ql118nhj-unpoller-loki-default.password",
-      "tenant_id": "",
-      "timeout": "10s",
-      "url": "",
-      "user": "",
-      "verify_ssl": false
-    },
-    "poller": {
-      "debug": false,
-      "plugins": [],
-      "quiet": false
-    },
-    "prometheus": {
-      "disable": false,
-      "http_listen": "[::]:9130",
-      "report_errors": false
-    },
-    "unifi": {
-      "controllers": [],
-      "defaults": {
-        "hash_pii": false,
-        "pass": "file:///nix/store/8bfrhkb2z7alrcb0vrva7gk7sg0q0x6y-unpoller-unifi-default.password",
-        "save_alarms": false,
-        "save_anomalies": false,
-        "save_dpi": false,
-        "save_events": false,
-        "save_ids": false,
-        "save_sites": true,
-        "sites": [
-          "all"
-        ],
-        "url": "https://unifi:8443",
-        "user": "unifi",
-        "verify_ssl": true
-      },
-      "dynamic": false
-    }
   },
   "systemd.services.tailscale-udp-gro": null,
   "time.timeZone": "Etc/UTC"
