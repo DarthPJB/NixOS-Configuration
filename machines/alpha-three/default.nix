@@ -41,6 +41,7 @@
           "qwen3.8:27b-q4_K_M"
           "qwen2.5-coder:32b-instruct-q5_K_M"
         ];
+        additional_drop_params = [ "reasoningSummary" "reasoning_effort" ];
       };
       cluster-box = {
         url = "http://10.88.127.211:11434";
@@ -52,6 +53,16 @@
       };
     };
   };
+
+  # Override nginx vhost to add extended timeouts for local LLMs
+  # Local models (27B+) can take 1-3 minutes per request
+  services.nginx.virtualHosts."agentic-gateway.johnbargman.net".locations."/".extraConfig = ''
+    proxy_read_timeout 1200s;
+    proxy_connect_timeout 10s;
+    proxy_send_timeout 1200s;
+    proxy_socket_keepalive on;
+  '';
+
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;

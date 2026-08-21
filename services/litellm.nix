@@ -14,6 +14,11 @@
             default = [ ];
             description = "Model tags served by this backend; routed as <name>/<model>";
           };
+          additional_drop_params = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            description = "Parameters to drop from requests to this backend (e.g., reasoningSummary)";
+          };
         };
       }
     );
@@ -42,6 +47,8 @@
               litellm_params = {
                 model = "ollama/${m}";
                 api_base = cfg.url;
+              } // lib.optionalAttrs (cfg.additional_drop_params != [ ]) {
+                additional_drop_params = cfg.additional_drop_params;
               };
             })
             cfg.models)
