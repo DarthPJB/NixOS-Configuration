@@ -21,6 +21,7 @@
     loadModels = [
       "qwen3.8:27b-q4_K_M"
       "qwen2.5-coder:32b-instruct-q5_K_M"
+      "laguna-xs-2.1:q4_K_M"
     ];
     environmentVariables = {
       # The fragging LLM told me to set these and I did it; I question not the machine spirits
