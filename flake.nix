@@ -142,7 +142,7 @@
           ];
         }
       ];
-      mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108, images ? { } }:
+      mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108, images ? { }, debug ? false }:
         let
           topologyPath = ./topology/${hostname}.json;
           topologyData =
@@ -172,7 +172,7 @@
                 unstable = import nixpkgs_unstable { localSystem = "x86_64-linux"; config.allowUnfree = true; };
                 pkgs_llm = import nixpkgs_llm { localSystem = "x86_64-linux"; config.allowUnfree = true; };
                 nixinate = {
-                  inherit host sshUser buildOn;
+                  inherit host sshUser buildOn debug;
                   port = sshPort;
                   inherit images;
                 };
@@ -633,6 +633,7 @@
         };
         alpha-three = mkX86_64 "alpha-three" {
           host = topoIp "alpha-three";
+          debug = true;
           images = {
             raw = {
               enable = true;

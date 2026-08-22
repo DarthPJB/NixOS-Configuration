@@ -64,6 +64,11 @@
     proxy_socket_keepalive on;
   '';
 
+  # nginx-config-reload times out during switch-to-configuration because
+  # old nginx workers are stuck waiting for upstream (litellm on 127.0.0.1:8080)
+  # which is stopped during the switch. Increase systemd timeout to 120s.
+  systemd.services.nginx-config-reload.serviceConfig.TimeoutStartSec = 120;
+
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
