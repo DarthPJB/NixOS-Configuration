@@ -230,11 +230,13 @@ in
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
       wantedBy = [ "multi-user.target" ];
+      startLimitBurst = 3;
+      startLimitIntervalSec = 300;
 
       environment = lib.mapAttrs (_: toString) envVars;
 
       serviceConfig = {
-        ExecStart = "${lib.getExe cfg.package} serve ${vllmArgs}";
+        ExecStart = "${lib.getExe' cfg.package "vllm"} serve ${vllmArgs}";
         Restart = "on-failure";
         RestartSec = 15;
         TimeoutStartSec = 300; # Model loading can take time
