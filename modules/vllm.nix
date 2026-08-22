@@ -11,11 +11,18 @@
 { config
 , lib
 , pkgs
+, pkgs_llm ? null
 , ...
 }:
 
 let
   cfg = config.services.vllm;
+
+  # vLLM is in nixpkgs_llm (unstable), not stable nixpkgs
+  # pkgs_llm is passed via _module.args from the flake
+  vllmPackage = if pkgs_llm != null && pkgs_llm ? vllm
+    then pkgs_llm.vllm
+    else pkgs.vllm;
 
   # Build the vllm serve command arguments
   vllmArgs = lib.concatStringsSep " " (
@@ -52,8 +59,8 @@ in
 
     package = lib.mkOption {
       type = lib.types.package;
-      default = pkgs.vllm;
-      defaultText = "pkgs.vllm";
+      default = vllmPackage;
+      defaultText = "vllmPackage (from nixpkgs_llm)";
       description = "vLLM package to use";
     };
 
