@@ -2,7 +2,7 @@
   "annotations": {
     "list": []
   },
-  "description": "Full fleet administration dashboard — CPU, memory, disk, network, energy, ZFS, services. All queries dynamic.",
+  "description": "Full fleet administration dashboard \u2014 CPU, memory, disk, network, energy, ZFS, services. All queries dynamic.",
   "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -198,6 +198,20 @@
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one"
           }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box"
+          }
         }
       ],
       "transparent": true,
@@ -361,6 +375,20 @@
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one"
           }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box"
+          }
         }
       ],
       "type": "timeseries"
@@ -409,7 +437,7 @@
           "steps": 64
         },
         "filterValues": {
-          "le": 1E-9
+          "le": 1e-09
         },
         "legend": {
           "show": false
@@ -532,6 +560,20 @@
           "options": {
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper:$1"
           }
         }
       ],
@@ -701,6 +743,20 @@
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one:$1"
           }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper:$1"
+          }
         }
       ],
       "type": "timeseries"
@@ -861,6 +917,20 @@
           "options": {
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box"
           }
         }
       ],
@@ -1041,6 +1111,20 @@
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one:$1"
           }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper:$1"
+          }
         }
       ],
       "type": "timeseries"
@@ -1208,6 +1292,20 @@
           "options": {
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper:$1"
           }
         }
       ],
@@ -1414,6 +1512,20 @@
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one:$1"
           }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper:$1"
+          }
         }
       ],
       "transparent": true,
@@ -1508,6 +1620,20 @@
           "options": {
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper:$1"
           }
         }
       ],
@@ -1684,6 +1810,20 @@
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one:$1"
           }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper:$1"
+          }
         }
       ],
       "type": "bargauge"
@@ -1771,6 +1911,20 @@
           "options": {
             "regex": "/10\\.88\\.127\\.3:(.*)/",
             "renamePattern": "local-nas:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper:$1"
           }
         }
       ],
@@ -1956,6 +2110,20 @@
           "options": {
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper:$1"
           }
         }
       ],
