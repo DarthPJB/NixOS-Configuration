@@ -15,7 +15,7 @@
     port = 11434;
     host = "0.0.0.0";
     enable = true;
-    # acceleration = "cuda";
+    acceleration = "cuda";
     models = "/speed-storage/ollama";
     package = pkgs_llm.ollama-cuda;
     loadModels = [
