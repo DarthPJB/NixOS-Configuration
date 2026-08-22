@@ -92,7 +92,7 @@
             "uid": "prometheus01"
           },
           "editorMode": "code",
-          "expr": "node_systemd_system_running{job=\"node\"}",
+          "expr": "node_systemd_system_running{job=~\"node|hyperhyper-node|malayalam-node\"}",
           "includeNullMetadata": true,
           "legendFormat": "{{instance}}",
           "range": true,
@@ -459,7 +459,7 @@
             "uid": "prometheus01"
           },
           "editorMode": "code",
-          "expr": "(1 - node_memory_MemAvailable_bytes{job=\"node\"} / node_memory_MemTotal_bytes{job=\"node\"}) * 100",
+          "expr": "(1 - node_memory_MemAvailable_bytes{job=~\"node|hyperhyper-node|malayalam-node\"} / node_memory_MemTotal_bytes{job=~\"node|hyperhyper-node|malayalam-node\"}) * 100",
           "legendFormat": "{{instance}}",
           "range": true,
           "refId": "A"
@@ -626,7 +626,7 @@
             "uid": "prometheus01"
           },
           "editorMode": "code",
-          "expr": "rate(node_disk_read_bytes_total{job=\"node\",device!~\"^(loop|ram|sr).*\"}[5m])",
+          "expr": "rate(node_disk_read_bytes_total{job=~\"node|hyperhyper-node|malayalam-node\",device!~\"^(loop|ram|sr).*\"}[5m])",
           "legendFormat": "{{instance}} {{device}} read",
           "range": true,
           "refId": "A"
@@ -637,7 +637,7 @@
             "uid": "prometheus01"
           },
           "editorMode": "code",
-          "expr": "-rate(node_disk_written_bytes_total{job=\"node\",device!~\"^(loop|ram|sr).*\"}[5m])",
+          "expr": "-rate(node_disk_written_bytes_total{job=~\"node|hyperhyper-node|malayalam-node\",device!~\"^(loop|ram|sr).*\"}[5m])",
           "legendFormat": "{{instance}} {{device}} write",
           "range": true,
           "refId": "B"
@@ -835,7 +835,7 @@
             "uid": "prometheus01"
           },
           "editorMode": "code",
-          "expr": "(1 - node_filesystem_avail_bytes{job=\"node\",fstype!~\"tmpfs|devtmpfs|overlay|ramfs\",mountpoint!~\"/nix/store|/speed-storage/.*\"} / node_filesystem_size_bytes{job=\"node\",fstype!~\"tmpfs|devtmpfs|overlay|ramfs\",mountpoint!~\"/nix/store|/speed-storage/.*\"}) * 100",
+          "expr": "(1 - node_filesystem_avail_bytes{job=~\"node|hyperhyper-node|malayalam-node\",fstype!~\"tmpfs|devtmpfs|overlay|ramfs\",mountpoint!~\"/nix/store|/speed-storage/.*\"} / node_filesystem_size_bytes{job=~\"node|hyperhyper-node|malayalam-node\",fstype!~\"tmpfs|devtmpfs|overlay|ramfs\",mountpoint!~\"/nix/store|/speed-storage/.*\"}) * 100",
           "legendFormat": "{{instance}} {{mountpoint}}",
           "instant": true,
           "refId": "A"

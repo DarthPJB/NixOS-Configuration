@@ -38,12 +38,26 @@
 
   config.services.litellm =
     let
+      # Count how many backends advertise each Ollama tag.
+      # When a tag is unique, the public id is <backend>/<tag>.
+      # When the same tag appears on multiple backends, repeat the backend
+      # name in the remainder so opencode-plugin-litellm's formatModelName()
+      # (which strips only the first `provider/` segment) produces distinct
+      # picker labels instead of collapsing both to "Laguna Xs …".
+      tagCounts = lib.foldl'
+        (acc: cfg: lib.foldl' (a: m: a // { ${m} = (a.${m} or 0) + 1; }) acc cfg.models)
+        { }
+        (lib.attrValues config.services.litellm.backends);
+
       # Per-backend model lists — each backend advertises ONLY its own models
       modelList = lib.concatLists (lib.mapAttrsToList
         (name: cfg:
           map
             (m: {
-              model_name = "${name}/${m}";
+              model_name =
+                if (tagCounts.${m} or 1) > 1
+                then "${name}/${name}-${m}"
+                else "${name}/${m}";
               litellm_params = {
                 model = "ollama_chat/${m}";
                 api_base = cfg.url;
