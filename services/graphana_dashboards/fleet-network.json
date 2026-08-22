@@ -181,6 +181,20 @@
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one:$1"
           }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper:$1"
+          }
         }
       ],
       "type": "timeseries"
@@ -400,6 +414,20 @@
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one:$1"
           }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper:$1"
+          }
         }
       ],
       "type": "stat"
@@ -585,6 +613,20 @@
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one:$1"
           }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper:$1"
+          }
         }
       ],
       "type": "timeseries"
@@ -756,6 +798,20 @@
           "options": {
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper:$1"
           }
         }
       ],

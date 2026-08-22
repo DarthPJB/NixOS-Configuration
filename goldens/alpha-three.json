@@ -797,7 +797,7 @@
             "alias": null,
             "basicAuth": {},
             "basicAuthFile": null,
-            "extraConfig": "proxy_set_header Host $host;\nproxy_set_header X-Real-IP $remote_addr;\nproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\nproxy_set_header X-Forwarded-Proto $scheme;\nproxy_set_header Upgrade $http_upgrade;\nproxy_set_header Connection $connection_upgrade;\n",
+            "extraConfig": "proxy_set_header Host $host;\nproxy_set_header X-Real-IP $remote_addr;\nproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\nproxy_set_header X-Forwarded-Proto $scheme;\nproxy_set_header Upgrade $http_upgrade;\nproxy_set_header Connection $connection_upgrade;\n\nproxy_read_timeout 1200s;\nproxy_connect_timeout 10s;\nproxy_send_timeout 1200s;\nproxy_socket_keepalive on;\n",
             "fastcgiParams": {},
             "index": null,
             "priority": 1000,

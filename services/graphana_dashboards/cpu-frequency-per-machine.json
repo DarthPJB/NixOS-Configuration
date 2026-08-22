@@ -424,8 +424,76 @@
       "type": "heatmap"
     },
     {
+      "datasource": { "type": "prometheus", "uid": "prometheus01" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "scaleDistribution": { "type": "linear" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 49 },
+      "id": 14,
+      "options": {
+        "calculate": false, "cellGap": 1,
+        "cellValues": { "unit": "rothz" },
+        "color": { "exponent": 0.5, "fill": "dark-cyan", "mode": "scheme", "reverse": false, "scale": "exponential", "scheme": "Spectral", "steps": 64 },
+        "filterValues": { "le": 1e-09 },
+        "legend": { "show": false },
+        "rowsFrame": { "layout": "auto" },
+        "tooltip": { "mode": "single", "showColorScale": false, "yHistogram": false },
+        "yAxis": { "axisPlacement": "hidden", "reverse": false }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus01" },
+          "editorMode": "code",
+          "expr": "node_cpu_scaling_frequency_hertz{instance=\"100.107.101.14:9100\", job=\"node\"}",
+          "legendFormat": "Core: {{cpu}}",
+          "range": true, "refId": "A"
+        }
+      ],
+      "title": "CPU Frequency — hyperhyper",
+      "transparent": true,
+      "type": "heatmap"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus01" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "scaleDistribution": { "type": "linear" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 49 },
+      "id": 15,
+      "options": {
+        "calculate": false, "cellGap": 1,
+        "cellValues": { "unit": "rothz" },
+        "color": { "exponent": 0.5, "fill": "dark-yellow", "mode": "scheme", "reverse": false, "scale": "exponential", "scheme": "Spectral", "steps": 64 },
+        "filterValues": { "le": 1e-09 },
+        "legend": { "show": false },
+        "rowsFrame": { "layout": "auto" },
+        "tooltip": { "mode": "single", "showColorScale": false, "yHistogram": false },
+        "yAxis": { "axisPlacement": "hidden", "reverse": false }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus01" },
+          "editorMode": "code",
+          "expr": "node_cpu_scaling_frequency_hertz{instance=\"10.88.127.211:9100\", job=\"node\"}",
+          "legendFormat": "Core: {{cpu}}",
+          "range": true, "refId": "A"
+        }
+      ],
+      "title": "CPU Frequency — cluster-box (Malayalam)",
+      "transparent": true,
+      "type": "heatmap"
+    },
+    {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 49 },
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 57 },
       "id": 101,
       "panels": [],
       "title": "Workstation",
@@ -439,7 +507,7 @@
         },
         "overrides": []
       },
-      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 50 },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 58 },
       "id": 13,
       "options": {
         "calculate": false, "cellGap": 1,

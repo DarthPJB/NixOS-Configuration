@@ -40,7 +40,9 @@
         models = [
           "qwen3.8:27b-q4_K_M"
           "qwen2.5-coder:32b-instruct-q5_K_M"
+          "laguna-xs-2.1:q4_K_M"
         ];
+        additional_drop_params = [ "reasoningSummary" "reasoning_effort" ];
       };
       cluster-box = {
         url = "http://10.88.127.211:11434";
@@ -52,6 +54,21 @@
       };
     };
   };
+
+  # Override nginx vhost to add extended timeouts for local LLMs
+  # Local models (27B+) can take 1-3 minutes per request
+  services.nginx.virtualHosts."agentic-gateway.johnbargman.net".locations."/".extraConfig = ''
+    proxy_read_timeout 1200s;
+    proxy_connect_timeout 10s;
+    proxy_send_timeout 1200s;
+    proxy_socket_keepalive on;
+  '';
+
+  # nginx-config-reload times out during switch-to-configuration because
+  # old nginx workers are stuck waiting for upstream (litellm on 127.0.0.1:8080)
+  # which is stopped during the switch. Increase systemd timeout to 120s.
+  systemd.services.nginx-config-reload.serviceConfig.TimeoutStartSec = 120;
+
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -134,7 +151,7 @@
   services.opencode-fleet = {
     enable = true;
     user = "John88";
-    home = "/home/John88";
+    home = "/home/pokej";
     mcp.git = {
       enable = true;
       extraArgs = [ "--repository" "/home/pokej/NixOS-Configuration" ];

@@ -19,22 +19,8 @@
     pkgs.lxappearance
     pkgs.arandr
   ];
-  systemd = {
-    user.services.polkit-gnome-authentication-agent-1 = {
-      description = "polkit-gnome-authentication-agent-1";
-      wantedBy = [ "graphical-session.target" ];
-      wants = [ "graphical-session.target" ];
-      after = [ "graphical-session.target" ];
-      serviceConfig = {
-        Type = "simple";
-        ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
-        Restart = "on-failure";
-        RestartSec = 1;
-        TimeoutStopSec = 10;
-      };
-    };
-  };
-
+  # polkit-gnome agent removed: polkitd rules authorize services (libvirtd, NM, rtkit, CUPS)
+  # without GUI prompts. The GNOME agent was unnecessary in an i3 environment.
   # Ensure journald is configured to persist logs
   services.journald.extraConfig = ''
     Storage=persistent

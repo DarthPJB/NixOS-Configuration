@@ -11,11 +11,11 @@
         "pure-nix-mcp": "pure-nix-mcp"
       },
       "locked": {
-        "lastModified": 1787120594,
-        "narHash": "sha256-Wp6TLITAnoYYFFLt1t53ncHMVNMa1yt8qlyPplDmoS8=",
+        "lastModified": 1787405585,
+        "narHash": "sha256-RAnroPWpKPYj1Gjkh4icSRNlgapIbekz8KTJ+4DV5g0=",
         "owner": "mecha-team-zero",
         "repo": "llm-core",
-        "rev": "1ef313aae1c240b74b04fac693c1c3684044259c",
+        "rev": "8ea64a5c2497888e9d916a43912076f27346b3e4",
         "type": "gitlab"
       },
       "original": {
@@ -1285,16 +1285,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1784902284,
-        "narHash": "sha256-MAE/QadRUpQZHTYxYcsWQiv28MyPzUHpve5lAhweslY=",
+        "lastModified": 1787378457,
+        "narHash": "sha256-vre8A2ScVQjGdzE2Pb4Y8Ult8LgNEC4y1kKvlOVJJ9E=",
         "owner": "Bargman-Tech",
         "repo": "nixinate",
-        "rev": "603270c9a4524e93c31bdaf5dc0fd5e03ef4ed1e",
+        "rev": "445ed7f1bb2b477337596b286a47f4b61b640e81",
         "type": "github"
       },
       "original": {
         "owner": "Bargman-Tech",
-        "ref": "test-new-awk",
         "repo": "nixinate",
         "type": "github"
       }
@@ -1823,12 +1822,12 @@
     },
     "nixpkgs_llm": {
       "locked": {
-        "lastModified": 1785828668,
-        "narHash": "sha256-8fsyqeO+mJqvIzeO4xIpgJe/f7MTbbVTEC6RT6WSXNs=",
-        "rev": "e72e4f299401a3689d4b3d5fc6496b11db7064eb",
-        "revCount": 1047536,
+        "lastModified": 1787070829,
+        "narHash": "sha256-vXNVDVtvfiQuXthP0NHPFdNvvMTkGpx0UP8oddIWbNk=",
+        "rev": "0ae2bc1419c3f345984c2629e72e7a631820fa4d",
+        "revCount": 1057639,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/NixOS/nixpkgs/0.1.1047536%2Brev-e72e4f299401a3689d4b3d5fc6496b11db7064eb/019fcd00-1d90-79a2-acd8-54111cc4b057/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/NixOS/nixpkgs/0.1.1057639%2Brev-0ae2bc1419c3f345984c2629e72e7a631820fa4d/01a0183d-86b0-74b3-9f99-a9c8c1d62c07/source.tar.gz"
       },
       "original": {
         "type": "tarball",
