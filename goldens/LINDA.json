@@ -230,6 +230,7 @@
     "<derivation:conky-1.22.3>",
     "<derivation:lxappearance-0.6.4>",
     "<derivation:arandr-0.1.11>",
+    "<derivation:vllm-0.24.0>",
     "<derivation:nvtop-3.3.2>",
     "<derivation:cuda-merged-12.9>",
     "<derivation:ollama-0.31.1>",
@@ -575,6 +576,8 @@
         "allowedTCPPorts": [
           1108,
           2108,
+          8001,
+          8002,
           47984,
           47989,
           47990,
@@ -660,6 +663,8 @@
     "allowedTCPPorts": [
       1108,
       2108,
+      8001,
+      8002,
       47984,
       47989,
       47990,

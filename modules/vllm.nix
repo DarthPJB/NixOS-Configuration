@@ -29,7 +29,8 @@ let
 
   # vLLM is in nixpkgs_llm (unstable), not stable nixpkgs
   # pkgs_llm is passed via _module.args from the flake
-  vllmPackage = if pkgs_llm != null && pkgs_llm ? vllm
+  vllmPackage =
+    if pkgs_llm != null && pkgs_llm ? vllm
     then pkgs_llm.vllm
     else pkgs.vllm;
 
@@ -40,19 +41,24 @@ let
     ++ [ "--tensor-parallel-size" (toString modelCfg.tensorParallelSize) ]
     ++ [ "--gpu-memory-utilization" (toString modelCfg.gpuMemoryUtilization) ]
     ++ lib.optionals (modelCfg.servedModelName != null) [
-      "--served-model-name" modelCfg.servedModelName
+      "--served-model-name"
+      modelCfg.servedModelName
     ]
     ++ lib.optionals (modelCfg.maxModelLen != null) [
-      "--max-model-len" modelCfg.maxModelLen
+      "--max-model-len"
+      modelCfg.maxModelLen
     ]
     ++ lib.optionals (modelCfg.dtype != null) [
-      "--dtype" modelCfg.dtype
+      "--dtype"
+      modelCfg.dtype
     ]
     ++ lib.optionals (modelCfg.quantization != null) [
-      "--quantization" modelCfg.quantization
+      "--quantization"
+      modelCfg.quantization
     ]
     ++ lib.optionals (modelCfg.attentionBackend != null) [
-      "--attention-backend" modelCfg.attentionBackend
+      "--attention-backend"
+      modelCfg.attentionBackend
     ]
     ++ lib.optionals modelCfg.enforceEager [ "--enforce-eager" ]
     ++ lib.optionals modelCfg.disableLogStats [ "--disable-log-stats" ]
@@ -71,17 +77,20 @@ let
   };
 
   # Build model list: either from models list or single model
-  modelList = if cfg.models != []
+  modelList =
+    if cfg.models != [ ]
     then map (m: defaultModelOptions // m) cfg.models
-    else [ (defaultModelOptions // {
-      name = "default";
-      model = cfg.model;
-      servedModelName = null;
-      port = cfg.port;
-      maxModelLen = cfg.maxModelLen;
-      quantization = cfg.quantization;
-      extraArgs = cfg.extraArgs;
-    }) ];
+    else [
+      (defaultModelOptions // {
+        name = "default";
+        model = cfg.model;
+        servedModelName = null;
+        port = cfg.port;
+        maxModelLen = cfg.maxModelLen;
+        quantization = cfg.quantization;
+        extraArgs = cfg.extraArgs;
+      })
+    ];
 
   # Environment variables
   envVars = {
@@ -297,7 +306,7 @@ in
         message = "services.vllm.gpuMemoryUtilization must be between 0.0 and 1.0";
       }
       {
-        assertion = cfg.model != "" || cfg.models != [];
+        assertion = cfg.model != "" || cfg.models != [ ];
         message = "services.vllm: either 'model' or 'models' must be set";
       }
     ];
@@ -312,39 +321,41 @@ in
     environment.systemPackages = [ cfg.package ];
 
     # Generate systemd service for each model
-    systemd.services = lib.listToAttrs (map (modelCfg: {
-      name = "vllm-${modelCfg.name}";
-      value = {
-        description = "vLLM Inference Server — ${modelCfg.name}";
-        after = [ "network-online.target" ];
-        wants = [ "network-online.target" ];
-        wantedBy = [ "multi-user.target" ];
-        startLimitBurst = 3;
-        startLimitIntervalSec = 300;
+    systemd.services = lib.listToAttrs (map
+      (modelCfg: {
+        name = "vllm-${modelCfg.name}";
+        value = {
+          description = "vLLM Inference Server — ${modelCfg.name}";
+          after = [ "network-online.target" ];
+          wants = [ "network-online.target" ];
+          wantedBy = [ "multi-user.target" ];
+          startLimitBurst = 3;
+          startLimitIntervalSec = 300;
 
-        environment = lib.mapAttrs (_: toString) envVars;
+          environment = lib.mapAttrs (_: toString) envVars;
 
-        serviceConfig = {
-          ExecStart = "${lib.getExe' cfg.package "vllm"} serve ${buildVllmArgs modelCfg}";
-          Restart = "on-failure";
-          RestartSec = 15;
-          TimeoutStartSec = 300; # Model loading can take time
-          TimeoutStopSec = 30;
+          serviceConfig = {
+            ExecStart = "${lib.getExe' cfg.package "vllm"} serve ${buildVllmArgs modelCfg}";
+            Restart = "on-failure";
+            RestartSec = 15;
+            TimeoutStartSec = 300; # Model loading can take time
+            TimeoutStopSec = 30;
 
-          # GPU access
-          SupplementaryGroups = [ "video" "render" ];
+            # GPU access
+            SupplementaryGroups = [ "video" "render" ];
 
-          # Security hardening
-          NoNewPrivileges = true;
-          ProtectSystem = "strict";
-          ProtectHome = false; # Models may be in /home
-          ReadWritePaths = [ cfg.cacheDir "/speed-storage" ];
+            # Security hardening
+            NoNewPrivileges = true;
+            ProtectSystem = "strict";
+            ProtectHome = false; # Models may be in /home
+            ReadWritePaths = [ cfg.cacheDir "/speed-storage" ];
 
-          # Resource limits
-          LimitNOFILE = 65536;
+            # Resource limits
+            LimitNOFILE = 65536;
+          };
         };
-      };
-    }) modelList);
+      })
+      modelList);
 
     # Firewall - open all model ports
     networking.firewall = lib.mkIf cfg.openFirewall {

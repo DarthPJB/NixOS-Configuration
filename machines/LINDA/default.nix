@@ -66,9 +66,11 @@
         port = 8001;
         extraArgs = [
           "--enable-reasoning"
-          "--reasoning-parser" "deepseek_r1"
+          "--reasoning-parser"
+          "deepseek_r1"
           "--enable-prefix-caching"
-          "--max-num-seqs" "16"
+          "--max-num-seqs"
+          "16"
         ];
       }
       {
@@ -78,7 +80,8 @@
         port = 8002;
         extraArgs = [
           "--enable-prefix-caching"
-          "--max-num-seqs" "32"
+          "--max-num-seqs"
+          "32"
         ];
       }
     ];
