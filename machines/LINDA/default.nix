@@ -38,8 +38,27 @@
     ../../environments/sshd.nix
     ../../modifier_imports/cuda.nix
     ../../modifier_imports/remote-builder.nix
+    ../../modules/vllm.nix
   ];
   enableWgTopology.enable = true;
+
+  # ── vLLM Inference Server ─────────────────────────────────────
+  # OpenAI-compatible API on port 8000
+  # LINDA: RTX 3060 (12GB VRAM) — optimal for 7B-27B quantized models
+  # GTX 1050 (2GB) is too small for inference; only RTX 3060 is used
+  services.vllm = {
+    enable = true;
+    model = "Qwen/Qwen2.5-1.5B-Instruct"; # Lightweight starter model
+    host = "0.0.0.0"; # Expose on WireGuard plane
+    port = 8000;
+    gpuMemoryUtilization = 0.9;
+    cudaVisibleDevices = "0"; # RTX 3060 only (GPU 0)
+    openFirewall = true; # Allow WireGuard access
+    extraArgs = [
+      "--enable-prefix-caching" # Reuse KV cache for repeated prefixes
+      "--max-num-seqs" "16" # Limit concurrent sequences for stability
+    ];
+  };
   programs.ssh.extraConfig = ''
     Host hyperhyper
       ControlMaster auto
