@@ -23,7 +23,7 @@
     };
     disko = { url = "https://flakehub.com/f/nix-community/disko/1"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     secrix.url = "github:Platonic-Systems/secrix";
-    nixinate = { url = "github:Bargman-Tech/nixinate?ref=test-new-awk"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
+    nixinate = { url = "github:Bargman-Tech/nixinate"; inputs.nixpkgs.follows = "nixpkgs_stable"; };
     nixpkgs_stable.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs_unstable.url = "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0";
     nixpkgs_llm.url = "https://flakehub.com/f/NixOS/nixpkgs/0.1";
