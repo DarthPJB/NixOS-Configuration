@@ -43,20 +43,44 @@
   enableWgTopology.enable = true;
 
   # ── vLLM Inference Server ─────────────────────────────────────
-  # OpenAI-compatible API on port 8000
-  # LINDA: RTX 3060 (12GB VRAM) — optimal for 7B-27B quantized models
+  # OpenAI-compatible API — multiple models served on separate ports
+  # LINDA: RTX 3060 (12GB VRAM) — only one model loaded at a time
   # GTX 1050 (2GB) is too small for inference; only RTX 3060 is used
+  #
+  # Models:
+  #   qwen3-8b:    Qwen3-8B       — general purpose, ~5GB VRAM, ~42 tok/s
+  #   qwen2.5-starter: Qwen2.5-1.5B-Instruct — lightweight starter, ~1GB VRAM
+  #
+  # Laguna XS 2.1 runs in Ollama (CPU/GPU hybrid) — 33B MoE won't fit in 12GB VRAM
   services.vllm = {
     enable = true;
-    model = "Qwen/Qwen2.5-1.5B-Instruct"; # Lightweight starter model
     host = "0.0.0.0"; # Expose on WireGuard plane
-    port = 8000;
-    gpuMemoryUtilization = 0.9;
     cudaVisibleDevices = "0"; # RTX 3060 only (GPU 0)
+    gpuMemoryUtilization = 0.9;
     openFirewall = true; # Allow WireGuard access
-    extraArgs = [
-      "--enable-prefix-caching" # Reuse KV cache for repeated prefixes
-      "--max-num-seqs" "16" # Limit concurrent sequences for stability
+    models = [
+      {
+        name = "qwen3-8b";
+        model = "Qwen/Qwen3-8B";
+        servedModelName = "qwen3";
+        port = 8001;
+        extraArgs = [
+          "--enable-reasoning"
+          "--reasoning-parser" "deepseek_r1"
+          "--enable-prefix-caching"
+          "--max-num-seqs" "16"
+        ];
+      }
+      {
+        name = "qwen2.5-starter";
+        model = "Qwen/Qwen2.5-1.5B-Instruct";
+        servedModelName = "qwen2.5-starter";
+        port = 8002;
+        extraArgs = [
+          "--enable-prefix-caching"
+          "--max-num-seqs" "32"
+        ];
+      }
     ];
   };
   programs.ssh.extraConfig = ''

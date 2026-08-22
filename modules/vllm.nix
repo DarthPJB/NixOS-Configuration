@@ -2,12 +2,21 @@
 # NixOS module for vLLM inference server
 # Provides OpenAI-compatible API for LLM serving with GPU acceleration
 #
-# Usage:
+# Usage (single model):
 #   services.vllm.enable = true;
-#   services.vllm.model = "Qwen/Qwen2.5-1.5B-Instruct";
+#   services.vllm.model = "Qwen/Qwen3-14B";
+#
+# Usage (multiple models):
+#   services.vllm.enable = true;
+#   services.vllm.models = [
+#     { name = "qwen3-14b"; model = "Qwen/Qwen3-14B"; port = 8001; }
+#     { name = "qwen3-8b"; model = "Qwen/Qwen3-8B"; port = 8002; }
+#   ];
 #
 # LINDA has RTX 3060 (12GB) + GTX 1050 (2GB)
 # Only the 3060 is useful for inference; 1050 is too small.
+# Max VRAM capacity: ~11.2GB usable after driver overhead.
+# Sweet spot: 8-14B dense models at Q4_K_M quantization.
 { config
 , lib
 , pkgs
@@ -24,28 +33,55 @@ let
     then pkgs_llm.vllm
     else pkgs.vllm;
 
-  # Build the vllm serve command arguments
-  vllmArgs = lib.concatStringsSep " " (
-    [ "--model" cfg.model ]
-    ++ [ "--host" cfg.host "--port" (toString cfg.port) ]
-    ++ [ "--tensor-parallel-size" (toString cfg.tensorParallelSize) ]
-    ++ [ "--gpu-memory-utilization" (toString cfg.gpuMemoryUtilization) ]
-    ++ lib.optionals (cfg.maxModelLen != null) [
-      "--max-model-len" cfg.maxModelLen
+  # Build the vllm serve command arguments for a model config
+  buildVllmArgs = modelCfg: lib.concatStringsSep " " (
+    [ "--model" modelCfg.model ]
+    ++ [ "--host" modelCfg.host "--port" (toString modelCfg.port) ]
+    ++ [ "--tensor-parallel-size" (toString modelCfg.tensorParallelSize) ]
+    ++ [ "--gpu-memory-utilization" (toString modelCfg.gpuMemoryUtilization) ]
+    ++ lib.optionals (modelCfg.servedModelName != null) [
+      "--served-model-name" modelCfg.servedModelName
     ]
-    ++ lib.optionals (cfg.dtype != null) [
-      "--dtype" cfg.dtype
+    ++ lib.optionals (modelCfg.maxModelLen != null) [
+      "--max-model-len" modelCfg.maxModelLen
     ]
-    ++ lib.optionals (cfg.quantization != null) [
-      "--quantization" cfg.quantization
+    ++ lib.optionals (modelCfg.dtype != null) [
+      "--dtype" modelCfg.dtype
     ]
-    ++ lib.optionals (cfg.attentionBackend != null) [
-      "--attention-backend" cfg.attentionBackend
+    ++ lib.optionals (modelCfg.quantization != null) [
+      "--quantization" modelCfg.quantization
     ]
-    ++ lib.optionals cfg.enforceEager [ "--enforce-eager" ]
-    ++ lib.optionals cfg.disableLogStats [ "--disable-log-stats" ]
-    ++ cfg.extraArgs
+    ++ lib.optionals (modelCfg.attentionBackend != null) [
+      "--attention-backend" modelCfg.attentionBackend
+    ]
+    ++ lib.optionals modelCfg.enforceEager [ "--enforce-eager" ]
+    ++ lib.optionals modelCfg.disableLogStats [ "--disable-log-stats" ]
+    ++ modelCfg.extraArgs
   );
+
+  # Default model options
+  defaultModelOptions = {
+    host = cfg.host;
+    tensorParallelSize = cfg.tensorParallelSize;
+    gpuMemoryUtilization = cfg.gpuMemoryUtilization;
+    dtype = cfg.dtype;
+    attentionBackend = cfg.attentionBackend;
+    enforceEager = cfg.enforceEager;
+    disableLogStats = cfg.disableLogStats;
+  };
+
+  # Build model list: either from models list or single model
+  modelList = if cfg.models != []
+    then map (m: defaultModelOptions // m) cfg.models
+    else [ (defaultModelOptions // {
+      name = "default";
+      model = cfg.model;
+      servedModelName = null;
+      port = cfg.port;
+      maxModelLen = cfg.maxModelLen;
+      quantization = cfg.quantization;
+      extraArgs = cfg.extraArgs;
+    }) ];
 
   # Environment variables
   envVars = {
@@ -64,26 +100,75 @@ in
       description = "vLLM package to use";
     };
 
+    # Single model config (backward compatible)
     model = lib.mkOption {
       type = lib.types.str;
-      example = "Qwen/Qwen2.5-1.5B-Instruct";
+      default = "";
+      example = "Qwen/Qwen3-14B";
       description = ''
-        Model name or path. Can be:
-        - HuggingFace model ID (e.g., "Qwen/Qwen2.5-1.5B-Instruct")
-        - Local path to model weights
+        Model name or path (single-model mode).
+        Can be a HuggingFace model ID or local path.
+        Ignored if services.vllm.models is set.
+      '';
+    };
+
+    # Multi-model config
+    models = lib.mkOption {
+      type = lib.types.listOf (lib.types.submodule {
+        options = {
+          name = lib.mkOption {
+            type = lib.types.str;
+            description = "Unique name for this model (used in systemd service name)";
+          };
+          model = lib.mkOption {
+            type = lib.types.str;
+            description = "HuggingFace model ID or local path";
+          };
+          servedModelName = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = "Alias for the model in the API (e.g., 'qwen3' instead of 'Qwen/Qwen3-14B')";
+          };
+          port = lib.mkOption {
+            type = lib.types.port;
+            default = 8000;
+            description = "Port for this model's API server";
+          };
+          maxModelLen = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = "Maximum context length for this model";
+          };
+          quantization = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = "Quantization method (awq, gptq, fp8, etc.)";
+          };
+          extraArgs = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            description = "Additional CLI arguments for this model";
+          };
+        };
+      });
+      default = [ ];
+      description = ''
+        List of models to serve. Each model gets its own systemd service.
+        When set, the single-model options (model, port, etc.) are ignored.
+        Note: With 12GB VRAM, only one model can be loaded at a time.
       '';
     };
 
     host = lib.mkOption {
       type = lib.types.str;
       default = "127.0.0.1";
-      description = "Host to bind the API server";
+      description = "Host to bind the API server(s)";
     };
 
     port = lib.mkOption {
       type = lib.types.port;
       default = 8000;
-      description = "Port for the API server";
+      description = "Default port for the API server (single-model mode)";
     };
 
     tensorParallelSize = lib.mkOption {
@@ -92,7 +177,7 @@ in
       description = ''
         Number of tensor parallel groups.
         Set to 2 for multi-GPU model parallelism across 2 GPUs.
-        For LINDA: 1 is optimal (RTX 3060 alone handles most 7B-27B quantized models).
+        For LINDA: 1 is optimal (RTX 3060 alone handles most 7B-14B quantized models).
       '';
     };
 
@@ -107,9 +192,8 @@ in
       default = null;
       example = "16384";
       description = ''
-        Maximum model context length (prompt + output tokens).
+        Maximum model context length (single-model mode).
         null = auto-detect from model config.
-        Use "-1" or "auto" to let vLLM find the largest fitting context length.
       '';
     };
 
@@ -132,9 +216,8 @@ in
       default = null;
       example = "awq";
       description = ''
-        Quantization method. null = no quantization.
+        Quantization method (single-model mode). null = no quantization.
         Common values: "awq", "gptq", "squeezellm", "fp8".
-        For GGUF/ollama models, use the HF quantized variant instead.
       '';
     };
 
@@ -180,20 +263,20 @@ in
       example = {
         VLLM_WORKER_MULTIPROC_METHOD = "fork";
       };
-      description = "Additional environment variables for the vLLM service";
+      description = "Additional environment variables for the vLLM service(s)";
     };
 
     extraArgs = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];
       example = [ "--enable-prefix-caching" "--max-num-seqs" "64" ];
-      description = "Additional CLI arguments passed to vllm serve";
+      description = "Additional CLI arguments (single-model mode)";
     };
 
     openFirewall = lib.mkOption {
       type = lib.types.bool;
       default = false;
-      description = "Open firewall port for the API server";
+      description = "Open firewall port(s) for the API server(s)";
     };
 
     cacheDir = lib.mkOption {
@@ -213,6 +296,10 @@ in
         assertion = cfg.gpuMemoryUtilization > 0.0 && cfg.gpuMemoryUtilization <= 1.0;
         message = "services.vllm.gpuMemoryUtilization must be between 0.0 and 1.0";
       }
+      {
+        assertion = cfg.model != "" || cfg.models != [];
+        message = "services.vllm: either 'model' or 'models' must be set";
+      }
     ];
 
     # Ensure CUDA support is enabled system-wide
@@ -224,41 +311,44 @@ in
     # Add vLLM to system packages
     environment.systemPackages = [ cfg.package ];
 
-    # Systemd service
-    systemd.services.vllm = {
-      description = "vLLM Inference Server";
-      after = [ "network-online.target" ];
-      wants = [ "network-online.target" ];
-      wantedBy = [ "multi-user.target" ];
-      startLimitBurst = 3;
-      startLimitIntervalSec = 300;
+    # Generate systemd service for each model
+    systemd.services = lib.listToAttrs (map (modelCfg: {
+      name = "vllm-${modelCfg.name}";
+      value = {
+        description = "vLLM Inference Server — ${modelCfg.name}";
+        after = [ "network-online.target" ];
+        wants = [ "network-online.target" ];
+        wantedBy = [ "multi-user.target" ];
+        startLimitBurst = 3;
+        startLimitIntervalSec = 300;
 
-      environment = lib.mapAttrs (_: toString) envVars;
+        environment = lib.mapAttrs (_: toString) envVars;
 
-      serviceConfig = {
-        ExecStart = "${lib.getExe' cfg.package "vllm"} serve ${vllmArgs}";
-        Restart = "on-failure";
-        RestartSec = 15;
-        TimeoutStartSec = 300; # Model loading can take time
-        TimeoutStopSec = 30;
+        serviceConfig = {
+          ExecStart = "${lib.getExe' cfg.package "vllm"} serve ${buildVllmArgs modelCfg}";
+          Restart = "on-failure";
+          RestartSec = 15;
+          TimeoutStartSec = 300; # Model loading can take time
+          TimeoutStopSec = 30;
 
-        # GPU access
-        SupplementaryGroups = [ "video" "render" ];
+          # GPU access
+          SupplementaryGroups = [ "video" "render" ];
 
-        # Security hardening
-        NoNewPrivileges = true;
-        ProtectSystem = "strict";
-        ProtectHome = false; # Models may be in /home
-        ReadWritePaths = [ cfg.cacheDir "/speed-storage" ];
+          # Security hardening
+          NoNewPrivileges = true;
+          ProtectSystem = "strict";
+          ProtectHome = false; # Models may be in /home
+          ReadWritePaths = [ cfg.cacheDir "/speed-storage" ];
 
-        # Resource limits
-        LimitNOFILE = 65536;
+          # Resource limits
+          LimitNOFILE = 65536;
+        };
       };
-    };
+    }) modelList);
 
-    # Firewall
+    # Firewall - open all model ports
     networking.firewall = lib.mkIf cfg.openFirewall {
-      allowedTCPPorts = [ cfg.port ];
+      allowedTCPPorts = map (m: m.port) modelList;
     };
 
     # Cache directory
