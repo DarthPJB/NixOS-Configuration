@@ -317,16 +317,17 @@ in
       cudnnSupport = true;
     };
 
-    # Add vLLM to system packages
-    environment.systemPackages = [ cfg.package ];
+    # Add vLLM and runtime dependencies to system packages
+    environment.systemPackages = [ cfg.package pkgs.which ];
 
     # Generate systemd service for each model
-    systemd.services = lib.listToAttrs (map
-      (modelCfg: {
+    systemd.services = lib.listToAttrs (lib.imap0
+      (idx: modelCfg: {
         name = "vllm-${modelCfg.name}";
         value = {
           description = "vLLM Inference Server — ${modelCfg.name}";
-          after = [ "network-online.target" ];
+          after = [ "network-online.target" ]
+            ++ lib.optionals (idx > 0) [ "vllm-${(lib.elemAt modelList (idx - 1)).name}.service" ];
           wants = [ "network-online.target" ];
           wantedBy = [ "multi-user.target" ];
           startLimitBurst = 3;
@@ -349,6 +350,7 @@ in
             ProtectSystem = "strict";
             ProtectHome = false; # Models may be in /home
             ReadWritePaths = [ cfg.cacheDir "/speed-storage" ];
+            PrivateTmp = true;
 
             # Resource limits
             LimitNOFILE = 65536;

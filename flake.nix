@@ -107,7 +107,7 @@
         inherit denton-glasses;
         inherit personal-site;
         inherit LLM-CORE;
-        pkgs_llm = import nixpkgs_llm { system = "x86_64-linux"; config.allowUnfree = true; };
+        pkgs_llm = import nixpkgs_llm { system = "x86_64-linux"; config.allowUnfree = true; config.cudaSupport = true; config.problems.handlers.vllm.broken = "warn"; };
       };
       minecraft-curseforge-builder = nixpkgs.callPackage ./pkgs/minecraft-curseforge { };
       prometheus-mcp-server-builder = nixpkgs.callPackage ./pkgs/prometheus-mcp-server { };
@@ -170,7 +170,7 @@
               _module.args = globalArgs // {
                 inherit hostname;
                 unstable = import nixpkgs_unstable { localSystem = "x86_64-linux"; config.allowUnfree = true; };
-                pkgs_llm = import nixpkgs_llm { localSystem = "x86_64-linux"; config.allowUnfree = true; };
+                pkgs_llm = import nixpkgs_llm { localSystem = "x86_64-linux"; config.allowUnfree = true; config.cudaSupport = true; config.problems.handlers.vllm.broken = "warn"; };
                 nixinate = {
                   inherit host sshUser buildOn debug;
                   port = sshPort;

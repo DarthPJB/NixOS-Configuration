@@ -56,8 +56,12 @@
     enable = true;
     host = "0.0.0.0"; # Expose on WireGuard plane
     cudaVisibleDevices = "0"; # RTX 3060 only (GPU 0)
-    gpuMemoryUtilization = 0.9;
+    gpuMemoryUtilization = 0.8;
     openFirewall = true; # Allow WireGuard access
+    cacheDir = "/speed-storage/vllm-cache";
+    environmentVariables = {
+      HF_HOME = "/speed-storage/vllm-cache/huggingface";
+    };
     models = [
       {
         name = "qwen3-8b";
@@ -65,9 +69,6 @@
         servedModelName = "qwen3";
         port = 8001;
         extraArgs = [
-          "--enable-reasoning"
-          "--reasoning-parser"
-          "deepseek_r1"
           "--enable-prefix-caching"
           "--max-num-seqs"
           "16"
