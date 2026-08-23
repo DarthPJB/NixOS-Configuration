@@ -93,8 +93,11 @@ let
     ];
 
   # Environment variables
+  # TORCHINDUCTOR_CACHE_DIR: persist torch.compile cubin cache across service
+  # restarts. Without this, PrivateTmp or /tmp cleanup destroys compiled kernels.
   envVars = {
     CUDA_VISIBLE_DEVICES = cfg.cudaVisibleDevices;
+    TORCHINDUCTOR_CACHE_DIR = "${cfg.cacheDir}/torch_compile";
   } // cfg.environmentVariables;
 
 in
@@ -350,8 +353,12 @@ in
             NoNewPrivileges = true;
             ProtectSystem = "strict";
             ProtectHome = false; # Models may be in /home
-            ReadWritePaths = [ cfg.cacheDir "/speed-storage" ];
-            PrivateTmp = true;
+            ReadWritePaths = [ cfg.cacheDir "/tmp" ];
+            # PrivateTmp disabled: torch.compile (TritonBundler) writes cubin
+            # cache to /tmp/torchinductor_root/. PrivateTmp wipes this on each
+            # restart, causing "Cubin file not found" crashes. LINDA's /tmp is
+            # a ZFS dataset (speed-storage/tmp) so persistence is safe.
+            PrivateTmp = false;
 
             # Resource limits
             LimitNOFILE = 65536;
@@ -368,6 +375,7 @@ in
     # Cache directory
     systemd.tmpfiles.rules = [
       "d ${cfg.cacheDir} 0755 root root -"
+      "d ${cfg.cacheDir}/torch_compile 0755 root root -"
     ];
   };
 }
