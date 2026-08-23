@@ -36,7 +36,7 @@
     environmentFileSecret = ../../secrets/litellm-env;
     backends = {
       linda = {
-        url = "http://10.88.127.88:11434";
+        url = "http://10.88.127.88:11434/v1";
         models = [
           "qwen3.8:27b-q4_K_M"
           "qwen3-coder:30b-a3b-q4_K_M"
@@ -47,13 +47,19 @@
       };
       linda-vllm = {
         url = "http://10.88.127.88:8001/v1";
-        modelType = "openai";
+        modelType = "hosted_vllm";
+        apiKey = "none";
         models = [
           "qwen2.5-vl"
         ];
+        # Matches services.vllm.models.maxModelLen on LINDA
+        maxTokens = 8192;
+        mode = "chat";
+        supportsVision = true;
+        supportsVideoInput = true;
       };
       cluster-box = {
-        url = "http://10.88.127.211:11434";
+        url = "http://10.88.127.211:11434/v1";
         models = [
           "laguna-xs-2.1:q4_K_M"
           "ornith:9b"

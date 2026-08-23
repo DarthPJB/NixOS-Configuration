@@ -15,19 +15,17 @@
     port = 11434;
     host = "0.0.0.0";
     enable = true;
-    # acceleration = "cuda"; # CPU-only — GPU reserved for vLLM
+    # CPU only — GPU reserved exclusively for vLLM.
+    # pkgs_llm is imported with cudaSupport=true, so pkgs_llm.ollama ≡ ollama-cuda.
+    # Pin ollama-cpu so this service cannot claim the 3060.
+    package = pkgs_llm.ollama-cpu;
     models = "/speed-storage/ollama";
-    package = pkgs_llm.ollama-cuda; # keep CUDA package for potential future use
     loadModels = [
       "qwen3.8:27b-q4_K_M"
       "qwen3-coder:30b-a3b-q4_K_M"
       "laguna-s-2.1:q4_K_M"
       "laguna-xs-2.1:q4_K_M"
     ];
-    environmentVariables = {
-      OLLAMA_NUM_GPU = "0"; # CPU-only — no GPU offload
-    };
-
   };
   environment.systemPackages = [
     # MCP servers now provided by opencode-fleet module
