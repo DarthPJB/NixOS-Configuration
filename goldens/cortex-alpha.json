@@ -997,6 +997,7 @@
         "/grafana.johnbargman.net/10.88.128.1",
         "/print-controller.johnbargman.net/10.88.128.1",
         "/minio.johnbargman.net/10.88.128.1",
+        "/ollama.johnbargman.net/10.88.127.107",
         "/johnbargman.com/10.88.127.50"
       ],
       "bogus-priv": [
