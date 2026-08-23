@@ -27,6 +27,17 @@
         "forceSSL": true,
         "listenAddresses": ["10.88.127.107"]
       }
+    ],
+    "ollama.johnbargman.net": [
+      {
+        "proxy_to": "127.0.0.1:8081",
+        "proxy_headers": true,
+        "acme": {
+          "host": "johnbargman.net"
+        },
+        "forceSSL": true,
+        "listenAddresses": ["10.88.127.107"]
+      }
     ]
   }
 }

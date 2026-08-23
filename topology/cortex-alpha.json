@@ -127,6 +127,7 @@
       { "domain": "grafana.johnbargman.net", "ip": "10.88.128.1" },
       { "domain": "print-controller.johnbargman.net", "ip": "10.88.128.1" },
       { "domain": "minio.johnbargman.net", "ip": "10.88.128.1" },
+      { "domain": "ollama.johnbargman.net", "ip": "10.88.127.107" },
       { "domain": "johnbargman.com", "ip": "10.88.127.50" }
     ],
     "dhcp": {

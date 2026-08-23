@@ -21,11 +21,12 @@
     ../../environments/neovim.nix
     ../../services/gitlab-credentials.nix
     ../../services/litellm.nix
+    ../../services/ollama-ui.nix
     (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
   ];
   enableWgTopology.enable = true;
   security.acme.defaults.email = "commander@johnbargman.net";
-  # Wildcard cert serves agentic-gateway.johnbargman.net via useACMEHost (topology vhost)
+  # Wildcard cert serves agentic-gateway + ollama UI via useACMEHost (topology vhosts)
   security.acme.certs."johnbargman.net".extraDomainNames = [ "*.johnbargman.net" ];
 
   # ── Fleet LLM Gateway ──────────────────────────────────────────
@@ -72,6 +73,12 @@
   # Override nginx vhost to add extended timeouts for local LLMs
   # Local models (27B+) can take 1-3 minutes per request
   services.nginx.virtualHosts."agentic-gateway.johnbargman.net".locations."/".extraConfig = ''
+    proxy_read_timeout 1200s;
+    proxy_connect_timeout 10s;
+    proxy_send_timeout 1200s;
+    proxy_socket_keepalive on;
+  '';
+  services.nginx.virtualHosts."ollama.johnbargman.net".locations."/".extraConfig = ''
     proxy_read_timeout 1200s;
     proxy_connect_timeout 10s;
     proxy_send_timeout 1200s;

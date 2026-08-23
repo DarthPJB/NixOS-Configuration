@@ -23,8 +23,8 @@
               OpenAI-compatible endpoints. Requires a non-empty api_key
               (use "none" when the backend ignores it).
               hosted_vllm — vLLM OpenAI-compatible server.
-              ollama_chat — legacy native POST /api/chat. Reserved for the
-              LINDA nextjs-ollama frontend and other native-API clients.
+              ollama_chat — legacy native POST /api/chat. Reserved for
+              native-API clients; the fleet UI uses LiteLLM /ollama passthrough.
             '';
           };
           apiKey = lib.mkOption {

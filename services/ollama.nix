@@ -6,11 +6,6 @@
 , ...
 }:
 {
-  services.nextjs-ollama-llm-ui = {
-    port = 8081;
-    ollamaUrl = "http://127.0.0.1:${builtins.toString config.services.ollama.port}";
-    enable = true;
-  };
   services.ollama = {
     port = 11434;
     host = "0.0.0.0";
