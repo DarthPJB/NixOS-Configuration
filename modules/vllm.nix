@@ -323,6 +323,17 @@ in
     # Add vLLM and runtime dependencies to system packages
     environment.systemPackages = [ cfg.package pkgs.which ];
 
+    # Dedicated system user — no login, no home shell, group for cache access
+    users.groups.vllm = { };
+    users.users.vllm = {
+      isSystemUser = true;
+      group = "vllm";
+      home = "/var/lib/vllm";
+      createHome = true;
+      description = "vLLM inference server service account";
+      extraGroups = [ "video" "render" ];
+    };
+
     # Generate systemd service for each model
     systemd.services = lib.listToAttrs (lib.imap0
       (idx: modelCfg: {
@@ -341,19 +352,18 @@ in
 
           serviceConfig = {
             ExecStart = "${lib.getExe' cfg.package "vllm"} serve ${buildVllmArgs modelCfg}";
+            User = "vllm";
+            Group = "vllm";
             Restart = "on-failure";
             RestartSec = 15;
             TimeoutStartSec = 300; # Model loading can take time
             TimeoutStopSec = 30;
 
-            # GPU access
-            SupplementaryGroups = [ "video" "render" ];
-
             # Security hardening
             NoNewPrivileges = true;
             ProtectSystem = "strict";
-            ProtectHome = false; # Models may be in /home
-            ReadWritePaths = [ cfg.cacheDir "/tmp" ];
+            ProtectHome = true;
+            ReadWritePaths = [ cfg.cacheDir "/tmp" "/var/lib/vllm" ];
             # PrivateTmp disabled: torch.compile (TritonBundler) writes cubin
             # cache to /tmp/torchinductor_root/. PrivateTmp wipes this on each
             # restart, causing "Cubin file not found" crashes. LINDA's /tmp is
@@ -372,10 +382,11 @@ in
       allowedTCPPorts = map (m: m.port) modelList;
     };
 
-    # Cache directory
+    # Cache directories — owned by vllm service user
     systemd.tmpfiles.rules = [
-      "d ${cfg.cacheDir} 0755 root root -"
-      "d ${cfg.cacheDir}/torch_compile 0755 root root -"
+      "d ${cfg.cacheDir} 0755 vllm vllm -"
+      "d ${cfg.cacheDir}/torch_compile 0755 vllm vllm -"
+      "d ${cfg.cacheDir}/huggingface 0755 vllm vllm -"
     ];
   };
 }
