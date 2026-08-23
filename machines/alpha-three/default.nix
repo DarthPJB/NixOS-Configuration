@@ -167,6 +167,14 @@
       mode = "0440";
     };
   };
+  secrix.system.secrets.open-webui-env = {
+    encrypted.file = "${self}/secrets/open-webui-env";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
 
   # OpenCode fleet configuration — full fleet with MCP servers
   services.opencode-fleet = {
