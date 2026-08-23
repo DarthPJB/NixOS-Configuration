@@ -168,7 +168,7 @@
     };
   };
   secrix.system.secrets.open-webui-env = {
-    encrypted.file = "${self}/secrets/open-webui-env";
+    encrypted.file = "${self}/secrets/litellm-openai-env";
     decrypted = {
       user = "John88";
       group = "users";
