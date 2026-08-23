@@ -39,10 +39,18 @@
         url = "http://10.88.127.88:11434";
         models = [
           "qwen3.8:27b-q4_K_M"
-          "qwen2.5-coder:32b-instruct-q5_K_M"
+          "qwen3-coder:30b-a3b-q4_K_M"
+          "laguna-s-2.1:q4_K_M"
           "laguna-xs-2.1:q4_K_M"
         ];
         additional_drop_params = [ "reasoningSummary" "reasoning_effort" ];
+      };
+      linda-vllm = {
+        url = "http://10.88.127.88:8001/v1";
+        modelType = "openai";
+        models = [
+          "qwen2.5-vl"
+        ];
       };
       cluster-box = {
         url = "http://10.88.127.211:11434";

@@ -328,8 +328,9 @@ in
           description = "vLLM Inference Server — ${modelCfg.name}";
           after = [ "network-online.target" ]
             ++ lib.optionals (idx > 0) [ "vllm-${(lib.elemAt modelList (idx - 1)).name}.service" ];
+          requires = lib.optionals (idx > 0) [ "vllm-${(lib.elemAt modelList (idx - 1)).name}.service" ];
           wants = [ "network-online.target" ];
-          wantedBy = [ "multi-user.target" ];
+          wantedBy = lib.mkIf (idx == 0) [ "multi-user.target" ];
           startLimitBurst = 3;
           startLimitIntervalSec = 300;
 

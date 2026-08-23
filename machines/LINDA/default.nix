@@ -64,25 +64,15 @@
     };
     models = [
       {
-        name = "qwen3-8b";
-        model = "Qwen/Qwen3-8B";
-        servedModelName = "qwen3";
+        name = "qwen2.5-vl";
+        model = "Qwen/Qwen2.5-VL-7B-Instruct-AWQ";
+        servedModelName = "qwen2.5-vl";
         port = 8001;
+        maxModelLen = "8192";
         extraArgs = [
           "--enable-prefix-caching"
           "--max-num-seqs"
           "16"
-        ];
-      }
-      {
-        name = "qwen2.5-starter";
-        model = "Qwen/Qwen2.5-1.5B-Instruct";
-        servedModelName = "qwen2.5-starter";
-        port = 8002;
-        extraArgs = [
-          "--enable-prefix-caching"
-          "--max-num-seqs"
-          "32"
         ];
       }
     ];

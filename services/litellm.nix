@@ -6,13 +6,18 @@
         options = {
           url = lib.mkOption {
             type = lib.types.str;
-            description = "Ollama API base URL (WireGuard plane)";
+            description = "API base URL (WireGuard plane)";
             example = "http://10.88.127.88:11434";
           };
           models = lib.mkOption {
             type = lib.types.listOf lib.types.str;
             default = [ ];
             description = "Model tags served by this backend; routed as <name>/<model>";
+          };
+          modelType = lib.mkOption {
+            type = lib.types.enum [ "ollama_chat" "openai" ];
+            default = "ollama_chat";
+            description = "Model API type. Use 'openai' for vLLM or other OpenAI-compatible endpoints.";
           };
           additional_drop_params = lib.mkOption {
             type = lib.types.listOf lib.types.str;
@@ -23,7 +28,7 @@
       }
     );
     default = { };
-    description = "Ollama backend endpoints. Gateway mode when non-empty.";
+    description = "LLM backend endpoints. Gateway mode when non-empty.";
   };
 
   options.services.litellm.environmentFileSecret = lib.mkOption {
@@ -59,7 +64,7 @@
                 then "${name}/${name}-${m}"
                 else "${name}/${m}";
               litellm_params = {
-                model = "ollama_chat/${m}";
+                model = "${cfg.modelType}/${m}";
                 api_base = cfg.url;
               } // lib.optionalAttrs (cfg.additional_drop_params != [ ]) {
                 additional_drop_params = cfg.additional_drop_params;
