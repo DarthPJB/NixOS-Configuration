@@ -633,7 +633,7 @@
         };
         alpha-three = mkX86_64 "alpha-three" {
           host = topoIp "alpha-three";
-          debug = true;
+          # debug = true;
           images = {
             raw = {
               enable = true;
