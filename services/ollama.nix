@@ -21,6 +21,17 @@
       "laguna-s-2.1:q4_K_M"
       "laguna-xs-2.1:q4_K_M"
     ];
+    # Runtime envelope — all four models are 256K-native (verified via /api/show).
+    # Upstream default num_ctx=4096 silently truncates real client prompts
+    # (log-proven: 31,608-token prompt cut to 2,051; system prompts destroyed).
+    # q4_0 KV cache makes the full window affordable on CPU:
+    # ~15-16 GiB KV/model instead of ~40 GiB at f16.
+    # Sampling is intentionally NOT set here — each model carries its own
+    # baked PARAMETERs which take precedence over env defaults anyway.
+    environmentVariables = {
+      OLLAMA_CONTEXT_LENGTH = "262144";
+      OLLAMA_KV_CACHE_TYPE = "q4_0";
+    };
   };
   environment.systemPackages = [
     # MCP servers now provided by opencode-fleet module
