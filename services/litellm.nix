@@ -192,11 +192,12 @@
             cfg.models)
         config.services.litellm.backends);
 
-      litellmSettings = lib.filterAttrs (_: v: v != null) {
-        drop_params = config.services.litellm.dropParams;
-        num_retries = config.services.litellm.numRetries;
-        request_timeout = config.services.litellm.requestTimeout;
-      } // lib.optionalAttrs (config.services.litellm.fallbacks != [ ]) {
+      litellmSettings = lib.filterAttrs (_: v: v != null)
+        {
+          drop_params = config.services.litellm.dropParams;
+          num_retries = config.services.litellm.numRetries;
+          request_timeout = config.services.litellm.requestTimeout;
+        } // lib.optionalAttrs (config.services.litellm.fallbacks != [ ]) {
         fallbacks = config.services.litellm.fallbacks;
       };
     in
