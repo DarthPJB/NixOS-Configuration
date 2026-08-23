@@ -824,63 +824,6 @@
         "sslTrustedCertificate": null,
         "useACMEHost": "johnbargman.net"
       },
-      "litellm-ollama-facade": {
-        "acmeFallbackHost": null,
-        "acmeRoot": "/var/lib/acme/acme-challenge",
-        "addSSL": false,
-        "basicAuth": {},
-        "basicAuthFile": null,
-        "default": false,
-        "enableACME": false,
-        "extraConfig": "",
-        "forceSSL": false,
-        "globalRedirect": null,
-        "http2": true,
-        "http3": true,
-        "http3_hq": false,
-        "kTLS": false,
-        "listen": [
-          {
-            "addr": "127.0.0.1",
-            "extraParameters": [],
-            "port": 11434,
-            "proxyProtocol": false,
-            "ssl": false
-          }
-        ],
-        "listenAddresses": [],
-        "locations": {
-          "/": {
-            "alias": null,
-            "basicAuth": {},
-            "basicAuthFile": null,
-            "extraConfig": "include /run/nginx/litellm-ui-auth.conf;\nproxy_pass http://127.0.0.1:8080/ollama/;\nproxy_http_version 1.1;\nproxy_set_header Host $host;\nproxy_set_header Connection \"\";\nproxy_buffering off;\nproxy_read_timeout 1200s;\nproxy_send_timeout 1200s;\n",
-            "fastcgiParams": {},
-            "index": null,
-            "priority": 1000,
-            "proxyPass": null,
-            "proxyWebsockets": false,
-            "recommendedProxySettings": false,
-            "recommendedUwsgiSettings": false,
-            "return": null,
-            "root": null,
-            "tryFiles": null,
-            "uwsgiPass": null
-          }
-        },
-        "onlySSL": false,
-        "quic": false,
-        "redirectCode": 301,
-        "rejectSSL": false,
-        "reuseport": false,
-        "root": null,
-        "serverAliases": [],
-        "serverName": null,
-        "sslCertificate": "<eval-error>",
-        "sslCertificateKey": "<eval-error>",
-        "sslTrustedCertificate": null,
-        "useACMEHost": null
-      },
       "ollama.johnbargman.net": {
         "acmeFallbackHost": null,
         "acmeRoot": "/var/lib/acme/acme-challenge",
