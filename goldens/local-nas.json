@@ -257,6 +257,7 @@
     "<derivation:dbus-1.16.2>",
     "<derivation:dbus-broker-37>",
     "<derivation:wireguard-tools-1.0.20260223>",
+    "<derivation:tailscale-1.98.5>",
     "<derivation:iptables-1.8.13>",
     "<derivation:nixos-firewall-tool>",
     "<derivation:dhcpcd-10.3.1>",
@@ -3830,7 +3831,7 @@
     }
   },
   "services.tailscale": {
-    "authKeyFile": null,
+    "authKeyFile": "/run/tailscaled-keys/auth-key",
     "authKeyParameters": {
       "baseURL": null,
       "ephemeral": null,
@@ -3848,7 +3849,7 @@
     },
     "disableTaildrop": false,
     "disableUpstreamLogging": false,
-    "enable": false,
+    "enable": true,
     "extraDaemonFlags": [],
     "extraSetFlags": [],
     "extraUpFlags": [],

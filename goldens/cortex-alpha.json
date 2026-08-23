@@ -3824,7 +3824,7 @@
     "enable": true,
     "extraDaemonFlags": [],
     "extraSetFlags": [
-      "--advertise-routes=10.88.128.88/32,10.88.127.107/32,10.88.128.248/32,10.88.128.247/32"
+      "--advertise-routes=10.88.128.88/32,10.88.127.107/32,10.88.128.248/32,10.88.128.247/32,10.88.127.3/32"
     ],
     "extraUpFlags": [],
     "interfaceName": "tailscale0",
