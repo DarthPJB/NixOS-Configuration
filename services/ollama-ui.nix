@@ -19,8 +19,12 @@ in
     host = "127.0.0.1";
     package = pkgsNoCuda.open-webui;
     environment = {
-      OPENAI_API_BASE_URL = "https://agentic-gateway.johnbargman.net";
+      # Internal URL — open-webui is on the same machine as LiteLLM.
+      # Using the external URL would round-trip through nginx TLS unnecessarily.
+      OPENAI_API_BASE_URL = "http://127.0.0.1:8080";
     };
+    # Environment file must contain OPENAI_API_KEY for LiteLLM authentication.
+    # Encrypted from secrets/litellm-openai-env via secrix.
     environmentFile = config.secrix.system.secrets.open-webui-env.decrypted.path;
   };
 }
