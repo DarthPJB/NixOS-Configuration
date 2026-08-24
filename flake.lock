@@ -1994,11 +1994,11 @@
         "nixpkgs": "nixpkgs_20"
       },
       "locked": {
-        "lastModified": 1785342915,
-        "narHash": "sha256-Sy4qaemi8fglo8It+n5uqOBPKspXW3DXtecKk/0Sl9I=",
+        "lastModified": 1787488828,
+        "narHash": "sha256-wNLAmeBHZCOi/Duo9d/guUfct7RsjvelWJExgVXqgik=",
         "ref": "refs/heads/main",
-        "rev": "bcebab7dd007e2e6741b86cf54d6b3db47261afb",
-        "revCount": 76,
+        "rev": "942adb91774d1da45af8278da85ad417029e2cbb",
+        "revCount": 83,
         "type": "git",
         "url": "https://gitlab.com/mecha-team-zero/bargman-website.git"
       },
