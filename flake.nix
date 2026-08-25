@@ -721,6 +721,7 @@
         };
         remote-worker = mkX86_64 "remote-worker" {
           host = topoIp "remote-worker";
+          debug = true;
           extraModules = [
             ./users/build.nix
             # Topology-derive owns johnbargman.net/.com vhosts (see topology/remote-worker.json).
