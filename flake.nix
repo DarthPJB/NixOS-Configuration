@@ -103,13 +103,18 @@
       # LLM nixpkgs instance — imported WITHOUT global cudaSupport so torch and
       # every other package stay CPU-only. CUDA is scoped to vLLM exclusively
       # via the pkgsCuda overlay below (see documentation/ai-upgrades.md P3).
-      pkgs_llm = import nixpkgs_llm {
+      # Using nixpkgs_stable for vllm — stable has working CUDA builds.
+      pkgs_llm = import nixpkgs_stable {
         system = "x86_64-linux";
         config.allowUnfree = true;
+        config.permittedInsecurePackages = [
+          "python3.13-vllm-0.16.0"
+        ];
         config.problems.handlers = {
           # CUDA vLLM and its CUDA-only deps are marked broken upstream; warn
           # instead of failing so the scoped pkgsCuda.vllm override can build.
           vllm.broken = "warn";
+          flashinfer.broken = "warn";
           flashinfer-python.broken = "warn";
           tokenspeed-mla.broken = "warn";
         };
