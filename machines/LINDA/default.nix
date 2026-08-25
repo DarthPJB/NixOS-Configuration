@@ -10,7 +10,6 @@
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
-    ../../services/ollama.nix
     ../../services/gitlab-credentials.nix
     ../../modules/enable-wg-topology.nix
     ../../environments/i3wm_darthpjb.nix
@@ -44,14 +43,17 @@
 
   # ── vLLM Inference Server ─────────────────────────────────────
   # OpenAI-compatible API — multiple models served on separate ports
-  # LINDA: RTX 3060 (12GB VRAM) — only one model loaded at a time
-  # GTX 1050 (2GB) is too small for inference; only RTX 3060 is used
+  # LINDA: RTX 3060 (12GB VRAM) — GPU model on :8001
+  #        CPU inference — CPU models on :8002 and :8003
   #
   # Models:
-  #   qwen3-8b:    Qwen3-8B       — general purpose, ~5GB VRAM, ~42 tok/s
-  #   qwen2.5-starter: Qwen2.5-1.5B-Instruct — lightweight starter, ~1GB VRAM
+  #   qwen2.5-vl:          Qwen/Qwen2.5-VL-7B-Instruct-AWQ — GPU (RTX 3060), :8001
+  #   qwen3-30b-a3b:       Qwen/Qwen3-30B-A3B — CPU, :8002
+  #   qwen3-coder-30b-a3b: Qwen/Qwen3-Coder-30B-A3B-Instruct — CPU, :8003
   #
-  # Laguna XS 2.1 runs in Ollama (CPU/GPU hybrid) — 33B MoE won't fit in 12GB VRAM
+  # CPU model weights load from the Nix store (self.models.*) — no runtime
+  # HuggingFace downloads.
+  # Laguna models (laguna-s/laguna-xs) are custom GGUF — NOT migrated; flagged for review.
   services.vllm = {
     enable = true;
     host = "0.0.0.0"; # Expose on WireGuard plane
@@ -74,6 +76,31 @@
           "--max-num-seqs"
           "16"
         ];
+      }
+      {
+        # CPU model — weights from the Nix store (pkgs/models/qwen3-30b-a3b.nix), pinned to a commit SHA.
+        name = "qwen3-30b-a3b";
+        model = "Qwen/Qwen3-30B-A3B";
+        modelPath = self.models.qwen3-30b-a3b;
+        servedModelName = "qwen3-30b-a3b";
+        port = 8002;
+        device = "cpu";
+        dtype = "bfloat16"; # Halves RAM vs float32 on AMD Zen
+        cpuKvCacheSpace = 40; # GiB
+        cpuOmpThreadsBind = "0-29"; # Pin OpenMP threads to 30 of 48 cores
+      }
+      {
+        # CPU coder model — weights from the Nix store (pkgs/models/qwen3-coder-30b-a3b.nix), pinned to a commit SHA.
+        # NOTE: official HF repo is Qwen/Qwen3-Coder-30B-A3B-Instruct — the bare -A3B repo does not exist.
+        name = "qwen3-coder-30b-a3b";
+        model = "Qwen/Qwen3-Coder-30B-A3B-Instruct";
+        modelPath = self.models.qwen3-coder-30b-a3b;
+        servedModelName = "qwen3-coder-30b-a3b";
+        port = 8003;
+        device = "cpu";
+        dtype = "bfloat16"; # Halves RAM vs float32 on AMD Zen
+        cpuKvCacheSpace = 40; # GiB
+        cpuOmpThreadsBind = "0-29"; # Pin OpenMP threads to 30 of 48 cores
       }
     ];
   };

@@ -19,7 +19,6 @@
     pkgs.cudaPackages.cudatoolkit
     #pkgs.cudaPackages.cudnn
     # pkgs.cudaPackages.cutensor
-    unstable.ollama-cuda
     (unstable.llama-cpp.override { cudaSupport = true; })
     (pkgs.colmap.override { cudaSupport = true; })
     (pkgs.blender.override { cudaSupport = true; })

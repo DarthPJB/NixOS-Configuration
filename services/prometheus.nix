@@ -79,6 +79,73 @@ in
           }
         ];
       }
+      # vLLM inference servers on LINDA (10.88.127.88)
+      # Each model serves its own /metrics endpoint (vLLM-only migration, Phase 4.1)
+      {
+        job_name = "vllm-gpu";
+        scrape_interval = "5s";
+        static_configs = [
+          {
+            labels = {
+              hostname = "LINDA";
+              device = "gpu";
+              model = "qwen2.5-vl";
+            };
+            targets = [
+              "10.88.127.88:8001"
+            ];
+          }
+        ];
+      }
+      {
+        job_name = "vllm-cpu";
+        scrape_interval = "5s";
+        static_configs = [
+          {
+            labels = {
+              hostname = "LINDA";
+              device = "cpu";
+              model = "qwen3-30b-a3b";
+            };
+            targets = [
+              "10.88.127.88:8002"
+            ];
+          }
+        ];
+      }
+      {
+        job_name = "vllm-cpu-coder";
+        scrape_interval = "5s";
+        static_configs = [
+          {
+            labels = {
+              hostname = "LINDA";
+              device = "cpu";
+              model = "qwen3-coder-30b-a3b";
+            };
+            targets = [
+              "10.88.127.88:8003"
+            ];
+          }
+        ];
+      }
+      # LiteLLM gateway on alpha-three (10.88.127.107:8080)
+      # Exposes /metrics via callbacks = [ "prometheus" ] (vLLM-only migration, Phase 4.2)
+      {
+        job_name = "litellm";
+        scrape_interval = "10s";
+        static_configs = [
+          {
+            labels = {
+              hostname = "alpha-three";
+              role = "gateway";
+            };
+            targets = [
+              "10.88.127.107:8080"
+            ];
+          }
+        ];
+      }
       {
         scrape_interval = "15s";
         job_name = "klipper";

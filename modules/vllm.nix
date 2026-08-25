@@ -21,25 +21,39 @@
 , lib
 , pkgs
 , pkgs_llm ? null
+, pkgsCuda ? null
 , ...
 }:
 
 let
   cfg = config.services.vllm;
 
-  # vLLM is in nixpkgs_llm (unstable), not stable nixpkgs
-  # pkgs_llm is passed via _module.args from the flake
+  # vLLM is in nixpkgs_llm (unstable), not stable nixpkgs.
+  # pkgsCuda / pkgs_llm are passed via _module.args from the flake.
+  # pkgsCuda is the CUDA-scoped overlay: ONLY vllm is rebuilt with CUDA, so
+  # GPU inference works without cascading cudaSupport to every other package
+  # (see documentation/ai-upgrades.md P3).
   vllmPackage =
-    if pkgs_llm != null && pkgs_llm ? vllm
+    if pkgsCuda != null && pkgsCuda ? vllm
+    then pkgsCuda.vllm
+    else if pkgs_llm != null && pkgs_llm ? vllm
     then pkgs_llm.vllm
     else pkgs.vllm;
 
   # Build the vllm serve command arguments for a model config
   buildVllmArgs = modelCfg: lib.concatStringsSep " " (
-    [ "--model" modelCfg.model ]
+    # modelPath (nix store) takes precedence over the HuggingFace model ID
+    [ "--model" (if modelCfg.modelPath != null then "${modelCfg.modelPath}" else modelCfg.model) ]
     ++ [ "--host" modelCfg.host "--port" (toString modelCfg.port) ]
-    ++ [ "--tensor-parallel-size" (toString modelCfg.tensorParallelSize) ]
-    ++ [ "--gpu-memory-utilization" (toString modelCfg.gpuMemoryUtilization) ]
+    # CPU inference: vLLM needs --device cpu; tensor parallelism and GPU
+    # memory utilization are GPU-only flags.
+    ++ lib.optionals (modelCfg.device == "cpu") [ "--device" "cpu" ]
+    ++ lib.optionals (modelCfg.device == "gpu") [
+      "--tensor-parallel-size"
+      (toString modelCfg.tensorParallelSize)
+      "--gpu-memory-utilization"
+      (toString modelCfg.gpuMemoryUtilization)
+    ]
     ++ lib.optionals (modelCfg.servedModelName != null) [
       "--served-model-name"
       modelCfg.servedModelName
@@ -74,6 +88,11 @@ let
     attentionBackend = cfg.attentionBackend;
     enforceEager = cfg.enforceEager;
     disableLogStats = cfg.disableLogStats;
+    # Hardware assignment and model source (Phase 2: vLLM-only migration)
+    device = cfg.device;
+    modelPath = cfg.modelPath;
+    cpuKvCacheSpace = cfg.cpuKvCacheSpace;
+    cpuOmpThreadsBind = cfg.cpuOmpThreadsBind;
   };
 
   # Build model list: either from models list or single model
@@ -92,13 +111,27 @@ let
       })
     ];
 
-  # Environment variables
+  # Environment variables, computed per model config.
   # TORCHINDUCTOR_CACHE_DIR: persist torch.compile cubin cache across service
   # restarts. Without this, PrivateTmp or /tmp cleanup destroys compiled kernels.
-  envVars = {
-    CUDA_VISIBLE_DEVICES = cfg.cudaVisibleDevices;
-    TORCHINDUCTOR_CACHE_DIR = "${cfg.cacheDir}/torch_compile";
-  } // cfg.environmentVariables;
+  # CPU models: blank CUDA_VISIBLE_DEVICES (no GPU access) and configure the
+  # CPU KV cache space / OpenMP thread binding via vLLM environment variables.
+  # modelPath: models already live in the nix store, so pin HF_HOME to the cache
+  # dir instead of a runtime download location.
+  envVarsFor = modelCfg:
+    {
+      CUDA_VISIBLE_DEVICES =
+        if modelCfg.device == "cpu" then "" else cfg.cudaVisibleDevices;
+      TORCHINDUCTOR_CACHE_DIR = "${cfg.cacheDir}/torch_compile";
+    }
+    // lib.optionalAttrs (modelCfg.device == "cpu") {
+      VLLM_CPU_KVCACHE_SPACE = toString modelCfg.cpuKvCacheSpace;
+      VLLM_CPU_OMP_THREADS_BIND = modelCfg.cpuOmpThreadsBind;
+    }
+    // lib.optionalAttrs (modelCfg.modelPath != null) {
+      HF_HOME = "${cfg.cacheDir}/huggingface";
+    }
+    // cfg.environmentVariables;
 
 in
 {
@@ -146,10 +179,63 @@ in
             default = 8000;
             description = "Port for this model's API server";
           };
+          device = lib.mkOption {
+            type = lib.types.enum [
+              "gpu"
+              "cpu"
+            ];
+            default = cfg.device;
+            description = ''
+              Device to run inference on: "gpu" (CUDA/NVIDIA) or "cpu" (CPU-only).
+              CPU models get no GPU access and use vLLM's CPU backend.
+              Defaults to the global services.vllm.device.
+            '';
+          };
+          cpuKvCacheSpace = lib.mkOption {
+            type = lib.types.int;
+            default = cfg.cpuKvCacheSpace;
+            description = ''
+              CPU KV cache size in GiB (used when device == "cpu").
+              Defaults to the global services.vllm.cpuKvCacheSpace.
+            '';
+          };
+          cpuOmpThreadsBind = lib.mkOption {
+            type = lib.types.str;
+            default = cfg.cpuOmpThreadsBind;
+            description = ''
+              CPU core binding for OpenMP threads (used when device == "cpu").
+              Defaults to the global services.vllm.cpuOmpThreadsBind.
+            '';
+          };
+          modelPath = lib.mkOption {
+            type = lib.types.nullOr lib.types.path;
+            default = cfg.modelPath;
+            description = ''
+              Path to a model in the nix store. When set, vLLM loads the model
+              from this path instead of downloading it from HuggingFace. Accepts
+              a store path, an absolute path, or a derivation (e.g. self.models.qwen3-8b).
+              Defaults to the global services.vllm.modelPath.
+            '';
+          };
           maxModelLen = lib.mkOption {
             type = lib.types.nullOr lib.types.str;
             default = null;
             description = "Maximum context length for this model";
+          };
+          dtype = lib.mkOption {
+            type = lib.types.nullOr (lib.types.enum [
+              "auto"
+              "bfloat16"
+              "float16"
+              "float32"
+            ]);
+            default = cfg.dtype;
+            description = ''
+              Data type for model weights and activations.
+              "auto" uses FP16 for FP32/FP16 models, BF16 for BF16 models.
+              CPU models: "bfloat16" halves RAM vs float32 on AMD Zen.
+              Defaults to the global services.vllm.dtype.
+            '';
           };
           quantization = lib.mkOption {
             type = lib.types.nullOr lib.types.str;
@@ -269,6 +355,46 @@ in
       '';
     };
 
+    device = lib.mkOption {
+      type = lib.types.enum [
+        "gpu"
+        "cpu"
+      ];
+      default = "gpu";
+      description = ''
+        Device to run inference on: "gpu" (CUDA/NVIDIA) or "cpu" (CPU-only).
+        CPU models get no GPU access and use vLLM's CPU backend.
+      '';
+    };
+
+    modelPath = lib.mkOption {
+      type = lib.types.nullOr lib.types.path;
+      default = null;
+      example = "/nix/store/...-qwen3-8b";
+      description = ''
+        Path to a model in the nix store. When set, vLLM loads the model from
+        this path instead of downloading it from HuggingFace. Accepts a store
+        path, an absolute path, or a derivation (e.g. pkgs.models.qwen3-8b).
+      '';
+    };
+
+    cpuKvCacheSpace = lib.mkOption {
+      type = lib.types.int;
+      default = 4;
+      example = 40;
+      description = "CPU KV cache size in GiB (used when device == \"cpu\")";
+    };
+
+    cpuOmpThreadsBind = lib.mkOption {
+      type = lib.types.str;
+      default = "auto";
+      example = "0-29";
+      description = ''
+        CPU core binding for OpenMP threads (used when device == "cpu").
+        "auto" lets vLLM decide; a range like "0-29" pins threads to cores.
+      '';
+    };
+
     environmentVariables = lib.mkOption {
       type = lib.types.attrsOf lib.types.str;
       default = { };
@@ -309,16 +435,18 @@ in
         message = "services.vllm.gpuMemoryUtilization must be between 0.0 and 1.0";
       }
       {
-        assertion = cfg.model != "" || cfg.models != [ ];
-        message = "services.vllm: either 'model' or 'models' must be set";
+        assertion = cfg.cpuKvCacheSpace >= 1;
+        message = "services.vllm.cpuKvCacheSpace must be >= 1 (GiB)";
+      }
+      {
+        assertion = cfg.model != "" || cfg.models != [ ] || cfg.modelPath != null;
+        message = "services.vllm: either 'model', 'models', or 'modelPath' must be set";
       }
     ];
 
-    # Ensure CUDA support is enabled system-wide
-    nixpkgs.config = {
-      cudaSupport = true;
-      cudnnSupport = true;
-    };
+    # CUDA is scoped to the vllm package itself via pkgsCuda (see flake.nix) —
+    # NOT set globally here. A global nixpkgs.config.cudaSupport would cascade
+    # CUDA into every package on the machine (torch, ollama, blender, etc.).
 
     # Add vLLM and runtime dependencies to system packages
     environment.systemPackages = [ cfg.package pkgs.which ];
@@ -348,7 +476,7 @@ in
           startLimitBurst = 3;
           startLimitIntervalSec = 300;
 
-          environment = lib.mapAttrs (_: toString) envVars;
+          environment = lib.mapAttrs (_: toString) (envVarsFor modelCfg);
 
           serviceConfig = {
             ExecStart = "${lib.getExe' cfg.package "vllm"} serve ${buildVllmArgs modelCfg}";
@@ -358,6 +486,10 @@ in
             RestartSec = 15;
             TimeoutStartSec = 300; # Model loading can take time
             TimeoutStopSec = 30;
+
+            # CPU models: cap memory to protect the host (weights + KV cache
+            # live in RAM instead of VRAM).
+            MemoryMax = lib.mkIf (modelCfg.device == "cpu") "80%";
 
             # Security hardening
             NoNewPrivileges = true;

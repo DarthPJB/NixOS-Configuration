@@ -7,7 +7,7 @@
           url = lib.mkOption {
             type = lib.types.str;
             description = "API base URL (WireGuard plane)";
-            example = "http://10.88.127.88:11434/v1";
+            example = "http://10.88.127.88:8002/v1";
           };
           models = lib.mkOption {
             type = lib.types.listOf lib.types.str;
@@ -127,13 +127,19 @@
       Global litellm_settings.fallbacks. Each entry is { "model-group" = [ "fallback-group" ]; }.
       Empty = no fallbacks.
     '';
-    example = [{ "linda-vllm/qwen2.5-vl" = [ "linda/qwen3.8:27b-q4_K_M" ]; }];
+    example = [{ "linda-vllm/qwen2.5-vl" = [ "linda-vllm-cpu/qwen3-30b-a3b" ]; }];
   };
 
   options.services.litellm.requestTimeout = lib.mkOption {
     type = lib.types.nullOr lib.types.ints.positive;
     default = null;
     description = "Global litellm_settings.request_timeout in seconds. Unset = LiteLLM default (6000s).";
+  };
+
+  options.services.litellm.callbacks = lib.mkOption {
+    type = lib.types.listOf lib.types.str;
+    default = [ ];
+    description = "LiteLLM callbacks (litellm_settings.callbacks). Set to [ \"prometheus\" ] to expose /metrics for Prometheus scraping.";
   };
 
   config.secrix.services.litellm.secrets.litellm-env.encrypted.file =
@@ -197,6 +203,7 @@
           drop_params = config.services.litellm.dropParams;
           num_retries = config.services.litellm.numRetries;
           request_timeout = config.services.litellm.requestTimeout;
+          callbacks = config.services.litellm.callbacks;
         } // lib.optionalAttrs (config.services.litellm.fallbacks != [ ]) {
         fallbacks = config.services.litellm.fallbacks;
       };

@@ -100,6 +100,31 @@
         if wgCoord != null then
           coordToIp wgCoord
         else throw "topoIp: ${machineName} has no WG coordinate in topology JSON";
+      # LLM nixpkgs instance — imported WITHOUT global cudaSupport so torch and
+      # every other package stay CPU-only. CUDA is scoped to vLLM exclusively
+      # via the pkgsCuda overlay below (see documentation/ai-upgrades.md P3).
+      pkgs_llm = import nixpkgs_llm {
+        system = "x86_64-linux";
+        config.allowUnfree = true;
+        config.problems.handlers = {
+          # CUDA vLLM and its CUDA-only deps are marked broken upstream; warn
+          # instead of failing so the scoped pkgsCuda.vllm override can build.
+          vllm.broken = "warn";
+          flashinfer-python.broken = "warn";
+          tokenspeed-mla.broken = "warn";
+        };
+      };
+      # CUDA-scoped overlay: only `vllm` is rebuilt with CUDA (CUDA torch +
+      # CUDA build inputs). Everything else in pkgs_llm remains CPU-only —
+      # no global cudaSupport cascade.
+      pkgsCuda = pkgs_llm.extend (final: prev: {
+        vllm = prev.python313Packages.toPythonApplication (
+          prev.python313Packages.vllm.override {
+            cudaSupport = true;
+            torch = prev.python313Packages.torch.override { cudaSupport = true; };
+          }
+        );
+      });
       globalArgs = {
         inherit self;
         inherit ikbaeb-th;
@@ -107,7 +132,8 @@
         inherit denton-glasses;
         inherit personal-site;
         inherit LLM-CORE;
-        pkgs_llm = import nixpkgs_llm { system = "x86_64-linux"; config.allowUnfree = true; config.cudaSupport = true; config.problems.handlers.vllm.broken = "warn"; };
+        inherit pkgs_llm;
+        inherit pkgsCuda;
       };
       minecraft-curseforge-builder = nixpkgs.callPackage ./pkgs/minecraft-curseforge { };
       prometheus-mcp-server-builder = nixpkgs.callPackage ./pkgs/prometheus-mcp-server { };
@@ -170,7 +196,7 @@
               _module.args = globalArgs // {
                 inherit hostname;
                 unstable = import nixpkgs_unstable { localSystem = "x86_64-linux"; config.allowUnfree = true; };
-                pkgs_llm = import nixpkgs_llm { localSystem = "x86_64-linux"; config.allowUnfree = true; config.cudaSupport = true; config.problems.handlers.vllm.broken = "warn"; };
+                # pkgs_llm / pkgsCuda inherited from globalArgs — no duplicate import
                 nixinate = {
                   inherit host sshUser buildOn debug;
                   port = sshPort;

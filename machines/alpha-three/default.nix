@@ -31,21 +31,14 @@
 
   # ── Fleet LLM Gateway ──────────────────────────────────────────
   # Backends on the WireGuard plane (10.88.127.0/24):
-  #   linda       = 10.88.127.88  (qwen fleet)
+  #   linda       = 10.88.127.88  (vLLM: GPU :8001, CPU :8002/:8003)
   #   cluster-box = 10.88.127.211 (Malayalam: laguna/ornith; dlyon-operated)
   services.litellm = {
     environmentFileSecret = ../../secrets/litellm-env;
+    # Expose /metrics for Prometheus scraping (vLLM-only migration, Phase 4.2)
+    callbacks = [ "prometheus" ];
     backends = {
-      linda = {
-        url = "http://10.88.127.88:11434/v1";
-        models = [
-          "qwen3.8:27b-q4_K_M"
-          "qwen3-coder:30b-a3b-q4_K_M"
-          "laguna-s-2.1:q4_K_M"
-          "laguna-xs-2.1:q4_K_M"
-        ];
-        additional_drop_params = [ "reasoningSummary" "reasoning_effort" ];
-      };
+      # LINDA vLLM GPU (RTX 3060) — qwen2.5-vl on :8001
       linda-vllm = {
         url = "http://10.88.127.88:8001/v1";
         modelType = "hosted_vllm";
@@ -58,6 +51,32 @@
         mode = "chat";
         supportsVision = true;
         supportsVideoInput = true;
+      };
+      # LINDA vLLM CPU — Qwen3-30B-A3B on :8002
+      linda-vllm-cpu = {
+        url = "http://10.88.127.88:8002/v1";
+        modelType = "hosted_vllm";
+        apiKey = "none";
+        models = [
+          "qwen3-30b-a3b"
+        ];
+        # Matches vLLM CPU model (Qwen3 native 32K context; maxModelLen unset on LINDA)
+        maxTokens = 32768;
+        mode = "chat";
+        # Qwen3 emits reasoning params — drop them from requests to this backend
+        additional_drop_params = [ "reasoningSummary" "reasoning_effort" ];
+      };
+      # LINDA vLLM CPU — Qwen3-Coder-30B-A3B on :8003
+      linda-vllm-coder = {
+        url = "http://10.88.127.88:8003/v1";
+        modelType = "hosted_vllm";
+        apiKey = "none";
+        models = [
+          "qwen3-coder-30b-a3b"
+        ];
+        maxTokens = 32768;
+        mode = "chat";
+        additional_drop_params = [ "reasoningSummary" "reasoning_effort" ];
       };
       cluster-box = {
         url = "http://10.88.127.211:11434/v1";
