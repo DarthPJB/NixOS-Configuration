@@ -505,6 +505,15 @@
         };
       };
 
+      # Nix-managed HuggingFace model packages (see pkgs/models/).
+      # Plain attrset (not per-system): model derivations are platform-independent
+      # data fetches, and `nix build .#models.qwen3-8b` resolves directly.
+      models = {
+        qwen3-8b = nixpkgs.callPackage ./pkgs/models/qwen3-8b.nix { };
+        qwen3-30b-a3b = nixpkgs.callPackage ./pkgs/models/qwen3-30b-a3b.nix { };
+        qwen3-coder-30b-a3b = nixpkgs.callPackage ./pkgs/models/qwen3-coder-30b-a3b.nix { };
+      };
+
       packages = {
         "x86_64-linux" = {
           lightdm-webkit2-greeter = nixpkgs.callPackage ./pkgs/lightdm-webkit2-greeter.nix { };
