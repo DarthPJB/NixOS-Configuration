@@ -478,8 +478,8 @@ in
 
           environment = lib.mapAttrs (_: toString) (envVarsFor modelCfg);
 
-          # vLLM needs `which`, CUDA toolkit (nvcc), and ninja for FlashInfer JIT
-          path = [ pkgs.which pkgs.cudaPackages.cudatoolkit pkgs.ninja ];
+          # vLLM needs `which`, CUDA toolkit (nvcc), ninja, and GCC (c++) for FlashInfer JIT
+          path = [ pkgs.which pkgs.cudaPackages.cudatoolkit pkgs.ninja pkgs.gcc ];
           serviceConfig = {
             ExecStart = "${lib.getExe' cfg.package "vllm"} serve ${buildVllmArgs modelCfg}";
             User = "vllm";
