@@ -72,7 +72,8 @@ let
     ]
     ++ lib.optionals (modelCfg.attentionBackend != null) [
       "--attention-backend"
-      modelCfg.attentionBackend
+      # CPU models must use TORCH_SDPA (FLASH_ATTN requires GPU)
+      (if modelCfg.device == "cpu" then "TORCH_SDPA" else modelCfg.attentionBackend)
     ]
     ++ lib.optionals modelCfg.enforceEager [ "--enforce-eager" ]
     ++ lib.optionals modelCfg.disableLogStats [ "--disable-log-stats" ]
