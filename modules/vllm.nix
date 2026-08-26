@@ -118,11 +118,15 @@ let
   # CPU KV cache space / OpenMP thread binding via vLLM environment variables.
   # modelPath: models already live in the nix store, so pin HF_HOME to the cache
   # dir instead of a runtime download location.
+  # VLLM_USE_FLASHINFER_SAMPLER=0: disable FlashInfer JIT for sampling, use
+  # pre-compiled triton fallback instead. Avoids need for gcc/ninja/nvcc at
+  # runtime and allows security hardening to remain enabled.
   envVarsFor = modelCfg:
     {
       CUDA_VISIBLE_DEVICES =
         if modelCfg.device == "cpu" then "" else cfg.cudaVisibleDevices;
       TORCHINDUCTOR_CACHE_DIR = "${cfg.cacheDir}/torch_compile";
+      VLLM_USE_FLASHINFER_SAMPLER = "0";
     }
     // lib.optionalAttrs (modelCfg.device == "cpu") {
       VLLM_CPU_KVCACHE_SPACE = toString modelCfg.cpuKvCacheSpace;
@@ -325,10 +329,10 @@ in
         "FLASHINFER"
         "TORCH_SDPA"
       ]);
-      default = null;
+      default = "FLASH_ATTN";
       description = ''
-        Attention backend. null = auto-select best for hardware.
-        FLASH_ATTN recommended for NVIDIA GPUs.
+        Attention backend. FLASH_ATTN uses pre-compiled kernels (no JIT).
+        FLASHINFER requires runtime JIT compilation (gcc, ninja, nvcc).
       '';
     };
 
@@ -449,9 +453,7 @@ in
     # CUDA into every package on the machine (torch, ollama, blender, etc.).
 
     # Add vLLM and runtime dependencies to system packages
-    # GCC and ninja needed system-wide for FlashInfer JIT (ninja spawns
-    # /bin/sh -c "c++ ..." which doesn't inherit systemd PATH)
-    environment.systemPackages = [ cfg.package pkgs.which pkgs.gcc pkgs.ninja ];
+    environment.systemPackages = [ cfg.package pkgs.which ];
 
     # Dedicated system user — no login, no home shell, group for cache access
     users.groups.vllm = { };
@@ -480,8 +482,6 @@ in
 
           environment = lib.mapAttrs (_: toString) (envVarsFor modelCfg);
 
-          # vLLM needs `which`, CUDA toolkit (nvcc), ninja, and GCC (c++) for FlashInfer JIT
-          path = [ pkgs.which pkgs.cudaPackages.cudatoolkit pkgs.ninja pkgs.gcc ];
           serviceConfig = {
             ExecStart = "${lib.getExe' cfg.package "vllm"} serve ${buildVllmArgs modelCfg}";
             User = "vllm";
@@ -495,14 +495,10 @@ in
             # live in RAM instead of VRAM).
             MemoryMax = lib.mkIf (modelCfg.device == "cpu") "80%";
 
-            # Security hardening — DISABLED for FlashInfer JIT
-            # FlashInfer JIT compiles CUDA kernels at runtime via ninja/c++/nvcc.
-            # posix_spawn fails under any ProtectSystem setting because the
-            # spawned compiler subprocess needs full filesystem access.
-            # TODO: Pre-compile FlashInfer kernels at build time to re-enable.
-            # NoNewPrivileges = true;
-            # ProtectSystem = true;
-            # ProtectHome = true;
+            # Security hardening
+            NoNewPrivileges = true;
+            ProtectSystem = "strict";
+            ProtectHome = true;
             ReadWritePaths = [ cfg.cacheDir "/tmp" "/var/lib/vllm" ];
             # PrivateTmp disabled: torch.compile (TritonBundler) writes cubin
             # cache to /tmp/torchinductor_root/. PrivateTmp wipes this on each
