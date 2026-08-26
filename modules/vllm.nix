@@ -478,6 +478,8 @@ in
 
           environment = lib.mapAttrs (_: toString) (envVarsFor modelCfg);
 
+          # vLLM needs `which` to locate CUDA tools
+          path = [ pkgs.which ];
           serviceConfig = {
             ExecStart = "${lib.getExe' cfg.package "vllm"} serve ${buildVllmArgs modelCfg}";
             User = "vllm";
