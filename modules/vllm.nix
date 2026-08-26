@@ -33,12 +33,15 @@ let
   # pkgsCuda is the CUDA-scoped overlay: ONLY vllm is rebuilt with CUDA, so
   # GPU inference works without cascading cudaSupport to every other package
   # (see documentation/ai-upgrades.md P3).
-  vllmPackage =
-    if pkgsCuda != null && pkgsCuda ? vllm
-    then pkgsCuda.vllm
-    else if pkgs_llm != null && pkgs_llm ? vllm
-    then pkgs_llm.vllm
-    else pkgs.vllm;
+  #
+  # CPU models need the CPU-only vllm package (pkgs_llm.vllm) because the
+  # CUDA build always tries to use the CUDA platform.
+  vllmPackageFor = modelCfg:
+    if modelCfg.device == "cpu" then
+      (if pkgs_llm != null && pkgs_llm ? vllm then pkgs_llm.vllm else pkgs.vllm)
+    else
+      (if pkgsCuda != null && pkgsCuda ? vllm then pkgsCuda.vllm else pkgs.vllm);
+  vllmPackage = vllmPackageFor { device = "gpu"; };
 
   # Build the vllm serve command arguments for a model config
   buildVllmArgs = modelCfg: lib.concatStringsSep " " (
@@ -484,7 +487,7 @@ in
           environment = lib.mapAttrs (_: toString) (envVarsFor modelCfg);
 
           serviceConfig = {
-            ExecStart = "${lib.getExe' cfg.package "vllm"} serve ${buildVllmArgs modelCfg}";
+            ExecStart = "${lib.getExe' (vllmPackageFor modelCfg) "vllm"} serve ${buildVllmArgs modelCfg}";
             User = "vllm";
             Group = "vllm";
             Restart = "on-failure";
