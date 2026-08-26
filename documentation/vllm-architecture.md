@@ -293,7 +293,7 @@ gateway health. Deferred — see Next Steps.
 ### Phase 5: Cleanup ✅
 
 - **5.1** `services/ollama.nix` archived to `services/archive/ollama.nix`; no Ollama references remain in LINDA config; `modifier_imports/cuda.nix` drops `unstable.ollama-cuda`
-- **5.2** CUDA scoping: global `cudaSupport = true` replaced by a scoped `pkgsCuda` overlay in flake.nix — only `vllm` is rebuilt with CUDA (CUDA torch + flashinfer); `config.problems.handlers.*.broken = "warn"` for CUDA-only deps; no duplicate nixpkgs imports. The overlay uses `python313Packages.overrideScope` to rebuild **torch and every torch-dependent package in the scoped set** (torchaudio, torchvision, xformers, triton) against the CUDA torch. A plain `vllm.override { cudaSupport = true; torch = ...; }` is NOT sufficient: vllm's transitive deps would stay bound to the CPU torch, both torches would land in the build env, and cmake's `find_package(Torch)` would pick the CPU `TorchConfig.cmake` (`CAFFE2_USE_CUDA=OFF`) → `CUDA_FOUND` never set → "Can't find CUDA or HIP installation."
+- **5.2** CUDA scoping: global `cudaSupport = true` replaced by a second `nixpkgs_llm` import (`pkgsCuda`) with `config.cudaSupport = true`. Not an overlay. `pkgs_llm` stays CPU-only. CPU units use `pkgsCpuVllm` (`pkgs/vllm-cpu`): wraps `pkgs_llm.vllm`, rewrites importlib.metadata Version to `${version}+cpu` so 0.24.0's `cpu_platform_plugin` selects CpuPlatform, and puts zentorch on PYTHONPATH. No vLLM rebuild, no source patch.
 - **5.3** Open-WebUI `pkgsNoCuda` duplicate-import workaround replaced with `pkgs.python3Packages.overrideScope` forcing `torch.cudaSupport = false` in-place (no second nixpkgs import; stable CPU binaries used)
 - **5.4** All 19 fleet goldens regenerated (topology wiring, firewall, module option defaults) and validated
 
@@ -314,16 +314,9 @@ gateway health. Deferred — see Next Steps.
    to vLLM module or LINDA config", which conflicted with the CPU-support work;
    fixed in commit `4da39c5`.
 5. **CUDA scoping approach** — plan anticipated a `pkgsCuda` overlay *or*
-   package-level overrides; implemented as a `pkgsCuda` overlay on a fresh
-   `nixpkgs_llm` import (CUDA vLLM only), replacing the old
-   `config.cudaSupport = true` import entirely. The first implementation only
-   overrode `vllm` + `torch` at the vllm level and failed with "Can't find CUDA
-   or HIP installation" — the fix requires `overrideScope` on
-   `python313Packages` so the CUDA torch propagates to ALL torch-dependent
-   packages, plus `triton = prev.python313Packages.triton-cuda` (referenced
-   from the outer scope to avoid `self.triton.override` recursion) so packages
-   depending on both torch and triton (e.g. xgrammar) don't hit a
-   duplicate-package closure conflict.
+   package-level overrides; implemented as a second `nixpkgs_llm` import
+   (`pkgsCuda`, `cudaSupport = true`) plus a cheap CPU wrapper (`pkgsCpuVllm`).
+   No overlay.
 6. **Open-WebUI workaround** — plan offered "remove pkgsNoCuda or document it";
    implemented a better fix: `overrideScope` on python3Packages to force CPU-only
    torch, eliminating the duplicate nixpkgs import.

@@ -22,26 +22,25 @@
 , pkgs
 , pkgs_llm ? null
 , pkgsCuda ? null
+, pkgsCpuVllm ? null
 , ...
 }:
 
 let
   cfg = config.services.vllm;
 
-  # vLLM is in nixpkgs_llm (unstable), not stable nixpkgs.
-  # pkgsCuda / pkgs_llm are passed via _module.args from the flake.
-  # pkgsCuda is the CUDA-scoped overlay: ONLY vllm is rebuilt with CUDA, so
-  # GPU inference works without cascading cudaSupport to every other package
-  # (see documentation/ai-upgrades.md P3).
-  #
-  # CPU models need the CPU-only vllm package (pkgs_llm.vllm) because the
-  # CUDA build always tries to use the CUDA platform.
-  vllmPackageFor = modelCfg:
-    if modelCfg.device == "cpu" then
-      (if pkgs_llm != null && pkgs_llm ? vllm then pkgs_llm.vllm else pkgs.vllm)
-    else
-      (if pkgsCuda != null && pkgsCuda ? vllm then pkgsCuda.vllm else pkgs.vllm);
-  vllmPackage = vllmPackageFor { device = "gpu"; };
+  # Two nixpkgs_llm imports in flake.nix — not an overlay:
+  #   pkgsCuda  — cudaSupport = true, GPU vLLM
+  #   pkgs_llm  — CPU-only, wrapped as pkgsCpuVllm (+cpu metadata + zentorch)
+  defaultGpuPackage =
+    if pkgsCuda != null && pkgsCuda ? vllm then pkgsCuda.vllm else pkgs.vllm;
+  defaultCpuPackage =
+    if pkgsCpuVllm != null then pkgsCpuVllm
+    else if pkgs_llm != null && pkgs_llm ? vllm then pkgs_llm.vllm
+    else pkgs.vllm;
+
+  packageFor = modelCfg:
+    if modelCfg.device == "cpu" then cfg.cpuPackage else cfg.gpuPackage;
 
   # Build the vllm serve command arguments for a model config
   buildVllmArgs = modelCfg: lib.concatStringsSep " " (
@@ -73,10 +72,9 @@ let
       "--quantization"
       modelCfg.quantization
     ]
-    ++ lib.optionals (modelCfg.attentionBackend != null) [
+    ++ lib.optionals (modelCfg.device == "gpu" && modelCfg.attentionBackend != null) [
       "--attention-backend"
-      # CPU models must use TORCH_SDPA (FLASH_ATTN requires GPU)
-      (if modelCfg.device == "cpu" then "TORCH_SDPA" else modelCfg.attentionBackend)
+      modelCfg.attentionBackend
     ]
     ++ lib.optionals modelCfg.enforceEager [ "--enforce-eager" ]
     ++ lib.optionals modelCfg.disableLogStats [ "--disable-log-stats" ]
@@ -130,12 +128,13 @@ let
       CUDA_VISIBLE_DEVICES =
         if modelCfg.device == "cpu" then "" else cfg.cudaVisibleDevices;
       TORCHINDUCTOR_CACHE_DIR = "${cfg.cacheDir}/torch_compile";
+    }
+    // lib.optionalAttrs (modelCfg.device == "gpu") {
       VLLM_USE_FLASHINFER_SAMPLER = "0";
     }
     // lib.optionalAttrs (modelCfg.device == "cpu") {
       VLLM_CPU_KVCACHE_SPACE = toString modelCfg.cpuKvCacheSpace;
       VLLM_CPU_OMP_THREADS_BIND = modelCfg.cpuOmpThreadsBind;
-      VLLM_TARGET_DEVICE = "cpu";
     }
     // lib.optionalAttrs (modelCfg.modelPath != null) {
       HF_HOME = "${cfg.cacheDir}/huggingface";
@@ -149,9 +148,23 @@ in
 
     package = lib.mkOption {
       type = lib.types.package;
-      default = vllmPackage;
-      defaultText = "vllmPackage (from nixpkgs_llm)";
-      description = "vLLM package to use";
+      default = cfg.gpuPackage;
+      defaultText = "config.services.vllm.gpuPackage";
+      description = "Default vLLM package (GPU). Prefer gpuPackage / cpuPackage.";
+    };
+
+    gpuPackage = lib.mkOption {
+      type = lib.types.package;
+      default = defaultGpuPackage;
+      defaultText = "pkgsCuda.vllm";
+      description = "vLLM package for GPU models (CUDA build)";
+    };
+
+    cpuPackage = lib.mkOption {
+      type = lib.types.package;
+      default = defaultCpuPackage;
+      defaultText = "pkgsCpuVllm";
+      description = "vLLM package for CPU models (+cpu metadata, zentorch)";
     };
 
     # Single model config (backward compatible)
@@ -453,12 +466,13 @@ in
       }
     ];
 
-    # CUDA is scoped to the vllm package itself via pkgsCuda (see flake.nix) —
+    # CUDA is scoped to a separate nixpkgs_llm import (pkgsCuda in flake.nix) —
     # NOT set globally here. A global nixpkgs.config.cudaSupport would cascade
     # CUDA into every package on the machine (torch, ollama, blender, etc.).
 
     # Add vLLM and runtime dependencies to system packages
-    environment.systemPackages = [ cfg.package pkgs.which ];
+    environment.systemPackages = [ cfg.gpuPackage pkgs.which ]
+      ++ lib.optional (lib.any (m: m.device == "cpu") modelList) cfg.cpuPackage;
 
     # Dedicated system user — no login, no home shell, group for cache access
     users.groups.vllm = { };
@@ -472,23 +486,21 @@ in
     };
 
     # Generate systemd service for each model
-    systemd.services = lib.listToAttrs (lib.imap0
-      (idx: modelCfg: {
+    systemd.services = lib.listToAttrs (map
+      (modelCfg: {
         name = "vllm-${modelCfg.name}";
         value = {
           description = "vLLM Inference Server — ${modelCfg.name}";
-          after = [ "network-online.target" ]
-            ++ lib.optionals (idx > 0) [ "vllm-${(lib.elemAt modelList (idx - 1)).name}.service" ];
-          requires = lib.optionals (idx > 0) [ "vllm-${(lib.elemAt modelList (idx - 1)).name}.service" ];
+          after = [ "network-online.target" ];
           wants = [ "network-online.target" ];
-          wantedBy = lib.mkIf (idx == 0) [ "multi-user.target" ];
+          wantedBy = [ "multi-user.target" ];
           startLimitBurst = 3;
           startLimitIntervalSec = 300;
 
           environment = lib.mapAttrs (_: toString) (envVarsFor modelCfg);
 
           serviceConfig = {
-            ExecStart = "${lib.getExe' (vllmPackageFor modelCfg) "vllm"} serve ${buildVllmArgs modelCfg}";
+            ExecStart = "${lib.getExe' (packageFor modelCfg) "vllm"} serve ${buildVllmArgs modelCfg}";
             User = "vllm";
             Group = "vllm";
             Restart = "on-failure";

@@ -132,7 +132,7 @@ Browser-based chat interface (ChatGPT-like) for testing and quick interaction. C
 
 **Location**: LINDA (10.88.127.88)  
 **Ports**: 8001 (GPU), 8002/8003 (CPU) — WireGuard accessible  
-**Package**: `pkgsCuda.vllm` (CUDA-scoped overlay; vLLM is the only package rebuilt with CUDA)  
+**Package**: `pkgsCuda.vllm` (GPU; separate nixpkgs_llm import with `cudaSupport`) and `pkgsCpuVllm` (CPU wrapper: `+cpu` metadata + zentorch)  
 **Config**: `modules/vllm.nix`, `machines/LINDA/default.nix`
 
 vLLM is the fleet's single inference engine — the only inference server on the managed fleet. Multi-model, with each model on its own port and systemd service. GPU-accelerated on the RTX 3060; CPU inference for the large MoE models.
@@ -146,7 +146,7 @@ vLLM is the fleet's single inference engine — the only inference server on the
 | `qwen3-coder-30b-a3b` | `Qwen/Qwen3-Coder-30B-A3B-Instruct` (nix store) | CPU | 8003 | bfloat16 | 32K | 40 GiB KV cache | MoE (3B active), code |
 
 **Model management**:
-- CPU model weights are Nix packages (`pkgs/models/*.nix`), fetched from HuggingFace with per-file SRI hashes and pinned commit SHAs, then installed to the store. vLLM loads them via `modelPath` — no runtime HuggingFace downloads.
+- CPU and GPU model weights are Nix packages (`pkgs/models/*.nix`), fetched from HuggingFace with per-file SRI hashes and pinned commit SHAs, then installed to the store. vLLM loads them via `modelPath` — no runtime HuggingFace downloads.
 - GPU model (qwen2.5-vl) uses `gpuMemoryUtilization = 0.8`, `--enable-prefix-caching`, `--max-num-seqs 16`.
 
 **Module features** (`modules/vllm.nix`):

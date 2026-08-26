@@ -67,6 +67,7 @@
       {
         name = "qwen2.5-vl";
         model = "Qwen/Qwen2.5-VL-7B-Instruct-AWQ";
+        modelPath = self.models.qwen25-vl-7b-instruct-awq;
         servedModelName = "qwen2.5-vl";
         port = 8001;
         maxModelLen = "8192";

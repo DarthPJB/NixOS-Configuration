@@ -126,6 +126,15 @@
           tokenspeed-mla.broken = "warn";
         };
       };
+      # AMD ZenDNN plugin — wheel, not a source build. Used by CPU vLLM.
+      zentorch = pkgs_llm.python313Packages.callPackage ./pkgs/zentorch { };
+      # CPU vLLM wrapper: +cpu importlib.metadata version + zentorch on PYTHONPATH.
+      # Does not rebuild vLLM.
+      pkgsCpuVllm = pkgs_llm.callPackage ./pkgs/vllm-cpu {
+        vllm = pkgs_llm.vllm;
+        python3 = pkgs_llm.python313;
+        inherit zentorch;
+      };
       globalArgs = {
         inherit self;
         inherit ikbaeb-th;
@@ -135,6 +144,7 @@
         inherit LLM-CORE;
         inherit pkgs_llm;
         inherit pkgsCuda;
+        inherit pkgsCpuVllm;
       };
       minecraft-curseforge-builder = nixpkgs.callPackage ./pkgs/minecraft-curseforge { };
       prometheus-mcp-server-builder = nixpkgs.callPackage ./pkgs/prometheus-mcp-server { };
@@ -539,6 +549,7 @@
         qwen3-8b = nixpkgs.callPackage ./pkgs/models/qwen3-8b.nix { };
         qwen3-30b-a3b = nixpkgs.callPackage ./pkgs/models/qwen3-30b-a3b.nix { };
         qwen3-coder-30b-a3b = nixpkgs.callPackage ./pkgs/models/qwen3-coder-30b-a3b.nix { };
+        qwen25-vl-7b-instruct-awq = nixpkgs.callPackage ./pkgs/models/qwen25-vl-7b-instruct-awq.nix { };
       };
 
       packages = {
@@ -559,6 +570,8 @@
           moonrise-neoforge = nixpkgs.callPackage ./pkgs/minecraft-curseforge/moonrise.nix { };
           bargman-greeter-vm = self.nixosConfigurations.bargman-greeter-vm.config.system.build.vm;
           bargman-greeter-vm-bootloader = self.nixosConfigurations.bargman-greeter-vm.config.system.build.vmWithBootLoader;
+          zentorch = zentorch;
+          vllm-cpu = pkgsCpuVllm;
         } // (nixinate.lib.genImages.x86_64-linux self);
         "aarch64-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.print-controller

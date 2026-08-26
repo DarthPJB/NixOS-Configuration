@@ -17,7 +17,7 @@ These are the issues that blocked production-grade AI infrastructure, in order o
 |----------|-------|--------|------------|
 | P1 | Model Configuration: Ad-Hoc vs Declarative | ✅ **RESOLVED** | Models declared in Nix via `pkgs/models/*.nix` (SRI-pinned, commit-pinned); configured declaratively in `services.vllm.models` |
 | P2 | Multi-Model Safety: No Safeguards vs Enforced Isolation | ✅ **RESOLVED** | vLLM native request queuing + per-model systemd services with `MemoryMax` (CPU); LiteLLM router queuing |
-| P3 | Technical Debt: CPU-Only Implementation | ✅ **RESOLVED** | CUDA scoped to vLLM via `pkgsCuda` overlay; global `cudaSupport` removed from vLLM module; `pkgsNoCuda` duplicate-import workaround removed |
+| P3 | Technical Debt: CPU-Only Implementation | ✅ **RESOLVED** | CUDA scoped to vLLM via a separate `pkgsCuda` nixpkgs_llm import (not an overlay); global `cudaSupport` removed from vLLM module; `pkgsNoCuda` duplicate-import workaround removed |
 | P4 | Inference Monitoring: Blind vs Instrumented | ✅ **RESOLVED** | Prometheus scrapes vLLM (:8001/:8002/:8003) and LiteLLM (:8080); AI-inference Grafana dashboard added |
 | P5 | Model Templates: Missing vs Proper | ✅ **RESOLVED** | Models ship native chat templates in `tokenizer_config.json`; vLLM applies them by default |
 
@@ -80,16 +80,10 @@ These are the issues that blocked production-grade AI infrastructure, in order o
 ### P3 — Technical Debt: CPU-Only Implementation
 
 > **Status: ✅ RESOLVED** — vLLM-only migration (Phase 5.2/5.3). CUDA is now
-> scoped to the vLLM package via a `pkgsCuda` overlay in `flake.nix` (CUDA
-> torch + CUDA build inputs, scoped via `python313Packages.overrideScope` so
-> all torch-dependent packages in the set — torchaudio, torchvision, xformers,
-> triton — consistently use the CUDA torch; `triton` is overridden to
-> `triton-cuda` from the outer scope to avoid duplicate-triton closure
-> conflicts). The global `nixpkgs.config.cudaSupport = true` was removed from
-> the vLLM module. The `pkgsNoCuda` duplicate-nixpkgs-import workaround in
-> `ollama-ui.nix` was replaced with a scoped `overrideScope` on the same
-> nixpkgs instance — no duplicate imports, no CUDA cascade into open-webui's
-> pytorch.
+> scoped to the vLLM package via a separate `pkgsCuda` nixpkgs_llm import in
+> `flake.nix` (`config.cudaSupport = true` on that import only). `pkgs_llm` stays
+> CPU-only. CPU vLLM is `pkgsCpuVllm` (`pkgs/vllm-cpu`) — a PYTHONPATH wrapper
+> that rewrites importlib.metadata to `0.24.0+cpu` and adds zentorch. No overlay.
 
 **Current**: 
 - `pkgsNoCuda` import in `ollama-ui.nix` avoids pytorch CUDA build — workaround, not solution
@@ -253,7 +247,7 @@ decision are marked ~~struck~~.
 
 ### Phase 4: Technical Debt (Medium Cost, Medium Value)
 
-1. ✅ Create `pkgsCuda` overlay for scoped CUDA support — in `flake.nix`; only `vllm` rebuilt with CUDA
+1. ✅ Create a separate `pkgsCuda` nixpkgs_llm import for scoped CUDA support — in `flake.nix`; only that import has `cudaSupport`
 2. ✅ Remove global `cudaSupport = true` from vLLM module — done; CUDA scoped to vLLM package
 3. ✅ Fix `pkgsNoCuda` workaround in ollama-ui.nix — replaced with `overrideScope` on the same nixpkgs instance
 
@@ -270,7 +264,8 @@ decision are marked ~~struck~~.
 | Date | Decision | Rationale |
 |------|----------|-----------|
 | 2026-08-24 | Migrate from Ollama+vLLM hybrid to **vLLM-only** | vLLM has native request queuing, per-model services, and `/metrics`; Ollama has no queue and no Prometheus endpoint |
-| 2026-08-24 | Scope CUDA to vLLM via `pkgsCuda` overlay instead of global `cudaSupport` | Prevents CUDA cascade into unrelated packages; no duplicate nixpkgs imports |
+| 2026-08-24 | Scope CUDA to vLLM via a separate `pkgsCuda` import instead of global `cudaSupport` | Prevents CUDA cascade into unrelated packages; no overlays |
+| 2026-08-26 | CPU vLLM via `pkgsCpuVllm` wrapper (`+cpu` metadata + zentorch) | 0.24.0 selects CpuPlatform from version substring; avoid source patch and vLLM rebuild |
 | 2026-08-25 | Replace `pkgsNoCuda` duplicate-import with `overrideScope` on the same nixpkgs instance | Eliminates duplicate nixpkgs eval cost; keeps open-webui pytorch CPU-only |
 | 2026-08-25 | Model weights packaged in the nix store via `pkgs/models/*.nix` (SRI + commit pinned) | Immutable, versioned, no runtime HuggingFace downloads |
 | 2026-08-25 | Laguna models (laguna-s/laguna-xs) left on Ollama, not migrated | Custom GGUF, not on HuggingFace — flagged for review |
