@@ -32,7 +32,7 @@
   # ── Fleet LLM Gateway ──────────────────────────────────────────
   # Backends on the WireGuard plane (10.88.127.0/24):
   #   linda       = 10.88.127.88  (vLLM: GPU :8001, CPU :8002/:8003)
-  #   cluster-box = 10.88.127.211 (Malayalam: laguna/ornith; dlyon-operated)
+  #   cluster-box = 10.88.127.211 (Malayalam: ornith; dlyon-operated)
   services.litellm = {
     environmentFileSecret = ../../secrets/litellm-env;
     # Expose /metrics for Prometheus scraping (vLLM-only migration, Phase 4.2)
@@ -81,7 +81,6 @@
       cluster-box = {
         url = "http://10.88.127.211:11434/v1";
         models = [
-          "laguna-xs-2.1:q4_K_M"
           "ornith:9b"
           "ornith:35b"
         ];

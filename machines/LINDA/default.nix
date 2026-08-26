@@ -53,7 +53,6 @@
   #
   # CPU model weights load from the Nix store (self.models.*) — no runtime
   # HuggingFace downloads.
-  # Laguna models (laguna-s/laguna-xs) are custom GGUF — NOT migrated; flagged for review.
   services.vllm = {
     enable = true;
     host = "0.0.0.0"; # Expose on WireGuard plane

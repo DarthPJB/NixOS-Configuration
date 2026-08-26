@@ -101,8 +101,7 @@
           coordToIp wgCoord
         else throw "topoIp: ${machineName} has no WG coordinate in topology JSON";
       # LLM nixpkgs instance — imported WITHOUT global cudaSupport so torch and
-      # every other package stay CPU-only. CUDA is scoped to vLLM exclusively
-      # via the pkgsCuda overlay below (see documentation/ai-upgrades.md P3).
+      # every other package stay CPU-only.
       pkgs_llm = import nixpkgs_llm {
         system = "x86_64-linux";
         config.allowUnfree = true;
@@ -114,33 +113,19 @@
           tokenspeed-mla.broken = "warn";
         };
       };
-      # CUDA-scoped overlay: only the torch-dependent python packages used by
-      # vLLM are rebuilt with CUDA (CUDA torch + CUDA build inputs). Everything
-      # else in pkgs_llm remains CPU-only — no global cudaSupport cascade.
-      #
-      # The overrideScope is REQUIRED, not just an override on vllm itself:
-      # vllm's transitive python deps (torchaudio, torchvision, xformers,
-      # triton, ...) would otherwise stay bound to the CPU torch. Both torches
-      # would end up in the build env, cmake's find_package(Torch) would pick
-      # the CPU TorchConfig (CAFFE2_USE_CUDA=OFF), and CUDA_FOUND would never
-      # be set — failing with "Can't find CUDA or HIP installation".
-      #
-      # `triton` must ALSO be overridden to the CUDA build: torch's
-      # `_tritonEffective` uses `triton-cuda` when cudaSupport=true, so any
-      # package depending on both torch and triton (e.g. xgrammar) would get a
-      # CPU triton from the un-overridden scope and a CUDA triton from torch —
-      # a duplicate-package closure conflict.
-      pkgsCuda = pkgs_llm.extend (final: prev: {
-        python313Packages = prev.python313Packages.overrideScope (pyfinal: pyprev: {
-          torch = pyprev.torch.override { cudaSupport = true; };
-          # Reference CUDA triton from the OUTER prev, not pyprev: triton-cuda
-          # is defined as `self.triton.override { cudaSupport = true; }`, so
-          # using pyprev.triton-cuda would recurse through the overridden
-          # triton attribute.
-          triton = prev.python313Packages.triton-cuda;
-        });
-        vllm = final.python313Packages.toPythonApplication final.python313Packages.vllm;
-      });
+      # Separate nixpkgs import with cudaSupport = true — used ONLY for vllm.
+      # This avoids overlays entirely: two clean imports, each with its own config.
+      pkgsCuda = import nixpkgs_llm {
+        system = "x86_64-linux";
+        config.allowUnfree = true;
+        config.cudaSupport = true;
+        config.cudnnSupport = true;
+        config.problems.handlers = {
+          vllm.broken = "warn";
+          flashinfer-python.broken = "warn";
+          tokenspeed-mla.broken = "warn";
+        };
+      };
       globalArgs = {
         inherit self;
         inherit ikbaeb-th;
