@@ -449,7 +449,9 @@ in
     # CUDA into every package on the machine (torch, ollama, blender, etc.).
 
     # Add vLLM and runtime dependencies to system packages
-    environment.systemPackages = [ cfg.package pkgs.which ];
+    # GCC and ninja needed system-wide for FlashInfer JIT (ninja spawns
+    # /bin/sh -c "c++ ..." which doesn't inherit systemd PATH)
+    environment.systemPackages = [ cfg.package pkgs.which pkgs.gcc pkgs.ninja ];
 
     # Dedicated system user — no login, no home shell, group for cache access
     users.groups.vllm = { };
