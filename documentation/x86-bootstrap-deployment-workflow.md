@@ -1,11 +1,11 @@
 # x86_64 Bootstrap Deployment Workflow
 
-> **Last updated:** 2026-08-25
-> **Status:** Active — validated through ISO build (498MB, nixos-26.05.20260724.597283a-x86_64-linux.iso)
+> **Last updated:** 2026-08-26
+> **Status:** Active — GRUB EFI removable-media path required for USB boot
 
 ## Overview
 
-x86_64 deployments use the assimilator-probe module for bootstrap images. The workflow mirrors ARM deployment but uses ISO images instead of SD cards, and consumes the assimilator-probe NixOS module for SSH, networking, discovery, and diagnostics.
+x86_64 deployments use the assimilator-probe module for bootstrap images. The workflow mirrors ARM deployment but uses raw disk images (not ISOs), and consumes the assimilator-probe NixOS module for SSH, networking, discovery, and diagnostics.
 
 **Two-stage process:**
 1. **Bootstrap image** — generic, reusable, gets the device on the network
@@ -13,14 +13,14 @@ x86_64 deployments use the assimilator-probe module for bootstrap images. The wo
 
 ## Stage 1: Build Bootstrap Image
 
-The bootstrap image is a generic ISO for ALL x86_64 devices.
+The bootstrap image is a generic raw disk image for ALL x86_64 devices.
 
 **Build:**
 ```bash
-# Build ISO image
-nix build .#nixosConfigurations.x86-bootstrap.config.system.build.images.iso --no-link --print-out-paths
+# Build raw disk image (GPT, 20GB, GRUB EFI removable)
+nix build .#nixosConfigurations.x86-bootstrap.config.system.build.diskoImages --option builders '' --no-link --print-out-paths
 
-# Output: result/iso/nixos-26.05.20260724.597283a-x86_64-linux.iso (498MB)
+# Output: /nix/store/...-x86-bootstrap-disko-images/main.raw (20GB sparse)
 ```
 
 **What assimilator-probe provides:**
@@ -37,9 +37,20 @@ nix build .#nixosConfigurations.x86-bootstrap.config.system.build.images.iso --n
 
 **Write to bootable media:**
 ```bash
-# USB flash drive (minimum 1GB)
-dd if=result/iso/nixos-26.05.20260724.597283a-x86_64-linux.iso of=/dev/sdX bs=4M status=progress conv=fsync
+# USB flash drive (minimum 4GB, 8GB recommended)
+# The image is sparse — dd will only write allocated blocks
+dd if=main.raw of=/dev/sdX bs=4M status=progress conv=fsync
 ```
+
+**Why raw disk, not ISO:**
+ISO images are for optical media (CD/DVD). For USB boot, a GPT-partitioned raw disk image with GRUB installed to the removable-media path (`/EFI/BOOT/BOOTX64.EFI`) is required. UEFI firmware on USB does not look at `/grub/grub.cfg` alone.
+
+**Bootloader contract:**
+- `boot.loader.grub.efiSupport = true`
+- `boot.loader.grub.efiInstallAsRemovable = true`
+- `boot.loader.grub.device = "nodev"`
+- `boot.loader.efi.canTouchEfiVariables = false`
+- Verify after build: ESP must contain `EFI/BOOT/BOOTX64.EFI` plus `kernels/` and `grub/grub.cfg`
 
 ## Stage 2: Device Discovery
 
@@ -148,12 +159,13 @@ Each device needs unique WireGuard keys.
 
 | Aspect | ARM Bootstrap | x86 Bootstrap |
 |--------|---------------|---------------|
-| Image format | SD card (.img) | ISO (.iso) |
-| Build target | `packages.aarch64-linux.arm-bootstrap` | `nixosConfigurations.x86-bootstrap.config.system.build.images.iso` |
+| Image format | SD card (.img) | Raw disk (.raw, GPT) |
+| Build target | `packages.aarch64-linux.arm-bootstrap` | `nixosConfigurations.x86-bootstrap.config.system.build.diskoImages` |
 | SSH port | 22 | 1108 |
 | Module source | Raw NixOS modules | assimilator-probe nixosModule |
 | Cross-compilation | Yes (x86_64 → aarch64) | No (native x86_64) |
-| Boot loader | extlinux (Raspberry Pi) | ISO/syslinux (nixinate image-gen) |
+| Boot loader | extlinux (Raspberry Pi) | GRUB EFI removable (`EFI/BOOT/BOOTX64.EFI`) |
+| Partition table | MBR (SD card) | GPT (raw disk) |
 | Diagnostics | None | Boot-time hardware JSON |
 | Banner | None | SSH login banner |
 | kmscon | None | Hardware-accelerated console |
@@ -167,3 +179,4 @@ Each device needs unique WireGuard keys.
 - **Deploy user must be trusted** — assimilator-probe sets `nix.settings.trusted-users = [ "deploy" ]`
 - **Use `nix run .#<hostname> -- switch`** — nixinate handles SSH port and user
 - **Diagnostics available at `/run/diagnostics/hardware.json`** — CPU, memory, disk, network
+- **Raw disk image, not ISO** — ISOs are for optical media; raw disk images boot from USB
