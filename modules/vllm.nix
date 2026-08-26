@@ -135,6 +135,7 @@ let
     // lib.optionalAttrs (modelCfg.device == "cpu") {
       VLLM_CPU_KVCACHE_SPACE = toString modelCfg.cpuKvCacheSpace;
       VLLM_CPU_OMP_THREADS_BIND = modelCfg.cpuOmpThreadsBind;
+      VLLM_TARGET_DEVICE = "cpu";
     }
     // lib.optionalAttrs (modelCfg.modelPath != null) {
       HF_HOME = "${cfg.cacheDir}/huggingface";
