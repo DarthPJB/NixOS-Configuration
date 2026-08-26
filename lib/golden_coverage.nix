@@ -4,7 +4,7 @@ let
   registry = import ../lib/topology/mkRegistry.nix { inherit lib; };
   topology = registry.hosts;
   topologyMachines = builtins.attrNames topology;
-  nixosMachines = builtins.attrNames (builtins.removeAttrs self.nixosConfigurations [ "beta-one" "display-0" "display-1" "display-2" "print-controller" "bargman-greeter-vm" "arm-bootstrap" "cluster-box" ]);
+  nixosMachines = builtins.attrNames (builtins.removeAttrs self.nixosConfigurations [ "beta-one" "display-0" "display-1" "display-2" "print-controller" "bargman-greeter-vm" "arm-bootstrap" "x86-bootstrap" "cluster-box" ]);
 
   goldenDir = ../goldens;
   goldenFiles = builtins.readDir goldenDir;

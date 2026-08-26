@@ -44,8 +44,9 @@
     # and operated by dlyon; John88 has architectural authority only.
     # See: https://gitlab.com/mecha-team-zero/Malayalam/blob/main/documents/architecture-passthrough.md
     malayalam.url = "git+https://gitlab.com/mecha-team-zero/Malayalam.git";
+    assimilator-probe.url = "git+https://gitlab.com/mecha-team-zero/assimilator-probe.git";
   };
-  outputs = { self, deadnix, determinate, disko, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE, malayalam, nix-src }:
+  outputs = { self, deadnix, determinate, disko, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE, malayalam, nix-src, assimilator-probe }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
@@ -635,6 +636,30 @@
               _module.args = globalArgs // {
                 hostname = "arm-bootstrap";
                 unstable = import nixpkgs_unstable { localSystem = "aarch64-linux"; config.allowUnfree = true; };
+              };
+            }
+          ];
+        };
+        # Generic x86_64 bootstrap image — reusable for ALL x86_64 devices
+        # Consumes assimilator-probe module for SSH, networking, discovery, diagnostics.
+        # No WG, no device-specific config, no encrypted assets.
+        x86-bootstrap = nixpkgs_stable.lib.nixosSystem {
+          specialArgs = { topologyData = null; };
+          modules = [
+            nixinate.nixosModules.image-gen
+            secrix.nixosModules.default
+            # Assimilator-probe module — SSH, network, discovery, diagnostics, banner
+            assimilator-probe.nixosModules.default
+            # User modules — deploy (nixinate), inspect (read-only), John88 (console)
+            "${assimilator-probe}/users/deployment.nix"
+            "${assimilator-probe}/users/inspect.nix"
+            ./machines/x86-bootstrap
+            {
+              nixpkgs.hostPlatform = "x86_64-linux";
+              networking.hostName = "x86-bootstrap";
+              _module.args = globalArgs // {
+                hostname = "x86-bootstrap";
+                unstable = import nixpkgs_unstable { localSystem = "x86_64-linux"; config.allowUnfree = true; };
               };
             }
           ];
