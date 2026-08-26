@@ -80,12 +80,16 @@ These are the issues that blocked production-grade AI infrastructure, in order o
 ### P3 — Technical Debt: CPU-Only Implementation
 
 > **Status: ✅ RESOLVED** — vLLM-only migration (Phase 5.2/5.3). CUDA is now
-> scoped exclusively to the vLLM package via a `pkgsCuda` overlay in `flake.nix`
-> (only `vllm` is rebuilt with CUDA — CUDA torch + build inputs). The global
-> `nixpkgs.config.cudaSupport = true` was removed from the vLLM module. The
-> `pkgsNoCuda` duplicate-nixpkgs-import workaround in `ollama-ui.nix` was replaced
-> with a scoped `overrideScope` on the same nixpkgs instance — no duplicate
-> imports, no CUDA cascade into open-webui's pytorch.
+> scoped to the vLLM package via a `pkgsCuda` overlay in `flake.nix` (CUDA
+> torch + CUDA build inputs, scoped via `python313Packages.overrideScope` so
+> all torch-dependent packages in the set — torchaudio, torchvision, xformers,
+> triton — consistently use the CUDA torch; `triton` is overridden to
+> `triton-cuda` from the outer scope to avoid duplicate-triton closure
+> conflicts). The global `nixpkgs.config.cudaSupport = true` was removed from
+> the vLLM module. The `pkgsNoCuda` duplicate-nixpkgs-import workaround in
+> `ollama-ui.nix` was replaced with a scoped `overrideScope` on the same
+> nixpkgs instance — no duplicate imports, no CUDA cascade into open-webui's
+> pytorch.
 
 **Current**: 
 - `pkgsNoCuda` import in `ollama-ui.nix` avoids pytorch CUDA build — workaround, not solution
