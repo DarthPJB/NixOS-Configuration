@@ -611,12 +611,6 @@
               _module.args = globalArgs // {
                 hostname = "x86-bootstrap";
                 unstable = import nixpkgs_unstable { localSystem = "x86_64-linux"; config.allowUnfree = true; };
-                nixinate = {
-                  host = null;
-                  sshUser = "deploy";
-                  buildOn = "local";
-                  port = 1108;
-                };
               };
             }
           ];
