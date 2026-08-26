@@ -493,13 +493,14 @@ in
             # live in RAM instead of VRAM).
             MemoryMax = lib.mkIf (modelCfg.device == "cpu") "80%";
 
-            # Security hardening
-            NoNewPrivileges = true;
-            # ProtectSystem = "strict" breaks FlashInfer JIT (posix_spawn can't
-            # find /bin/sh). Use "true" instead — still protects /usr, /boot,
-            # /efi but allows /bin and /sbin for JIT compilers.
-            ProtectSystem = true;
-            ProtectHome = true;
+            # Security hardening — DISABLED for FlashInfer JIT
+            # FlashInfer JIT compiles CUDA kernels at runtime via ninja/c++/nvcc.
+            # posix_spawn fails under any ProtectSystem setting because the
+            # spawned compiler subprocess needs full filesystem access.
+            # TODO: Pre-compile FlashInfer kernels at build time to re-enable.
+            # NoNewPrivileges = true;
+            # ProtectSystem = true;
+            # ProtectHome = true;
             ReadWritePaths = [ cfg.cacheDir "/tmp" "/var/lib/vllm" ];
             # PrivateTmp disabled: torch.compile (TritonBundler) writes cubin
             # cache to /tmp/torchinductor_root/. PrivateTmp wipes this on each
