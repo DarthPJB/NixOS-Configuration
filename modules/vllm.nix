@@ -495,7 +495,10 @@ in
 
             # Security hardening
             NoNewPrivileges = true;
-            ProtectSystem = "strict";
+            # ProtectSystem = "strict" breaks FlashInfer JIT (posix_spawn can't
+            # find /bin/sh). Use "true" instead — still protects /usr, /boot,
+            # /efi but allows /bin and /sbin for JIT compilers.
+            ProtectSystem = true;
             ProtectHome = true;
             ReadWritePaths = [ cfg.cacheDir "/tmp" "/var/lib/vllm" ];
             # PrivateTmp disabled: torch.compile (TritonBundler) writes cubin
