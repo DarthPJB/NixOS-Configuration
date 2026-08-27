@@ -2,8 +2,16 @@
 
 Self-hosted LLM inference infrastructure for the Bargman-Tech fleet. Provides GPU and CPU inference through a single vLLM engine, a centralized LiteLLM gateway, and a browser-based chat interface.
 
-**Status**: Active (vLLM-only)  
-**Last updated**: 2026-08-25
+**Status**: Transitioning to hybrid vLLM + Ollama operation  
+**Last updated**: 2026-08-27
+
+> **Current direction:** Four days of harness and service testing demonstrated
+> that vLLM is the correct engine for isolated, long-running services, while
+> Ollama is the better engine for rapid GGUF model iteration and resource
+> release. The accepted findings and implementation gates are recorded in
+> [`ai-inference-findings.md`](ai-inference-findings.md). Sections below still
+> describing the completed vLLM-only migration will be reconciled as the hybrid
+> implementation lands.
 
 ---
 

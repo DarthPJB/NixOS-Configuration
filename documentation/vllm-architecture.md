@@ -1,8 +1,14 @@
-# vLLM-Only Architecture
+# vLLM-Only Architecture — Historical Implementation Record
 
-**Status**: Implemented (Phases 1–5 complete; Phase 6 documentation in progress)  
+**Status**: Superseded as the fleet-wide target; vLLM implementation retained  
 **Target**: Replace Ollama with vLLM for all inference  
-**Last updated**: 2026-08-25
+**Last updated**: 2026-08-27
+
+> Operational testing did not invalidate vLLM, but it did invalidate the
+> vLLM-only deployment target. vLLM remains the managed service engine and
+> Ollama returns for manual, short-lived GGUF research workloads. See
+> [`ai-inference-findings.md`](ai-inference-findings.md) for the evidence,
+> corrected token-limit contract, memory budget, and forward architecture.
 
 > This document supersedes the original planning document (2026-08-24) and reflects
 > the **actual implementation state**. Phase-by-phase execution status, deviations
