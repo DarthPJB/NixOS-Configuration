@@ -142,8 +142,8 @@ vLLM is the fleet's single inference engine — the only inference server on the
 | Model | HF ID | Device | Port | Quant/DTYPE | Max Context | VRAM/RAM | Features |
 |-------|-------|--------|------|-------------|-------------|----------|----------|
 | `qwen2.5-vl` | `Qwen/Qwen2.5-VL-7B-Instruct-AWQ` | GPU (RTX 3060) | 8001 | AWQ | 8192 | ~5 GB VRAM | Vision, video input, prefix caching |
-| `qwen3-30b-a3b` | `Qwen/Qwen3-30B-A3B` (nix store) | CPU | 8002 | bfloat16 | 32K | 40 GiB KV cache | MoE (3B active) |
-| `qwen3-coder-30b-a3b` | `Qwen/Qwen3-Coder-30B-A3B-Instruct` (nix store) | CPU | 8003 | bfloat16 | 32K | 40 GiB KV cache | MoE (3B active), code |
+| `qwen38-27b` | `Qwen/Qwen3.8-27B` (nix store) | CPU | 8002 | bfloat16 | 32K | 4 GiB KV cache | Dense 27B, vision-language |
+| `qwen3-coder-30b-a3b` | `Qwen/Qwen3-Coder-30B-A3B-Instruct` (nix store) | CPU | 8003 | bfloat16 | 32K | 4 GiB KV cache | MoE (3B active), code |
 
 **Model management**:
 - CPU and GPU model weights are Nix packages (`pkgs/models/*.nix`), fetched from HuggingFace with per-file SRI hashes and pinned commit SHAs, then installed to the store. vLLM loads them via `modelPath` — no runtime HuggingFace downloads.
@@ -162,6 +162,8 @@ vLLM is the fleet's single inference engine — the only inference server on the
 - RTX 3060 (GPU 0): vLLM GPU model only — `cudaVisibleDevices = "0"`
 - GTX 1050 (GPU 1): Too small for inference (2GB), unused
 - CPU: 30 of 48 cores pinned to each CPU model via `cpuOmpThreadsBind = "0-29"`
+
+**Model lifecycle**: vLLM keeps models loaded for the service lifetime. It does not auto-unload on inactivity. CPU models (~55GB each) consume RAM while the service is running. Services can be stopped manually (`systemctl stop vllm-<name>`) when not needed. Future work: systemd socket activation (`vllm.socket`) to start services on demand and stop after idle timeout, eliminating permanent RAM residency.
 
 ### Ollama (Decommissioned)
 

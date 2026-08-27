@@ -47,9 +47,9 @@
   #        CPU inference — CPU models on :8002 and :8003
   #
   # Models:
-  #   qwen2.5-vl:          Qwen/Qwen2.5-VL-7B-Instruct-AWQ — GPU (RTX 3060), :8001
-  #   qwen3-30b-a3b:       Qwen/Qwen3-30B-A3B — CPU, :8002
-  #   qwen3-coder-30b-a3b: Qwen/Qwen3-Coder-30B-A3B-Instruct — CPU, :8003
+#   qwen2.5-vl:          Qwen/Qwen2.5-VL-7B-Instruct-AWQ — GPU (RTX 3060), :8001
+#   qwen38-27b:          Qwen/Qwen3.8-27B — CPU, :8002
+#   qwen3-coder-30b-a3b: Qwen/Qwen3-Coder-30B-A3B-Instruct — CPU, :8003
   #
   # CPU model weights load from the Nix store (self.models.*) — no runtime
   # HuggingFace downloads.
@@ -78,16 +78,16 @@
         ];
       }
       {
-        # CPU model — weights from the Nix store (pkgs/models/qwen3-30b-a3b.nix), pinned to a commit SHA.
-        name = "qwen3-30b-a3b";
-        model = "Qwen/Qwen3-30B-A3B";
-        modelPath = self.models.qwen3-30b-a3b;
-        servedModelName = "qwen3-30b-a3b";
+        # CPU model — Qwen3.8-27B dense vision-language model, weights from the Nix store.
+        name = "qwen38-27b";
+        model = "Qwen/Qwen3.8-27B";
+        modelPath = self.models.qwen38-27b;
+        servedModelName = "qwen38-27b";
         port = 8002;
         device = "cpu";
-        dtype = "bfloat16"; # Halves RAM vs float32 on AMD Zen
-        cpuKvCacheSpace = 40; # GiB
-        cpuOmpThreadsBind = "0-29"; # Pin OpenMP threads to 30 of 48 cores
+        dtype = "bfloat16";
+        cpuKvCacheSpace = 4; # GiB — ~55GB model on 68GB RAM
+        cpuOmpThreadsBind = "0-29";
       }
       {
         # CPU coder model — weights from the Nix store (pkgs/models/qwen3-coder-30b-a3b.nix), pinned to a commit SHA.
@@ -99,7 +99,7 @@
         port = 8003;
         device = "cpu";
         dtype = "bfloat16"; # Halves RAM vs float32 on AMD Zen
-        cpuKvCacheSpace = 40; # GiB
+        cpuKvCacheSpace = 4; # GiB — 57GB model on 68GB RAM leaves ~6GB for KV + headroom
         cpuOmpThreadsBind = "0-29"; # Pin OpenMP threads to 30 of 48 cores
       }
     ];

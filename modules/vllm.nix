@@ -47,9 +47,9 @@ let
     # modelPath (nix store) takes precedence over the HuggingFace model ID
     [ "--model" (if modelCfg.modelPath != null then "${modelCfg.modelPath}" else modelCfg.model) ]
     ++ [ "--host" modelCfg.host "--port" (toString modelCfg.port) ]
-    # CPU inference: vLLM needs --device cpu; tensor parallelism and GPU
-    # memory utilization are GPU-only flags.
-    ++ lib.optionals (modelCfg.device == "cpu") [ "--device" "cpu" ]
+    # CPU: do NOT pass --device cpu. CpuPlatform is selected via +cpu metadata;
+    # passing --device cpu triggers device_control_id_to_physical_device_id
+    # which tries int("cpu") and fails. GPU flags are GPU-only.
     ++ lib.optionals (modelCfg.device == "gpu") [
       "--tensor-parallel-size"
       (toString modelCfg.tensorParallelSize)
@@ -471,7 +471,8 @@ in
     # CUDA into every package on the machine (torch, ollama, blender, etc.).
 
     # Add vLLM and runtime dependencies to system packages
-    environment.systemPackages = [ cfg.gpuPackage pkgs.which ]
+    # util-linux provides lscpu (CPU worker needs it for topology detection)
+    environment.systemPackages = [ cfg.gpuPackage pkgs.which pkgs.util-linux ]
       ++ lib.optional (lib.any (m: m.device == "cpu") modelList) cfg.cpuPackage;
 
     # Dedicated system user — no login, no home shell, group for cache access

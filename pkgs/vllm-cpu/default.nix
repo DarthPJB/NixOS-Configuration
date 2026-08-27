@@ -20,6 +20,7 @@
 , zentorch
 , gnused
 , coreutils
+, util-linux
 }:
 
 # Caller must pass the same Python vLLM was built with (python313, not
@@ -56,7 +57,8 @@ stdenvNoCC.mkDerivation {
     done
 
     makeWrapper ${lib.getExe' vllm "vllm"} "$out/bin/vllm" \
-      --prefix PYTHONPATH : "$site"
+      --prefix PYTHONPATH : "$site" \
+      --prefix PATH : ${lib.makeBinPath [ util-linux ]}
 
     runHook postInstall
   '';
