@@ -69,6 +69,16 @@
             default = null;
             description = "Advertised context window (model_info.max_tokens). Clients use this to avoid overshooting.";
           };
+          maxTokensParam = lib.mkOption {
+            type = lib.types.nullOr lib.types.ints.positive;
+            default = null;
+            description = ''
+              Clamp max_tokens in requests at the gateway (litellm_params.max_tokens).
+              Unlike maxTokens (which advertises the limit), this silently caps
+              the parameter before forwarding to the backend. Set to the model's
+              max_model_len to prevent client overshoot.
+            '';
+          };
           mode = lib.mkOption {
             type = lib.types.nullOr (lib.types.enum [
               "chat"
@@ -191,6 +201,8 @@
                 timeout = cfg.timeout;
               } // lib.optionalAttrs (cfg.supportsSystemMessage != null) {
                 supports_system_message = cfg.supportsSystemMessage;
+              } // lib.optionalAttrs (cfg.maxTokensParam != null) {
+                max_tokens = cfg.maxTokensParam;
               };
             } // lib.optionalAttrs (modelInfoOf cfg != { }) {
               model_info = modelInfoOf cfg;

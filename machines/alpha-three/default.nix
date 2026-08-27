@@ -47,6 +47,7 @@
           "qwen2.5-vl"
         ];
         maxTokens = 8192;
+        maxTokensParam = 8192; # Clamp client max_tokens to model max_model_len
         mode = "chat";
         supportsVision = true;
         supportsVideoInput = true;
