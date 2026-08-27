@@ -64,20 +64,15 @@
             default = null;
             description = "If false, LiteLLM remaps system messages to user (litellm_params.supports_system_message). Unset = provider default.";
           };
-          maxTokens = lib.mkOption {
+          maxInputTokens = lib.mkOption {
             type = lib.types.nullOr lib.types.ints.positive;
             default = null;
-            description = "Advertised context window (model_info.max_tokens). Clients use this to avoid overshooting.";
+            description = "Context/input ceiling advertised as model_info.max_input_tokens.";
           };
-          maxTokensParam = lib.mkOption {
+          maxOutputTokens = lib.mkOption {
             type = lib.types.nullOr lib.types.ints.positive;
             default = null;
-            description = ''
-              Clamp max_tokens in requests at the gateway (litellm_params.max_tokens).
-              Unlike maxTokens (which advertises the limit), this silently caps
-              the parameter before forwarding to the backend. Set to the model's
-              max_model_len to prevent client overshoot.
-            '';
+            description = "Completion ceiling advertised as model_info.max_output_tokens.";
           };
           mode = lib.mkOption {
             type = lib.types.nullOr (lib.types.enum [
@@ -137,7 +132,7 @@
       Global litellm_settings.fallbacks. Each entry is { "model-group" = [ "fallback-group" ]; }.
       Empty = no fallbacks.
     '';
-    example = [{ "linda-vllm/qwen2.5-vl" = [ "linda-vllm-cpu/qwen38-27b" ]; }];
+    example = [{ "linda-vllm/qwen2.5-vl" = [ "linda-vllm-cpu/qwen2.5-vl-cpu" ]; }];
   };
 
   options.services.litellm.requestTimeout = lib.mkOption {
@@ -156,6 +151,19 @@
     lib.mkIf (config.services.litellm.environmentFileSecret != null)
       config.services.litellm.environmentFileSecret;
 
+  config.assertions = lib.mapAttrsToList
+    (name: backend: {
+      assertion =
+        backend.maxInputTokens == null
+        || backend.maxOutputTokens == null
+        || backend.maxOutputTokens < backend.maxInputTokens;
+      message = ''
+        services.litellm.backends.${name}.maxOutputTokens must be smaller than
+        maxInputTokens so every request retains space for an input prompt.
+      '';
+    })
+    config.services.litellm.backends;
+
   config.services.litellm =
     let
       # Count how many backends advertise each Ollama tag.
@@ -170,7 +178,8 @@
         (lib.attrValues config.services.litellm.backends);
 
       modelInfoOf = cfg: lib.filterAttrs (_: v: v != null) {
-        max_tokens = cfg.maxTokens;
+        max_input_tokens = cfg.maxInputTokens;
+        max_output_tokens = cfg.maxOutputTokens;
         mode = cfg.mode;
         supports_vision = cfg.supportsVision;
         supports_video_input = cfg.supportsVideoInput;
@@ -201,8 +210,6 @@
                 timeout = cfg.timeout;
               } // lib.optionalAttrs (cfg.supportsSystemMessage != null) {
                 supports_system_message = cfg.supportsSystemMessage;
-              } // lib.optionalAttrs (cfg.maxTokensParam != null) {
-                max_tokens = cfg.maxTokensParam;
               };
             } // lib.optionalAttrs (modelInfoOf cfg != { }) {
               model_info = modelInfoOf cfg;

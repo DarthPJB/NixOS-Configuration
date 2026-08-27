@@ -1,8 +1,14 @@
 # AI Infrastructure Upgrades — Planning Document
 
-**Status**: Implementation complete — all priority issues resolved via the vLLM-only migration  
+**Status**: Historical vLLM-only upgrade record; hybrid operation now active  
 **Started**: 2026-08-24  
-**Last updated**: 2026-08-25
+**Last updated**: 2026-08-27
+
+> This document records the completed vLLM-only upgrade work. Operational usage
+> subsequently established a hybrid vLLM/Ollama design without discarding the
+> module, model packaging, isolation, or monitoring improvements. See
+> [`ai-inference-findings.md`](ai-inference-findings.md) and
+> [`ai-stack.md`](ai-stack.md) for the current architecture.
 
 ---
 

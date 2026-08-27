@@ -1,440 +1,287 @@
 # AI Infrastructure Stack
 
-Self-hosted LLM inference infrastructure for the Bargman-Tech fleet. Provides GPU and CPU inference through a single vLLM engine, a centralized LiteLLM gateway, and a browser-based chat interface.
+Self-hosted inference for the Bargman-Tech fleet, using vLLM and Ollama for
+different operational roles behind one LiteLLM gateway.
 
-**Status**: Transitioning to hybrid vLLM + Ollama operation  
+**Status**: Hybrid vLLM + Ollama configuration implemented; live validation pending  
 **Last updated**: 2026-08-27
 
-> **Current direction:** Four days of harness and service testing demonstrated
-> that vLLM is the correct engine for isolated, long-running services, while
-> Ollama is the better engine for rapid GGUF model iteration and resource
-> release. The accepted findings and implementation gates are recorded in
-> [`ai-inference-findings.md`](ai-inference-findings.md). Sections below still
-> describing the completed vLLM-only migration will be reconciled as the hybrid
-> implementation lands.
+The evidence and decision behind this architecture are recorded in
+[`ai-inference-findings.md`](ai-inference-findings.md). The prior vLLM-only
+migration remains documented in
+[`vllm-architecture.md`](vllm-architecture.md) as a historical implementation
+record.
 
----
-
-## Architecture Overview
-
-The fleet uses a four-layer architecture: browser UI → gateway → inference backends → hardware. Inference is served exclusively by vLLM on the NixOS-Configuration managed fleet (LINDA); each model gets its own systemd service and port, with weights managed as Nix packages in the store.
+## Architecture
 
 ```mermaid
 graph TB
-    subgraph "Consumers"
-        BROWSER["Browser<br/>ollama.johnbargman.net<br/>(Open-WebUI)"]
-        FLEET["opencode-fleet agents<br/>(LLM-CORE)"]
+    subgraph Consumers
+        FLEET["OpenCode fleet"]
+        BROWSER["Open-WebUI"]
     end
 
-    subgraph "Gateway — alpha-three (staging)"
-        NGINX["nginx :443<br/>TLS termination"]
-        OWUI["Open-WebUI :8081<br/>chat interface"]
-        LITELLM["LiteLLM :8080<br/>model routing"]
+    subgraph "Gateway — alpha-three"
+        NGINX["nginx :443"]
+        LITELLM["LiteLLM :8080"]
+        WEBUI["Open-WebUI :8081"]
     end
 
-    subgraph "Inference Backends"
-        subgraph "LINDA (10.88.127.88) — vLLM"
-            VLLM_GPU["vLLM :8001<br/>qwen2.5-vl (GPU)"]
-            VLLM_CPU["vLLM :8002<br/>qwen3-30b-a3b (CPU)"]
-            VLLM_CODER["vLLM :8003<br/>qwen3-coder-30b-a3b (CPU)"]
-        end
-        subgraph "cluster-box (10.88.127.211)"
-            CB_OLLAMA["Ollama :11434<br/>4× Quadro M4000<br/>(external, not migrated)"]
-        end
+    subgraph "LINDA — managed inference"
+        GPU["vLLM :8001<br/>Qwen2.5-VL-3B AWQ<br/>RTX 3060"]
+        CPU["vLLM :8002<br/>Qwen2.5-VL-3B AWQ<br/>CPU / 128K"]
+        OLLAMA["Ollama :11434<br/>Ornith 9B / Laguna S<br/>CPU / manual start"]
     end
 
-    subgraph "Monitoring"
-        PROM["Prometheus :8080<br/>cortex-alpha"]
-        GRAFANA["Grafana :3101<br/>AI Systems + AI Inference dashboards"]
+    subgraph "cluster-box — external Malayalam flake"
+        CLUSTER["Ollama :11434<br/>Laguna XS / Ornith 35B"]
     end
 
-    BROWSER -->|"HTTPS"| NGINX
-    FLEET -->|"HTTPS + API key"| NGINX
-    NGINX -->|"proxy_pass"| OWUI
-    NGINX -->|"proxy_pass"| LITELLM
-    OWUI -->|"/v1/chat/completions"| LITELLM
-    LITELLM -->|"linda-vllm/*"| VLLM_GPU
-    LITELLM -->|"linda-vllm-cpu/*"| VLLM_CPU
-    LITELLM -->|"linda-vllm-coder/*"| VLLM_CODER
-    LITELLM -->|"cluster-box/*"| CB_OLLAMA
+    subgraph Monitoring
+        PROM["Prometheus"]
+        GRAFANA["Grafana"]
+    end
 
-    PROM -.->|"scrape /metrics"| VLLM_GPU
-    PROM -.->|"scrape /metrics"| VLLM_CPU
-    PROM -.->|"scrape /metrics"| VLLM_CODER
-    PROM -.->|"scrape /metrics"| LITELLM
-    GRAFANA -.->|"query"| PROM
+    FLEET -->|HTTPS + API key| NGINX
+    BROWSER -->|HTTPS| NGINX
+    NGINX --> LITELLM
+    NGINX --> WEBUI
+    WEBUI --> LITELLM
+    LITELLM --> GPU
+    LITELLM --> CPU
+    LITELLM --> OLLAMA
+    LITELLM --> CLUSTER
+    PROM -.-> GPU
+    PROM -.-> CPU
+    PROM -.-> LITELLM
+    GRAFANA -.-> PROM
 ```
 
-### Data Flow
+## Engine Responsibilities
 
+### vLLM: managed services
+
+vLLM is used when a model has a deliberate, long-running service contract:
+
+- one systemd unit and port per model;
+- explicit CPU or GPU assignment;
+- explicit context and KV-cache allocation;
+- native scheduling and request queuing;
+- Prometheus metrics per service;
+- Nix-managed, revision-pinned model weights.
+
+This service isolation remains the correct architecture. The operational
+correction is to start CPU development with a small model whose complete memory
+budget is known, rather than using a 27B or 30B service as the first iteration.
+
+### Ollama: research lifecycle
+
+Ollama is used when the desired lifecycle is load, generate, and release:
+
+- GGUF and custom Modelfile compatibility;
+- rapid switching between research models;
+- proven behavior with Ornith and Laguna;
+- resource release by model expiry or stopping the daemon.
+
+LINDA's Ollama daemon is CPU-only and manual-start. It is limited to one loaded
+model, one parallel request, and 80 GiB total service memory. It does not compete
+with vLLM for the RTX 3060.
+
+### LiteLLM: routing and client contract
+
+LiteLLM remains the authenticated OpenAI-compatible gateway on alpha-three.
+Every managed backend publishes separate input/context and output limits.
+
+`max_tokens` is not used as a context-window declaration or as a supposed clamp.
+A client-supplied value overrides a deployment default. vLLM's
+`--max-model-len` remains the final total-sequence guard.
+
+The module asserts that an advertised output limit is smaller than its input
+limit whenever both are set, preventing recurrence of the zero-input-space
+configuration.
+
+## Active Gateway Routes
+
+| Public model ID | Backend | Engine | Device | Context metadata | Output metadata |
+|---|---|---|---|---:|---:|
+| `linda-vllm/qwen2.5-vl` | `10.88.127.88:8001/v1` | vLLM | RTX 3060 | 8192 | 2048 |
+| `linda-vllm-cpu/qwen2.5-vl-cpu` | `10.88.127.88:8002/v1` | vLLM | CPU | 128000 | 8192 |
+| `linda-ollama/ornith:9b` | `10.88.127.88:11434/v1` | Ollama | CPU | 262144 | 8192 |
+| `linda-ollama/laguna-s-2.1:q4_K_M` | `10.88.127.88:11434/v1` | Ollama | CPU | 262144 | 8192 |
+| `cluster-box/laguna-xs-2.1:q4_K_M` | `10.88.127.211:11434/v1` | Ollama | external | discovered | discovered |
+| `cluster-box/ornith:35b` | `10.88.127.211:11434/v1` | Ollama | external | discovered | discovered |
+
+The gateway is externally available at:
+
+```text
+https://agentic-gateway.johnbargman.net
 ```
-Browser / opencode-fleet agent
-    ↓ POST https://agentic-gateway.johnbargman.net/v1/chat/completions
-    ↓ Authorization: Bearer <api-key>
-    ↓
-nginx (alpha-three, 10.88.127.107)
-    ↓ TLS termination (ACME wildcard cert)
-    ↓ proxy_pass http://127.0.0.1:8080
-    ↓
-LiteLLM (alpha-three, 127.0.0.1:8080)
-    ↓ API key validation
-    ↓ Route by model prefix:
-    ↓   linda-vllm/*      → http://10.88.127.88:8001/v1   (qwen2.5-vl, GPU)
-    ↓   linda-vllm-cpu/*  → http://10.88.127.88:8002/v1   (qwen3-30b-a3b, CPU)
-    ↓   linda-vllm-coder/*→ http://10.88.127.88:8003/v1   (qwen3-coder-30b-a3b, CPU)
-    ↓   cluster-box/*     → http://10.88.127.211:11434/v1 (Ollama, external)
-    ↓
-Inference backend (vLLM on LINDA; Ollama on cluster-box)
-    ↓ GPU/CPU inference
-    ↓
-Response back through chain
+
+nginx terminates TLS and proxies to LiteLLM on `127.0.0.1:8080`.
+
+## LINDA vLLM Services
+
+### GPU service: Qwen2.5-VL-3B AWQ
+
+| Property | Value |
+|---|---|
+| Unit | `vllm-qwen2.5-vl.service` |
+| API | `0.0.0.0:8001` |
+| Device | RTX 3060, `CUDA_VISIBLE_DEVICES=0` |
+| Model | `Qwen/Qwen2.5-VL-3B-Instruct-AWQ` |
+| Model path | `self.models.qwen25-vl-3b-instruct-awq` |
+| Maximum sequence | 8192 tokens |
+| Gateway output budget | 2048 tokens |
+| Tool parser | Hermes |
+
+The 2048-token completion budget reserves prompt space and directly addresses
+the OpenCode failure where an 8192-token completion was requested inside an
+8192-token total sequence.
+
+### CPU service: Qwen2.5-VL-3B AWQ
+
+| Property | Value |
+|---|---|
+| Unit | `vllm-qwen2.5-vl-cpu.service` |
+| API | `0.0.0.0:8002` |
+| Device | CPU, blank `CUDA_VISIBLE_DEVICES` |
+| Quantization | AWQ 4-bit |
+| Maximum sequence | 128000 tokens |
+| CPU KV allocation | 6 GiB |
+| OpenMP binding | cores 0–29 |
+| Gateway output budget | 8192 tokens |
+
+The pinned model store path is 3,417,676,696 bytes (3.18 GiB). Based on the
+model's 36 layers, two KV heads, 128-dimensional heads, and BF16 cache entries,
+a full 128,000-token KV cache is approximately 4.39 GiB. The model plus allocated
+cache is approximately 9.18 GiB before runtime overhead, leaving substantial
+margin below the 20 GiB target.
+
+This is intentionally the same pinned model as the GPU service. It gives the
+fleet a controlled CPU/GPU comparison before selecting another development
+model.
+
+The previous large Qwen3.8-27B and Qwen3-Coder services are no longer active on
+LINDA. Their Nix model packages and vLLM module support remain available for a
+future long-running workload with a justified startup and memory budget.
+
+## LINDA Ollama Service
+
+Configuration: `services/ollama.nix`
+
+| Property | Value |
+|---|---|
+| Unit | `ollama.service` |
+| API | `0.0.0.0:11434`, WireGuard firewall only |
+| Package | `pkgs_llm.ollama-cpu` |
+| Model storage | `/speed-storage/ollama` |
+| Declared models | `ornith:9b`, `laguna-s-2.1:q4_K_M` |
+| Context default | 262144 |
+| KV cache | `q4_0` |
+| Loaded model limit | 1 |
+| Parallel request limit | 1 |
+| Memory limit | 80 GiB |
+| Boot behavior | manual; no daemon or loader `wantedBy` target |
+
+`loadModels` synchronizes model blobs; it does not load inference weights into
+RAM. Both the model-loader and daemon have their boot targets removed so model
+pulls and service startup remain operator actions.
+
+### Operations
+
+```bash
+# Start the daemon when LINDA is available for research
+systemctl start ollama
+
+# Synchronize the two declared model blobs
+systemctl start ollama-model-loader
+
+# Release all Ollama inference memory
+systemctl stop ollama
 ```
 
----
+Starting and stopping this service is an intentional lifecycle operation. System
+configuration changes still proceed through Nix rebuild and deployment.
 
-## Components
+## OpenCode and Context Limits
 
-### LiteLLM Gateway
+The gateway metadata must preserve three different concepts:
 
-**Location**: alpha-three (staging)  
-**Port**: 8080 (localhost only)  
-**External**: `agentic-gateway.johnbargman.net` (nginx TLS)  
-**Package**: `unstable.litellm`  
-**Config**: `services/litellm.nix`, `machines/alpha-three/default.nix`
+| Layer | Field | Meaning |
+|---|---|---|
+| vLLM | `--max-model-len` | Total prompt plus completion sequence |
+| LiteLLM | `model_info.max_input_tokens` | Context/input limit discovered by clients |
+| LiteLLM | `model_info.max_output_tokens` | Maximum completion discovered by clients |
+| OpenCode | `limit.context` | Conversation context budget |
+| OpenCode | `limit.output` | Completion request sent to the provider |
 
-LiteLLM provides a unified OpenAI-compatible API that routes requests to the inference backends. It handles:
-- Model routing by prefix (`linda-vllm/*`, `linda-vllm-cpu/*`, `linda-vllm-coder/*`, `cluster-box/*`)
-- API key authentication
-- Per-backend rate limiting (rpm/tpm)
-- Request timeouts and parameter dropping (e.g. Qwen3 `reasoning_effort` for CPU backends)
-- Prometheus metrics on `/metrics` (`callbacks = [ "prometheus" ]`)
+For the GPU model, OpenCode should discover context 8192 and output 2048. Its
+compaction logic then reserves completion space instead of requesting an
+8192-token response with no room left for the prompt.
 
-**Backends** (defined in `machines/alpha-three/default.nix`):
-
-| Backend | URL | Model Type | Models | Max Tokens |
-|---------|-----|------------|--------|------------|
-| `linda-vllm` | `http://10.88.127.88:8001/v1` | `hosted_vllm` | qwen2.5-vl (vision, video) | 8192 |
-| `linda-vllm-cpu` | `http://10.88.127.88:8002/v1` | `hosted_vllm` | qwen3-30b-a3b | 32768 |
-| `linda-vllm-coder` | `http://10.88.127.88:8003/v1` | `hosted_vllm` | qwen3-coder-30b-a3b | 32768 |
-| `cluster-box` | `http://10.88.127.211:11434/v1` | `openai` (Ollama /v1, external) | laguna-xs-2.1, ornith:9b, ornith:35b | — |
-
-**Secrets**: `litellm-master` (gateway master key), `litellm-env` (database URL, etc.)
-
-### Open-WebUI
-
-**Location**: alpha-three (staging)  
-**Port**: 8081 (localhost only)  
-**External**: `ollama.johnbargman.net` (nginx TLS — legacy hostname; serves Open-WebUI, not Ollama)  
-**Package**: `pkgs.open-webui` (CPU-only pytorch via `overrideScope`)  
-**Config**: `services/ollama-ui.nix` (legacy filename)
-
-Browser-based chat interface (ChatGPT-like) for testing and quick interaction. Connects to LiteLLM gateway via OpenAI-compatible API.
-
-**Key configuration**:
-- `OPENAI_API_BASE_URL = "http://127.0.0.1:8080"` — internal URL to LiteLLM (same machine)
-- API key injected via secrix environment file (`open-webui-env`)
-
-**Known issue**: open-webui pulls in sentence-transformers → pytorch, which would force a CUDA pytorch build when `cudaSupport = true` is set globally on alpha-three. Resolved by scoping pytorch to CPU-only via `python3Packages.overrideScope` (replaces the old `pkgsNoCuda` duplicate-nixpkgs workaround).
-
-### vLLM
-
-**Location**: LINDA (10.88.127.88)  
-**Ports**: 8001 (GPU), 8002/8003 (CPU) — WireGuard accessible  
-**Package**: `pkgsCuda.vllm` (GPU; separate nixpkgs_llm import with `cudaSupport`) and `pkgsCpuVllm` (CPU wrapper: `+cpu` metadata + zentorch)  
-**Config**: `modules/vllm.nix`, `machines/LINDA/default.nix`
-
-vLLM is the fleet's single inference engine — the only inference server on the managed fleet. Multi-model, with each model on its own port and systemd service. GPU-accelerated on the RTX 3060; CPU inference for the large MoE models.
-
-**Deployed models**:
-
-| Model | HF ID | Device | Port | Quant/DTYPE | Max Context | VRAM/RAM | Features |
-|-------|-------|--------|------|-------------|-------------|----------|----------|
-| `qwen2.5-vl` | `Qwen/Qwen2.5-VL-3B-Instruct-AWQ` | GPU (RTX 3060) | 8001 | AWQ | 8192 | ~5 GB VRAM | Vision, video input, prefix caching |
-| `qwen38-27b` | `Qwen/Qwen3.8-27B` (nix store) | CPU | 8002 | bfloat16 | 32K | 4 GiB KV cache | Dense 27B, vision-language |
-| `qwen3-coder-30b-a3b` | `Qwen/Qwen3-Coder-30B-A3B-Instruct` (nix store) | CPU | 8003 | bfloat16 | 32K | 4 GiB KV cache | MoE (3B active), code |
-
-**Model management**:
-- CPU and GPU model weights are Nix packages (`pkgs/models/*.nix`), fetched from HuggingFace with per-file SRI hashes and pinned commit SHAs, then installed to the store. vLLM loads them via `modelPath` — no runtime HuggingFace downloads.
-- GPU model (qwen2.5-vl) uses `gpuMemoryUtilization = 0.8`, `--enable-prefix-caching`, `--max-num-seqs 16`.
-
-**Module features** (`modules/vllm.nix`):
-- Multi-model support (each model gets its own systemd service)
-- Per-model device assignment (`gpu` / `cpu`), port allocation, and dtype
-- CPU models: `VLLM_CPU_KVCACHE_SPACE`, `VLLM_CPU_OMP_THREADS_BIND`, `MemoryMax = 80%`
-- GPU memory utilization control and tensor parallelism
-- Security hardening (dedicated `vllm` user, `NoNewPrivileges`, `ProtectSystem=strict`)
-- `PrivateTmp = false` — required for torch.compile cubin cache persistence
-- Cache directory management (`/speed-storage/vllm-cache`)
-
-**Hardware allocation**:
-- RTX 3060 (GPU 0): vLLM GPU model only — `cudaVisibleDevices = "0"`
-- GTX 1050 (GPU 1): Too small for inference (2GB), unused
-- CPU: 30 of 48 cores pinned to each CPU model via `cpuOmpThreadsBind = "0-29"`
-
-**Model lifecycle**: vLLM keeps models loaded for the service lifetime. It does not auto-unload on inactivity. CPU models (~55GB each) consume RAM while the service is running. Services can be stopped manually (`systemctl stop vllm-<name>`) when not needed. Future work: systemd socket activation (`vllm.socket`) to start services on demand and stop after idle timeout, eliminating permanent RAM residency.
-
-### Ollama (Decommissioned)
-
-**Status**: Removed from the managed fleet. LINDA's Ollama service was migrated to vLLM CPU inference and archived to `services/archive/ollama.nix`. The former CPU model lineup (qwen3.8:27b, qwen3-coder:30b, laguna-s-2.1, laguna-xs-2.1) is served by vLLM.
-
-### cluster-box (Malayalam)
-
-**Location**: 10.88.127.211 (WireGuard)  
-**Operator**: dlyon (on-site)  
-**Oversight**: John88 (architectural authority)  
-**Repository**: `Malayalam` (GitLab, private)  
-**Config**: Passthrough from Malayalam flake
-
-CUDA inference machine with 4× Quadro M4000 GPUs. Operated by dlyon, consumed by NixOS-Configuration as a verbatim flake input (passthrough pattern).
-
-**Models**: laguna-xs-2.1, ornith:9b, ornith:35b (served by Ollama — NOT migrated to vLLM)
-
-**Integration**: See `Malayalam/documents/architecture-passthrough.md` for the passthrough pattern documentation. cluster-box is outside the NixOS-Configuration migration boundary; its inference stack is owned by the Malayalam flake.
-
----
-
-## Model Inventory
-
-### Currently Deployed
-
-| Machine | Engine | Model Tag | Parameters | Quant/DTYPE | Context | VRAM/RAM | Status |
-|---------|--------|-----------|------------|-------------|---------|----------|--------|
-| LINDA | vLLM (GPU) | qwen2.5-vl (Qwen2.5-VL-7B-Instruct-AWQ) | 7B | AWQ | 8192 | ~5 GB VRAM | Active |
-| LINDA | vLLM (CPU) | qwen3-30b-a3b (Qwen3-30B-A3B) | 30B MoE (3B active) | bfloat16 | 32K | 40 GiB KV cache | Active |
-| LINDA | vLLM (CPU) | qwen3-coder-30b-a3b (Qwen3-Coder-30B-A3B-Instruct) | 30B MoE (3B active) | bfloat16 | 32K | 40 GiB KV cache | Active |
-| cluster-box | Ollama (GPU, external) | laguna-xs-2.1:q4_K_M | 33B MoE | Q4_K_M | 256K | — | Active |
-| cluster-box | Ollama (GPU, external) | ornith:9b | 9B | — | — | — | Active |
-| cluster-box | Ollama (GPU, external) | ornith:35b | 35B | — | — | — | Active |
-
-### Hardware Budget
-
-| Machine | GPU | VRAM | CPU | RAM | Role |
-|---------|-----|------|-----|-----|------|
-| LINDA | RTX 3060 + GTX 1050 | 12 GB + 2 GB | AMD (48 cores) | Large | Testbed (vLLM GPU + CPU inference) |
-| cluster-box | 4× Quadro M4000 | 8 GB each | i7-6850K | — | Production inference (external) |
-
----
-
-## Gateway Domain
-
-**URL**: `https://agentic-gateway.johnbargman.net`  
-**DNS**: Points to alpha-three WireGuard IP (10.88.127.107)  
-**TLS**: ACME wildcard cert (`*.johnbargman.net`)  
-**Auth**: LiteLLM API key (Bearer token)
-
-The domain is stable. When the gateway migrates from alpha-three to its permanent home, only the DNS record changes.
-
----
-
-## Related Inputs
-
-### LLM-CORE
-
-**Repository**: `gitlab:mecha-team-zero/llm-core`  
-**Flake input**: `LLM-CORE`  
-**Purpose**: Agent fleet generation (47 agents across 6 ships)  
-**Consumed as**: `services.opencode-fleet` NixOS module
-
-LLM-CORE generates opencode agent configurations. The `opencode-fleet` module is imported by LINDA and alpha-three. It provides:
-- Agent deployment to `~/.config/opencode/agents/`
-- MCP server configuration (git, filesystem, time, sqlite, playwright, github, gitlab, prometheus, nix-mcp)
-- Provider configuration (openrouter, opencode-go, xiaomi-token-plan-sgp, xai, litellm)
-
-**Planned**: Migrate `fleet-data-v3.nix` (flat attribute set describing agents/models/ships) into NixOS-Configuration for single-source-of-truth control over systems, models, and consumption. Backward compatibility with LLM-CORE flake input preserved.
-
-### Malayalam
-
-**Repository**: `gitlab:mecha-team-zero/Malayalam` (private)  
-**Flake input**: `malayalam`  
-**Purpose**: cluster-box machine configuration  
-**Consumed as**: Verbatim passthrough (no overrides)
-
-Malayalam is a standalone NixOS flake owned by dlyon. NixOS-Configuration imports it verbatim — the system derivation is identical whether deployed from Malayalam (LAN) or NixOS-Configuration (WireGuard).
-
-**Key documents**:
-- `Malayalam/documents/architecture-passthrough.md` — integration pattern
-- `Malayalam/documents/gateway-design-2026-07-31.md` — original gateway architecture
-
----
+A build can validate the generated LiteLLM model list, but a successful harness
+completion requires deployment and a live request. That live gate remains open.
 
 ## Monitoring
 
-### Prometheus Scrape Targets
+Prometheus scrapes:
 
-| Job | Target | Interval | AI-Relevant |
-|-----|--------|----------|-------------|
-| `vllm-gpu` | 10.88.127.88:8001 (LINDA, qwen2.5-vl) | 5s | vLLM inference metrics (GPU) |
-| `vllm-cpu` | 10.88.127.88:8002 (LINDA, qwen3-30b-a3b) | 5s | vLLM inference metrics (CPU) |
-| `vllm-cpu-coder` | 10.88.127.88:8003 (LINDA, qwen3-coder-30b-a3b) | 5s | vLLM inference metrics (CPU) |
-| `litellm` | 10.88.127.107:8080 (alpha-three) | 10s | Gateway metrics (request rate, backend health) |
-| `nvidia` | LINDA, alpha-three, alpha-one, terminal-nx-01 | 5s | GPU utilization, VRAM, temperature |
-| `node` | 14 machines including LINDA, alpha-three | 30s | CPU, memory, disk |
-| `zfs` | LINDA, local-nas, cortex-alpha, remote-builder | 30s | Storage health |
-| `smartctl` | 11 machines including LINDA, alpha-three | 60s | Disk health |
-| `malayalam-node` | cluster-box (10.88.127.211:3100) | 30s | Node metrics |
-| `malayalam-nvidia` | cluster-box (10.88.127.211:3103) | 10s | GPU metrics |
+| Job | Target | Labels |
+|---|---|---|
+| `vllm-gpu` | `10.88.127.88:8001` | `LINDA`, `gpu`, `qwen2.5-vl` |
+| `vllm-cpu` | `10.88.127.88:8002` | `LINDA`, `cpu`, `qwen2.5-vl-cpu` |
+| `litellm` | `10.88.127.107:8080` | `alpha-three`, `gateway` |
 
-### vLLM Metrics
+The inactive large-model port 8003 scrape has been removed. Ollama does not
+provide vLLM-equivalent native metrics; node-level memory and CPU metrics remain
+available for its 80 GiB service envelope.
 
-Every vLLM model exposes Prometheus metrics on its `/metrics` endpoint:
+Grafana dashboards:
 
-| Metric | Type | Purpose |
-|--------|------|---------|
-| `vllm:num_requests_running` | Gauge | Currently executing requests |
-| `vllm:num_requests_waiting` | Gauge | Queue depth |
-| `vllm:kv_cache_usage_perc` | Gauge | KV cache / VRAM pressure |
-| `vllm:time_to_first_token_seconds` | Histogram | TTFT latency |
-| `vllm:e2e_request_latency_seconds` | Histogram | End-to-end latency |
-| `vllm:prompt_tokens_total` | Counter | Input throughput |
-| `vllm:generation_tokens_total` | Counter | Output throughput |
+- `services/graphana_dashboards/ai-systems.json`
+- `services/graphana_dashboards/ai-inference.json`
 
-### Grafana Dashboards
-
-- **AI Systems** (`ai-systems.json`): CPU, GPU utilization, VRAM, temperature, power, fan, clocks, disk I/O, ZFS pools, SMART health across cortex-alpha, alpha-three, LINDA
-- **AI Inference** (`ai-inference.json`): request rate, latency (p50/p95/p99), queue depth, KV cache usage, error rate, token throughput by model, LiteLLM gateway health
-
-### Missing Monitoring
-
-- No alerting rules for GPU temperature, VRAM exhaustion, queue depth, or inference failures
-
----
-
-## Operational Procedures
-
-### Adding a New Model to vLLM
-
-1. (CPU models) Create a model package in `pkgs/models/<name>.nix` — pin each file's SRI hash and the repo commit SHA; register it in the `models` attrset in `flake.nix`
-2. Edit `machines/LINDA/default.nix` — add entry to `services.vllm.models` list
-3. Set port, device (`gpu`/`cpu`), maxModelLen, dtype, quantization, modelPath, extraArgs
-4. Regenerate golden: `nix run .#dump-config -- LINDA | jq -S . > goldens/LINDA.json`
-5. Deploy: `nix run .#LINDA -- switch`
-6. Verify: `curl http://10.88.127.88:<port>/v1/models`
-
-### Adding a New Backend to LiteLLM
-
-1. Edit `machines/alpha-three/default.nix` — add entry to `services.litellm.backends`
-2. Set url, models, modelType (`hosted_vllm` for vLLM), apiKey, maxTokens, supportsVision, additional_drop_params, etc.
-3. Regenerate golden: `nix run .#dump-config -- alpha-three | jq -S . > goldens/alpha-three.json`
-4. Deploy: `nix run .#alpha-three -- switch`
-5. Verify: `curl -s https://agentic-gateway.johnbargman.net/v1/models -H "Authorization: Bearer <key>"`
-
-### Adding a Prometheus Scrape Target for a New Model
-
-1. Edit `services/prometheus.nix` — add a job for the new model's port (e.g. `vllm-cpu-<name>`), with labels `hostname`, `device`, `model`
-2. Regenerate golden: `nix run .#dump-config -- cortex-alpha | jq -S . > goldens/cortex-alpha.json`
-3. Deploy: `nix run .#cortex-alpha -- switch`
-4. Verify: query `vllm:num_requests_waiting{model="<name>"}` in Prometheus
-
-### Testing the Gateway
+## Declarative Validation
 
 ```bash
-# List available models
-curl -s https://agentic-gateway.johnbargman.net/v1/models \
-  -H "Authorization: Bearer <api-key>" | jq .
-
-# Chat completion
-curl -X POST https://agentic-gateway.johnbargman.net/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <api-key>" \
-  -d '{
-    "model": "linda-vllm-cpu/qwen3-30b-a3b",
-    "messages": [{"role": "user", "content": "Hello"}]
-  }'
+nix run .#validate-goldens --option builders '' -- LINDA
+nix run .#validate-goldens --option builders '' -- alpha-three
+nix run .#validate-goldens --option builders '' -- cortex-alpha
+nix flake check --option builders ''
+nix build .#nixosConfigurations.LINDA.config.system.build.toplevel \
+  --no-link --print-out-paths --option builders ''
 ```
 
-### Checking Service Status
+Goldens change here because the service and routing configuration change is
+intentional. They are not regenerated to conceal refactoring differences.
 
-```bash
-# LINDA — vLLM GPU (qwen2.5-vl)
-ssh -p 1108 inspect@10.88.127.88 "systemctl status vllm-qwen2.5-vl"
-
-# LINDA — vLLM CPU (qwen3-30b-a3b)
-ssh -p 1108 inspect@10.88.127.88 "systemctl status vllm-qwen3-30b-a3b"
-
-# LINDA — vLLM CPU coder (qwen3-coder-30b-a3b)
-ssh -p 1108 inspect@10.88.127.88 "systemctl status vllm-qwen3-coder-30b-a3b"
-
-# alpha-three — LiteLLM
-ssh -p 1108 inspect@10.88.127.107 "systemctl status litellm"
-
-# alpha-three — Open-WebUI
-ssh -p 1108 inspect@10.88.127.107 "systemctl status open-webui"
-```
-
----
-
-## Capacity Planning
-
-### LINDA (Testbed)
-
-**GPU (RTX 3060, 12 GB VRAM)**:
-- vLLM with Qwen2.5-VL-7B-AWQ: ~5 GB VRAM (`gpuMemoryUtilization = 0.8`)
-- Remaining ~7 GB: available for additional models or larger context
-- Sweet spot: 7-14B dense models at Q4/Q8 quantization
-- 33B MoE models (Laguna, Qwen3-30B-A3B) do NOT fit — they run on CPU via vLLM
-
-**CPU + RAM**:
-- vLLM CPU models (qwen3-30b-a3b, qwen3-coder-30b-a3b) run concurrently, each with 40 GiB KV cache in bfloat16
-- `MemoryMax = 80%` on each CPU service caps host RAM usage
-- `cpuOmpThreadsBind = "0-29"` pins OpenMP threads to 30 of 48 cores (reserves headroom for the desktop environment and GPU model)
-
-**Risk**: Two CPU models at 40 GiB KV cache each plus weights can approach the host RAM ceiling; `MemoryMax` is the safeguard but OOM-killer pressure is possible under sustained load.
-
-### cluster-box (Production, external)
-
-**GPU (4× Quadro M4000, 8 GB each)**:
-- Ollama handles GPU/CPU hybrid inference (unchanged — external Malayalam flake)
-- Laguna XS 2.1 (33B MoE) fits with CPU offloading
-- Multiple models can run across GPUs
-
----
-
-## Current Limitations
-
-1. **vLLM CPU performance**: CPU inference (Qwen3-30B-A3B) is usable but slower than GPU. Benchmarking against the old Ollama CPU setup was not completed before decommissioning; a GPU upgrade on LINDA would benefit the CPU-bound models.
-
-2. **cluster-box not migrated**: cluster-box still runs Ollama (external Malayalam flake). Its models (laguna-xs-2.1, ornith) are outside the NixOS-Configuration migration boundary. Migration requires coordination with the Malayalam owner (dlyon) or replacing the passthrough.
-
-3. **Laguna models unavailable on HuggingFace**: laguna-s/laguna-xs are custom GGUF models. They were NOT migrated to vLLM (no HF safetensors release). Flagged for review — options: keep on cluster-box, convert GGUF→HF, or replace with Qwen3-30B-A3B.
-
-4. **No alerting rules**: Prometheus scrapes all inference services, but there are no alerting rules for GPU temperature, VRAM exhaustion, KV cache pressure, queue depth, or gateway health.
-
-5. **Gateway is staging**: alpha-three is a staging system. The gateway will migrate to a permanent home (possibly off-site). Configuration is declarative — only DNS changes.
-
-6. **LiteLLM on unstable**: The gateway depends on `unstable.litellm`. A breaking change in nixpkgs-unstable could take down the fleet LLM gateway.
-
-7. **Legacy naming**: The chat UI vhost (`ollama.johnbargman.net`) and the `services/ollama-ui.nix` filename retain the Ollama-era naming although they now serve Open-WebUI/vLLM. Renaming is cosmetic and deferred.
-
----
-
-## Future Expansion
-
-- **Gateway migration**: Move gateway from alpha-three to permanent off-site server
-- **Fleet data migration**: Move `fleet-data-v3.nix` into NixOS-Configuration for single-source-of-truth model/system management
-- **cluster-box migration**: Migrate cluster-box inference from Ollama to vLLM (coordinate with Malayalam/dlyon)
-- **Laguna model resolution**: Convert custom GGUF models to HuggingFace format or replace with HF-available equivalents
-- **Alerting**: GPU temperature, VRAM exhaustion, KV cache pressure, queue depth, inference latency, gateway health
-- **Additional backends**: pillar-of-autum, dlyon-PC (provisioning)
-- **genWireguard migration**: Move WireGuard config into topology generator pipeline (overlord-iii)
-
----
-
-## File Reference
+## Key Files
 
 | File | Purpose |
-|------|---------|
-| `modules/vllm.nix` | vLLM NixOS module (multi-model, device assignment, security hardening) |
-| `pkgs/models/default.nix` | HuggingFace model package template (per-file SRI hashes, pinned revisions) |
-| `pkgs/models/qwen3-30b-a3b.nix` | Qwen3-30B-A3B model package (CPU workhorse) |
-| `pkgs/models/qwen3-coder-30b-a3b.nix` | Qwen3-Coder-30B-A3B-Instruct model package |
-| `pkgs/models/qwen3-8b.nix` | Qwen3-8B model package (reference/small-model example) |
-| `services/litellm.nix` | LiteLLM gateway module (backend routing, API key auth, metrics) |
-| `services/ollama-ui.nix` | Open-WebUI configuration (browser chat interface; legacy filename) |
-| `services/archive/ollama.nix` | Archived Ollama service configuration (decommissioned) |
-| `services/prometheus.nix` | Prometheus + Grafana configuration (vLLM/LiteLLM scrape targets) |
-| `services/graphana_dashboards/ai-systems.json` | AI Systems Grafana dashboard (hardware) |
-| `services/graphana_dashboards/ai-inference.json` | AI Inference Grafana dashboard (vLLM/LiteLLM metrics) |
-| `machines/LINDA/default.nix` | LINDA machine config (vLLM GPU + CPU models) |
-| `machines/alpha-three/default.nix` | alpha-three machine config (LiteLLM, Open-WebUI) |
-| `topology/LINDA.json` | LINDA topology (WireGuard, firewall, backup) |
-| `topology/alpha-three.json` | alpha-three topology (vhosts, firewall) |
+|---|---|
+| `documentation/ai-inference-findings.md` | Usage findings and accepted forward design |
+| `modules/vllm.nix` | Per-model vLLM service module |
+| `services/ollama.nix` | CPU-only, manual LINDA research service |
+| `services/litellm.nix` | Gateway backend schema and generated model metadata |
+| `machines/LINDA/default.nix` | Active GPU and CPU vLLM services |
+| `machines/alpha-three/default.nix` | Gateway route declarations |
+| `services/prometheus.nix` | Inference and gateway scrape targets |
+| `topology/LINDA.json` | WireGuard-scoped Ollama firewall port |
+| `pkgs/models/qwen25-vl-3b-instruct-awq.nix` | Pinned shared CPU/GPU model |
+
+## Related Systems
+
+- **LLM-CORE** generates and deploys the OpenCode agent fleet. It selects gateway
+  model IDs but does not currently define token limits.
+- **Malayalam** owns cluster-box and remains an external passthrough flake.
+- **Open-WebUI** runs on alpha-three and reaches the same LiteLLM gateway.
+
+## Remaining Live Gates
+
+1. Deploy LINDA and alpha-three.
+2. Confirm both vLLM `/v1/models` endpoints.
+3. Run an OpenCode harness through `linda-vllm/qwen2.5-vl` and record a non-empty
+   completion.
+4. Exercise a near-128K request on the CPU service and measure resident memory.
+5. Manually synchronize Ollama models, run Ornith and Laguna S, then stop Ollama
+   and confirm memory release.

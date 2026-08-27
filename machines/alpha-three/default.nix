@@ -31,11 +31,11 @@
 
   # ── Fleet LLM Gateway ──────────────────────────────────────────
   # Backends on the WireGuard plane (10.88.127.0/24):
-  #   linda       = 10.88.127.88  (vLLM: GPU :8001, CPU :8002/:8003)
+  #   linda       = 10.88.127.88  (vLLM: GPU :8001, CPU :8002; Ollama :11434)
   #   cluster-box = 10.88.127.211 (Malayalam: laguna/ornith; dlyon-operated)
   services.litellm = {
     environmentFileSecret = ../../secrets/litellm-env;
-    # Expose /metrics for Prometheus scraping (vLLM-only migration, Phase 4.2)
+    # Expose /metrics for Prometheus scraping.
     callbacks = [ "prometheus" ];
     backends = {
       # LINDA vLLM GPU (RTX 3060) — qwen2.5-vl on :8001
@@ -46,46 +46,44 @@
         models = [
           "qwen2.5-vl"
         ];
-        maxTokens = 8192;
-        maxTokensParam = 8192; # Clamp client max_tokens to model max_model_len
+        maxInputTokens = 8192;
+        maxOutputTokens = 2048;
         mode = "chat";
         supportsVision = true;
         supportsVideoInput = true;
         supportsFunctionCalling = true;
       };
-      # LINDA vLLM CPU — Qwen3.8-27B on :8002
+      # LINDA vLLM CPU — small AWQ development service with 128K context.
       linda-vllm-cpu = {
         url = "http://10.88.127.88:8002/v1";
         modelType = "hosted_vllm";
         apiKey = "none";
         models = [
-          "qwen38-27b"
+          "qwen2.5-vl-cpu"
         ];
-        # Qwen3.8-27B dense model (262K native context; maxModelLen unset on LINDA)
-        maxTokens = 32768;
+        maxInputTokens = 128000;
+        maxOutputTokens = 8192;
         mode = "chat";
         supportsVision = true;
         supportsVideoInput = true;
-        # Qwen3 emits reasoning params — drop them from requests to this backend
-        additional_drop_params = [ "reasoningSummary" "reasoning_effort" ];
+        supportsFunctionCalling = true;
       };
-      # LINDA vLLM CPU — Qwen3-Coder-30B-A3B on :8003
-      linda-vllm-coder = {
-        url = "http://10.88.127.88:8003/v1";
-        modelType = "hosted_vllm";
-        apiKey = "none";
+      # LINDA CPU-only research backend. Ollama is manually started and keeps
+      # at most one model resident within its 80 GiB service limit.
+      linda-ollama = {
+        url = "http://10.88.127.88:11434/v1";
         models = [
-          "qwen3-coder-30b-a3b"
+          "ornith:9b"
+          "laguna-s-2.1:q4_K_M"
         ];
-        maxTokens = 32768;
+        maxInputTokens = 262144;
+        maxOutputTokens = 8192;
         mode = "chat";
-        additional_drop_params = [ "reasoningSummary" "reasoning_effort" ];
       };
       cluster-box = {
         url = "http://10.88.127.211:11434/v1";
         models = [
           "laguna-xs-2.1:q4_K_M"
-          "ornith:9b"
           "ornith:35b"
         ];
       };

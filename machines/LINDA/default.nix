@@ -37,6 +37,7 @@
     ../../environments/sshd.nix
     ../../modifier_imports/cuda.nix
     ../../modifier_imports/remote-builder.nix
+    ../../services/ollama.nix
     ../../modules/vllm.nix
   ];
   enableWgTopology.enable = true;
@@ -44,12 +45,11 @@
   # ── vLLM Inference Server ─────────────────────────────────────
   # OpenAI-compatible API — multiple models served on separate ports
   # LINDA: RTX 3060 (12GB VRAM) — GPU model on :8001
-  #        CPU inference — CPU models on :8002 and :8003
+  #        CPU inference — matching development model on :8002
   #
   # Models:
-  #   qwen2.5-vl:          Qwen/Qwen2.5-VL-3B-Instruct-AWQ — GPU (RTX 3060), :8001
-  #   qwen38-27b:          Qwen/Qwen3.8-27B — CPU, :8002
-  #   qwen3-coder-30b-a3b: Qwen/Qwen3-Coder-30B-A3B-Instruct — CPU, :8003
+  #   qwen2.5-vl:     Qwen/Qwen2.5-VL-3B-Instruct-AWQ — GPU (RTX 3060), :8001
+  #   qwen2.5-vl-cpu: same pinned AWQ model — CPU, :8002, 128K context
   #
   # CPU model weights load from the Nix store (self.models.*) — no runtime
   # HuggingFace downloads.
@@ -81,35 +81,19 @@
         ];
       }
       {
-        # CPU model — Qwen3.8-27B dense vision-language model, weights from the Nix store.
-        name = "qwen38-27b";
-        model = "Qwen/Qwen3.8-27B";
-        modelPath = self.models.qwen38-27b;
-        servedModelName = "qwen38-27b";
+        # CPU development service. The 3.18 GiB AWQ weights plus a 6 GiB KV
+        # allocation remain below the 20 GiB operational target at 128K context.
+        name = "qwen2.5-vl-cpu";
+        model = "Qwen/Qwen2.5-VL-3B-Instruct-AWQ";
+        modelPath = self.models.qwen25-vl-3b-instruct-awq;
+        servedModelName = "qwen2.5-vl-cpu";
         port = 8002;
         device = "cpu";
         dtype = "bfloat16";
-        cpuKvCacheSpace = 30; # GiB — 55GB weights + 30GB KV + 20GB ARC + 8GB system = 113GB on 128GB
+        quantization = "awq";
+        maxModelLen = "128000";
+        cpuKvCacheSpace = 6;
         cpuOmpThreadsBind = "0-29";
-        extraArgs = [
-          "--enable-auto-tool-choice"
-          "--tool-call-parser"
-          "hermes"
-        ];
-      }
-      {
-        # CPU coder model — weights from the Nix store (pkgs/models/qwen3-coder-30b-a3b.nix), pinned to a commit SHA.
-        # NOTE: official HF repo is Qwen/Qwen3-Coder-30B-A3B-Instruct — the bare -A3B repo does not exist.
-        name = "qwen3-coder-30b-a3b";
-        model = "Qwen/Qwen3-Coder-30B-A3B-Instruct";
-        modelPath = self.models.qwen3-coder-30b-a3b;
-        servedModelName = "qwen3-coder-30b-a3b";
-        port = 8003;
-        device = "cpu";
-        dtype = "bfloat16"; # Halves RAM vs float32 on AMD Zen
-        cpuKvCacheSpace = 30; # GiB — ~57GB weights + 30GB KV + 20GB ARC + 8GB system = 115GB on 128GB
-        cpuOmpThreadsBind = "0-29";
-        autoStart = false; # Manual: systemctl start vllm-qwen3-coder-30b-a3b
         extraArgs = [
           "--enable-auto-tool-choice"
           "--tool-call-parser"
