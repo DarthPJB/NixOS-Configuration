@@ -1,6 +1,6 @@
 # AI Inference Findings and Forward Architecture
 
-**Status**: Configuration implemented; live validation and golden authorization pending  
+**Status**: Configuration and build-time validation complete; live validation pending  
 **Decision date**: 2026-08-27  
 **Scope**: LINDA inference services, the alpha-three LiteLLM gateway, and OpenCode clients
 
@@ -172,10 +172,8 @@ separate from build-time evaluation.
   topology coverage, and the flake's aggregate golden check.
 - The complete LINDA system closure built successfully at
   `/nix/store/nrhd1l3bcks2pbsn6647rgvbz6gj2mfy-nixos-system-LINDA-26.05.20260823.a3b9886`.
-- `validate-goldens -- cortex-alpha` passed; the Prometheus label change is not
-  part of that machine's serialized golden surface.
-- The LINDA targeted golden has the expected intentional service/package and
-  firewall deltas. It has not been regenerated without explicit authorization.
-- The alpha-three targeted golden already differed on the unmodified source
-  branch because of package-version drift (`vintagestory`, Ollama, and
-  `llama-cpp`). That unrelated drift has not been absorbed into this change.
+- Targeted golden validation passed for LINDA, alpha-three, and cortex-alpha
+  after the user-authorized update.
+- The LINDA golden records the intentional service/package and firewall deltas.
+- The alpha-three golden also records the pre-existing package-version drift
+  (`vintagestory`, Ollama, and `llama-cpp`) accepted by that authorization.
