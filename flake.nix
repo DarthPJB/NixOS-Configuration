@@ -551,6 +551,7 @@
         qwen3-30b-a3b = nixpkgs.callPackage ./pkgs/models/qwen3-30b-a3b.nix { };
         qwen3-coder-30b-a3b = nixpkgs.callPackage ./pkgs/models/qwen3-coder-30b-a3b.nix { };
         qwen25-vl-7b-instruct-awq = nixpkgs.callPackage ./pkgs/models/qwen25-vl-7b-instruct-awq.nix { };
+        qwen25-vl-3b-instruct-awq = nixpkgs.callPackage ./pkgs/models/qwen25-vl-3b-instruct-awq.nix { };
         qwen38-27b = nixpkgs.callPackage ./pkgs/models/qwen38-27b.nix { };
       };
 

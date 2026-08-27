@@ -47,7 +47,7 @@
   #        CPU inference — CPU models on :8002 and :8003
   #
   # Models:
-#   qwen2.5-vl:          Qwen/Qwen2.5-VL-7B-Instruct-AWQ — GPU (RTX 3060), :8001
+#   qwen2.5-vl:          Qwen/Qwen2.5-VL-3B-Instruct-AWQ — GPU (RTX 3060), :8001
 #   qwen38-27b:          Qwen/Qwen3.8-27B — CPU, :8002
 #   qwen3-coder-30b-a3b: Qwen/Qwen3-Coder-30B-A3B-Instruct — CPU, :8003
   #
@@ -66,8 +66,8 @@
     models = [
       {
         name = "qwen2.5-vl";
-        model = "Qwen/Qwen2.5-VL-7B-Instruct-AWQ";
-        modelPath = self.models.qwen25-vl-7b-instruct-awq;
+        model = "Qwen/Qwen2.5-VL-3B-Instruct-AWQ";
+        modelPath = self.models.qwen25-vl-3b-instruct-awq;
         servedModelName = "qwen2.5-vl";
         port = 8001;
         maxModelLen = "8192";

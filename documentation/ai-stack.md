@@ -141,7 +141,7 @@ vLLM is the fleet's single inference engine — the only inference server on the
 
 | Model | HF ID | Device | Port | Quant/DTYPE | Max Context | VRAM/RAM | Features |
 |-------|-------|--------|------|-------------|-------------|----------|----------|
-| `qwen2.5-vl` | `Qwen/Qwen2.5-VL-7B-Instruct-AWQ` | GPU (RTX 3060) | 8001 | AWQ | 8192 | ~5 GB VRAM | Vision, video input, prefix caching |
+| `qwen2.5-vl` | `Qwen/Qwen2.5-VL-3B-Instruct-AWQ` | GPU (RTX 3060) | 8001 | AWQ | 8192 | ~5 GB VRAM | Vision, video input, prefix caching |
 | `qwen38-27b` | `Qwen/Qwen3.8-27B` (nix store) | CPU | 8002 | bfloat16 | 32K | 4 GiB KV cache | Dense 27B, vision-language |
 | `qwen3-coder-30b-a3b` | `Qwen/Qwen3-Coder-30B-A3B-Instruct` (nix store) | CPU | 8003 | bfloat16 | 32K | 4 GiB KV cache | MoE (3B active), code |
 
