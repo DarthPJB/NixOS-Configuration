@@ -91,6 +91,11 @@
         dtype = "bfloat16";
         cpuKvCacheSpace = 30; # GiB — 55GB weights + 30GB KV + 20GB ARC + 8GB system = 113GB on 128GB
         cpuOmpThreadsBind = "0-29";
+        extraArgs = [
+          "--enable-auto-tool-choice"
+          "--tool-call-parser"
+          "hermes"
+        ];
       }
       {
         # CPU coder model — weights from the Nix store (pkgs/models/qwen3-coder-30b-a3b.nix), pinned to a commit SHA.
@@ -105,6 +110,11 @@
         cpuKvCacheSpace = 30; # GiB — ~57GB weights + 30GB KV + 20GB ARC + 8GB system = 115GB on 128GB
         cpuOmpThreadsBind = "0-29";
         autoStart = false; # Manual: systemctl start vllm-qwen3-coder-30b-a3b
+        extraArgs = [
+          "--enable-auto-tool-choice"
+          "--tool-call-parser"
+          "hermes"
+        ];
       }
     ];
   };
