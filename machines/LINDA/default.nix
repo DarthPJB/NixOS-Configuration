@@ -86,7 +86,7 @@
         port = 8002;
         device = "cpu";
         dtype = "bfloat16";
-        cpuKvCacheSpace = 4; # GiB — ~55GB model on 68GB RAM
+        cpuKvCacheSpace = 40; # GiB — 55GB model + 40GB KV on 128GB RAM (102GB usable)
         cpuOmpThreadsBind = "0-29";
       }
       {
@@ -99,7 +99,7 @@
         port = 8003;
         device = "cpu";
         dtype = "bfloat16"; # Halves RAM vs float32 on AMD Zen
-        cpuKvCacheSpace = 4; # GiB — ~57GB model on 128GB RAM
+        cpuKvCacheSpace = 40; # GiB — ~57GB model + 40GB KV on 128GB RAM (102GB usable)
         cpuOmpThreadsBind = "0-29";
         autoStart = false; # Manual: systemctl start vllm-qwen3-coder-30b-a3b
       }
