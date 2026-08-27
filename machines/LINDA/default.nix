@@ -75,6 +75,9 @@
           "--enable-prefix-caching"
           "--max-num-seqs"
           "16"
+          "--enable-auto-tool-choice"
+          "--tool-call-parser"
+          "hermes"
         ];
       }
       {
