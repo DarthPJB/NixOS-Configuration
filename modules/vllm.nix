@@ -278,6 +278,15 @@ in
                 systemctl start vllm-<name>
             '';
           };
+          enforceEager = lib.mkOption {
+            type = lib.types.bool;
+            default = cfg.enforceEager;
+            description = ''
+              Skip torch.compile, use eager mode. Recommended for CPU models
+              where compilation hangs on large models. Defaults to the global
+              services.vllm.enforceEager.
+            '';
+          };
         };
       });
       default = [ ];
