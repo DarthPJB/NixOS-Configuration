@@ -99,8 +99,9 @@
         port = 8003;
         device = "cpu";
         dtype = "bfloat16"; # Halves RAM vs float32 on AMD Zen
-        cpuKvCacheSpace = 4; # GiB — 57GB model on 68GB RAM leaves ~6GB for KV + headroom
-        cpuOmpThreadsBind = "0-29"; # Pin OpenMP threads to 30 of 48 cores
+        cpuKvCacheSpace = 4; # GiB — ~57GB model on 128GB RAM
+        cpuOmpThreadsBind = "0-29";
+        autoStart = false; # Manual: systemctl start vllm-qwen3-coder-30b-a3b
       }
     ];
   };

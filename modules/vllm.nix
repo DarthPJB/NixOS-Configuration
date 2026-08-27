@@ -269,6 +269,15 @@ in
             default = [ ];
             description = "Additional CLI arguments for this model";
           };
+          autoStart = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = ''
+              Whether this model service starts at boot (wantedBy = multi-user.target).
+              Set to false for services that should only be started manually:
+                systemctl start vllm-<name>
+            '';
+          };
         };
       });
       default = [ ];
@@ -494,7 +503,7 @@ in
           description = "vLLM Inference Server — ${modelCfg.name}";
           after = [ "network-online.target" ];
           wants = [ "network-online.target" ];
-          wantedBy = [ "multi-user.target" ];
+          wantedBy = lib.mkIf modelCfg.autoStart [ "multi-user.target" ];
           startLimitBurst = 3;
           startLimitIntervalSec = 300;
 
