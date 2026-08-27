@@ -86,8 +86,9 @@
         port = 8002;
         device = "cpu";
         dtype = "bfloat16";
-        cpuKvCacheSpace = 40; # GiB — 55GB model + 40GB KV on 128GB RAM (102GB usable)
+        cpuKvCacheSpace = 30; # GiB — 55GB weights + 30GB KV + 20GB ARC + 8GB system = 113GB on 128GB
         cpuOmpThreadsBind = "0-29";
+        enforceEager = true; # Skip torch.compile — hangs on CPU for large models
       }
       {
         # CPU coder model — weights from the Nix store (pkgs/models/qwen3-coder-30b-a3b.nix), pinned to a commit SHA.
@@ -99,8 +100,9 @@
         port = 8003;
         device = "cpu";
         dtype = "bfloat16"; # Halves RAM vs float32 on AMD Zen
-        cpuKvCacheSpace = 40; # GiB — ~57GB model + 40GB KV on 128GB RAM (102GB usable)
+        cpuKvCacheSpace = 30; # GiB — ~57GB weights + 30GB KV + 20GB ARC + 8GB system = 115GB on 128GB
         cpuOmpThreadsBind = "0-29";
+        enforceEager = true; # Skip torch.compile — hangs on CPU for large models
         autoStart = false; # Manual: systemctl start vllm-qwen3-coder-30b-a3b
       }
     ];
