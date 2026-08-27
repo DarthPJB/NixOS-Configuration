@@ -127,7 +127,7 @@
       Global litellm_settings.fallbacks. Each entry is { "model-group" = [ "fallback-group" ]; }.
       Empty = no fallbacks.
     '';
-    example = [{ "linda-vllm/qwen2.5-vl" = [ "linda-vllm-cpu/qwen3-30b-a3b" ]; }];
+    example = [{ "linda-vllm/qwen2.5-vl" = [ "linda-vllm-cpu/qwen38-27b" ]; }];
   };
 
   options.services.litellm.requestTimeout = lib.mkOption {

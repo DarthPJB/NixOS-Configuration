@@ -52,17 +52,19 @@
         supportsVision = true;
         supportsVideoInput = true;
       };
-      # LINDA vLLM CPU — Qwen3-30B-A3B on :8002
+      # LINDA vLLM CPU — Qwen3.8-27B on :8002
       linda-vllm-cpu = {
         url = "http://10.88.127.88:8002/v1";
         modelType = "hosted_vllm";
         apiKey = "none";
         models = [
-          "qwen3-30b-a3b"
+          "qwen38-27b"
         ];
-        # Matches vLLM CPU model (Qwen3 native 32K context; maxModelLen unset on LINDA)
+        # Qwen3.8-27B dense model (262K native context; maxModelLen unset on LINDA)
         maxTokens = 32768;
         mode = "chat";
+        supportsVision = true;
+        supportsVideoInput = true;
         # Qwen3 emits reasoning params — drop them from requests to this backend
         additional_drop_params = [ "reasoningSummary" "reasoning_effort" ];
       };

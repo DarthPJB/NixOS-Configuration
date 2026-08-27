@@ -105,7 +105,7 @@ in
             labels = {
               hostname = "LINDA";
               device = "cpu";
-              model = "qwen3-30b-a3b";
+              model = "qwen38-27b";
             };
             targets = [
               "10.88.127.88:8002"
