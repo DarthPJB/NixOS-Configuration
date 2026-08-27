@@ -37,7 +37,6 @@
     environmentFileSecret = ../../secrets/litellm-env;
     # Expose /metrics for Prometheus scraping (vLLM-only migration, Phase 4.2)
     callbacks = [ "prometheus" ];
-    dropParams = true; # Drop unsupported params instead of erroring
     backends = {
       # LINDA vLLM GPU (RTX 3060) — qwen2.5-vl on :8001
       linda-vllm = {
