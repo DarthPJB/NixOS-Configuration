@@ -58,7 +58,7 @@
     host = "0.0.0.0"; # Expose on WireGuard plane
     cudaVisibleDevices = "0"; # RTX 3060 only (GPU 0)
     gpuMemoryUtilization = 0.8;
-    openFirewall = true; # Allow WireGuard access
+    openFirewall = false; # Topology wireg0 is authoritative for firewall
     cacheDir = "/speed-storage/vllm-cache";
     environmentVariables = {
       HF_HOME = "/speed-storage/vllm-cache/huggingface";
@@ -100,6 +100,11 @@
           "--enable-prefix-caching"
           "--max-num-seqs"
           "2"
+          "--enable-auto-tool-choice"
+          "--tool-call-parser"
+          "qwen3_xml"
+          "--reasoning-parser"
+          "qwen3"
         ];
       }
     ];

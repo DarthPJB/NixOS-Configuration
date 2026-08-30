@@ -134,14 +134,21 @@
         mode = "chat";
         supportsFunctionCalling = true;
       };
-      cluster-box = {
+      cluster-box-laguna-xs = {
         url = "http://10.88.127.211:11434/v1";
         modelType = "openai";
         apiKey = "none";
-        models = [
-          "laguna-xs-2.1:q4_K_M"
-          "ornith:35b"
-        ];
+        models = [ "laguna-xs-2.1:q4_K_M" ];
+        maxInputTokens = 262144;
+        maxOutputTokens = 8192;
+        timeout = 3600;
+        mode = "chat";
+      };
+      cluster-box-ornith35 = {
+        url = "http://10.88.127.211:11434/v1";
+        modelType = "openai";
+        apiKey = "none";
+        models = [ "ornith:35b" ];
         maxInputTokens = 262144;
         maxOutputTokens = 8192;
         timeout = 3600;

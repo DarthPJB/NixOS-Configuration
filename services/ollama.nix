@@ -5,7 +5,7 @@
 {
   services.ollama = {
     enable = true;
-    host = "127.0.0.1"; # LiteLLM/WG is the public plane
+    host = "10.88.127.88"; # WireGuard plane only — not loopback, not all interfaces
     port = 11434;
     package = pkgs_llm.ollama-cpu;
     models = "/speed-storage/ollama";
@@ -61,8 +61,8 @@
   # One-shot: materialise created tags after blobs exist.
   systemd.services.ollama-create-profiles = {
     description = "Materialise LINDA Ollama Modelfiles";
-    after = [ "ollama.service" ];
-    wants = [ "ollama.service" ];
+    after = [ "ollama.service" "ollama-model-loader.service" ];
+    wants = [ "ollama.service" "ollama-model-loader.service" ];
     wantedBy = [ ];
     serviceConfig.Type = "oneshot";
     script = ''
