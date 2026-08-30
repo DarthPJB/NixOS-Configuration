@@ -1,7 +1,8 @@
 # AI Inference Findings and Forward Architecture
 
-**Status**: Configuration and build-time validation complete; live validation pending  
+**Status**: Configuration and build-time validation complete; live validation complete  
 **Decision date**: 2026-08-27  
+**Last updated**: 2026-08-30  
 **Scope**: LINDA inference services, the alpha-three LiteLLM gateway, and OpenCode clients
 
 ## Executive Decision
@@ -86,9 +87,9 @@ load weights into RAM; inference does.
 
 | Engine | Service | Device | Lifecycle | Purpose |
 |---|---|---|---|---|
-| vLLM | `vllm-qwen2.5-vl` | RTX 3060 | Long-running | Small GPU vision/tool development |
-| vLLM | `vllm-qwen2.5-vl-cpu` | CPU | Long-running during evaluation | Small CPU/128K context development |
-| Ollama | `ollama` | CPU only | Manual start | Ornith 9B and Laguna S research |
+| vLLM | `vllm-qwen2.5-vl` | RTX 3060 | Manual start | Small GPU vision/tool development |
+| vLLM | `vllm-qwen38-27b` | CPU | Manual start | Qwen3.8-27B BF16, 262K context |
+| Ollama | `ollama` | CPU only | Manual start | Ornith, Laguna, Qwen3.8 research |
 
 The former large vLLM CPU services are retained in git history and model package
 outputs but removed from the active LINDA service list. They can return when a
@@ -133,19 +134,19 @@ The restored LINDA daemon follows these rules:
 
 - CPU package only; it must not claim the RTX 3060.
 - No boot target for either the daemon or model-loader unit.
-- Declarative availability of `ornith:9b` and `laguna-s-2.1:q4_K_M`.
-- `OLLAMA_CONTEXT_LENGTH=262144`, matching the native model family window.
-- `OLLAMA_KV_CACHE_TYPE=q4_0` to keep long-context cache affordable.
+- Per-model context via Modelfiles, not daemon environment variables.
+- `OLLAMA_MAX_LOADED_MODELS=1`, `OLLAMA_NUM_PARALLEL=1`.
 - At most one loaded model and one parallel request.
-- `MemoryMax=80G` as the host-safety boundary.
-- WireGuard-only access to TCP 11434.
+- `MemoryMax=96G` as the host-safety boundary.
+- WireGuard-only access to TCP 11434 (bound to `10.88.127.88`).
+- `ollama-create-profiles` runs after `ollama-model-loader` to ensure FROM blobs exist.
 
-Operational commands:
+Operational sequence:
 
 ```bash
-systemctl start ollama
-systemctl stop ollama
-systemctl start ollama-model-loader  # synchronize declared model blobs
+systemctl start ollama                     # daemon on 10.88.127.88:11434
+systemctl start ollama-model-loader        # pull declared model blobs
+systemctl start ollama-create-profiles     # materialise created tags (FROM + num_ctx)
 ```
 
 Stopping Ollama is the authoritative way to release all of its inference memory
@@ -165,6 +166,30 @@ The transition is complete only when all of the following hold:
 
 Live inference and harness validation require deployment and are intentionally
 separate from build-time evaluation.
+
+## Live Validation — 2026-08-30
+
+### Laguna XS 256K via Ollama — Working
+
+`linda-laguna-xs-q4-256k` is fully operational through the LiteLLM gateway.
+
+- **Model**: laguna-xs-2.1:q4_K_M (20GB weights)
+- **Context**: 262144 tokens (native max, via Modelfile)
+- **Backend**: LiteLLM `linda-laguna-xs` → `http://10.88.127.88:11434/v1`
+- **Response times**: <10 minutes for 256K-context completions
+- **Gateway path**: OpenCode → LiteLLM (alpha-three:8080) → WireGuard → Ollama (LINDA:11434)
+
+### Defects Resolved
+
+| Issue | Root cause | Fix |
+|---|---|---|
+| Ollama unreachable from LiteLLM | `host = "127.0.0.1"` (loopback) | `host = "10.88.127.88"` (WireGuard address) |
+| create-profiles panic | `$HOME` not set in root oneshot | `environment = { HOME = "/root"; }` |
+| create-profiles connection refused | CLI defaulted to `127.0.0.1` | `export OLLAMA_HOST="http://10.88.127.88:11434"` |
+| GPU :8001 not in topology firewall | Topology missing port | Added 8001 to `topology/LINDA.json` wireg0 |
+| vLLM openFirewall bypassed topology | `openFirewall = true` | `openFirewall = false` (topology authoritative) |
+| cluster-box two tags one backend | Single backend with shared maxInputTokens | Split into `cluster-box-laguna-xs` and `cluster-box-ornith35` |
+| vLLM qwen38-27b missing tool parser | No `--enable-auto-tool-choice` | Added `--tool-call-parser qwen3_xml --reasoning-parser qwen3` |
 
 ## Build-Time Verification — 2026-08-27
 
