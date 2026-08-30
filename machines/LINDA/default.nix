@@ -45,16 +45,14 @@
   # ── vLLM Inference Server ─────────────────────────────────────
   # OpenAI-compatible API — multiple models served on separate ports
   # LINDA: RTX 3060 (12GB VRAM) — GPU model on :8001
-  #        CPU inference — native FP16 models on :8002/:8003
+  #        CPU inference — Qwen3.8-27B BF16 on :8002
   #
   # Models:
   #   qwen2.5-vl:      Qwen/Qwen2.5-VL-3B-Instruct-AWQ — GPU (RTX 3060), :8001
-  #   qwen3-8b-fp16:   Qwen/Qwen3-8B — CPU, :8002, native FP16, 8K context
-  #   qwen2.5-7b-fp16: Qwen/Qwen2.5-7B-Instruct — CPU, :8003, native FP16, 8K context (manual start)
+  #   qwen38-27b:      Qwen/Qwen3.8-27B — CPU, :8002, BF16, 262144 context (manual start)
   #
   # CPU models use native (non-quantized) weights from the Nix store.
   # enforceEager=true disables torch dynamo tracing to avoid startup memory blowup.
-  # FP16 on Zen 2 (Threadripper 3960X) uses F16C conversion + AVX2 FP32 arithmetic.
   services.vllm = {
     enable = true;
     host = "0.0.0.0"; # Expose on WireGuard plane
@@ -67,6 +65,7 @@
     };
     models = [
       {
+        # GPU — Qwen2.5-VL-3B AWQ on RTX 3060, manual start
         name = "qwen2.5-vl";
         model = "Qwen/Qwen2.5-VL-3B-Instruct-AWQ";
         modelPath = self.models.qwen25-vl-3b-instruct-awq;
@@ -84,46 +83,23 @@
         ];
       }
       {
-        # CPU primary — Qwen3-8B native FP16, 8K context.
-        # 15.26 GiB weights + ~5.6 GiB KV + framework ≈ 22-28 GiB total.
-        name = "qwen3-8b-fp16";
-        model = "Qwen/Qwen3-8B";
-        modelPath = self.models.qwen3-8b;
-        servedModelName = "qwen3-8b-fp16";
+        # CPU — Qwen3.8-27B BF16, native 262144 context, manual start
+        name = "qwen38-27b";
+        model = "Qwen/Qwen3.8-27B";
+        modelPath = self.models.qwen38-27b;
+        servedModelName = "qwen38-27b";
         port = 8002;
         device = "cpu";
-        dtype = "float16";
-        maxModelLen = "8192";
+        dtype = "bfloat16";
+        maxModelLen = "262144";
         enforceEager = true;
-        cpuKvCacheSpace = 6;
+        cpuKvCacheSpace = 20;
         cpuOmpThreadsBind = "0-29";
-        extraArgs = [
-          "--enable-auto-tool-choice"
-          "--tool-call-parser"
-          "hermes"
-        ];
-      }
-      {
-        # CPU secondary — Qwen2.5-7B-Instruct native FP16, 8K context.
-        # 14.19 GiB weights + ~1.75 GiB KV + framework ≈ 18-24 GiB total.
-        # Disabled at boot — start manually when memory is available:
-        #   systemctl start vllm-qwen2.5-7b-fp16
-        name = "qwen2.5-7b-fp16";
-        model = "Qwen/Qwen2.5-7B-Instruct";
-        modelPath = self.models.qwen25-7b-instruct;
-        servedModelName = "qwen2.5-7b-fp16";
-        port = 8003;
-        device = "cpu";
-        dtype = "float16";
-        maxModelLen = "8192";
-        enforceEager = true;
         autoStart = false;
-        cpuKvCacheSpace = 6;
-        cpuOmpThreadsBind = "0-29";
         extraArgs = [
-          "--enable-auto-tool-choice"
-          "--tool-call-parser"
-          "hermes"
+          "--enable-prefix-caching"
+          "--max-num-seqs"
+          "2"
         ];
       }
     ];

@@ -31,7 +31,7 @@
 
   # ── Fleet LLM Gateway ──────────────────────────────────────────
   # Backends on the WireGuard plane (10.88.127.0/24):
-  #   linda       = 10.88.127.88  (vLLM: GPU :8001, CPU :8002/:8003; Ollama :11434)
+  #   linda       = 10.88.127.88  (vLLM: GPU :8001, CPU :8002; Ollama :11434)
   #   cluster-box = 10.88.127.211 (Malayalam: laguna/ornith; dlyon-operated)
   services.litellm = {
     environmentFileSecret = ../../secrets/litellm-env;
@@ -53,50 +53,99 @@
         supportsVideoInput = true;
         supportsFunctionCalling = true;
       };
-      # LINDA vLLM CPU — Qwen3-8B native FP16 on :8002
-      linda-vllm-cpu-qwen3 = {
+      # LINDA vLLM CPU — Qwen3.8-27B BF16 on :8002 (manual start)
+      linda-vllm-cpu = {
         url = "http://10.88.127.88:8002/v1";
         modelType = "hosted_vllm";
         apiKey = "none";
         models = [
-          "qwen3-8b-fp16"
-        ];
-        maxInputTokens = 8192;
-        maxOutputTokens = 2048;
-        mode = "chat";
-        supportsFunctionCalling = true;
-      };
-      # LINDA vLLM CPU — Qwen2.5-7B-Instruct native FP16 on :8003 (manual start)
-      linda-vllm-cpu-qwen25 = {
-        url = "http://10.88.127.88:8003/v1";
-        modelType = "hosted_vllm";
-        apiKey = "none";
-        models = [
-          "qwen2.5-7b-fp16"
-        ];
-        maxInputTokens = 8192;
-        maxOutputTokens = 2048;
-        mode = "chat";
-        supportsFunctionCalling = true;
-      };
-      # LINDA CPU-only research backend. Ollama is manually started and keeps
-      # at most one model resident within its 80 GiB service limit.
-      linda-ollama = {
-        url = "http://10.88.127.88:11434/v1";
-        models = [
-          "ornith:9b"
-          "laguna-s-2.1:q4_K_M"
+          "qwen38-27b"
         ];
         maxInputTokens = 262144;
         maxOutputTokens = 8192;
+        timeout = 3600;
         mode = "chat";
+        supportsFunctionCalling = true;
+      };
+      # LINDA Ollama — one backend per created tag, same URL, honest metadata
+      linda-ornith9 = {
+        url = "http://10.88.127.88:11434/v1";
+        modelType = "openai";
+        apiKey = "none";
+        models = [ "linda-ornith9-q4-256k" ];
+        maxInputTokens = 262144;
+        maxOutputTokens = 8192;
+        timeout = 3600;
+        mode = "chat";
+        supportsFunctionCalling = true;
+      };
+      linda-ornith35 = {
+        url = "http://10.88.127.88:11434/v1";
+        modelType = "openai";
+        apiKey = "none";
+        models = [ "linda-ornith35-q4-256k" ];
+        maxInputTokens = 262144;
+        maxOutputTokens = 8192;
+        timeout = 3600;
+        mode = "chat";
+        supportsFunctionCalling = true;
+      };
+      linda-laguna-xs = {
+        url = "http://10.88.127.88:11434/v1";
+        modelType = "openai";
+        apiKey = "none";
+        models = [ "linda-laguna-xs-q4-256k" ];
+        maxInputTokens = 262144;
+        maxOutputTokens = 8192;
+        timeout = 3600;
+        mode = "chat";
+        supportsFunctionCalling = true;
+      };
+      linda-laguna-xs-bf16 = {
+        url = "http://10.88.127.88:11434/v1";
+        modelType = "openai";
+        apiKey = "none";
+        models = [ "linda-laguna-xs-bf16-256k" ];
+        maxInputTokens = 262144;
+        maxOutputTokens = 8192;
+        timeout = 3600;
+        mode = "chat";
+        supportsFunctionCalling = true;
+      };
+      linda-laguna-s = {
+        url = "http://10.88.127.88:11434/v1";
+        modelType = "openai";
+        apiKey = "none";
+        models = [ "linda-laguna-s-q4-256k" ];
+        maxInputTokens = 262144;
+        maxOutputTokens = 8192;
+        timeout = 3600;
+        mode = "chat";
+        supportsFunctionCalling = true;
+      };
+      linda-qwen38 = {
+        url = "http://10.88.127.88:11434/v1";
+        modelType = "openai";
+        apiKey = "none";
+        models = [ "linda-qwen38-27b-q4-256k" ];
+        maxInputTokens = 262144;
+        maxOutputTokens = 8192;
+        timeout = 3600;
+        mode = "chat";
+        supportsFunctionCalling = true;
       };
       cluster-box = {
         url = "http://10.88.127.211:11434/v1";
+        modelType = "openai";
+        apiKey = "none";
         models = [
           "laguna-xs-2.1:q4_K_M"
           "ornith:35b"
         ];
+        maxInputTokens = 262144;
+        maxOutputTokens = 8192;
+        timeout = 3600;
+        mode = "chat";
       };
     };
   };
