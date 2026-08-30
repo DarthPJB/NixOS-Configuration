@@ -38,8 +38,45 @@
     ../../environments/sshd.nix
     ../../modifier_imports/cuda.nix
     ../../modifier_imports/remote-builder.nix
+    ../../modules/vllm.nix
   ];
   enableWgTopology.enable = true;
+
+  # ── vLLM Inference Server ─────────────────────────────────────
+  # OpenAI-compatible API — multiple models served on separate ports
+  # LINDA: RTX 3060 (12GB VRAM) — only one model loaded at a time
+  # GTX 1050 (2GB) is too small for inference; only RTX 3060 is used
+  #
+  # Models:
+  #   qwen3-8b:    Qwen3-8B       — general purpose, ~5GB VRAM, ~42 tok/s
+  #   qwen2.5-starter: Qwen2.5-1.5B-Instruct — lightweight starter, ~1GB VRAM
+  #
+  # Laguna XS 2.1 runs in Ollama (CPU/GPU hybrid) — 33B MoE won't fit in 12GB VRAM
+  services.vllm = {
+    enable = true;
+    host = "0.0.0.0"; # Expose on WireGuard plane
+    cudaVisibleDevices = "0"; # RTX 3060 only (GPU 0)
+    gpuMemoryUtilization = 0.8;
+    openFirewall = true; # Allow WireGuard access
+    cacheDir = "/speed-storage/vllm-cache";
+    environmentVariables = {
+      HF_HOME = "/speed-storage/vllm-cache/huggingface";
+    };
+    models = [
+      {
+        name = "qwen2.5-vl";
+        model = "Qwen/Qwen2.5-VL-7B-Instruct-AWQ";
+        servedModelName = "qwen2.5-vl";
+        port = 8001;
+        maxModelLen = "8192";
+        extraArgs = [
+          "--enable-prefix-caching"
+          "--max-num-seqs"
+          "16"
+        ];
+      }
+    ];
+  };
   programs.ssh.extraConfig = ''
     Host hyperhyper
       ControlMaster auto
@@ -413,7 +450,7 @@
   services.opencode-fleet = {
     enable = true;
     user = "John88";
-    home = "/home/John88";
+    home = "/home/pokej";
     mcp.git = {
       enable = true;
       extraArgs = [ "--repository" "/home/pokej/NixOS-Configuration" ];

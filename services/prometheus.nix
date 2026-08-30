@@ -194,6 +194,86 @@ in
           }
         ];
       }
+      # Malayalam (cluster-box) — CUDA inference machine, 4x Quadro M4000
+      # Source: /speed-storage/bargman-tech/Malayalam/
+      {
+        job_name = "malayalam-node";
+        scrape_interval = "30s";
+        static_configs = [
+          {
+            labels = {
+              hostname = "cluster-box";
+              role = "cuda-inference";
+            };
+            targets = [
+              "10.88.127.211:3100"
+            ];
+          }
+        ];
+      }
+      {
+        job_name = "malayalam-nvidia";
+        scrape_interval = "10s";
+        static_configs = [
+          {
+            labels = {
+              hostname = "cluster-box";
+              role = "cuda-inference";
+            };
+            targets = [
+              "10.88.127.211:3103"
+            ];
+          }
+        ];
+      }
+      # hyperhyper — CI build machine (100+ cores, 1TB RAM)
+      # Source: /speed-storage/repo/platonic.systems/infrastructure-2/
+      # Exporters rebound to Tailscale IP for cross-network scraping
+      {
+        job_name = "hyperhyper-node";
+        scrape_interval = "30s";
+        static_configs = [
+          {
+            labels = {
+              hostname = "hyperhyper";
+              role = "ci-builder";
+            };
+            targets = [
+              "100.107.101.14:9100"
+            ];
+          }
+        ];
+      }
+      {
+        job_name = "hyperhyper-systemd";
+        scrape_interval = "15s";
+        static_configs = [
+          {
+            labels = {
+              hostname = "hyperhyper";
+              role = "ci-builder";
+            };
+            targets = [
+              "100.107.101.14:9558"
+            ];
+          }
+        ];
+      }
+      {
+        job_name = "hyperhyper-zfs";
+        scrape_interval = "30s";
+        static_configs = [
+          {
+            labels = {
+              hostname = "hyperhyper";
+              role = "ci-builder";
+            };
+            targets = [
+              "100.107.101.14:9134"
+            ];
+          }
+        ];
+      }
     ];
     webExternalUrl = "https://${prometheus-dn}";
   };

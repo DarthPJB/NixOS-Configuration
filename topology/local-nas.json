@@ -15,6 +15,13 @@
       "peer_id": 3,
       "trust": 3,
       "interface": "wireg0"
+    },
+    {
+      "plane_name": "tailscale-platonic",
+      "subnet": "100.64.0.0/10",
+      "peer_id": 3,
+      "trust": 2,
+      "interface": "tailscale0"
     }
   ],
   "public_key_file": "secrets/public_keys/wireguard/wg_local-nas_pub"

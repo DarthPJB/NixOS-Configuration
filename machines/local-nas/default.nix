@@ -32,6 +32,14 @@
 
   enableWgTopology.enable = true;
 
+  # Tailscale: direct access to hyperhyper and other Tailscale nodes
+  secrix.services.tailscaled.secrets.auth-key.encrypted.file =
+    ../../secrets/tailscale_auth_key;
+  services.tailscale = {
+    enable = true;
+    authKeyFile = config.secrix.services.tailscaled.secrets.auth-key.decrypted.path;
+  };
+
   networking.useDHCP = false;
   networking.interfaces.enp0s31f6.useDHCP = true;
   networking.interfaces.wlp4s0.useDHCP = true;

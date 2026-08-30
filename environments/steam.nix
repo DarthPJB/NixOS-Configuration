@@ -7,9 +7,9 @@
 
 {
   programs.steam = {
-    package = pkgs_llm.steam;
+    package = unstable.steam;
     enable = true; # you probably already have this
-    extraCompatPackages = with pkgs_llm; [ proton-ge-bin ];
+    extraCompatPackages = [ pkgs_llm.proton-ge-bin unstable.proton-ge-bin ];
   };
 
   # Nice-to-have for any game (highly recommended for SE)

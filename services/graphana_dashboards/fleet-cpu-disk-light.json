@@ -2,7 +2,7 @@
   "annotations": {
     "list": []
   },
-  "description": "Fleet overview for wall display — CPU, memory, disk, filesystem. All queries are dynamic (job=node).",
+  "description": "Fleet overview for wall display \u2014 CPU, memory, disk, filesystem. All queries are dynamic (job=node).",
   "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -92,7 +92,7 @@
             "uid": "prometheus01"
           },
           "editorMode": "code",
-          "expr": "node_systemd_system_running{job=\"node\"}",
+          "expr": "node_systemd_system_running{job=~\"node|hyperhyper-node|malayalam-node\"}",
           "includeNullMetadata": true,
           "legendFormat": "{{instance}}",
           "range": true,
@@ -197,6 +197,20 @@
           "options": {
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box"
           }
         }
       ],
@@ -368,6 +382,20 @@
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one"
           }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box"
+          }
         }
       ],
       "type": "timeseries"
@@ -431,7 +459,7 @@
             "uid": "prometheus01"
           },
           "editorMode": "code",
-          "expr": "(1 - node_memory_MemAvailable_bytes{job=\"node\"} / node_memory_MemTotal_bytes{job=\"node\"}) * 100",
+          "expr": "(1 - node_memory_MemAvailable_bytes{job=~\"node|hyperhyper-node|malayalam-node\"} / node_memory_MemTotal_bytes{job=~\"node|hyperhyper-node|malayalam-node\"}) * 100",
           "legendFormat": "{{instance}}",
           "range": true,
           "refId": "A"
@@ -536,6 +564,20 @@
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one"
           }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box"
+          }
         }
       ],
       "type": "timeseries"
@@ -584,7 +626,7 @@
             "uid": "prometheus01"
           },
           "editorMode": "code",
-          "expr": "rate(node_disk_read_bytes_total{job=\"node\",device!~\"^(loop|ram|sr).*\"}[5m])",
+          "expr": "rate(node_disk_read_bytes_total{job=~\"node|hyperhyper-node|malayalam-node\",device!~\"^(loop|ram|sr).*\"}[5m])",
           "legendFormat": "{{instance}} {{device}} read",
           "range": true,
           "refId": "A"
@@ -595,7 +637,7 @@
             "uid": "prometheus01"
           },
           "editorMode": "code",
-          "expr": "-rate(node_disk_written_bytes_total{job=\"node\",device!~\"^(loop|ram|sr).*\"}[5m])",
+          "expr": "-rate(node_disk_written_bytes_total{job=~\"node|hyperhyper-node|malayalam-node\",device!~\"^(loop|ram|sr).*\"}[5m])",
           "legendFormat": "{{instance}} {{device}} write",
           "range": true,
           "refId": "B"
@@ -700,6 +742,20 @@
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one:$1"
           }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper:$1"
+          }
         }
       ],
       "type": "timeseries"
@@ -779,7 +835,7 @@
             "uid": "prometheus01"
           },
           "editorMode": "code",
-          "expr": "(1 - node_filesystem_avail_bytes{job=\"node\",fstype!~\"tmpfs|devtmpfs|overlay|ramfs\",mountpoint!~\"/nix/store|/speed-storage/.*\"} / node_filesystem_size_bytes{job=\"node\",fstype!~\"tmpfs|devtmpfs|overlay|ramfs\",mountpoint!~\"/nix/store|/speed-storage/.*\"}) * 100",
+          "expr": "(1 - node_filesystem_avail_bytes{job=~\"node|hyperhyper-node|malayalam-node\",fstype!~\"tmpfs|devtmpfs|overlay|ramfs\",mountpoint!~\"/nix/store|/speed-storage/.*\"} / node_filesystem_size_bytes{job=~\"node|hyperhyper-node|malayalam-node\",fstype!~\"tmpfs|devtmpfs|overlay|ramfs\",mountpoint!~\"/nix/store|/speed-storage/.*\"}) * 100",
           "legendFormat": "{{instance}} {{mountpoint}}",
           "instant": true,
           "refId": "A"
@@ -884,6 +940,20 @@
             "regex": "/10\\.88\\.127\\.108:(.*)/",
             "renamePattern": "alpha-one:$1"
           }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper:$1"
+          }
         }
       ],
       "type": "bargauge"
@@ -984,6 +1054,20 @@
           "options": {
             "regex": "/10\\.88\\.127\\.3:(.*)/",
             "renamePattern": "local-nas:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/10\\.88\\.127\\.211:(.*)/",
+            "renamePattern": "cluster-box:$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "/100\\.107\\.101\\.14:(.*)/",
+            "renamePattern": "hyperhyper:$1"
           }
         }
       ],

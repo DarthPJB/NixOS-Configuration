@@ -54,7 +54,8 @@
     "10.88.128.88/32",
     "10.88.127.107/32",
     "10.88.128.248/32",
-    "10.88.128.247/32"
+    "10.88.128.247/32",
+    "10.88.127.3/32"
   ],
   "lan_dhcp": {
     "range": "10.88.128.128,10.88.128.254,24h",
@@ -126,6 +127,7 @@
       { "domain": "grafana.johnbargman.net", "ip": "10.88.128.1" },
       { "domain": "print-controller.johnbargman.net", "ip": "10.88.128.1" },
       { "domain": "minio.johnbargman.net", "ip": "10.88.128.1" },
+      { "domain": "ollama.johnbargman.net", "ip": "10.88.127.107" },
       { "domain": "johnbargman.com", "ip": "10.88.127.50" }
     ],
     "dhcp": {

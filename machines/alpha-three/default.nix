@@ -21,11 +21,12 @@
     ../../environments/neovim.nix
     ../../services/gitlab-credentials.nix
     ../../services/litellm.nix
+    ../../services/ollama-ui.nix
     (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
   ];
   enableWgTopology.enable = true;
   security.acme.defaults.email = "commander@johnbargman.net";
-  # Wildcard cert serves agentic-gateway.johnbargman.net via useACMEHost (topology vhost)
+  # Wildcard cert serves agentic-gateway + ollama UI via useACMEHost (topology vhosts)
   security.acme.certs."johnbargman.net".extraDomainNames = [ "*.johnbargman.net" ];
 
   # ── Fleet LLM Gateway ──────────────────────────────────────────
@@ -36,14 +37,30 @@
     environmentFileSecret = ../../secrets/litellm-env;
     backends = {
       linda = {
-        url = "http://10.88.127.88:11434";
+        url = "http://10.88.127.88:11434/v1";
         models = [
           "qwen3.8:27b-q4_K_M"
-          "qwen2.5-coder:32b-instruct-q5_K_M"
+          "qwen3-coder:30b-a3b-q4_K_M"
+          "laguna-s-2.1:q4_K_M"
+          "laguna-xs-2.1:q4_K_M"
         ];
+        additional_drop_params = [ "reasoningSummary" "reasoning_effort" ];
+      };
+      linda-vllm = {
+        url = "http://10.88.127.88:8001/v1";
+        modelType = "hosted_vllm";
+        apiKey = "none";
+        models = [
+          "qwen2.5-vl"
+        ];
+        # Matches services.vllm.models.maxModelLen on LINDA
+        maxTokens = 8192;
+        mode = "chat";
+        supportsVision = true;
+        supportsVideoInput = true;
       };
       cluster-box = {
-        url = "http://10.88.127.211:11434";
+        url = "http://10.88.127.211:11434/v1";
         models = [
           "laguna-xs-2.1:q4_K_M"
           "ornith:9b"
@@ -52,6 +69,27 @@
       };
     };
   };
+
+  # Override nginx vhost to add extended timeouts for local LLMs
+  # Local models (27B+) can take 1-3 minutes per request
+  services.nginx.virtualHosts."agentic-gateway.johnbargman.net".locations."/".extraConfig = ''
+    proxy_read_timeout 1200s;
+    proxy_connect_timeout 10s;
+    proxy_send_timeout 1200s;
+    proxy_socket_keepalive on;
+  '';
+  services.nginx.virtualHosts."ollama.johnbargman.net".locations."/".extraConfig = ''
+    proxy_read_timeout 1200s;
+    proxy_connect_timeout 10s;
+    proxy_send_timeout 1200s;
+    proxy_socket_keepalive on;
+  '';
+
+  # nginx-config-reload times out during switch-to-configuration because
+  # old nginx workers are stuck waiting for upstream (litellm on 127.0.0.1:8080)
+  # which is stopped during the switch. Increase systemd timeout to 120s.
+  systemd.services.nginx-config-reload.serviceConfig.TimeoutStartSec = 120;
+
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -129,12 +167,20 @@
       mode = "0440";
     };
   };
+  secrix.system.secrets.open-webui-env = {
+    encrypted.file = "${self}/secrets/litellm-openai-env";
+    decrypted = {
+      user = "John88";
+      group = "users";
+      mode = "0440";
+    };
+  };
 
   # OpenCode fleet configuration — full fleet with MCP servers
   services.opencode-fleet = {
     enable = true;
     user = "John88";
-    home = "/home/John88";
+    home = "/home/pokej";
     mcp.git = {
       enable = true;
       extraArgs = [ "--repository" "/home/pokej/NixOS-Configuration" ];

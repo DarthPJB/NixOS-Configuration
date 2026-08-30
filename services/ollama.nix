@@ -1,40 +1,37 @@
 { config
 , lib
 , pkgs
-, unstable
+, pkgs_llm
 , self
 , ...
 }:
 {
-  services.nextjs-ollama-llm-ui = {
-    port = 8081;
-    ollamaUrl = "http://127.0.0.1:${builtins.toString config.services.ollama.port}";
-    enable = true;
-  };
   services.ollama = {
     port = 11434;
     host = "0.0.0.0";
     enable = true;
-    # acceleration = "cuda";
+    # CPU only — GPU reserved exclusively for vLLM.
+    # pkgs_llm is imported with cudaSupport=true, so pkgs_llm.ollama ≡ ollama-cuda.
+    # Pin ollama-cpu so this service cannot claim the 3060.
+    package = pkgs_llm.ollama-cpu;
     models = "/speed-storage/ollama";
-    package = unstable.ollama-cuda;
     loadModels = [
       "qwen3.8:27b-q4_K_M"
-      "qwen2.5-coder:32b-instruct-q5_K_M"
+      "qwen3-coder:30b-a3b-q4_K_M"
+      "laguna-s-2.1:q4_K_M"
+      "laguna-xs-2.1:q4_K_M"
     ];
+    # Runtime envelope — all four models are 256K-native (verified via /api/show).
+    # Upstream default num_ctx=4096 silently truncates real client prompts
+    # (log-proven: 31,608-token prompt cut to 2,051; system prompts destroyed).
+    # q4_0 KV cache makes the full window affordable on CPU:
+    # ~15-16 GiB KV/model instead of ~40 GiB at f16.
+    # Sampling is intentionally NOT set here — each model carries its own
+    # baked PARAMETERs which take precedence over env defaults anyway.
     environmentVariables = {
-      # The fragging LLM told me to set these and I did it; I question not the machine spirits
-      CUDA_VISIBLE_DEVICES = "0,1"; # tells Ollama both GPUs exist (0 = RTX 3060, 1 = GTX 1050)
-      OLLAMA_NUM_CTX = "16384"; # 16k context — small models lose coherence fast; 8k default is usually too tight for tool use / multi-turn
-      OLLAMA_NUM_PREDICT = "4096"; # reasonable max output length — prevents endless generation while still allowing long code / explanations
-      OLLAMA_REPEAT_PENALTY = "1.12"; # mild repetition suppression — small models repeat phrases a lot; 1.1–1.15 usually optimal range
-      OLLAMA_TEMPERATURE = "0.75"; # slightly creative but controlled — 0.7–0.8 gives best balance between deterministic code and natural language
-      OLLAMA_TOP_P = "0.9"; # nucleus sampling — 0.9–0.95 reduces nonsense while keeping some variety (better than greedy for small models)
-      OLLAMA_TOP_K = "40"; # limits token choices — 30–50 works well on 7B models to avoid very low-probability garbage tokens
-      OLLAMA_NUM_GPU = "-1"; # offload as many layers as possible — maximizes speed on RTX 3060 (usually all layers fit at Q5/Q4)
-      OLLAMA_FLASH_ATTENTION = "true"; # enables flash attention if compiled in — ~20–40% faster inference on CUDA, almost free speedup
+      OLLAMA_CONTEXT_LENGTH = "262144";
+      OLLAMA_KV_CACHE_TYPE = "q4_0";
     };
-
   };
   environment.systemPackages = [
     # MCP servers now provided by opencode-fleet module
