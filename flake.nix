@@ -553,6 +553,7 @@
         qwen25-vl-7b-instruct-awq = nixpkgs.callPackage ./pkgs/models/qwen25-vl-7b-instruct-awq.nix { };
         qwen25-vl-3b-instruct-awq = nixpkgs.callPackage ./pkgs/models/qwen25-vl-3b-instruct-awq.nix { };
         qwen38-27b = nixpkgs.callPackage ./pkgs/models/qwen38-27b.nix { };
+        qwen25-7b-instruct = nixpkgs.callPackage ./pkgs/models/qwen25-7b-instruct.nix { };
       };
 
       packages = {

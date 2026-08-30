@@ -31,7 +31,7 @@
 
   # ── Fleet LLM Gateway ──────────────────────────────────────────
   # Backends on the WireGuard plane (10.88.127.0/24):
-  #   linda       = 10.88.127.88  (vLLM: GPU :8001, CPU :8002; Ollama :11434)
+  #   linda       = 10.88.127.88  (vLLM: GPU :8001, CPU :8002/:8003; Ollama :11434)
   #   cluster-box = 10.88.127.211 (Malayalam: laguna/ornith; dlyon-operated)
   services.litellm = {
     environmentFileSecret = ../../secrets/litellm-env;
@@ -53,19 +53,30 @@
         supportsVideoInput = true;
         supportsFunctionCalling = true;
       };
-      # LINDA vLLM CPU — small AWQ development service with 128K context.
-      linda-vllm-cpu = {
+      # LINDA vLLM CPU — Qwen3-8B native FP16 on :8002
+      linda-vllm-cpu-qwen3 = {
         url = "http://10.88.127.88:8002/v1";
         modelType = "hosted_vllm";
         apiKey = "none";
         models = [
-          "qwen2.5-vl-cpu"
+          "qwen3-8b-fp16"
         ];
-        maxInputTokens = 128000;
-        maxOutputTokens = 8192;
+        maxInputTokens = 8192;
+        maxOutputTokens = 2048;
         mode = "chat";
-        supportsVision = true;
-        supportsVideoInput = true;
+        supportsFunctionCalling = true;
+      };
+      # LINDA vLLM CPU — Qwen2.5-7B-Instruct native FP16 on :8003 (manual start)
+      linda-vllm-cpu-qwen25 = {
+        url = "http://10.88.127.88:8003/v1";
+        modelType = "hosted_vllm";
+        apiKey = "none";
+        models = [
+          "qwen2.5-7b-fp16"
+        ];
+        maxInputTokens = 8192;
+        maxOutputTokens = 2048;
+        mode = "chat";
         supportsFunctionCalling = true;
       };
       # LINDA CPU-only research backend. Ollama is manually started and keeps
