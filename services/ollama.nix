@@ -65,8 +65,10 @@
     wants = [ "ollama.service" "ollama-model-loader.service" ];
     wantedBy = [ ];
     serviceConfig.Type = "oneshot";
+    environment = { HOME = "/root"; };
     script = ''
       set -euo pipefail
+      export OLLAMA_HOST="http://10.88.127.88:11434"
       for f in /etc/ollama/modelfiles/*; do
         name="$(basename "$f")"
         ${lib.getExe pkgs_llm.ollama-cpu} create "$name" -f "$f"
