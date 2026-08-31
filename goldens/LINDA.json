@@ -234,8 +234,8 @@
     "<derivation:which-2.23>",
     "<derivation:nvtop-3.3.2>",
     "<derivation:cuda-merged-12.9>",
-    "<derivation:ollama-0.31.1>",
-    "<derivation:llama-cpp-9925>",
+    "<derivation:ollama-0.32.13>",
+    "<derivation:llama-cpp-10408>",
     "<derivation:colmap-4.0.4>",
     "<derivation:blender-5.1.1>",
     "<derivation:usbutils-019>",
@@ -310,7 +310,7 @@
     "<derivation:rsync-3.4.4>",
     "<derivation:git-2.54.0>",
     "<derivation:prismlauncher-11.0.3>",
-    "<derivation:vintagestory-1.22.3>",
+    "<derivation:vintagestory-1.22.6>",
     "<derivation:prometheus-mcp-server-0.18.0>",
     "<derivation:voxtype-0.7.5>",
     "<derivation:xclip-0.13>",
@@ -414,7 +414,7 @@
     "<derivation:nixos-firewall-tool>",
     "<derivation:dhcpcd-10.3.1>",
     "<derivation:avahi-0.8>",
-    "<derivation:ollama-0.32.13>",
+    "<derivation:ollama-0.32.14>",
     "<derivation:guix-1.5.0>",
     "<derivation:nixos-icons-0-unstable-2025-06-28>",
     "<derivation:xdg-utils-1.2.1>",
@@ -1347,6 +1347,18 @@
           "10.88.128.3"
         ],
         "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINlCggPwFP5VX3YDA1iji0wxX8+mIzmrCJ1aHj9f1ofx\n",
+        "publicKeyFile": null
+      },
+      "pillar-of-autum": {
+        "certAuthority": false,
+        "extraHostNames": [],
+        "hostNames": [
+          "pillar-of-autum",
+          "pillar-of-autum.johnbargman.net",
+          "10.88.127.110",
+          "10.88.128.150"
+        ],
+        "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB0n2F9HP22zNBIkLHMXEKNfCjYxCtqaSkug8oaFTZBy root@pillar-of-autum\n",
         "publicKeyFile": null
       },
       "pompeii": {

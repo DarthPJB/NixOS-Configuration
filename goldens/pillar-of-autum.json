@@ -321,6 +321,8 @@
     "<derivation:nixos-configuration-reference-manpage>",
     "<derivation:nixos-manual-html>",
     "<derivation:nixos-help>",
+    "<derivation:intel-npu-driver-1.28.0>",
+    "<derivation:level-zero-1.28.5>",
     "<derivation:sound-theme-freedesktop-0.8>",
     "<derivation:xdg-desktop-portal-1.20.4>",
     "<derivation:xdg-desktop-portal-gtk-1.15.3>",
@@ -914,7 +916,7 @@
           "10.88.127.110",
           "10.88.128.150"
         ],
-        "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE5fWYYizH6kYupOXVB0Eq7qCl68dUkySNdvFEBeW9zo\n",
+        "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB0n2F9HP22zNBIkLHMXEKNfCjYxCtqaSkug8oaFTZBy root@pillar-of-autum\n",
         "publicKeyFile": null
       },
       "print-controller": {
