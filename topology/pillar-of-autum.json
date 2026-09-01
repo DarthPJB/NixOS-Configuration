@@ -1,0 +1,21 @@
+{
+  "coordinate": [
+    {
+      "interface": "wireg0",
+      "peer_id": 110,
+      "plane_name": "wg",
+      "subnet": "10.88.127.0/24",
+      "trust": 3
+    },
+    {
+      "interface": "enp86s0",
+      "peer_id": 150,
+      "plane_name": "cortex-alpha.lan",
+      "subnet": "10.88.128.0/24",
+      "trust": 1
+    }
+  ],
+  "hostname": "pillar-of-autum",
+  "public_key_file": "secrets/public_keys/wireguard/wg_pillar-of-autum_pub",
+  "trust": 3
+}
