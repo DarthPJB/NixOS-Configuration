@@ -169,15 +169,13 @@ separate from build-time evaluation.
 
 ## Live Validation — 2026-08-30
 
-### Laguna XS 256K via Ollama — Working
+### Working — Known Good
 
-`linda-laguna-xs-q4-256k` is fully operational through the LiteLLM gateway.
-
-- **Model**: laguna-xs-2.1:q4_K_M (20GB weights)
-- **Context**: 262144 tokens (native max, via Modelfile)
-- **Backend**: LiteLLM `linda-laguna-xs` → `http://10.88.127.88:11434/v1`
-- **Response times**: <10 minutes for 256K-context completions
-- **Gateway path**: OpenCode → LiteLLM (alpha-three:8080) → WireGuard → Ollama (LINDA:11434)
+| Model | Backend | Context | Status |
+|---|---|---|---|
+| laguna-xs-2.1:q4_K_M | `linda-laguna-xs` | 262144 | ✅ <10m response |
+| laguna-xs-2.1:bf16 | `linda-laguna-xs-bf16` | 262144 | ✅ working |
+| cluster-box laguna-xs-2.1:q4_K_M | `cluster-box-laguna-xs` | 262144 | ✅ working |
 
 ### Defects Resolved
 
