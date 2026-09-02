@@ -24,6 +24,8 @@
     environmentVariables = {
       OLLAMA_MAX_LOADED_MODELS = "1";
       OLLAMA_NUM_PARALLEL = "1";
+      OLLAMA_KEEP_ALIVE = "-1"; # Keep loaded permanently — no idle unload
+      OLLAMA_LOAD_TIMEOUT = "20m"; # Allow large models (Laguna S 96GB) to load without connection drop
     };
   };
 
