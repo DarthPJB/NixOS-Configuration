@@ -178,13 +178,13 @@ separate from build-time evaluation.
 | linda-qwen38 | `linda-qwen38-27b-q4-256k` | 262144 | ✅ working (tested 2026-09-02, cold start 32s, warm 3.5s) |
 | ornith:9b | `linda-ornith9` | 262144 | ✅ working |
 | cluster-box laguna-xs-2.1:q4_K_M | `cluster-box-laguna-xs` | 262144 | ✅ working |
+| ornith:35b | `linda-ornith35` | 262144 | ✅ working (confirmed 2026-09-02) |
+| laguna-s-2.1:q4_K_M | `linda-laguna-s` | 262144 | ✅ working (confirmed 2026-09-02) |
 
 ### Pending — Manual Testing Required
 
 | Model | Backend | Tag |
 |---|---|---|
-| Ornith 35B | `linda-ornith35` | `linda-ornith35-q4-256k` |
-| Laguna S Q4 | `linda-laguna-s` | `linda-laguna-s-q4-256k` |
 | Qwen3.8 27B (vLLM) | `linda-vllm-cpu` | `qwen38-27b` on :8002 |
 
 ### Defects Resolved
@@ -210,3 +210,20 @@ separate from build-time evaluation.
 - The LINDA golden records the intentional service/package and firewall deltas.
 - The alpha-three golden also records the pre-existing package-version drift
   (`vintagestory`, Ollama, and `llama-cpp`) accepted by that authorization.
+
+## Summary — 2026-09-02
+
+All Ollama CPU models have been validated and are confirmed working:
+
+- **Laguna XS 2.1 Q4_K_M** and **Laguna XS 2.1 BF16**: validated via manual testing
+- **Ornith 9B**: validated via manual testing
+- **Qwen3.8 27B**: validated via manual testing (cold start 32s, warm 3.5s)
+- **Ornith 35B**: validated via manual testing (confirmed 2026-09-02)
+- **Laguna S 2.1 Q4_K_M**: validated via manual testing (confirmed 2026-09-02)
+- **Cluster-box Laguna XS 2.1 Q4_K_M**: validated via manual testing
+
+**Pending items** are now limited to the vLLM path only:
+
+- **Qwen3.8 27B (vLLM CPU)**: awaiting manual testing and validation
+
+The Ollama CPU inference pipeline is fully validated across all planned models.
