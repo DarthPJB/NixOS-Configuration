@@ -56,4 +56,11 @@ in
   # Git invokes GIT_ASKPASS when it needs credentials for https:// repos.
   # Nix passes through to git for flake input fetching, so this covers nix flake update.
   environment.sessionVariables.GIT_ASKPASS = "${gitlabAskpass}/bin/gitlab-askpass";
+
+  # Point the nix daemon's netrc-file at the populated /run/gitlab-netrc.
+  # Determinate Nix defaults this to /nix/var/determinate/netrc (empty).
+  # The daemon needs its own netrc for git+https flake input fetching;
+  # GIT_ASKPASS only covers user-session git, not the daemon.
+  # gitlab-netrc-copy.service (Before=nix-daemon.service) ensures the file exists.
+  nix.settings.netrc-file = userNetrcPath;
 }
