@@ -175,6 +175,7 @@ separate from build-time evaluation.
 |---|---|---|---|
 | laguna-xs-2.1:q4_K_M | `linda-laguna-xs` | 262144 | ✅ <10m response |
 | laguna-xs-2.1:bf16 | `linda-laguna-xs-bf16` | 262144 | ✅ working |
+| linda-qwen38 | `linda-qwen38-27b-q4-256k` | 262144 | ✅ working (tested 2026-09-02, cold start 32s, warm 3.5s) |
 | ornith:9b | `linda-ornith9` | 262144 | ✅ working |
 | cluster-box laguna-xs-2.1:q4_K_M | `cluster-box-laguna-xs` | 262144 | ✅ working |
 
@@ -184,7 +185,6 @@ separate from build-time evaluation.
 |---|---|---|
 | Ornith 35B | `linda-ornith35` | `linda-ornith35-q4-256k` |
 | Laguna S Q4 | `linda-laguna-s` | `linda-laguna-s-q4-256k` |
-| Qwen3.8 27B (Ollama) | `linda-qwen38` | `linda-qwen38-27b-q4-256k` |
 | Qwen3.8 27B (vLLM) | `linda-vllm-cpu` | `qwen38-27b` on :8002 |
 
 ### Defects Resolved
