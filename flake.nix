@@ -541,6 +541,15 @@
             }
           );
         };
+        llm-bench = {
+          type = "app";
+          meta.description = "Benchmark Ollama models through LiteLLM gateway (cold + warm timings)";
+          program = lib.getExe (nixpkgs.writeShellApplication {
+            name = "llm-bench";
+            runtimeInputs = with nixpkgs; [ openssh jq coreutils gnused ];
+            text = builtins.readFile ./scripts/llm-bench.sh;
+          });
+        };
       };
 
       # Nix-managed HuggingFace model packages (see pkgs/models/).
