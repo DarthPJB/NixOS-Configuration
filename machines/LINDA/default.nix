@@ -10,7 +10,6 @@
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
-    ../../services/ollama.nix
     ../../services/gitlab-credentials.nix
     ../../modules/enable-wg-topology.nix
     ../../environments/i3wm_darthpjb.nix
@@ -38,41 +37,74 @@
     ../../environments/sshd.nix
     ../../modifier_imports/cuda.nix
     ../../modifier_imports/remote-builder.nix
+    ../../services/ollama.nix
     ../../modules/vllm.nix
   ];
   enableWgTopology.enable = true;
 
   # ── vLLM Inference Server ─────────────────────────────────────
   # OpenAI-compatible API — multiple models served on separate ports
-  # LINDA: RTX 3060 (12GB VRAM) — only one model loaded at a time
-  # GTX 1050 (2GB) is too small for inference; only RTX 3060 is used
+  # LINDA: RTX 3060 (12GB VRAM) — GPU model on :8001
+  #        CPU inference — Qwen3.8-27B BF16 on :8002
   #
   # Models:
-  #   qwen3-8b:    Qwen3-8B       — general purpose, ~5GB VRAM, ~42 tok/s
-  #   qwen2.5-starter: Qwen2.5-1.5B-Instruct — lightweight starter, ~1GB VRAM
+  #   qwen2.5-vl:      Qwen/Qwen2.5-VL-3B-Instruct-AWQ — GPU (RTX 3060), :8001
+  #   qwen38-27b:      Qwen/Qwen3.8-27B — CPU, :8002, BF16, 262144 context (manual start)
   #
-  # Laguna XS 2.1 runs in Ollama (CPU/GPU hybrid) — 33B MoE won't fit in 12GB VRAM
+  # CPU models use native (non-quantized) weights from the Nix store.
+  # enforceEager=true disables torch dynamo tracing to avoid startup memory blowup.
   services.vllm = {
     enable = true;
     host = "0.0.0.0"; # Expose on WireGuard plane
     cudaVisibleDevices = "0"; # RTX 3060 only (GPU 0)
     gpuMemoryUtilization = 0.8;
-    openFirewall = true; # Allow WireGuard access
+    openFirewall = false; # Topology wireg0 is authoritative for firewall
     cacheDir = "/speed-storage/vllm-cache";
     environmentVariables = {
       HF_HOME = "/speed-storage/vllm-cache/huggingface";
     };
     models = [
       {
+        # GPU — Qwen2.5-VL-3B AWQ on RTX 3060, manual start
         name = "qwen2.5-vl";
-        model = "Qwen/Qwen2.5-VL-7B-Instruct-AWQ";
+        model = "Qwen/Qwen2.5-VL-3B-Instruct-AWQ";
+        modelPath = self.models.qwen25-vl-3b-instruct-awq;
         servedModelName = "qwen2.5-vl";
         port = 8001;
         maxModelLen = "8192";
+        autoStart = false;
         extraArgs = [
           "--enable-prefix-caching"
           "--max-num-seqs"
           "16"
+          "--enable-auto-tool-choice"
+          "--tool-call-parser"
+          "hermes"
+        ];
+      }
+      {
+        # CPU — Qwen3.8-27B BF16, native 262144 context, manual start
+        name = "qwen38-27b";
+        model = "Qwen/Qwen3.8-27B";
+        modelPath = self.models.qwen38-27b;
+        servedModelName = "qwen38-27b";
+        port = 8002;
+        device = "cpu";
+        dtype = "bfloat16";
+        maxModelLen = "262144";
+        enforceEager = true;
+        cpuKvCacheSpace = 20;
+        cpuOmpThreadsBind = "0-29";
+        autoStart = false;
+        extraArgs = [
+          "--enable-prefix-caching"
+          "--max-num-seqs"
+          "2"
+          "--enable-auto-tool-choice"
+          "--tool-call-parser"
+          "qwen3_xml"
+          "--reasoning-parser"
+          "qwen3"
         ];
       }
     ];

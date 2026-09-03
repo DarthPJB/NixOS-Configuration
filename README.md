@@ -26,7 +26,7 @@ generating a golden test, and running `check-network` before deployment.
 WireGuard VPN is managed via `modules/enable-wg-topology.nix` on client machines; see `documentation/operations-runbooks.md`.
 
 ## AI Infrastructure
-Self-hosted LLM inference stack (vLLM, LiteLLM, Open-WebUI) across LINDA and cluster-box. See `documentation/ai-stack.md` for current architecture and `documentation/vllm-architecture.md` for the vLLM-only migration plan.
+Self-hosted hybrid inference stack (vLLM, Ollama, LiteLLM, Open-WebUI) across LINDA and cluster-box. See `documentation/ai-stack.md` for the current architecture, `documentation/ai-inference-findings.md` for the 2026-08-27 operational decision, and `documentation/vllm-architecture.md` for the historical vLLM-only migration record.
 
 ## CI/CD Pipeline
 Automated CI/CD pipeline with configuration generated from Nix evaluation:
@@ -180,5 +180,4 @@ deployment.
 
 - `documentation/x86-bootstrap-deployment-workflow.md` — full step-by-step workflow
 - [assimilator-probe readme](https://gitlab.com/mecha-team-zero/assimilator-probe) — module structure, bootloader contract, options reference
-
 

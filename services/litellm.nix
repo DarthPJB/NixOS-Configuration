@@ -7,7 +7,7 @@
           url = lib.mkOption {
             type = lib.types.str;
             description = "API base URL (WireGuard plane)";
-            example = "http://10.88.127.88:11434/v1";
+            example = "http://10.88.127.88:8002/v1";
           };
           models = lib.mkOption {
             type = lib.types.listOf lib.types.str;
@@ -64,10 +64,15 @@
             default = null;
             description = "If false, LiteLLM remaps system messages to user (litellm_params.supports_system_message). Unset = provider default.";
           };
-          maxTokens = lib.mkOption {
+          maxInputTokens = lib.mkOption {
             type = lib.types.nullOr lib.types.ints.positive;
             default = null;
-            description = "Advertised context window (model_info.max_tokens). Clients use this to avoid overshooting.";
+            description = "Context/input ceiling advertised as model_info.max_input_tokens.";
+          };
+          maxOutputTokens = lib.mkOption {
+            type = lib.types.nullOr lib.types.ints.positive;
+            default = null;
+            description = "Completion ceiling advertised as model_info.max_output_tokens.";
           };
           mode = lib.mkOption {
             type = lib.types.nullOr (lib.types.enum [
@@ -127,7 +132,7 @@
       Global litellm_settings.fallbacks. Each entry is { "model-group" = [ "fallback-group" ]; }.
       Empty = no fallbacks.
     '';
-    example = [{ "linda-vllm/qwen2.5-vl" = [ "linda/qwen3.8:27b-q4_K_M" ]; }];
+    example = [{ "linda-vllm/qwen2.5-vl" = [ "linda-vllm-cpu/qwen2.5-vl-cpu" ]; }];
   };
 
   options.services.litellm.requestTimeout = lib.mkOption {
@@ -136,9 +141,28 @@
     description = "Global litellm_settings.request_timeout in seconds. Unset = LiteLLM default (6000s).";
   };
 
+  options.services.litellm.callbacks = lib.mkOption {
+    type = lib.types.listOf lib.types.str;
+    default = [ ];
+    description = "LiteLLM callbacks (litellm_settings.callbacks). Set to [ \"prometheus\" ] to expose /metrics for Prometheus scraping.";
+  };
+
   config.secrix.services.litellm.secrets.litellm-env.encrypted.file =
     lib.mkIf (config.services.litellm.environmentFileSecret != null)
       config.services.litellm.environmentFileSecret;
+
+  config.assertions = lib.mapAttrsToList
+    (name: backend: {
+      assertion =
+        backend.maxInputTokens == null
+        || backend.maxOutputTokens == null
+        || backend.maxOutputTokens < backend.maxInputTokens;
+      message = ''
+        services.litellm.backends.${name}.maxOutputTokens must be smaller than
+        maxInputTokens so every request retains space for an input prompt.
+      '';
+    })
+    config.services.litellm.backends;
 
   config.services.litellm =
     let
@@ -154,7 +178,8 @@
         (lib.attrValues config.services.litellm.backends);
 
       modelInfoOf = cfg: lib.filterAttrs (_: v: v != null) {
-        max_tokens = cfg.maxTokens;
+        max_input_tokens = cfg.maxInputTokens;
+        max_output_tokens = cfg.maxOutputTokens;
         mode = cfg.mode;
         supports_vision = cfg.supportsVision;
         supports_video_input = cfg.supportsVideoInput;
@@ -197,6 +222,7 @@
           drop_params = config.services.litellm.dropParams;
           num_retries = config.services.litellm.numRetries;
           request_timeout = config.services.litellm.requestTimeout;
+          callbacks = config.services.litellm.callbacks;
         } // lib.optionalAttrs (config.services.litellm.fallbacks != [ ]) {
         fallbacks = config.services.litellm.fallbacks;
       };

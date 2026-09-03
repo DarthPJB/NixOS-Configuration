@@ -8,6 +8,7 @@
     pkgs.openscad
     pkgs.meshlab
     pkgs.krita
+    pkgs.godot
   ];
 
   #  services.monado = {

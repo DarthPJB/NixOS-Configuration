@@ -101,6 +101,41 @@
         if wgCoord != null then
           coordToIp wgCoord
         else throw "topoIp: ${machineName} has no WG coordinate in topology JSON";
+      # LLM nixpkgs instance — imported WITHOUT global cudaSupport so torch and
+      # every other package stay CPU-only.
+      pkgs_llm = import nixpkgs_llm {
+        system = "x86_64-linux";
+        config.allowUnfree = true;
+        config.problems.handlers = {
+          # CUDA vLLM and its CUDA-only deps are marked broken upstream; warn
+          # instead of failing so the scoped pkgsCuda.vllm override can build.
+          vllm.broken = "warn";
+          flashinfer-python.broken = "warn";
+          tokenspeed-mla.broken = "warn";
+        };
+      };
+      # Separate nixpkgs import with cudaSupport = true — used ONLY for vllm.
+      # This avoids overlays entirely: two clean imports, each with its own config.
+      pkgsCuda = import nixpkgs_llm {
+        system = "x86_64-linux";
+        config.allowUnfree = true;
+        config.cudaSupport = true;
+        config.cudnnSupport = true;
+        config.problems.handlers = {
+          vllm.broken = "warn";
+          flashinfer-python.broken = "warn";
+          tokenspeed-mla.broken = "warn";
+        };
+      };
+      # AMD ZenDNN plugin — wheel, not a source build. Used by CPU vLLM.
+      zentorch = pkgs_llm.python313Packages.callPackage ./pkgs/zentorch { };
+      # CPU vLLM wrapper: +cpu importlib.metadata version + zentorch on PYTHONPATH.
+      # Does not rebuild vLLM.
+      pkgsCpuVllm = pkgs_llm.callPackage ./pkgs/vllm-cpu {
+        vllm = pkgs_llm.vllm;
+        python3 = pkgs_llm.python313;
+        inherit zentorch;
+      };
       globalArgs = {
         inherit self;
         inherit ikbaeb-th;
@@ -108,7 +143,9 @@
         inherit denton-glasses;
         inherit personal-site;
         inherit LLM-CORE;
-        pkgs_llm = import nixpkgs_llm { system = "x86_64-linux"; config.allowUnfree = true; config.cudaSupport = true; config.problems.handlers.vllm.broken = "warn"; };
+        inherit pkgs_llm;
+        inherit pkgsCuda;
+        inherit pkgsCpuVllm;
       };
       minecraft-curseforge-builder = nixpkgs.callPackage ./pkgs/minecraft-curseforge { };
       prometheus-mcp-server-builder = nixpkgs.callPackage ./pkgs/prometheus-mcp-server { };
@@ -171,7 +208,7 @@
               _module.args = globalArgs // {
                 inherit hostname;
                 unstable = import nixpkgs_unstable { localSystem = "x86_64-linux"; config.allowUnfree = true; };
-                pkgs_llm = import nixpkgs_llm { localSystem = "x86_64-linux"; config.allowUnfree = true; config.cudaSupport = true; config.problems.handlers.vllm.broken = "warn"; };
+                # pkgs_llm / pkgsCuda inherited from globalArgs — no duplicate import
                 nixinate = {
                   inherit host sshUser buildOn debug;
                   port = sshPort;
@@ -504,6 +541,28 @@
             }
           );
         };
+        llm-bench = {
+          type = "app";
+          meta.description = "Benchmark Ollama models through LiteLLM gateway (cold + warm timings)";
+          program = lib.getExe (nixpkgs.writeShellApplication {
+            name = "llm-bench";
+            runtimeInputs = with nixpkgs; [ openssh jq coreutils gnused ];
+            text = builtins.readFile ./scripts/llm-bench.sh;
+          });
+        };
+      };
+
+      # Nix-managed HuggingFace model packages (see pkgs/models/).
+      # Plain attrset (not per-system): model derivations are platform-independent
+      # data fetches, and `nix build .#models.qwen3-8b` resolves directly.
+      models = {
+        qwen3-8b = nixpkgs.callPackage ./pkgs/models/qwen3-8b.nix { };
+        qwen3-30b-a3b = nixpkgs.callPackage ./pkgs/models/qwen3-30b-a3b.nix { };
+        qwen3-coder-30b-a3b = nixpkgs.callPackage ./pkgs/models/qwen3-coder-30b-a3b.nix { };
+        qwen25-vl-7b-instruct-awq = nixpkgs.callPackage ./pkgs/models/qwen25-vl-7b-instruct-awq.nix { };
+        qwen25-vl-3b-instruct-awq = nixpkgs.callPackage ./pkgs/models/qwen25-vl-3b-instruct-awq.nix { };
+        qwen38-27b = nixpkgs.callPackage ./pkgs/models/qwen38-27b.nix { };
+        qwen25-7b-instruct = nixpkgs.callPackage ./pkgs/models/qwen25-7b-instruct.nix { };
       };
 
       packages = {
@@ -524,6 +583,8 @@
           moonrise-neoforge = nixpkgs.callPackage ./pkgs/minecraft-curseforge/moonrise.nix { };
           bargman-greeter-vm = self.nixosConfigurations.bargman-greeter-vm.config.system.build.vm;
           bargman-greeter-vm-bootloader = self.nixosConfigurations.bargman-greeter-vm.config.system.build.vmWithBootLoader;
+          zentorch = zentorch;
+          vllm-cpu = pkgsCpuVllm;
         } // (nixinate.lib.genImages.x86_64-linux self);
         "aarch64-linux" = mkUncompressedSdImages [
           self.nixosConfigurations.print-controller
