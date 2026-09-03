@@ -3,8 +3,8 @@
 Self-hosted inference for the Bargman-Tech fleet, using vLLM and Ollama for
 different operational roles behind one LiteLLM gateway.
 
-**Status**: Hybrid vLLM + Ollama configuration implemented; live validation pending  
-**Last updated**: 2026-08-27
+**Status**: Hybrid vLLM + Ollama configuration implemented; live validation complete  
+**Last updated**: 2026-09-03
 
 The evidence and decision behind this architecture are recorded in
 [`ai-inference-findings.md`](ai-inference-findings.md). The prior vLLM-only
@@ -29,12 +29,12 @@ graph TB
 
     subgraph "LINDA — managed inference"
         GPU["vLLM :8001<br/>Qwen2.5-VL-3B AWQ<br/>RTX 3060"]
-        CPU["vLLM :8002<br/>Qwen2.5-VL-3B AWQ<br/>CPU / 128K"]
-        OLLAMA["Ollama :11434<br/>Ornith 9B / Laguna S<br/>CPU / manual start"]
+        CPU["vLLM :8002<br/>Qwen3.8-27B BF16<br/>CPU / 262K"]
+        OLLAMA["Ollama :11434<br/>Ornith 9B/35B<br/>Laguna XS/S<br/>Qwen3.8 27B<br/>CPU / manual start"]
     end
 
     subgraph "cluster-box — external Malayalam flake"
-        CLUSTER["Ollama :11434<br/>Laguna XS / Ornith 35B"]
+        CLUSTER["Ollama :11434<br/>Laguna XS Q4<br/>Ornith 35B"]
     end
 
     subgraph Monitoring
@@ -105,11 +105,15 @@ configuration.
 | Public model ID | Backend | Engine | Device | Context metadata | Output metadata |
 |---|---|---|---|---:|---:|
 | `linda-vllm/qwen2.5-vl` | `10.88.127.88:8001/v1` | vLLM | RTX 3060 | 8192 | 2048 |
-| `linda-vllm-cpu/qwen2.5-vl-cpu` | `10.88.127.88:8002/v1` | vLLM | CPU | 128000 | 8192 |
-| `linda-ollama/ornith:9b` | `10.88.127.88:11434/v1` | Ollama | CPU | 262144 | 8192 |
-| `linda-ollama/laguna-s-2.1:q4_K_M` | `10.88.127.88:11434/v1` | Ollama | CPU | 262144 | 8192 |
-| `cluster-box/laguna-xs-2.1:q4_K_M` | `10.88.127.211:11434/v1` | Ollama | external | discovered | discovered |
-| `cluster-box/ornith:35b` | `10.88.127.211:11434/v1` | Ollama | external | discovered | discovered |
+| `linda-vllm-cpu/qwen38-27b` | `10.88.127.88:8002/v1` | vLLM | CPU | 262144 | 8192 |
+| `linda-ornith9/linda-ornith9-q4-256k` | `10.88.127.88:11434/v1` | Ollama | CPU | 262144 | 8192 |
+| `linda-ornith35/linda-ornith35-q4-256k` | `10.88.127.88:11434/v1` | Ollama | CPU | 262144 | 8192 |
+| `linda-laguna-xs/linda-laguna-xs-q4-256k` | `10.88.127.88:11434/v1` | Ollama | CPU | 262144 | 8192 |
+| `linda-laguna-xs-bf16/linda-laguna-xs-bf16-256k` | `10.88.127.88:11434/v1` | Ollama | CPU | 262144 | 8192 |
+| `linda-laguna-s/linda-laguna-s-q4-256k` | `10.88.127.88:11434/v1` | Ollama | CPU | 262144 | 8192 |
+| `linda-qwen38/linda-qwen38-27b-q4-256k` | `10.88.127.88:11434/v1` | Ollama | CPU | 262144 | 8192 |
+| `cluster-box-laguna-xs/laguna-xs-2.1:q4_K_M` | `10.88.127.211:11434/v1` | Ollama | external | 262144 | 8192 |
+| `cluster-box-ornith35/ornith:35b` | `10.88.127.211:11434/v1` | Ollama | external | 262144 | 8192 |
 
 The gateway is externally available at:
 
@@ -138,28 +142,19 @@ The 2048-token completion budget reserves prompt space and directly addresses
 the OpenCode failure where an 8192-token completion was requested inside an
 8192-token total sequence.
 
-### CPU service: Qwen2.5-VL-3B AWQ
+### CPU service: Qwen3.8-27B BF16
 
 | Property | Value |
 |---|---|
-| Unit | `vllm-qwen2.5-vl-cpu.service` |
+| Unit | `vllm-qwen38-27b.service` |
 | API | `0.0.0.0:8002` |
-| Device | CPU, blank `CUDA_VISIBLE_DEVICES` |
-| Quantization | AWQ 4-bit |
-| Maximum sequence | 128000 tokens |
-| CPU KV allocation | 6 GiB |
-| OpenMP binding | cores 0–29 |
+| Device | CPU |
+| Model | `Qwen/Qwen3.8-27B` |
+| Maximum sequence | 262144 tokens |
+| CPU KV allocation | 20 GiB |
 | Gateway output budget | 8192 tokens |
-
-The pinned model store path is 3,417,676,696 bytes (3.18 GiB). Based on the
-model's 36 layers, two KV heads, 128-dimensional heads, and BF16 cache entries,
-a full 128,000-token KV cache is approximately 4.39 GiB. The model plus allocated
-cache is approximately 9.18 GiB before runtime overhead, leaving substantial
-margin below the 20 GiB target.
-
-This is intentionally the same pinned model as the GPU service. It gives the
-fleet a controlled CPU/GPU comparison before selecting another development
-model.
+| Tool parser | qwen3_xml |
+| Reasoning parser | qwen3 |
 
 The previous large Qwen3.8-27B and Qwen3-Coder services are no longer active on
 LINDA. Their Nix model packages and vLLM module support remain available for a
@@ -172,15 +167,15 @@ Configuration: `services/ollama.nix`
 | Property | Value |
 |---|---|
 | Unit | `ollama.service` |
-| API | `0.0.0.0:11434`, WireGuard firewall only |
+| API | `10.88.127.88:11434`, WireGuard firewall only |
 | Package | `pkgs_llm.ollama-cpu` |
 | Model storage | `/speed-storage/ollama` |
-| Declared models | `ornith:9b`, `laguna-s-2.1:q4_K_M` |
+| Declared models | `ornith:9b`, `ornith:35b`, `laguna-xs-2.1:q4_K_M`, `laguna-xs-2.1:bf16`, `laguna-s-2.1:q4_K_M`, `qwen3.8:27b` |
+| Created tags | `linda-ornith9-q4-256k`, `linda-ornith35-q4-256k`, `linda-laguna-xs-q4-256k`, `linda-laguna-xs-bf16-256k`, `linda-laguna-s-q4-256k`, `linda-qwen38-27b-q4-256k` |
 | Context default | 262144 |
-| KV cache | `q4_0` |
 | Loaded model limit | 1 |
 | Parallel request limit | 1 |
-| Memory limit | 80 GiB |
+| Memory limit | 96 GiB |
 | Boot behavior | manual; no daemon or loader `wantedBy` target |
 
 `loadModels` synchronizes model blobs; it does not load inference weights into
@@ -193,8 +188,11 @@ pulls and service startup remain operator actions.
 # Start the daemon when LINDA is available for research
 systemctl start ollama
 
-# Synchronize the two declared model blobs
+# Synchronize declared model blobs
 systemctl start ollama-model-loader
+
+# Materialise created tags (FROM + num_ctx)
+systemctl start ollama-create-profiles
 
 # Release all Ollama inference memory
 systemctl stop ollama
@@ -202,6 +200,26 @@ systemctl stop ollama
 
 Starting and stopping this service is an intentional lifecycle operation. System
 configuration changes still proceed through Nix rebuild and deployment.
+
+### Benchmark Results — 2026-09-03
+
+All models tested through LiteLLM gateway on alpha-three. Cold start = model
+unloaded, then first request. Warm = immediate second request while loaded.
+
+| Model | Size | Cold Start | Warm | Notes |
+|---|---|---|---|---|
+| linda-laguna-s (Q4_K_M) | 96 GB | 279.8s (4.7 min) | 2.8s | Largest model; cold start dominated by disk load |
+| linda-laguna-xs (Q4_K_M) | 20 GB | 41.8s | 1.0s | Fastest warm response |
+| linda-laguna-xs-bf16 | 67 GB | 62.5s | 2.0s | BF16 quantization; 3x size of Q4 |
+| linda-ornith35 (Q4_K_M) | 21 GB | 36.8s | 1.6s | 35B params, Q4 quantization |
+| linda-ornith9 (Q4_K_M) | 5.6 GB | 18.3s | 2.3s | Smallest model; fastest cold start |
+| linda-qwen38 (Q4_K_M) | 18 GB | 36.6s | 3.5s | 27B params; vision + text |
+
+**Key findings:**
+- Cold start correlates linearly with model size (disk → RAM load time)
+- Warm responses are consistently 1–3.5s regardless of model size
+- All models tested via `nix run .#llm-bench` (detached tmux session)
+- Results logged to `/tmp/llm-bench-<timestamp>.log` for Prometheus correlation
 
 ## OpenCode and Context Limits
 
@@ -229,12 +247,12 @@ Prometheus scrapes:
 | Job | Target | Labels |
 |---|---|---|
 | `vllm-gpu` | `10.88.127.88:8001` | `LINDA`, `gpu`, `qwen2.5-vl` |
-| `vllm-cpu` | `10.88.127.88:8002` | `LINDA`, `cpu`, `qwen2.5-vl-cpu` |
+| `vllm-cpu` | `10.88.127.88:8002` | `LINDA`, `cpu`, `qwen38-27b` |
 | `litellm` | `10.88.127.107:8080` | `alpha-three`, `gateway` |
 
 The inactive large-model port 8003 scrape has been removed. Ollama does not
 provide vLLM-equivalent native metrics; node-level memory and CPU metrics remain
-available for its 80 GiB service envelope.
+available for its 96 GiB service envelope.
 
 Grafana dashboards:
 
@@ -267,7 +285,7 @@ intentional. They are not regenerated to conceal refactoring differences.
 | `machines/alpha-three/default.nix` | Gateway route declarations |
 | `services/prometheus.nix` | Inference and gateway scrape targets |
 | `topology/LINDA.json` | WireGuard-scoped Ollama firewall port |
-| `pkgs/models/qwen25-vl-3b-instruct-awq.nix` | Pinned shared CPU/GPU model |
+| `scripts/llm-bench.sh` | Benchmark script for cold/warm timing measurements |
 
 ## Related Systems
 
@@ -283,5 +301,3 @@ intentional. They are not regenerated to conceal refactoring differences.
 3. Run an OpenCode harness through `linda-vllm/qwen2.5-vl` and record a non-empty
    completion.
 4. Exercise a near-128K request on the CPU service and measure resident memory.
-5. Manually synchronize Ollama models, run Ornith and Laguna S, then stop Ollama
-   and confirm memory release.
