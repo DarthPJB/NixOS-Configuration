@@ -226,7 +226,7 @@
     "<derivation:lxappearance-0.6.4>",
     "<derivation:arandr-0.1.11>",
     "<derivation:prismlauncher-11.0.3>",
-    "<derivation:vintagestory-1.22.3>",
+    "<derivation:vintagestory-1.22.6>",
     "<derivation:gpp-2.25>",
     "<derivation:entr-5.8>",
     "<derivation:platformio-6.1.19>",
@@ -1086,6 +1086,18 @@
           "10.88.128.3"
         ],
         "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINlCggPwFP5VX3YDA1iji0wxX8+mIzmrCJ1aHj9f1ofx\n",
+        "publicKeyFile": null
+      },
+      "pillar-of-autum": {
+        "certAuthority": false,
+        "extraHostNames": [],
+        "hostNames": [
+          "pillar-of-autum",
+          "pillar-of-autum.johnbargman.net",
+          "10.88.127.110",
+          "10.88.128.150"
+        ],
+        "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB0n2F9HP22zNBIkLHMXEKNfCjYxCtqaSkug8oaFTZBy root@pillar-of-autum\n",
         "publicKeyFile": null
       },
       "print-controller": {

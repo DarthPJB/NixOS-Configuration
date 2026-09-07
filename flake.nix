@@ -679,6 +679,19 @@
           ];
         };
 
+        # pillar-of-autum — first machine assimilated via the assimilator-probe
+        # x86-bootstrap workflow. Minimal librex11 (XLibre X11) headed system.
+        # Spelling is "pillar-of-autum" — NOT "pillar-of-autumn".
+        # Future purpose: AI inference backend (see documentation/ai-stack.md).
+        pillar-of-autum = mkX86_64 "pillar-of-autum" {
+          host = topoIp "pillar-of-autum";
+          extraModules = [
+            # librex11 — overlay xorg-server with xlibre-xserver + X11 drivers
+            xlibre-overlay.nixosModules.overlay-xlibre-xserver
+            xlibre-overlay.nixosModules.overlay-all-xlibre-drivers
+          ];
+        };
+
         LINDA = mkX86_64 "LINDA" {
           host = topoIp "LINDA";
           buildOn = "remote";

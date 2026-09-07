@@ -8,21 +8,15 @@
     "kernel.printk": "7 7 7 7",
     "net.core.rmem_max": null,
     "net.core.wmem_max": null,
-    "net.ipv4.conf.all.forwarding": true,
-    "net.ipv4.conf.default.forwarding": true,
-    "net.ipv4.conf.enp69s0f0.proxy_arp": false,
-    "net.ipv4.conf.enp69s0f1.proxy_arp": false,
     "net.ipv4.ping_group_range": "0 2147483647",
     "net.ipv6.conf.all.disable_ipv6": false,
     "net.ipv6.conf.default.disable_ipv6": false,
     "net.ipv6.conf.default.use_tempaddr": "2",
-    "net.ipv6.conf.enp69s0f0.use_tempaddr": "2",
-    "net.ipv6.conf.enp69s0f1.use_tempaddr": "2",
     "vm.max_map_count": 1048576
   },
   "boot.loader": {
     "efi": {
-      "canTouchEfiVariables": true,
+      "canTouchEfiVariables": false,
       "efiSysMountPoint": "/boot"
     },
     "external": {
@@ -51,25 +45,25 @@
       "configurationName": "",
       "copyKernels": false,
       "default": "0",
-      "device": "",
-      "devices": [],
-      "efiInstallAsRemovable": false,
-      "efiSupport": false,
-      "enable": false,
+      "device": "nodev",
+      "devices": [
+        "nodev"
+      ],
+      "efiInstallAsRemovable": true,
+      "efiSupport": true,
+      "enable": true,
       "enableCryptodisk": false,
       "entryOptions": "--class nixos --unrestricted",
       "extraConfig": "",
-      "extraEntries": "menuentry \"Memtest86+\" {\n  linux @bootRoot@/memtest.bin \n}\n",
+      "extraEntries": "",
       "extraEntriesBeforeNixOS": false,
-      "extraFiles": {
-        "memtest.bin": "<store>/bhk295877a2ls4dgqzzpiskl9cw8gxw1-memtest86+-8.00/mt86plus.efi"
-      },
+      "extraFiles": {},
       "extraGrubInstallArgs": [],
       "extraInitrd": "<eval-error>",
       "extraInstallCommands": "",
       "extraPerEntryConfig": "",
       "extraPrepareConfig": "",
-      "font": "<store>/0vm4bh6d11z1psh54kmvyiiqaq4l562j-grub-2.12/share/grub/unicode.pf2",
+      "font": "<store>/j3j5mhgy5nbzgdri8vpw6bz093vnlspl-grub-2.12/share/grub/unicode.pf2",
       "fontSize": null,
       "forceInstall": false,
       "forcei686": false,
@@ -80,10 +74,19 @@
       "gfxpayloadEfi": "keep",
       "ipxe": {},
       "memtest86": {
-        "enable": true,
+        "enable": false,
         "params": []
       },
-      "mirroredBoots": [],
+      "mirroredBoots": [
+        {
+          "devices": [
+            "nodev"
+          ],
+          "efiBootloaderId": null,
+          "efiSysMountPoint": "/boot",
+          "path": "/boot"
+        }
+      ],
       "splashImage": "<store>/z6dhhmy6afwq5mlhhl7m9cjmmyxq9b43-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png",
       "splashMode": "normal",
       "storePath": "/nix/store",
@@ -96,10 +99,10 @@
       "users": {},
       "version": "<eval-error>",
       "zfsPackage": "<derivation:zfs-user-2.4.3>",
-      "zfsSupport": true
+      "zfsSupport": false
     },
     "gummiboot": {
-      "enable": true,
+      "enable": false,
       "timeout": 5
     },
     "initScript": {
@@ -109,7 +112,7 @@
       "additionalFiles": {},
       "biosDevice": "nodev",
       "biosSupport": false,
-      "efiInstallAsRemovable": false,
+      "efiInstallAsRemovable": true,
       "efiSupport": true,
       "enable": false,
       "enableEditor": false,
@@ -169,7 +172,7 @@
     "raspberryPi": "<eval-error>",
     "refind": {
       "additionalFiles": {},
-      "efiInstallAsRemovable": false,
+      "efiInstallAsRemovable": true,
       "enable": false,
       "extraConfig": "",
       "maxGenerations": null,
@@ -177,14 +180,14 @@
     },
     "supportsInitrdSecrets": true,
     "systemd-boot": {
-      "configurationLimit": 1,
+      "configurationLimit": 5,
       "consoleMode": "keep",
       "editor": true,
       "edk2-uefi-shell": {
         "enable": false,
         "sortKey": "o_edk2-uefi-shell"
       },
-      "enable": true,
+      "enable": false,
       "extraEntries": {},
       "extraFiles": {},
       "extraInstallCommands": "",
@@ -209,10 +212,7 @@
   },
   "boot.supportedFilesystems": {
     "ext4": true,
-    "ntfs": true,
-    "tmpfs": true,
-    "vfat": true,
-    "zfs": true
+    "vfat": true
   },
   "environment.systemPackages": [
     "<derivation:cursor-theme-bargman-cinematic-1.0.0>",
@@ -230,91 +230,6 @@
     "<derivation:conky-1.22.3>",
     "<derivation:lxappearance-0.6.4>",
     "<derivation:arandr-0.1.11>",
-    "<derivation:vllm-0.24.0>",
-    "<derivation:which-2.23>",
-    "<derivation:nvtop-3.3.2>",
-    "<derivation:cuda-merged-12.9>",
-    "<derivation:ollama-0.32.13>",
-    "<derivation:llama-cpp-10408>",
-    "<derivation:colmap-4.0.4>",
-    "<derivation:blender-5.1.1>",
-    "<derivation:usbutils-019>",
-    "<derivation:rtl-sdr-blog-1.3.5>",
-    "<derivation:gqrx-2.17.7>",
-    "<derivation:sdrpp-1.3.0-unstable-2026-03-24>",
-    "<derivation:gnuradio-wrapped-3.10.12.0>",
-    "<derivation:fcitx5-5.1.19>",
-    "<derivation:fcitx5-rime-5.1.13>",
-    "<derivation:fcitx5-chinese-addons-5.1.12>",
-    "<derivation:fcitx5-gtk-5.1.6>",
-    "<derivation:fcitx5-qt6-5.1.13>",
-    "<derivation:fcitx5-configtool-5.1.13>",
-    "<derivation:obs-studio-32.1.2>",
-    "<derivation:mumble-1.5.901>",
-    "<derivation:dino-0.5.1>",
-    "<derivation:ffmpeg-full-8.1.2>",
-    "<derivation:mplayer-1.5-unstable-2024-12-21>",
-    "<derivation:vlc-3.0.23-2>",
-    "<derivation:pcmanfm-1.4.0>",
-    "<derivation:ffmpegthumbnailer-2.3.0>",
-    "<derivation:kdenlive-26.04.3>",
-    "<derivation:shotcut-26.2.26>",
-    "<derivation:shutter-0.99.7>",
-    "<derivation:orca-slicer-2.3.2>",
-    "<derivation:prusa-slicer-2.9.4>",
-    "<derivation:platformio-6.1.19>",
-    "<derivation:inkscape-with-extensions-1.4.4>",
-    "<derivation:lensfun-0.3.4>",
-    "<derivation:gimp-with-plugins-3.0.8>",
-    "<derivation:solvespace-3.2>",
-    "<derivation:openscad-2021.01>",
-    "<derivation:meshlab-2025.07>",
-    "<derivation:krita-6.0.2.1>",
-    "<derivation:blightmud-5.6.1>",
-    "<derivation:obsidian-1.12.7>",
-    "<derivation:vivaldi-8.1.4087.48>",
-    "<derivation:chromium-150.0.7871.181>",
-    "<derivation:brave-1.92.139>",
-    "<derivation:jq-1.8.2>",
-    "<derivation:ffmpeg-full-8.1.2>",
-    "<derivation:emacs-30.2>",
-    "<derivation:nix-top-0.4.0>",
-    "<derivation:element-desktop-1.12.23>",
-    "<derivation:discord-1.0.138>",
-    "<derivation:thunderbird-152.0.1>",
-    "<derivation:neovim-0.12.4>",
-    "<derivation:gpp-2.25>",
-    "<derivation:entr-5.8>",
-    "<derivation:platformio-6.1.19>",
-    "<derivation:nix-top-0.4.0>",
-    "<derivation:lite-xl-2.1.8>",
-    "<derivation:neovim-0.12.4>",
-    "<derivation:progress-0.17>",
-    "<derivation:bind-9.20.23>",
-    "<derivation:openssl-3.6.3>",
-    "<derivation:tmate-unstable-2022-08-07>",
-    "<derivation:terminator-2.1.5>",
-    "<derivation:terminology-1.14.0>",
-    "<derivation:conky-1.22.3>",
-    "<derivation:cmatrix-2.0>",
-    "<derivation:nms-1.0.1>",
-    "<derivation:chafa-1.18.2>",
-    "<derivation:lolcat-100.0.1>",
-    "<derivation:figlet-2.2.5>",
-    "<derivation:cowsay-3.8.4>",
-    "<derivation:nmap-7.99>",
-    "<derivation:tree-2.3.2>",
-    "<derivation:ripgrep-15.1.0>",
-    "<derivation:bubblewrap-0.11.2>",
-    "<derivation:inotify-tools-4.25.9.0>",
-    "<derivation:rsync-3.4.4>",
-    "<derivation:git-2.54.0>",
-    "<derivation:prismlauncher-11.0.3>",
-    "<derivation:vintagestory-1.22.6>",
-    "<derivation:prometheus-mcp-server-0.18.0>",
-    "<derivation:voxtype-0.7.5>",
-    "<derivation:xclip-0.13>",
-    "<derivation:openface-2.0.2>",
     "<derivation:btop-1.4.7>",
     "<derivation:nano-9.1>",
     "<derivation:wget-1.25.0>",
@@ -326,30 +241,12 @@
     "<derivation:pciutils-3.15.0>",
     "<derivation:lshw-02.20>",
     "<derivation:usbutils-019>",
-    "<derivation:looking-glass-client-B7>",
-    "<derivation:scream-4.0>",
-    "<derivation:virtiofsd-1.13.3>",
-    "<derivation:gwe-0.15.9>",
-    "<derivation:virt-manager-5.1.0>",
     "<derivation:determinate-nixd-3.21.9>",
-    "<derivation:parsec-150-90c>",
-    "<derivation:rsi-launcher-2.14.0>",
-    "<derivation:opencode-1.18.18>",
-    "<derivation:mcp-server-git-0.6.2>",
-    "<derivation:mcp-server-filesystem-0.6.2>",
-    "<derivation:mcp-server-time-0.6.2>",
-    "<derivation:mcp-server-sqlite-0.6.2>",
-    "<derivation:github-mcp-server-0.1.0>",
-    "<derivation:mcp-server-gitlab-0.6.2>",
-    "<derivation:mcp-server-playwright-0.0.10>",
-    "<derivation:prometheus-mcp-server-0.18.0>",
-    "<derivation:nix-mcp-1.2.0>",
     "<derivation:nix-build-all>",
     "<derivation:tmux-3.6a>",
     "<derivation:progress-0.17>",
     "<derivation:parted-3.7>",
     "<derivation:bottom-0.14.2>",
-    "<derivation:ratty-system-wrapped>",
     "<derivation:i3-4.24>",
     "<derivation:betterlockscreen-4.4.0>",
     "<derivation:rofi-2.0.0>",
@@ -362,19 +259,9 @@
     "<derivation:nixos-generate-config>",
     "<derivation:nixos-enter>",
     "<derivation:nixos-build-vms>",
-    "<derivation:vmware-workstation-25H2u1>",
-    "<derivation:libressl-4.2.1>",
-    "<derivation:iptables-1.8.13>",
-    "<derivation:libvirt-12.2.0>",
-    "<derivation:qemu-10.2.4>",
-    "<derivation:docker-29.6.2>",
     "<derivation:lvm2-2.03.39>",
-    "<derivation:zfs-user-2.4.3>",
-    "<derivation:zfstools-0.3.6>",
-    "<derivation:zfs-user-2.4.3>",
     "<derivation:dosfstools-4.2>",
     "<derivation:mtools-4.0.49>",
-    "<derivation:ntfs3g-2026.7.7>",
     "<derivation:e2fsprogs-1.47.4>",
     "<derivation:dosfstools-4.2>",
     "<derivation:cpupower-6.18.39>",
@@ -404,48 +291,28 @@
     "<derivation:nix-bash-completions-0.6.8>",
     "<derivation:dbus-1.16.2>",
     "<derivation:dbus-broker-37>",
-    "<derivation:cups-2.4.19>",
-    "<derivation:xdg-utils-1.2.1>",
-    "<derivation:cups-pk-helper-0.2.6>",
     "<derivation:wireguard-tools-1.0.20260223>",
-    "<derivation:tailscale-1.98.5>",
-    "<derivation:sunshine-2026.516.143833>",
     "<derivation:iptables-1.8.13>",
     "<derivation:nixos-firewall-tool>",
     "<derivation:dhcpcd-10.3.1>",
-    "<derivation:avahi-0.8>",
-    "<derivation:ollama-0.32.14>",
-    "<derivation:guix-1.5.0>",
     "<derivation:nixos-icons-0-unstable-2025-06-28>",
     "<derivation:xdg-utils-1.2.1>",
     "<derivation:rsyslog-8.2512.0>",
-    "<derivation:udisks-2.11.1>",
-    "<derivation:sane-backends-1.4.0>",
-    "<derivation:net.conf>",
     "<derivation:xf86-input-libinput-25.0.1>",
-    "<derivation:bluez-5.86>",
-    "<derivation:tumbler-4.20.1>",
     "<derivation:wireplumber-0.5.14>",
     "<derivation:pipewire-1.6.6>",
-    "<derivation:gvfs-1.60.1>",
-    "<derivation:blueman-2.4.6>",
     "<derivation:accountsservice-23.13.9>",
     "<derivation:speech-dispatcher-0.12.1>",
     "<derivation:sudo-1.9.17p2>",
     "<derivation:polkit-127>",
     "<derivation:polkit-127>",
     "<derivation:linux-pam-1.7.2>",
-    "<derivation:xfconf-4.20.0>",
-    "<derivation:thunar-4.20.9>",
-    "<derivation:steam-1.0.0.87>",
-    "<derivation:steam-run-1.0.0.87>",
     "<derivation:shadow-4.19.4>",
     "<derivation:bash-interactive-5.3p9>",
     "<derivation:nano-9.1>",
     "<derivation:less-692>",
     "<derivation:i3lock-2.15>",
     "<derivation:gnupg-2.4.9>",
-    "<derivation:gamemode-1.8.2>",
     "<derivation:fuse-2.9.9>",
     "<derivation:fuse-3.17.4>",
     "<derivation:dconf-0.49.0>",
@@ -454,11 +321,8 @@
     "<derivation:nixos-configuration-reference-manpage>",
     "<derivation:nixos-manual-html>",
     "<derivation:nixos-help>",
-    "<derivation:fcitx5-with-addons-5.1.19>",
-    "<derivation:gtk3-immodule.cache>",
-    "<derivation:nvidia-x11-595.71.05>",
-    "<derivation:nvidia-settings-595.71.05>",
-    "<derivation:rtl-sdr-blog-1.3.5>",
+    "<derivation:intel-npu-driver-1.28.0>",
+    "<derivation:level-zero-1.28.5>",
     "<derivation:sound-theme-freedesktop-0.8>",
     "<derivation:xdg-desktop-portal-1.20.4>",
     "<derivation:xdg-desktop-portal-gtk-1.15.3>",
@@ -466,7 +330,6 @@
     "<derivation:hicolor-icon-theme-0.18>",
     "<derivation:fallback-cursor-theme>",
     "<derivation:bash-interactive-5.3p9>",
-    "<derivation:shadow-4.19.4>",
     "<derivation:bash-interactive-5.3p9>",
     "<derivation:shadow-4.19.4>",
     "<derivation:bash-interactive-5.3p9>",
@@ -476,51 +339,7 @@
     "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
     "<derivation:bash-interactive-5.3p9>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:bash-interactive-5.3p9>",
-    "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
@@ -577,83 +396,19 @@
         "allowedTCPPortRanges": [],
         "allowedTCPPorts": [
           1108,
-          2108,
-          8001,
-          47984,
-          47989,
-          47990,
-          48010
+          2108
         ],
         "allowedUDPPortRanges": [],
         "allowedUDPPorts": [
-          2108,
-          5353,
-          47998,
-          47999,
-          48000,
-          48002,
-          48010
-        ]
-      },
-      "enp69s0f0": {
-        "allowedTCPPortRanges": [
-          {
-            "from": 17780,
-            "to": 17785
-          },
-          {
-            "from": 47984,
-            "to": 48010
-          }
-        ],
-        "allowedTCPPorts": [
-          1108,
-          2108,
-          4010,
-          4549,
-          5201,
-          24070,
-          27015
-        ],
-        "allowedUDPPortRanges": [
-          {
-            "from": 17780,
-            "to": 17785
-          },
-          {
-            "from": 27031,
-            "to": 27036
-          },
-          {
-            "from": 47984,
-            "to": 48010
-          }
-        ],
-        "allowedUDPPorts": [
-          1108,
-          2107,
-          2108,
-          4010,
-          4171,
-          4175,
-          4179,
-          27015
+          2108
         ]
       },
       "wireg0": {
         "allowedTCPPortRanges": [],
         "allowedTCPPorts": [
-          22,
-          80,
-          1108,
-          3102,
-          3103,
           3107,
           3111,
-          5201,
-          9100,
-          11434,
-          42420
+          9100
         ],
         "allowedUDPPortRanges": [],
         "allowedUDPPorts": []
@@ -663,22 +418,11 @@
     "allowedTCPPortRanges": [],
     "allowedTCPPorts": [
       1108,
-      2108,
-      8001,
-      47984,
-      47989,
-      47990,
-      48010
+      2108
     ],
     "allowedUDPPortRanges": [],
     "allowedUDPPorts": [
-      2108,
-      5353,
-      47998,
-      47999,
-      48000,
-      48002,
-      48010
+      2108
     ],
     "autoLoadConntrackHelpers": false,
     "backend": "iptables",
@@ -693,65 +437,12 @@
     "extraStopCommands": "",
     "filterForward": false,
     "interfaces": {
-      "enp69s0f0": {
-        "allowedTCPPortRanges": [
-          {
-            "from": 17780,
-            "to": 17785
-          },
-          {
-            "from": 47984,
-            "to": 48010
-          }
-        ],
-        "allowedTCPPorts": [
-          1108,
-          2108,
-          4010,
-          4549,
-          5201,
-          24070,
-          27015
-        ],
-        "allowedUDPPortRanges": [
-          {
-            "from": 17780,
-            "to": 17785
-          },
-          {
-            "from": 27031,
-            "to": 27036
-          },
-          {
-            "from": 47984,
-            "to": 48010
-          }
-        ],
-        "allowedUDPPorts": [
-          1108,
-          2107,
-          2108,
-          4010,
-          4171,
-          4175,
-          4179,
-          27015
-        ]
-      },
       "wireg0": {
         "allowedTCPPortRanges": [],
         "allowedTCPPorts": [
-          22,
-          80,
-          1108,
-          3102,
-          3103,
           3107,
           3111,
-          5201,
-          9100,
-          11434,
-          42420
+          9100
         ],
         "allowedUDPPortRanges": [],
         "allowedUDPPorts": []
@@ -765,95 +456,12 @@
     "pingLimit": null,
     "rejectPackets": false,
     "trustedInterfaces": [
-      "virbr0",
-      "virbr0",
       "lo"
     ]
   },
-  "networking.hostId": "b4120de4",
-  "networking.hostName": "LINDA",
-  "networking.interfaces": {
-    "enp69s0f0": {
-      "assertions": [
-        {
-          "assertion": true,
-          "message": "The option definition `subnetMask' in  no longer has any effect; please remove it.\nSupply a prefix length instead; use option\nnetworking.interfaces.<name>.ipv{4,6}.addresses\n"
-        }
-      ],
-      "ip4": [],
-      "ip6": [],
-      "ipAddress": "_mkMergedOptionModule",
-      "ipv4": {
-        "addresses": [],
-        "routes": []
-      },
-      "ipv6": {
-        "addresses": [],
-        "routes": []
-      },
-      "ipv6Address": "_mkMergedOptionModule",
-      "ipv6PrefixLength": "_mkMergedOptionModule",
-      "macAddress": null,
-      "mtu": null,
-      "name": "enp69s0f0",
-      "preferTempAddress": "_mkMergedOptionModule",
-      "prefixLength": "_mkMergedOptionModule",
-      "proxyARP": false,
-      "subnetMask": "<eval-error>",
-      "tempAddress": "default",
-      "useDHCP": true,
-      "virtual": false,
-      "virtualOwner": "root",
-      "virtualType": "tap",
-      "wakeOnLan": {
-        "enable": false,
-        "policy": [
-          "magic"
-        ]
-      },
-      "warnings": []
-    },
-    "enp69s0f1": {
-      "assertions": [
-        {
-          "assertion": true,
-          "message": "The option definition `subnetMask' in  no longer has any effect; please remove it.\nSupply a prefix length instead; use option\nnetworking.interfaces.<name>.ipv{4,6}.addresses\n"
-        }
-      ],
-      "ip4": [],
-      "ip6": [],
-      "ipAddress": "_mkMergedOptionModule",
-      "ipv4": {
-        "addresses": [],
-        "routes": []
-      },
-      "ipv6": {
-        "addresses": [],
-        "routes": []
-      },
-      "ipv6Address": "_mkMergedOptionModule",
-      "ipv6PrefixLength": "_mkMergedOptionModule",
-      "macAddress": null,
-      "mtu": null,
-      "name": "enp69s0f1",
-      "preferTempAddress": "_mkMergedOptionModule",
-      "prefixLength": "_mkMergedOptionModule",
-      "proxyARP": false,
-      "subnetMask": "<eval-error>",
-      "tempAddress": "default",
-      "useDHCP": true,
-      "virtual": false,
-      "virtualOwner": "root",
-      "virtualType": "tap",
-      "wakeOnLan": {
-        "enable": false,
-        "policy": [
-          "magic"
-        ]
-      },
-      "warnings": []
-    }
-  },
+  "networking.hostId": null,
+  "networking.hostName": "pillar-of-autum",
+  "networking.interfaces": {},
   "networking.nameservers": [],
   "networking.nat": {
     "dmzHost": null,
@@ -896,7 +504,7 @@
         "generatePrivateKeyFile": false,
         "interfaceNamespace": null,
         "ips": [
-          "10.88.127.88/32"
+          "10.88.127.110/32"
         ],
         "listenPort": 2108,
         "metric": null,
@@ -922,46 +530,7 @@
         "preSetup": "",
         "preShutdown": "",
         "privateKey": null,
-        "privateKeyFile": "/run/wireguard-wireg0-keys/LINDA",
-        "socketNamespace": null,
-        "table": "main",
-        "type": "wireguard"
-      },
-      "wiregPS0": {
-        "allowedIPsAsRoutes": true,
-        "dynamicEndpointRefreshSeconds": 0,
-        "extraOptions": {},
-        "fwMark": null,
-        "generatePrivateKeyFile": false,
-        "interfaceNamespace": null,
-        "ips": [
-          "10.75.69.88/32"
-        ],
-        "listenPort": 2107,
-        "metric": null,
-        "mtu": null,
-        "peers": [
-          {
-            "allowedIPs": [
-              "10.75.69.1/32",
-              "10.75.69.0/24"
-            ],
-            "dynamicEndpointRefreshRestartSeconds": null,
-            "dynamicEndpointRefreshSeconds": 300,
-            "endpoint": "143.223.151.15:2208",
-            "name": "7QjUnkXYwYBDDGXGJ4-WsmzkOJJnGAKFa4tEC64N6FE\\x3d",
-            "persistentKeepalive": 60,
-            "presharedKey": null,
-            "presharedKeyFile": null,
-            "publicKey": "7QjUnkXYwYBDDGXGJ4/WsmzkOJJnGAKFa4tEC64N6FE="
-          }
-        ],
-        "postSetup": "<store>/86cr8amyzrgrc9ayngi6ghg4abllzqm6-iproute2-7.0.0/bin/ip route add 10.75.69.0/24 dev wiregPS0\n",
-        "postShutdown": "<store>/86cr8amyzrgrc9ayngi6ghg4abllzqm6-iproute2-7.0.0/bin/ip route del 10.75.69.0/24 dev wiregPS0\n",
-        "preSetup": "",
-        "preShutdown": "",
-        "privateKey": null,
-        "privateKeyFile": "/run/wireguard-wireg0-keys/LINDA",
+        "privateKeyFile": "/run/wireguard-wireg0-keys/pillar-of-autum",
         "socketNamespace": null,
         "table": "main",
         "type": "wireguard"
@@ -1181,7 +750,7 @@
     ],
     "enable": true,
     "enableRecommendedAlgorithms": true,
-    "extraConfig": "AddressFamily any\nPort 1108\nListenAddress 10.88.127.88:1108\nListenAddress 10.88.127.88:22\nXAuthLocation /nix/store/v8g0jrwj694rlh071fvmzhkwyv999k7d-xauth-1.1.5/bin/xauth\nSubsystem sftp /nix/store/hv4l15j1pzpf7qi4ci7fr9k4hfg56mj1-openssh-10.4p1/libexec/sftp-server \nAuthorizedKeysFile %h/.ssh/authorized_keys /etc/ssh/authorized_keys.d/%u\nHostKey /etc/ssh/ssh_host_ed25519_key\nMatch LocalPort 1108 User inspect Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication no\n\nMatch LocalPort 1108 User deploy Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n\nMatch LocalPort 22 User build Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n\nMatch LocalPort 22\n  AllowUsers build\n",
+    "extraConfig": "AddressFamily any\nPort 1108\nListenAddress 10.88.127.110:1108\nXAuthLocation /nix/store/v8g0jrwj694rlh071fvmzhkwyv999k7d-xauth-1.1.5/bin/xauth\nSubsystem sftp /nix/store/hv4l15j1pzpf7qi4ci7fr9k4hfg56mj1-openssh-10.4p1/libexec/sftp-server \nAuthorizedKeysFile %h/.ssh/authorized_keys /etc/ssh/authorized_keys.d/%u\nHostKey /etc/ssh/ssh_host_ed25519_key\nMatch LocalPort 1108 User inspect Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication no\n\nMatch LocalPort 1108 User deploy Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n",
     "forwardX11": false,
     "gatewayPorts": "no",
     "generateHostKeys": true,
@@ -1326,17 +895,6 @@
         "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA45NWTW76+Mt8n2GZjrz2cCjeywYNP8JOXjtkbZxaj6 root@gaming-host\n",
         "publicKeyFile": null
       },
-      "hyperhyper": {
-        "certAuthority": false,
-        "extraHostNames": [],
-        "hostNames": [
-          "hyperhyper",
-          "10.75.79.7",
-          "100.107.101.14"
-        ],
-        "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEx7puAmpArf5PXkI5wRFkNwqQiulhHxzeBEVvC52IOH",
-        "publicKeyFile": null
-      },
       "local-nas": {
         "certAuthority": false,
         "extraHostNames": [],
@@ -1359,16 +917,6 @@
           "10.88.128.150"
         ],
         "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB0n2F9HP22zNBIkLHMXEKNfCjYxCtqaSkug8oaFTZBy root@pillar-of-autum\n",
-        "publicKeyFile": null
-      },
-      "pompeii": {
-        "certAuthority": false,
-        "extraHostNames": [],
-        "hostNames": [
-          "pompeii",
-          "100.127.177.30"
-        ],
-        "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL4FWg5satPAkNLJ0kRFEUi7DFtly4Xb3Yr0kUrrb53d",
         "publicKeyFile": null
       },
       "print-controller": {
@@ -1445,12 +993,8 @@
     },
     "listenAddresses": [
       {
-        "addr": "10.88.127.88",
+        "addr": "10.88.127.110",
         "port": 1108
-      },
-      {
-        "addr": "10.88.127.88",
-        "port": 22
       }
     ],
     "logLevel": "INFO",
@@ -1472,7 +1016,6 @@
       "AllowGroups": null,
       "AllowTcpForwarding": false,
       "AllowUsers": [
-        "build",
         "deploy",
         "inspect",
         "John88"
@@ -2551,14 +2094,14 @@
         "user": "nut-exporter"
       },
       "nvidia-gpu": {
-        "enable": true,
+        "enable": false,
         "extraFlags": [],
         "firewallFilter": null,
         "firewallRules": null,
         "group": "nvidia-gpu-exporter",
         "listenAddress": "0.0.0.0",
         "openFirewall": false,
-        "port": 3103,
+        "port": 9835,
         "user": "nvidia-gpu-exporter"
       },
       "opnsense": {
@@ -3140,7 +2683,7 @@
         "withRemoteIp": false
       },
       "zfs": {
-        "enable": true,
+        "enable": false,
         "extraFlags": [],
         "firewallFilter": null,
         "firewallRules": null,
@@ -3148,7 +2691,7 @@
         "listenAddress": "0.0.0.0",
         "openFirewall": false,
         "pools": [],
-        "port": 3102,
+        "port": 9134,
         "telemetryPath": "/metrics",
         "user": "zfs-exporter"
       },
@@ -3238,7 +2781,7 @@
     },
     "disableTaildrop": false,
     "disableUpstreamLogging": false,
-    "enable": true,
+    "enable": false,
     "extraDaemonFlags": [],
     "extraSetFlags": [],
     "extraUpFlags": [],
