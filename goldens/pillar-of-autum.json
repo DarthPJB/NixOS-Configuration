@@ -4,16 +4,14 @@
     "fs.inotify.max_user_watches": 524288,
     "kernel.kptr_restrict": 1,
     "kernel.pid_max": 4194304,
-    "kernel.poweroff_cmd": "<store>/2pprwd9bdjg4ssiam65rgjqfy64h0hbd-systemd-260.2/sbin/poweroff",
+    "kernel.poweroff_cmd": "<store>/0xiinbh7pbj479i5v28mqnjrvhvbdibf-systemd-260.2/sbin/poweroff",
     "kernel.printk": "7 7 7 7",
     "net.core.rmem_max": null,
     "net.core.wmem_max": null,
-    "net.ipv4.conf.wlan0.proxy_arp": false,
     "net.ipv4.ping_group_range": "0 2147483647",
     "net.ipv6.conf.all.disable_ipv6": false,
     "net.ipv6.conf.default.disable_ipv6": false,
     "net.ipv6.conf.default.use_tempaddr": "2",
-    "net.ipv6.conf.wlan0.use_tempaddr": "2",
     "vm.max_map_count": 1048576
   },
   "boot.loader": {
@@ -31,13 +29,13 @@
     },
     "generic-extlinux-compatible": {
       "configurationLimit": 20,
-      "enable": true,
+      "enable": false,
       "mirroredBoots": [
         {
           "path": "/boot"
         }
       ],
-      "populateCmd": "<store>/mn41ikbjc1745jqd7wz29j1kar3204k7-extlinux-conf-builder.sh -g 20 -t 5",
+      "populateCmd": "<eval-error>",
       "useGenerationDeviceTree": true
     },
     "grub": {
@@ -47,11 +45,13 @@
       "configurationName": "",
       "copyKernels": false,
       "default": "0",
-      "device": "",
-      "devices": [],
-      "efiInstallAsRemovable": false,
-      "efiSupport": false,
-      "enable": false,
+      "device": "nodev",
+      "devices": [
+        "nodev"
+      ],
+      "efiInstallAsRemovable": true,
+      "efiSupport": true,
+      "enable": true,
       "enableCryptodisk": false,
       "entryOptions": "--class nixos --unrestricted",
       "extraConfig": "",
@@ -63,7 +63,7 @@
       "extraInstallCommands": "",
       "extraPerEntryConfig": "",
       "extraPrepareConfig": "",
-      "font": "<store>/kaw8k2llbc3svn3klcsrvmgzh1nzml9k-grub-2.12/share/grub/unicode.pf2",
+      "font": "<store>/s4qgc0azvmh9qadkz0mfbfb2rcpy035c-grub-2.12/share/grub/unicode.pf2",
       "fontSize": null,
       "forceInstall": false,
       "forcei686": false,
@@ -77,8 +77,17 @@
         "enable": false,
         "params": []
       },
-      "mirroredBoots": [],
-      "splashImage": "<store>/x6zlf3wnra4pyvjws2rdnsbzx6y3jbwj-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png",
+      "mirroredBoots": [
+        {
+          "devices": [
+            "nodev"
+          ],
+          "efiBootloaderId": null,
+          "efiSysMountPoint": "/boot",
+          "path": "/boot"
+        }
+      ],
+      "splashImage": "<store>/phbdp89qm0rsrkqdbc9lpw6l1syr25pa-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png",
       "splashMode": "normal",
       "storePath": "/nix/store",
       "subEntryOptions": "--class nixos",
@@ -155,7 +164,7 @@
         },
         "wallpaperStyle": "stretched",
         "wallpapers": [
-          "<store>/x6zlf3wnra4pyvjws2rdnsbzx6y3jbwj-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png"
+          "<store>/phbdp89qm0rsrkqdbc9lpw6l1syr25pa-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png"
         ]
       },
       "validateChecksums": true
@@ -169,7 +178,7 @@
       "maxGenerations": null,
       "package": "<derivation:refind-0.14.2>"
     },
-    "supportsInitrdSecrets": false,
+    "supportsInitrdSecrets": true,
     "systemd-boot": {
       "configurationLimit": 5,
       "consoleMode": "keep",
@@ -206,6 +215,21 @@
     "vfat": true
   },
   "environment.systemPackages": [
+    "<derivation:cursor-theme-bargman-cinematic-1.0.0>",
+    "<derivation:cursor-theme-bargman-cinematic-1.0.0>",
+    "<derivation:lightdm-webkit2-greeter-2.2.5>",
+    "<derivation:adwaita-qt-1.4.2>",
+    "<derivation:adwaita-qt-1.4.2>",
+    "<derivation:papirus-icon-theme-20250501>",
+    "<derivation:arc-theme-20221218>",
+    "<derivation:betterlockscreen-4.4.0>",
+    "<derivation:brightnessctl-0.5.1>",
+    "<derivation:pavucontrol-6.2>",
+    "<derivation:volumeicon-0.5.1>",
+    "<derivation:terminology-1.14.0>",
+    "<derivation:conky-1.22.3>",
+    "<derivation:lxappearance-0.6.4>",
+    "<derivation:arandr-0.1.11>",
     "<derivation:btop-1.4.7>",
     "<derivation:nano-9.2>",
     "<derivation:wget-1.25.0>",
@@ -223,6 +247,11 @@
     "<derivation:progress-0.17>",
     "<derivation:parted-3.7>",
     "<derivation:bottom-0.14.2>",
+    "<derivation:i3-4.24>",
+    "<derivation:betterlockscreen-4.4.0>",
+    "<derivation:rofi-2.0.0>",
+    "<derivation:i3status-2.15>",
+    "<derivation:i3lock-2.15>",
     "<derivation:nixos-version>",
     "<derivation:nixos-rebuild-ng-26.05>",
     "<derivation:nixos-option>",
@@ -235,11 +264,27 @@
     "<derivation:mtools-4.0.49>",
     "<derivation:e2fsprogs-1.47.4>",
     "<derivation:dosfstools-4.2>",
-    "<derivation:cpupower-6.18.34-stable_20260609>",
+    "<derivation:cpupower-6.18.46>",
     "<derivation:bcache-tools-1.1>",
     "<derivation:systemd-260.2>",
+    "<derivation:plymouth-26.134.222>",
     "<derivation:kmod-31>",
     "<derivation:kexec-tools-2.0.32>",
+    "<derivation:xlibre-xserver-25.2.1>",
+    "<derivation:xrandr-1.5.4>",
+    "<derivation:xrdb-1.2.2>",
+    "<derivation:setxkbmap-1.3.4>",
+    "<derivation:iceauth-1.0.10>",
+    "<derivation:xlsclients-1.1.5>",
+    "<derivation:xset-1.2.5>",
+    "<derivation:xsetroot-1.1.3>",
+    "<derivation:xinput-1.6.4>",
+    "<derivation:xprop-1.2.8>",
+    "<derivation:xauth-1.1.5>",
+    "<derivation:xterm-410>",
+    "<derivation:xf86-input-evdev-25.0.0>",
+    "<derivation:picom-13>",
+    "<derivation:lightdm-1.32.0>",
     "<derivation:kmscon-9.3.5>",
     "<derivation:determinate-nix-3.21.9>",
     "<derivation:nix-info>",
@@ -250,7 +295,14 @@
     "<derivation:iptables-1.8.13>",
     "<derivation:nixos-firewall-tool>",
     "<derivation:dhcpcd-10.3.1>",
-    "<derivation:klipper-genconf>",
+    "<derivation:nixos-icons-0-unstable-2025-06-28>",
+    "<derivation:xdg-utils-1.2.1>",
+    "<derivation:rsyslog-8.2606.0>",
+    "<derivation:xf86-input-libinput-25.0.1>",
+    "<derivation:wireplumber-0.5.14>",
+    "<derivation:pipewire-1.6.6>",
+    "<derivation:accountsservice-23.13.9>",
+    "<derivation:speech-dispatcher-0.12.1>",
     "<derivation:sudo-1.9.17p2>",
     "<derivation:polkit-127>",
     "<derivation:polkit-127>",
@@ -259,15 +311,28 @@
     "<derivation:bash-interactive-5.3p9>",
     "<derivation:nano-9.2>",
     "<derivation:less-692>",
+    "<derivation:i3lock-2.15>",
     "<derivation:gnupg-2.4.9>",
     "<derivation:fuse-2.9.9>",
     "<derivation:fuse-3.17.4>",
+    "<derivation:dconf-0.49.0>",
+    "<derivation:man-db-2.13.1>",
+    "<derivation:texinfo-interactive-7.2>",
+    "<derivation:nixos-configuration-reference-manpage>",
+    "<derivation:nixos-manual-html>",
+    "<derivation:nixos-help>",
+    "<derivation:intel-npu-driver-1.28.0>",
+    "<derivation:level-zero-1.28.5>",
+    "<derivation:sound-theme-freedesktop-0.8>",
+    "<derivation:xdg-desktop-portal-1.20.4>",
+    "<derivation:xdg-desktop-portal-gtk-1.15.3>",
+    "<derivation:shared-mime-info-2.4>",
+    "<derivation:hicolor-icon-theme-0.18>",
+    "<derivation:fallback-cursor-theme>",
     "<derivation:bash-interactive-5.3p9>",
     "<derivation:bash-interactive-5.3p9>",
     "<derivation:shadow-4.19.4>",
     "<derivation:bash-interactive-5.3p9>",
-    "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
@@ -316,6 +381,9 @@
     "<derivation:which-2.23>",
     "<derivation:zstd-1.5.7>",
     "<derivation:glibc-2.42-67>",
+    "<derivation:perl-5.42.0>",
+    "<derivation:rsync-3.4.4>",
+    "<derivation:strace-7.2>",
     "<derivation:openresolv-3.17.4>",
     "<derivation:glibc-locales-2.42-67>",
     "<derivation:fontconfig-2.17.1>",
@@ -327,10 +395,8 @@
       "default": {
         "allowedTCPPortRanges": [],
         "allowedTCPPorts": [
-          80,
           1108,
-          2108,
-          7125
+          2108
         ],
         "allowedUDPPortRanges": [],
         "allowedUDPPorts": [
@@ -340,7 +406,6 @@
       "wireg0": {
         "allowedTCPPortRanges": [],
         "allowedTCPPorts": [
-          3104,
           3107,
           3111,
           9100
@@ -352,10 +417,8 @@
     "allowPing": true,
     "allowedTCPPortRanges": [],
     "allowedTCPPorts": [
-      80,
       1108,
-      2108,
-      7125
+      2108
     ],
     "allowedUDPPortRanges": [],
     "allowedUDPPorts": [
@@ -377,7 +440,6 @@
       "wireg0": {
         "allowedTCPPortRanges": [],
         "allowedTCPPorts": [
-          3104,
           3107,
           3111,
           9100
@@ -398,49 +460,8 @@
     ]
   },
   "networking.hostId": null,
-  "networking.hostName": "print-controller",
-  "networking.interfaces": {
-    "wlan0": {
-      "assertions": [
-        {
-          "assertion": true,
-          "message": "The option definition `subnetMask' in  no longer has any effect; please remove it.\nSupply a prefix length instead; use option\nnetworking.interfaces.<name>.ipv{4,6}.addresses\n"
-        }
-      ],
-      "ip4": [],
-      "ip6": [],
-      "ipAddress": "_mkMergedOptionModule",
-      "ipv4": {
-        "addresses": [],
-        "routes": []
-      },
-      "ipv6": {
-        "addresses": [],
-        "routes": []
-      },
-      "ipv6Address": "_mkMergedOptionModule",
-      "ipv6PrefixLength": "_mkMergedOptionModule",
-      "macAddress": null,
-      "mtu": null,
-      "name": "wlan0",
-      "preferTempAddress": "_mkMergedOptionModule",
-      "prefixLength": "_mkMergedOptionModule",
-      "proxyARP": false,
-      "subnetMask": "<eval-error>",
-      "tempAddress": "default",
-      "useDHCP": true,
-      "virtual": false,
-      "virtualOwner": "root",
-      "virtualType": "tap",
-      "wakeOnLan": {
-        "enable": false,
-        "policy": [
-          "magic"
-        ]
-      },
-      "warnings": []
-    }
-  },
+  "networking.hostName": "pillar-of-autum",
+  "networking.interfaces": {},
   "networking.nameservers": [],
   "networking.nat": {
     "dmzHost": null,
@@ -460,8 +481,8 @@
     "checkRuleset": true,
     "checkRulesetRedirects": {
       "/etc/hosts": "<derivation:hosts>",
-      "/etc/protocols": "<store>/s1k8vg488b00yjnw06x42754m6kry6bs-iana-etc-20251215/etc/protocols",
-      "/etc/services": "<store>/s1k8vg488b00yjnw06x42754m6kry6bs-iana-etc-20251215/etc/services"
+      "/etc/protocols": "<store>/d5jj34synqyn1bc5n362pric9a695a0h-iana-etc-20251215/etc/protocols",
+      "/etc/services": "<store>/d5jj34synqyn1bc5n362pric9a695a0h-iana-etc-20251215/etc/services"
     },
     "enable": false,
     "extraDeletions": "",
@@ -483,7 +504,7 @@
         "generatePrivateKeyFile": false,
         "interfaceNamespace": null,
         "ips": [
-          "10.88.127.30/32"
+          "10.88.127.110/32"
         ],
         "listenPort": 2108,
         "metric": null,
@@ -509,7 +530,7 @@
         "preSetup": "",
         "preShutdown": "",
         "privateKey": null,
-        "privateKeyFile": "/run/wireguard-wireg0-keys/print-controller",
+        "privateKeyFile": "/run/wireguard-wireg0-keys/pillar-of-autum",
         "socketNamespace": null,
         "table": "main",
         "type": "wireguard"
@@ -582,9 +603,9 @@
       "0.0.0.0",
       "[::0]"
     ],
-    "defaultMimeTypes": "<store>/p6cfnfymypclvp66fih47ar1cm64zz2r-mailcap-2.1.54/etc/nginx/mime.types",
+    "defaultMimeTypes": "<store>/9mikxas901qn0r2j1baqfv7pdd36n23m-mailcap-2.1.54/etc/nginx/mime.types",
     "defaultSSLListenPort": 443,
-    "enable": true,
+    "enable": false,
     "enableQuicBPF": false,
     "enableReload": false,
     "eventsConfig": "",
@@ -652,22 +673,13 @@
       "virtualHosts": []
     },
     "typesHashMaxSize": 2688,
-    "upstreams": {
-      "fluidd-apiserver": {
-        "extraConfig": "",
-        "servers": {
-          "10.88.127.30:7125": {
-            "backup": false
-          }
-        }
-      }
-    },
+    "upstreams": {},
     "user": "nginx",
     "uwsgiResolveWhileRunning": false,
     "uwsgiTimeout": "60s",
     "validateConfigFile": true,
     "virtualHosts": {
-      "print-controller.johnbargman.net": {
+      "localhost": {
         "acmeFallbackHost": null,
         "acmeRoot": "/var/lib/acme/acme-challenge",
         "addSSL": false,
@@ -684,82 +696,13 @@
         "kTLS": false,
         "listen": [],
         "listenAddresses": [],
-        "locations": {
-          "/": {
-            "alias": null,
-            "basicAuth": {},
-            "basicAuthFile": null,
-            "extraConfig": "",
-            "fastcgiParams": {},
-            "index": "index.html",
-            "priority": 1000,
-            "proxyPass": null,
-            "proxyWebsockets": false,
-            "recommendedProxySettings": false,
-            "recommendedUwsgiSettings": false,
-            "return": null,
-            "root": null,
-            "tryFiles": "$uri $uri/ /index.html",
-            "uwsgiPass": null
-          },
-          "/index.html": {
-            "alias": null,
-            "basicAuth": {},
-            "basicAuthFile": null,
-            "extraConfig": "add_header Cache-Control \"no-store, no-cache, must-revalidate\";\n",
-            "fastcgiParams": {},
-            "index": null,
-            "priority": 1000,
-            "proxyPass": null,
-            "proxyWebsockets": false,
-            "recommendedProxySettings": false,
-            "recommendedUwsgiSettings": false,
-            "return": null,
-            "root": null,
-            "tryFiles": null,
-            "uwsgiPass": null
-          },
-          "/websocket": {
-            "alias": null,
-            "basicAuth": {},
-            "basicAuthFile": null,
-            "extraConfig": "",
-            "fastcgiParams": {},
-            "index": null,
-            "priority": 1000,
-            "proxyPass": "http://fluidd-apiserver/websocket",
-            "proxyWebsockets": true,
-            "recommendedProxySettings": false,
-            "recommendedUwsgiSettings": false,
-            "return": null,
-            "root": null,
-            "tryFiles": null,
-            "uwsgiPass": null
-          },
-          "~ ^/(printer|api|access|machine|server)/": {
-            "alias": null,
-            "basicAuth": {},
-            "basicAuthFile": null,
-            "extraConfig": "",
-            "fastcgiParams": {},
-            "index": null,
-            "priority": 1000,
-            "proxyPass": "http://fluidd-apiserver$request_uri",
-            "proxyWebsockets": true,
-            "recommendedProxySettings": false,
-            "recommendedUwsgiSettings": false,
-            "return": null,
-            "root": null,
-            "tryFiles": null,
-            "uwsgiPass": null
-          }
-        },
+        "locations": {},
         "onlySSL": false,
         "quic": false,
         "redirectCode": 301,
         "rejectSSL": false,
         "reuseport": false,
-        "root": "<store>/n8flw9yz6nw1jy9q1wp5djky6mc870hr-fluidd-1.36.2/share/fluidd/htdocs",
+        "root": null,
         "serverAliases": [],
         "serverName": null,
         "sslCertificate": "<eval-error>",
@@ -807,7 +750,7 @@
     ],
     "enable": true,
     "enableRecommendedAlgorithms": true,
-    "extraConfig": "AddressFamily any\nPort 1108\nListenAddress 10.88.127.30:1108\nSubsystem sftp /nix/store/98xy2rz5g35c07x8is0l73rmgvkwqmmj-openssh-10.5p1/libexec/sftp-server \nAuthorizedKeysFile %h/.ssh/authorized_keys /etc/ssh/authorized_keys.d/%u\nHostKey /etc/ssh/ssh_host_ed25519_key\nMatch LocalPort 1108 User inspect Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication no\n\nMatch LocalPort 1108 User deploy Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n",
+    "extraConfig": "AddressFamily any\nPort 1108\nListenAddress 10.88.127.110:1108\nXAuthLocation /nix/store/b79rlbss193xsccf8k39r507za1jk4xy-xauth-1.1.5/bin/xauth\nSubsystem sftp /nix/store/28hprrw9sdi4iarzyxa3r1a22b3dq5pn-openssh-10.5p1/libexec/sftp-server \nAuthorizedKeysFile %h/.ssh/authorized_keys /etc/ssh/authorized_keys.d/%u\nHostKey /etc/ssh/ssh_host_ed25519_key\nMatch LocalPort 1108 User inspect Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication no\n\nMatch LocalPort 1108 User deploy Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n",
     "forwardX11": false,
     "gatewayPorts": "no",
     "generateHostKeys": true,
@@ -1050,7 +993,7 @@
     },
     "listenAddresses": [
       {
-        "addr": "10.88.127.30",
+        "addr": "10.88.127.110",
         "port": 1108
       }
     ],
@@ -1060,7 +1003,7 @@
       "hmac-sha2-256-etm@openssh.com",
       "umac-128-etm@openssh.com"
     ],
-    "moduliFile": "<store>/98xy2rz5g35c07x8is0l73rmgvkwqmmj-openssh-10.5p1/etc/ssh/moduli",
+    "moduliFile": "<store>/28hprrw9sdi4iarzyxa3r1a22b3dq5pn-openssh-10.5p1/etc/ssh/moduli",
     "openFirewall": true,
     "package": "<derivation:openssh-10.5p1>",
     "passwordAuthentication": false,
@@ -1119,7 +1062,7 @@
       "X11Forwarding": false
     },
     "sftpFlags": [],
-    "sftpServerExecutable": "<store>/98xy2rz5g35c07x8is0l73rmgvkwqmmj-openssh-10.5p1/libexec/sftp-server",
+    "sftpServerExecutable": "<store>/28hprrw9sdi4iarzyxa3r1a22b3dq5pn-openssh-10.5p1/libexec/sftp-server",
     "startWhenNeeded": true,
     "useDns": false
   },
@@ -1852,7 +1795,7 @@
         "user": "keylight-exporter"
       },
       "klipper": {
-        "enable": true,
+        "enable": false,
         "extraFlags": [],
         "firewallFilter": null,
         "firewallRules": null,
@@ -1861,7 +1804,7 @@
         "moonrakerApiKey": "",
         "openFirewall": false,
         "package": "<derivation:prometheus-klipper-exporter-0.14.0>",
-        "port": 3104,
+        "port": 9101,
         "user": "klipper-exporter"
       },
       "knot": {
@@ -2461,7 +2404,7 @@
       },
       "smartctl": {
         "devices": [],
-        "enable": false,
+        "enable": true,
         "extraFlags": [],
         "firewallFilter": null,
         "firewallRules": null,
@@ -2649,7 +2592,7 @@
         },
         "loki": {
           "interval": "2m",
-          "pass": "file:///nix/store/04y34qc8j5533sc9l2m8gysv56a6malz-unpoller-loki-default.password",
+          "pass": "file:///nix/store/n5wg119aap5f1zv3fnw3acn4nliy4fqd-unpoller-loki-default.password",
           "tenant_id": "",
           "timeout": "10s",
           "url": "",
@@ -2675,7 +2618,7 @@
         },
         "loki": {
           "interval": "2m",
-          "pass": "file:///nix/store/04y34qc8j5533sc9l2m8gysv56a6malz-unpoller-loki-default.password",
+          "pass": "file:///nix/store/n5wg119aap5f1zv3fnw3acn4nliy4fqd-unpoller-loki-default.password",
           "tenant_id": "",
           "timeout": "10s",
           "url": "",

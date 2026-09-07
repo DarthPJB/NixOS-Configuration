@@ -91,10 +91,12 @@
             "cortex-alpha",
             "gaming-host-1",
             "local-nas",
+            "pillar-of-autum",
             "remote-builder",
             "remote-worker",
             "terminal-nx-01",
-            "terminal-zero"
+            "terminal-zero",
+            "x86-bootstrap"
           ]
         },
         "max-parallel": 10
@@ -238,10 +240,12 @@
             "cortex-alpha",
             "gaming-host-1",
             "local-nas",
+            "pillar-of-autum",
             "remote-builder",
             "remote-worker",
             "terminal-nx-01",
             "terminal-zero",
+            "x86-bootstrap",
             "display-1",
             "display-2",
             "print-controller",

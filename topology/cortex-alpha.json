@@ -71,6 +71,7 @@
       {"mac": "60:45:2e:9d:42:ac", "ip": "10.88.128.247", "hostname": "michel-wifi"},
       {"mac": "60:66:82:42:b1:c8", "ip": "10.88.128.151", "hostname": "LINDA-lan"},
       {"mac": "70:54:d2:17:d1:c4", "ip": "10.88.128.23", "hostname": "terminal-nx-01-2"},
+      {"mac": "88:ae:dd:66:70:ff", "ip": "10.88.128.150", "hostname": "pillar-of-autum"},
       {"mac": "b8:27:eb:7f:f0:38", "ip": "10.88.128.10", "hostname": "print-controller"},
       {"mac": "dc:85:de:86:a8:77", "ip": "10.88.128.22", "hostname": "terminal-nx-01-1"},
       {"mac": "f0:de:f1:c7:fe:30", "ip": "10.88.128.21", "hostname": "terminal-zero-2"},
