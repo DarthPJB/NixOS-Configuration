@@ -24,6 +24,7 @@
     environmentVariables = {
       OLLAMA_MAX_LOADED_MODELS = "1";
       OLLAMA_NUM_PARALLEL = "1";
+      OLLAMA_NUM_THREAD = "39"; # Ten cores free for workstation activity
       OLLAMA_KEEP_ALIVE = "-1"; # Keep loaded permanently — no idle unload
       OLLAMA_LOAD_TIMEOUT = "20m"; # Allow large models (Laguna S 96GB) to load without connection drop
     };
@@ -83,7 +84,7 @@
   systemd.services.ollama.wantedBy = lib.mkForce [ ];
   systemd.services.ollama-model-loader.wantedBy = lib.mkForce [ ];
   systemd.services.ollama.serviceConfig = {
-    MemoryMax = "96G";
-    MemoryHigh = "88G";
+    MemoryMax = "105G";
+    MemoryHigh = "85G";
   };
 }
