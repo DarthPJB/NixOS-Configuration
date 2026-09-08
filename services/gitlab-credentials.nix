@@ -34,9 +34,11 @@ in
   # /run/system-keys/ is root-only; nix flake update runs as the user.
   systemd.services.gitlab-netrc-copy = {
     description = "Copy GitLab netrc to user-readable location";
-    after = [ "secrix-system-secrets.service" ];
+    requires = [ "secrix-system-secret-gitlab_netrc.service" ];
+    after = [ "secrix-system-secret-gitlab_netrc.service" ];
     before = [ "nix-daemon.service" ];
     requiredBy = [ "nix-daemon.service" ];
+    wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
