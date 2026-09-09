@@ -1369,11 +1369,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788903471,
-        "narHash": "sha256-xJpNxIQE7DjUbqaZZWsJxtyMFrtz0V+zPX4CR9FSmlI=",
+        "lastModified": 1788903784,
+        "narHash": "sha256-w7+dxB0IyD4zwFtEo1g3DE2zNqrRxU/Cf11LPr0Ttg0=",
         "owner": "Bargman-Tech",
         "repo": "nixinate",
-        "rev": "ca24da0cf70d6d4689b186b8f7e19d0d765a20d3",
+        "rev": "41372fc11b525e7f49a39db6274ee0c8570f7195",
         "type": "github"
       },
       "original": {
