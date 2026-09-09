@@ -1,5 +1,5 @@
 { lib
-, pkgs_llm
+, pkgsOllamaNumParallel
 , ...
 }:
 {
@@ -7,7 +7,9 @@
     enable = true;
     host = "10.88.127.88"; # WireGuard plane only — not loopback, not all interfaces
     port = 11434;
-    package = pkgs_llm.ollama-cpu;
+    # PR #9546 patched build — `num_parallel` is a per-model Modelfile
+    # parameter here, not just the global OLLAMA_NUM_PARALLEL cap.
+    package = pkgsOllamaNumParallel;
     models = "/speed-storage/ollama";
 
     # Disk catalog only. model-loader stays off at boot.
@@ -23,6 +25,7 @@
     # Host limits only — not model policy.
     environmentVariables = {
       OLLAMA_MAX_LOADED_MODELS = "1";
+      # Fallback default only — per-model num_parallel (Modelfiles below) wins.
       OLLAMA_NUM_PARALLEL = "1";
       OLLAMA_NUM_THREAD = "39"; # Ten cores free for workstation activity
       OLLAMA_KEEP_ALIVE = "-1"; # Keep loaded permanently — no idle unload
@@ -34,31 +37,43 @@
   environment.etc."ollama/modelfiles/linda-ornith9-q4-256k".text = ''
     FROM ornith:9b
     PARAMETER num_ctx 262144
+    # 9B q4 — small enough for a second parallel slot on >50 threads.
+    PARAMETER num_parallel 2
   '';
 
   environment.etc."ollama/modelfiles/linda-ornith35-q4-256k".text = ''
     FROM ornith:35b
     PARAMETER num_ctx 262144
+    # 35B q4 — single slot; 256K KV cache dominates memory.
+    PARAMETER num_parallel 1
   '';
 
   environment.etc."ollama/modelfiles/linda-laguna-xs-q4-256k".text = ''
     FROM laguna-xs-2.1:q4_K_M
     PARAMETER num_ctx 262144
+    # XS q4 — small; two parallel slots fit the thread budget.
+    PARAMETER num_parallel 2
   '';
 
   environment.etc."ollama/modelfiles/linda-laguna-xs-bf16-256k".text = ''
     FROM laguna-xs-2.1:bf16
     PARAMETER num_ctx 262144
+    # XS bf16 — heavier weights than q4; keep a single slot.
+    PARAMETER num_parallel 1
   '';
 
   environment.etc."ollama/modelfiles/linda-laguna-s-q4-256k".text = ''
     FROM laguna-s-2.1:q4_K_M
     PARAMETER num_ctx 262144
+    # S (≈96GB) — single slot only.
+    PARAMETER num_parallel 1
   '';
 
   environment.etc."ollama/modelfiles/linda-qwen38-27b-q4-256k".text = ''
     FROM qwen3.8:27b
     PARAMETER num_ctx 262144
+    # 27B q4 — single slot; 256K KV cache dominates memory.
+    PARAMETER num_parallel 1
   '';
 
   # One-shot: materialise created tags after blobs exist.
@@ -74,7 +89,7 @@
       export OLLAMA_HOST="http://10.88.127.88:11434"
       for f in /etc/ollama/modelfiles/*; do
         name="$(basename "$f")"
-        ${lib.getExe pkgs_llm.ollama-cpu} create "$name" -f "$f"
+        ${lib.getExe pkgsOllamaNumParallel} create "$name" -f "$f"
       done
     '';
   };
