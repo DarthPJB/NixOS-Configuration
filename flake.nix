@@ -136,11 +136,6 @@
         python3 = pkgs_llm.python313;
         inherit zentorch;
       };
-      # Ollama + PR #9546 (per-model num_parallel). Patches the CPU ollama
-      # derivation; used by services/ollama.nix to tune parallelism per model.
-      pkgsOllamaNumParallel = pkgs_llm.callPackage ./pkgs/ollama-patched {
-        ollama = pkgs_llm.ollama-cpu;
-      };
       globalArgs = {
         inherit self;
         inherit ikbaeb-th;
@@ -151,7 +146,6 @@
         inherit pkgs_llm;
         inherit pkgsCuda;
         inherit pkgsCpuVllm;
-        inherit pkgsOllamaNumParallel;
       };
       minecraft-curseforge-builder = nixpkgs.callPackage ./pkgs/minecraft-curseforge { };
       prometheus-mcp-server-builder = nixpkgs.callPackage ./pkgs/prometheus-mcp-server { };
