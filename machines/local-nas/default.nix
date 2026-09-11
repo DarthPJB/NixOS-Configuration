@@ -32,6 +32,13 @@
 
   enableWgTopology.enable = true;
 
+  # Git LFS over the existing WireGuard SSH git endpoint (gitolite on wireg0).
+  programs.git = {
+    enable = true;
+    lfs.enable = true;
+    lfs.enablePureSSHTransfer = true;
+  };
+
   # Tailscale: direct access to hyperhyper and other Tailscale nodes
   secrix.services.tailscaled.secrets.auth-key.encrypted.file =
     ../../secrets/tailscale_auth_key;
