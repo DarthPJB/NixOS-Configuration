@@ -72,9 +72,8 @@ Reference: `documentation/vllm-architecture.md` section "CPU Models"
 **Verify**:
 - [ ] `pkgs/models/` template exists and is valid Nix
 - [ ] `pkgs/models/qwen3-8b.nix` builds successfully
-- [ ] vLLM CPU inference works with a test model
-- [ ] Metrics are exposed and scrapeable
-- [ ] No regressions in existing vLLM GPU service
+- [ ] `nix flake check` passes (no regressions)
+- [ ] No changes to existing vLLM GPU service or LINDA config
 
 ---
 

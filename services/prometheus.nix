@@ -79,6 +79,23 @@ in
           }
         ];
       }
+      # LiteLLM gateway on alpha-three (10.88.127.107:8080)
+      # Exposes /metrics via callbacks = [ "prometheus" ].
+      {
+        job_name = "litellm";
+        scrape_interval = "10s";
+        static_configs = [
+          {
+            labels = {
+              hostname = "alpha-three";
+              role = "gateway";
+            };
+            targets = [
+              "10.88.127.107:8080"
+            ];
+          }
+        ];
+      }
       {
         scrape_interval = "15s";
         job_name = "klipper";

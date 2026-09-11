@@ -46,18 +46,18 @@
   nix.settings.max-jobs = 0;
 
   # This machine IS the cache. Never garbage-collect — retain all closures.
-  # Also skip store optimisation — only grows, never rebuilds locally.
+  # Both NixOS nix.gc and Determinate Nixd's managed GC must be disabled.
   nix.gc.automatic = lib.mkForce false;
-  nix.settings.auto-optimise-store = lib.mkForce false;
+  nix.settings.auto-optimise-store = lib.mkForce true;
 
-  # Build-time GC: last-resort protection against disk-full.
-  # Triggers during builds when free space drops below 10GB.
-  # Collects unreachable garbage until 30GB free (max 20GB freed).
-  # This only deletes paths with no GC roots — system profiles and active
-  # builds are never touched.
-  nix.settings.min-free = 10 * 1024 * 1024 * 1024; # 10GB
-  nix.settings.max-free = 30 * 1024 * 1024 * 1024; # 30GB
-  nix.settings.min-free-check-interval = 30;
+  # Disable Determinate Nixd's managed garbage collection.
+  # Without this, determinate-nixd runs its own GC every ~2 hours and deletes
+  # store paths whose GC roots are "stale" (e.g. CI runner ./result symlinks
+  # in ephemeral /run/github-runner/ directories). This was the root cause of
+  # paths being re-copied on every CI run.
+  environment.etc."determinate/config.json".text = builtins.toJSON {
+    garbageCollector.strategy = "disabled";
+  };
 
   # Tailscale: direct connection to hyperhyper (replaces WireGuard proxy route)
   secrix.services.tailscaled.secrets.auth-key.encrypted.file =

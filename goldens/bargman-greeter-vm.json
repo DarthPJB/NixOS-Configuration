@@ -4,7 +4,7 @@
     "fs.inotify.max_user_watches": 524288,
     "kernel.kptr_restrict": 1,
     "kernel.pid_max": 4194304,
-    "kernel.poweroff_cmd": "<store>/vv5bna641lxwxm0nqgy20134y7wivsvp-systemd-260.2/sbin/poweroff",
+    "kernel.poweroff_cmd": "<store>/0xiinbh7pbj479i5v28mqnjrvhvbdibf-systemd-260.2/sbin/poweroff",
     "kernel.printk": 4,
     "net.core.rmem_max": null,
     "net.core.wmem_max": null,
@@ -63,7 +63,7 @@
       "extraInstallCommands": "",
       "extraPerEntryConfig": "",
       "extraPrepareConfig": "",
-      "font": "<store>/j3j5mhgy5nbzgdri8vpw6bz093vnlspl-grub-2.12/share/grub/unicode.pf2",
+      "font": "<store>/s4qgc0azvmh9qadkz0mfbfb2rcpy035c-grub-2.12/share/grub/unicode.pf2",
       "fontSize": null,
       "forceInstall": false,
       "forcei686": false,
@@ -87,7 +87,7 @@
           "path": "/boot"
         }
       ],
-      "splashImage": "<store>/z6dhhmy6afwq5mlhhl7m9cjmmyxq9b43-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png",
+      "splashImage": "<store>/phbdp89qm0rsrkqdbc9lpw6l1syr25pa-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png",
       "splashMode": "normal",
       "storePath": "/nix/store",
       "subEntryOptions": "--class nixos",
@@ -100,6 +100,10 @@
       "version": "<eval-error>",
       "zfsPackage": "<derivation:zfs-user-2.4.3>",
       "zfsSupport": false
+    },
+    "gummiboot": {
+      "enable": false,
+      "timeout": 5
     },
     "initScript": {
       "enable": false
@@ -116,8 +120,9 @@
       "extraConfig": "",
       "extraEntries": "",
       "force": false,
+      "forceMbr": false,
       "maxGenerations": null,
-      "package": "<derivation:limine-12.4.1>",
+      "package": "<derivation:limine-12.5.1>",
       "panicOnChecksumMismatch": false,
       "partitionIndex": null,
       "resolution": null,
@@ -159,7 +164,7 @@
         },
         "wallpaperStyle": "stretched",
         "wallpapers": [
-          "<store>/z6dhhmy6afwq5mlhhl7m9cjmmyxq9b43-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png"
+          "<store>/phbdp89qm0rsrkqdbc9lpw6l1syr25pa-simple-dark-gray-bootloader-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png"
         ]
       },
       "validateChecksums": true
@@ -284,7 +289,7 @@
     "<derivation:linux-pam-1.7.2>",
     "<derivation:shadow-4.19.4>",
     "<derivation:bash-interactive-5.3p9>",
-    "<derivation:nano-9.1>",
+    "<derivation:nano-9.2>",
     "<derivation:less-692>",
     "<derivation:i3lock-2.15>",
     "<derivation:fuse-2.9.9>",
@@ -345,11 +350,11 @@
     "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
     "<derivation:bash-interactive-5.3p9>",
-    "<derivation:bind-9.20.23>",
+    "<derivation:bind-9.20.26>",
     "<derivation:hostname-hostname-debian-3.25>",
     "<derivation:iproute2-7.0.0>",
     "<derivation:iputils-20250605>",
-    "<derivation:openssh-10.4p1>",
+    "<derivation:openssh-10.5p1>",
     "<derivation:acl-2.4.0>",
     "<derivation:attr-2.6.0>",
     "<derivation:bash-interactive-5.3p9>",
@@ -359,7 +364,7 @@
     "<derivation:curl-8.21.0>",
     "<derivation:diffutils-3.12>",
     "<derivation:findutils-4.10.0>",
-    "<derivation:gawk-5.4.0>",
+    "<derivation:gawk-5.4.1>",
     "<derivation:getent-glibc-2.42-67>",
     "<derivation:getconf-glibc-2.42-67>",
     "<derivation:gnugrep-3.12>",
@@ -382,8 +387,8 @@
     "<derivation:glibc-2.42-67>",
     "<derivation:perl-5.42.0>",
     "<derivation:rsync-3.4.4>",
-    "<derivation:strace-7.1>",
-    "<derivation:openresolv-3.17.0>",
+    "<derivation:strace-7.2>",
+    "<derivation:openresolv-3.17.4>",
     "<derivation:glibc-locales-2.42-67>",
     "<derivation:fontconfig-2.17.1>",
     "<derivation:kbd-2.9.0>"
@@ -449,8 +454,8 @@
     "checkRuleset": true,
     "checkRulesetRedirects": {
       "/etc/hosts": "<derivation:hosts>",
-      "/etc/protocols": "<store>/55k5zhs3hsxzbwp0acyh0sw8sslgcqig-iana-etc-20251215/etc/protocols",
-      "/etc/services": "<store>/55k5zhs3hsxzbwp0acyh0sw8sslgcqig-iana-etc-20251215/etc/services"
+      "/etc/protocols": "<store>/d5jj34synqyn1bc5n362pric9a695a0h-iana-etc-20251215/etc/protocols",
+      "/etc/services": "<store>/d5jj34synqyn1bc5n362pric9a695a0h-iana-etc-20251215/etc/services"
     },
     "enable": false,
     "extraDeletions": "",
@@ -531,13 +536,20 @@
       "0.0.0.0",
       "[::0]"
     ],
-    "defaultMimeTypes": "<store>/46d8jsib4f3adj7qv0ga8929826wlhy8-mailcap-2.1.54/etc/nginx/mime.types",
+    "defaultMimeTypes": "<store>/9mikxas901qn0r2j1baqfv7pdd36n23m-mailcap-2.1.54/etc/nginx/mime.types",
     "defaultSSLListenPort": 443,
     "enable": false,
     "enableQuicBPF": false,
     "enableReload": false,
     "eventsConfig": "",
     "experimentalZstdSettings": false,
+    "gitweb": {
+      "enable": false,
+      "group": "nginx",
+      "location": "/gitweb",
+      "user": "nginx",
+      "virtualHost": "_"
+    },
     "group": "nginx",
     "httpConfig": "",
     "logError": "stderr",
@@ -580,7 +592,7 @@
     "sso": {
       "configuration": {},
       "enable": false,
-      "package": "<derivation:nginx-sso-0.27.7>"
+      "package": "<derivation:nginx-sso-0.27.8>"
     },
     "stateDir": "<eval-error>",
     "streamConfig": "",
@@ -588,7 +600,7 @@
       "enable": false,
       "expectedTailnet": "",
       "group": "tailscale-nginx-auth",
-      "package": "<derivation:tailscale-nginx-auth-1.98.5>",
+      "package": "<derivation:tailscale-nginx-auth-1.98.10>",
       "socketPath": "/run/tailscale-nginx-auth/tailscale-nginx-auth.sock",
       "user": "tailscale-nginx-auth",
       "virtualHosts": []
@@ -656,9 +668,21 @@
     "authorizedKeysCommandUser": "nobody",
     "authorizedKeysFiles": [],
     "authorizedKeysInHomedir": true,
+    "banner": "<eval-error>",
+    "challengeResponseAuthentication": true,
+    "ciphers": [
+      "chacha20-poly1305@openssh.com",
+      "aes256-gcm@openssh.com",
+      "aes128-gcm@openssh.com",
+      "aes256-ctr",
+      "aes192-ctr",
+      "aes128-ctr"
+    ],
     "enable": false,
     "enableRecommendedAlgorithms": true,
     "extraConfig": "",
+    "forwardX11": false,
+    "gatewayPorts": "no",
     "generateHostKeys": false,
     "hostKeys": [
       {
@@ -671,11 +695,28 @@
         "type": "ed25519"
       }
     ],
+    "kbdInteractiveAuthentication": true,
+    "kexAlgorithms": [
+      "mlkem768x25519-sha256",
+      "sntrup761x25519-sha512",
+      "sntrup761x25519-sha512@openssh.com",
+      "curve25519-sha256",
+      "curve25519-sha256@libssh.org",
+      "diffie-hellman-group-exchange-sha256"
+    ],
     "knownHosts": {},
     "listenAddresses": [],
+    "logLevel": "INFO",
+    "macs": [
+      "hmac-sha2-512-etm@openssh.com",
+      "hmac-sha2-256-etm@openssh.com",
+      "umac-128-etm@openssh.com"
+    ],
     "moduliFile": "<eval-error>",
     "openFirewall": true,
-    "package": "<derivation:openssh-10.4p1>",
+    "package": "<derivation:openssh-10.5p1>",
+    "passwordAuthentication": true,
+    "permitRootLogin": "prohibit-password",
     "ports": [
       22
     ],
@@ -721,7 +762,8 @@
     },
     "sftpFlags": [],
     "sftpServerExecutable": "<eval-error>",
-    "startWhenNeeded": false
+    "startWhenNeeded": false,
+    "useDns": false
   },
   "services.prometheus": {
     "alertmanager": {
@@ -1428,6 +1470,7 @@
         "user": "kafka-exporter"
       },
       "kea": {
+        "controlSocketPaths": [],
         "enable": false,
         "extraFlags": [],
         "firewallFilter": null,
@@ -1671,6 +1714,7 @@
         "port": 9113,
         "scrapeUri": "http://localhost/nginx_status",
         "sslVerify": true,
+        "telemetryEndpoint": "/metrics",
         "telemetryPath": "/metrics",
         "user": "nginx-exporter",
         "warnings": []
@@ -2233,7 +2277,7 @@
         },
         "loki": {
           "interval": "2m",
-          "pass": "file:///nix/store/i2cd7qzxicmdxmsagdca5gw1ql118nhj-unpoller-loki-default.password",
+          "pass": "file:///nix/store/n5wg119aap5f1zv3fnw3acn4nliy4fqd-unpoller-loki-default.password",
           "tenant_id": "",
           "timeout": "10s",
           "url": "",
@@ -2259,7 +2303,7 @@
         },
         "loki": {
           "interval": "2m",
-          "pass": "file:///nix/store/i2cd7qzxicmdxmsagdca5gw1ql118nhj-unpoller-loki-default.password",
+          "pass": "file:///nix/store/n5wg119aap5f1zv3fnw3acn4nliy4fqd-unpoller-loki-default.password",
           "tenant_id": "",
           "timeout": "10s",
           "url": "",
@@ -2415,7 +2459,7 @@
       "domain": "<eval-error>",
       "enable": false,
       "openFirewall": true,
-      "package": "<derivation:tailscale-1.98.5>",
+      "package": "<derivation:tailscale-1.98.10>",
       "port": 8010,
       "stunPort": 3478,
       "verifyClients": false
@@ -2428,7 +2472,7 @@
     "extraUpFlags": [],
     "interfaceName": "tailscale0",
     "openFirewall": false,
-    "package": "<derivation:tailscale-1.98.5>",
+    "package": "<derivation:tailscale-1.98.10>",
     "permitCertUid": null,
     "port": 41641,
     "serve": {
@@ -2437,57 +2481,6 @@
       "services": {}
     },
     "useRoutingFeatures": "none"
-  },
-  "services.unifi-poller": {
-    "enable": false,
-    "influxdb": {
-      "db": "unifi",
-      "disable": false,
-      "interval": "30s",
-      "pass": "file:///nix/store/35813biqzdgcrb0aqm562vz8vk4smfgf-unpoller-influxdb-default.password",
-      "url": "http://127.0.0.1:8086",
-      "user": "unifipoller",
-      "verify_ssl": true
-    },
-    "loki": {
-      "interval": "2m",
-      "pass": "file:///nix/store/i2cd7qzxicmdxmsagdca5gw1ql118nhj-unpoller-loki-default.password",
-      "tenant_id": "",
-      "timeout": "10s",
-      "url": "",
-      "user": "",
-      "verify_ssl": false
-    },
-    "poller": {
-      "debug": false,
-      "plugins": [],
-      "quiet": false
-    },
-    "prometheus": {
-      "disable": false,
-      "http_listen": "[::]:9130",
-      "report_errors": false
-    },
-    "unifi": {
-      "controllers": [],
-      "defaults": {
-        "hash_pii": false,
-        "pass": "file:///nix/store/8bfrhkb2z7alrcb0vrva7gk7sg0q0x6y-unpoller-unifi-default.password",
-        "save_alarms": false,
-        "save_anomalies": false,
-        "save_dpi": false,
-        "save_events": false,
-        "save_ids": false,
-        "save_sites": true,
-        "sites": [
-          "all"
-        ],
-        "url": "https://unifi:8443",
-        "user": "unifi",
-        "verify_ssl": true
-      },
-      "dynamic": false
-    }
   },
   "systemd.services.tailscale-udp-gro": null,
   "time.timeZone": null

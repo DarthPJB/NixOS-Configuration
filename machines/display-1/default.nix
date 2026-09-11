@@ -12,6 +12,7 @@
     ../../configuration.nix
     #../../environments/hyperland.nix
     ../../environments/i3wm.nix
+    #    ../../environments/bargman-greeter.nix
     ../../environments/browsers.nix
   ];
   system.name = "${hostname}";

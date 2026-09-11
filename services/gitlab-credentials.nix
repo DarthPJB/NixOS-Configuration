@@ -34,9 +34,11 @@ in
   # /run/system-keys/ is root-only; nix flake update runs as the user.
   systemd.services.gitlab-netrc-copy = {
     description = "Copy GitLab netrc to user-readable location";
-    after = [ "secrix-system-secrets.service" ];
+    requires = [ "secrix-system-secret-gitlab_netrc.service" ];
+    after = [ "secrix-system-secret-gitlab_netrc.service" ];
     before = [ "nix-daemon.service" ];
     requiredBy = [ "nix-daemon.service" ];
+    wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
@@ -56,4 +58,11 @@ in
   # Git invokes GIT_ASKPASS when it needs credentials for https:// repos.
   # Nix passes through to git for flake input fetching, so this covers nix flake update.
   environment.sessionVariables.GIT_ASKPASS = "${gitlabAskpass}/bin/gitlab-askpass";
+
+  # Point the nix daemon's netrc-file at the populated /run/gitlab-netrc.
+  # Determinate Nix defaults this to /nix/var/determinate/netrc (empty).
+  # The daemon needs its own netrc for git+https flake input fetching;
+  # GIT_ASKPASS only covers user-session git, not the daemon.
+  # gitlab-netrc-copy.service (Before=nix-daemon.service) ensures the file exists.
+  nix.settings.netrc-file = userNetrcPath;
 }

@@ -27,7 +27,13 @@
   "trust": 3,
   "firewall": {
     "interfaces": {
-      "wireg0": { "tcp": [ 11434 ] }
+      "wireg0": {
+        "tcp": [
+          8001,
+          8002,
+          11434
+        ]
+      }
     }
   },
   "backup": {
@@ -82,7 +88,6 @@
           "0 Monero/**",
           "- .cache/**",
           "- .local/**",
-          "- .ollama/**",
           "- Games/**",
           "- .steam/**",
           "- .minecraft/**",

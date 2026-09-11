@@ -4,20 +4,28 @@
 #
 # The API key is injected via secrix environment file — never in the Nix store.
 #
-# open-webui pulls in sentence-transformers → pytorch when cudaSupport is true.
-# We don't need RAG/embedding features, so we override to cudaSupport = false.
-# This avoids building pytorch from source — stable nixpkgs has cached CPU binaries.
+# alpha-three sets `nixpkgs.config.cudaSupport = true` globally (via
+# modifier_imports/cuda.nix) for its nvidia-gpu exporter and nvtop. That global
+# flag would cascade into open-webui → sentence-transformers → pytorch, forcing
+# a CUDA pytorch build from source. We don't need RAG/embedding features, so we
+# scope open-webui to a CPU-only python package set via `overrideScope` instead
+# of importing a duplicate nixpkgs instance (the old pkgsNoCuda workaround).
 { config, lib, pkgs, ... }:
 let
-  # open-webui without CUDA — avoids pytorch+CUDA build from source.
-  pkgsNoCuda = import pkgs.path { inherit (pkgs.stdenv.hostPlatform) system; config.allowUnfree = true; };
+  # Force pytorch to CPU-only for open-webui's dependency closure. open-webui
+  # stays in the main nixpkgs instance — no duplicate import — and stable
+  # nixpkgs has cached CPU binaries, so no pytorch source build is required.
+  # (onnxruntime ships as a prebuilt wheel, so it is not affected by cudaSupport.)
+  pythonNoCuda = pkgs.python3Packages.overrideScope (final: prev: {
+    torch = prev.torch.override { cudaSupport = false; };
+  });
 in
 {
   services.open-webui = {
     enable = true;
     port = 8081;
     host = "127.0.0.1";
-    package = pkgsNoCuda.open-webui;
+    package = pkgs.open-webui.override { python3Packages = pythonNoCuda; };
     environment = {
       # Internal URL — open-webui is on the same machine as LiteLLM.
       # Using the external URL would round-trip through nginx TLS unnecessarily.

@@ -130,7 +130,10 @@ in
   systemd.services = builtins.listToAttrs (map
     (name: {
       name = "github-runner-${name}";
-      value = { after = lib.mkAfter [ "gitlab-netrc-copy.service" ]; };
+      value = {
+        after = lib.mkAfter [ "gitlab-netrc-copy.service" ];
+        wants = lib.mkAfter [ "gitlab-netrc-copy.service" ];
+      };
     })
     [ "hate-filled-1" "hate-filled-2" "entropy-is-origin-1" ]
   );
