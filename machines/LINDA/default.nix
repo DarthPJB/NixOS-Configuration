@@ -38,77 +38,9 @@
     ../../modifier_imports/cuda.nix
     ../../modifier_imports/remote-builder.nix
     ../../services/ollama.nix
-    ../../modules/vllm.nix
   ];
   enableWgTopology.enable = true;
 
-  # ── vLLM Inference Server ─────────────────────────────────────
-  # OpenAI-compatible API — multiple models served on separate ports
-  # LINDA: RTX 3060 (12GB VRAM) — GPU model on :8001
-  #        CPU inference — Qwen3.8-27B BF16 on :8002
-  #
-  # Models:
-  #   qwen2.5-vl:      Qwen/Qwen2.5-VL-3B-Instruct-AWQ — GPU (RTX 3060), :8001
-  #   qwen38-27b:      Qwen/Qwen3.8-27B — CPU, :8002, BF16, 262144 context (manual start)
-  #
-  # CPU models use native (non-quantized) weights from the Nix store.
-  # enforceEager=true disables torch dynamo tracing to avoid startup memory blowup.
-  services.vllm = {
-    enable = true;
-    host = "0.0.0.0"; # Expose on WireGuard plane
-    cudaVisibleDevices = "0"; # RTX 3060 only (GPU 0)
-    gpuMemoryUtilization = 0.8;
-    openFirewall = false; # Topology wireg0 is authoritative for firewall
-    cacheDir = "/speed-storage/vllm-cache";
-    environmentVariables = {
-      HF_HOME = "/speed-storage/vllm-cache/huggingface";
-    };
-    models = [
-      {
-        # GPU — Qwen2.5-VL-3B AWQ on RTX 3060, manual start
-        name = "qwen2.5-vl";
-        model = "Qwen/Qwen2.5-VL-3B-Instruct-AWQ";
-        modelPath = self.models.qwen25-vl-3b-instruct-awq;
-        servedModelName = "qwen2.5-vl";
-        port = 8001;
-        maxModelLen = "8192";
-        autoStart = false;
-        extraArgs = [
-          "--enable-prefix-caching"
-          "--max-num-seqs"
-          "16"
-          "--enable-auto-tool-choice"
-          "--tool-call-parser"
-          "hermes"
-        ];
-      }
-      {
-        # CPU — Qwen3.8-27B BF16, native 262144 context, manual start
-        name = "qwen38-27b";
-        model = "Qwen/Qwen3.8-27B";
-        modelPath = self.models.qwen38-27b;
-        servedModelName = "qwen38-27b";
-        port = 8002;
-        device = "cpu";
-        dtype = "bfloat16";
-        maxModelLen = "262144";
-        enforceEager = true;
-        cpuKvCacheSpace = 20;
-        cpuOmpThreadsBind = "0-29";
-        autoStart = false;
-        extraArgs = [
-          "--enable-prefix-caching"
-          "--max-num-seqs"
-          "2"
-          "--enable-auto-tool-choice"
-          "--tool-call-parser"
-          "qwen3_xml"
-          "--reasoning-parser"
-          "qwen3"
-        ];
-      }
-    ];
-  };
   programs.ssh.extraConfig = ''
     Host hyperhyper
       ControlMaster auto

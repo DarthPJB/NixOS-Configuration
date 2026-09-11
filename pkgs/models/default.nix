@@ -115,15 +115,23 @@ lib.throwIfNot
 
       ${lib.getExe' coreutils "mkdir"} -p "$out"
 
-      # Full-repo archive (fetchzip): copy the unpacked tree
+      # Full-repo archive (fetchzip): symlink the unpacked tree, never copy —
+      # the archive is already a store path; copying would double-store it.
       ${lib.optionalString (src != null) ''
-        ${lib.getExe' coreutils "cp"} -r "$src"/. "$out"/
+        ${lib.getExe' coreutils "cp"} -rs "$src"/. "$out"/
       ''}
 
-      # Individually fetched files — install -D creates subdirectories
-      ${lib.concatMapStringsSep "\n" (f: ''
-        ${lib.getExe' coreutils "install"} -D -m 0644 ${f.storePath} "$out/${f.name}"
-      '') fetchedFiles}
+      # Individually fetched files — symlink, never copy. Each fetchurl shard
+      # is already a fixed-output store path; installing a *copy* into $out
+      # doubles the model's disk footprint (shards + package). A symlink keeps
+      # one canonical copy and the package points at it.
+      ${lib.concatMapStringsSep "\n" (f:
+        let parent = builtins.dirOf f.name; in ''
+          ${lib.optionalString (parent != ".") ''
+            ${lib.getExe' coreutils "mkdir"} -p "$out/${parent}"
+          ''}
+          ${lib.getExe' coreutils "ln"} -s ${f.storePath} "$out/${f.name}"
+        '') fetchedFiles}
 
       # Sanity check: every HF model ships at least config.json
       ${lib.concatMapStringsSep "\n" (name: ''
