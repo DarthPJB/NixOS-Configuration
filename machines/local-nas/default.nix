@@ -25,19 +25,13 @@
       listen-addr = "10.88.127.3";
     })
     ../../server_services/minio-insecure.nix
+    ../../server_services/gitea.nix
     ../../environments/neovim.nix
     ../../environments/emacs.nix
     ../../environments/sshd.nix
   ];
 
   enableWgTopology.enable = true;
-
-  # Git LFS over the existing WireGuard SSH git endpoint (gitolite on wireg0).
-  programs.git = {
-    enable = true;
-    lfs.enable = true;
-    lfs.enablePureSSHTransfer = true;
-  };
 
   # Tailscale: direct access to hyperhyper and other Tailscale nodes
   secrix.services.tailscaled.secrets.auth-key.encrypted.file =
