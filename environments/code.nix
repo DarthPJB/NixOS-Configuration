@@ -10,6 +10,7 @@
   };
   environment.systemPackages = with pkgs; [
     pkgs.gpp
+    pkgs.git-lfs
     pkgs.entr
     #pkgs.emscripten
     #pkgs.pulsar
