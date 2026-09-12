@@ -109,7 +109,10 @@ in
     after = [ "minio.service" "gitea-minio-provision.service" ];
     wants = [ "minio.service" ];
     requires = [ "gitea-minio-provision.service" ];
-    unitConfig.RequiresMountsFor = [ stateDir ];
+    # stateDir is a directory on the pool, not its own mount.
+    unitConfig.RequiresMountsFor = [ "/bulk-storage" ];
+    # nixpkgs sets ProtectHome=true; HOME is stateDir, so preStart cannot mkdir.
+    serviceConfig.ProtectHome = lib.mkForce false;
     preStart = lib.mkBefore ''
       ${lib.getExe seedSecrets}
     '';
