@@ -153,7 +153,7 @@ in
         REVERSE_PROXY_TRUSTED_PROXIES = "10.88.127.1/32,10.88.128.1/32";
       };
       lfs = {
-        STORAGE_TYPE = "minio";
+        # Inherit MINIO_* from [storage]. Setting STORAGE_TYPE here blanks the endpoint.
         SERVE_DIRECT = false;
         MINIO_BASE_PATH = "lfs/";
       };
