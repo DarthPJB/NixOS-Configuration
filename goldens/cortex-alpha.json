@@ -1484,7 +1484,7 @@
         "basicAuthFile": null,
         "default": false,
         "enableACME": false,
-        "extraConfig": "",
+        "extraConfig": "client_max_body_size 512M;\n",
         "forceSSL": false,
         "globalRedirect": null,
         "http2": true,
