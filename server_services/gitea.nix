@@ -26,7 +26,7 @@ let
 
   provisionMinio = pkgs.writeShellApplication {
     name = "gitea-minio-provision";
-    runtimeInputs = [ pkgs.minio-client pkgs.coreutils ];
+    runtimeInputs = [ pkgs.minio-client pkgs.coreutils pkgs.unixtools.getent ];
     text = ''
       root_user=""
       root_pass=""
@@ -43,6 +43,7 @@ let
       access=$(${lib.getExe' pkgs.coreutils "cat"} ${secret "gitea-minio-access-key"})
       secret_key=$(${lib.getExe' pkgs.coreutils "cat"} ${secret "gitea-minio-secret-key"})
       export MC_CONFIG_DIR=/run/gitea-minio-provision
+      export HOME="$MC_CONFIG_DIR"
       ${lib.getExe' pkgs.coreutils "mkdir"} -p "$MC_CONFIG_DIR"
       ${lib.getExe pkgs.minio-client} alias set gitealfs http://${minioEndpoint} "$root_user" "$root_pass" >/dev/null
       ${lib.getExe pkgs.minio-client} admin user add gitealfs "$access" "$secret_key" >/dev/null || true
