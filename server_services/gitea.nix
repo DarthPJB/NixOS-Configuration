@@ -105,6 +105,13 @@ in
     };
   };
 
+  systemd.tmpfiles.rules = [
+    "d ${stateDir} 0750 gitea gitea -"
+    "d ${stateDir}/custom 0750 gitea gitea -"
+    "d ${confDir} 0750 gitea gitea -"
+    "Z ${stateDir}/custom 0750 gitea gitea -"
+  ];
+
   systemd.services.gitea = {
     after = [ "minio.service" "gitea-minio-provision.service" ];
     wants = [ "minio.service" ];
