@@ -24,9 +24,19 @@ let
     '';
   };
 
+  # nixpkgs minio-client execs getent at runtime and does not wrap it.
+  mc = pkgs.symlinkJoin {
+    name = "mc-with-getent";
+    paths = [ pkgs.minio-client ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/mc --prefix PATH : ${lib.makeBinPath [ pkgs.unixtools.getent pkgs.coreutils ]}
+    '';
+  };
+
   provisionMinio = pkgs.writeShellApplication {
     name = "gitea-minio-provision";
-    runtimeInputs = [ pkgs.minio-client pkgs.coreutils pkgs.unixtools.getent ];
+    runtimeInputs = [ mc pkgs.coreutils pkgs.unixtools.getent ];
     text = ''
       root_user=""
       root_pass=""
@@ -45,10 +55,10 @@ let
       export MC_CONFIG_DIR=/run/gitea-minio-provision
       export HOME="$MC_CONFIG_DIR"
       ${lib.getExe' pkgs.coreutils "mkdir"} -p "$MC_CONFIG_DIR"
-      ${lib.getExe pkgs.minio-client} alias set gitealfs http://${minioEndpoint} "$root_user" "$root_pass" >/dev/null
-      ${lib.getExe pkgs.minio-client} admin user add gitealfs "$access" "$secret_key" >/dev/null || true
-      ${lib.getExe pkgs.minio-client} admin policy attach gitealfs readwrite --user "$access" >/dev/null || true
-      ${lib.getExe pkgs.minio-client} mb --ignore-existing gitealfs/git-lfs >/dev/null
+      ${lib.getExe' mc "mc"} alias set gitealfs http://${minioEndpoint} "$root_user" "$root_pass" >/dev/null
+      ${lib.getExe' mc "mc"} admin user add gitealfs "$access" "$secret_key" >/dev/null || true
+      ${lib.getExe' mc "mc"} admin policy attach gitealfs readwrite --user "$access" >/dev/null || true
+      ${lib.getExe' mc "mc"} mb --ignore-existing gitealfs/git-lfs >/dev/null
     '';
   };
 in
