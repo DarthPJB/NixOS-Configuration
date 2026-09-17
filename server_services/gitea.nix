@@ -88,6 +88,10 @@ in
       encrypted.file = ../secrets/gitea-minio-secret-key;
       decrypted = { user = "gitea"; group = "gitea"; mode = "0400"; };
     };
+    gitea-admin-password = {
+      encrypted.file = ../secrets/gitea-admin-password;
+      decrypted = { user = "gitea"; group = "gitea"; mode = "0400"; };
+    };
   };
 
   systemd.services.gitea-minio-provision = {
@@ -169,4 +173,46 @@ in
   };
 
   networking.firewall.interfaces."wireg0".allowedTCPPorts = [ httpPort ];
+
+  # Declarative admin user — created on first boot, idempotent on subsequent boots.
+  systemd.services.gitea-create-admin = {
+    description = "Create Gitea admin user";
+    after = [ "gitea.service" ];
+    requires = [ "gitea.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "gitea";
+      Group = "gitea";
+      WorkingDirectory = stateDir;
+      Environment = [
+        "GITEA_WORK_DIR=${stateDir}"
+        "GITEA_CUSTOM=${stateDir}/custom"
+        "HOME=${stateDir}"
+      ];
+    };
+    path = [ pkgs.gitea ];
+    script = ''
+      set -euo pipefail
+      ADMIN_USER="John88"
+      ADMIN_EMAIL="john@johnbargman.net"
+      ADMIN_PASS=$(${lib.getExe' pkgs.coreutils "cat"} ${secret "gitea-admin-password"})
+      GITEA_CONFIG=${confDir}/app.ini
+
+      # Skip if admin already exists
+      if gitea --config "$GITEA_CONFIG" admin user list 2>/dev/null | grep -q "$ADMIN_USER"; then
+        echo "Admin user '$ADMIN_USER' already exists, skipping."
+        exit 0
+      fi
+
+      gitea --config "$GITEA_CONFIG" admin user create \
+        --admin \
+        --username "$ADMIN_USER" \
+        --password "$ADMIN_PASS" \
+        --email "$ADMIN_EMAIL" \
+        --must-change-password=false
+      echo "Created admin user '$ADMIN_USER'."
+    '';
+  };
 }
