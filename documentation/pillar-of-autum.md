@@ -1,7 +1,7 @@
 # pillar-of-autum — Assimilation & Deployment Workflow
 
-> **Last updated:** 2026-08-27
-> **Status:** Configuration implemented + validated. Awaiting first nixinate deployment.
+> **Last updated:** 2026-09-17
+> **Status:** Deployed and running on NVMe. Ollama inference validated (CPU-only).
 > **Machine:** `pillar-of-autum` (ASUS NUC14RVH-B, Intel Core Ultra 5 125H)
 > **Spelling:** `pillar-of-autum` — **NOT** `pillar-of-autumn`. The extra `n` is a known
 > misspelling and must not appear in code, topology, goldens, or commits.
@@ -132,7 +132,85 @@ bootloader migration (systemd-boot on the NVMe) is a documented follow-up
 
 ---
 
-## 5. Deployment Workflow (Follow-up — nixinate)
+## 5. Live System Diagnostics (2026-09-17)
+
+The system is now deployed and running from the NVMe drive (Phase 3 complete).
+
+### 5.1 Current Storage Layout
+
+| Device | Size | Type | Mount |
+|--------|------|------|-------|
+| `nvme0n1` | 238.5 GiB | M.2 PCIe NVMe | — |
+| └ `nvme0n1p1` | 976 MiB | ESP | `/boot` |
+| └ `nvme0n1p2` | 13.9 GiB | swap | `[SWAP]` |
+| └ `nvme0n1p3` | 223.6 GiB | ext4 | `/nix/store`, `/` |
+
+### 5.2 CPU Details
+
+| Attribute | Value |
+|-----------|-------|
+| Model | Intel Core Ultra 5 125H |
+| Architecture | Meteor Lake (family 6, model 170, stepping 4) |
+| Cores | 14 cores / 18 threads (6P + 8E + 2LP) |
+| Max frequency | 4500 MHz |
+| Min frequency | 400 MHz |
+| L1d cache | 448 KiB (12 instances) |
+| L1i cache | 768 KiB (12 instances) |
+| L2 cache | 14 MiB (7 instances) |
+| L3 cache | 18 MiB |
+| Key flags | avx2, avx_vnni, fma, f16c, aes, sha_ni, amx_tile, amx_int8, amx_bf16 |
+
+### 5.3 Memory
+
+| Attribute | Value |
+|-----------|-------|
+| Total RAM | 14.94 GiB (15,666,696 kB) |
+| Available (idle) | ~13.8 GiB |
+| Swap | 13.9 GiB |
+
+### 5.4 GPU — Intel Arc (Meteor Lake-P)
+
+| Attribute | Value |
+|-----------|-------|
+| Device | Intel Corporation Meteor Lake-P [Intel Arc Graphics] (rev 08) |
+| Kernel driver | `i915` (also available: `xe`) |
+| Render node | `/dev/dri/renderD128` |
+| Vulkan | Supported (Vulkan 1.4.341, Mesa 26.1.5) |
+| Vulkan VRAM (shared) | 11.21 GiB device-local heap |
+| OpenCL | **Not available** — Intel compute runtime (NEO) not installed |
+| GPU frequency | 800 MHz (idle), 2200 MHz (max observed) |
+
+**iGPU inference status:** The Intel Arc iGPU is present and Vulkan-functional, but
+OpenCL/SYCL inference (required by Ollama for GPU offload) is blocked by the absence
+of Intel compute runtime (`intel-compute-runtime` / NEO). Ollama falls back to CPU-only
+inference. Installing `intel-compute-runtime` in the NixOS config would enable OpenCL
+and potentially allow GPU-accelerated inference — this is a Phase 2 follow-up.
+
+### 5.5 Ollama Inference Benchmarks (CPU-only)
+
+Tested with Ollama 0.30.6, CPU-only inference (no GPU offload):
+
+| Model | Size | Load Time | Prompt Eval | Output Tokens | Output Speed | Total Time |
+|-------|------|-----------|-------------|---------------|--------------|------------|
+| `qwen2.5:0.5b` | 397 MB | 0.16s | 36 tok / 0.017s | 97 | **65.5 tok/s** | 1.66s |
+| `qwen2.5:3b` | 1.9 GiB | 1.71s | 40 tok / 0.64s | 218 | **17.1 tok/s** | 15.12s |
+| `qwen2.5:7b` | 4.7 GiB | 3.48s | 40 tok / 1.56s | 417 | **8.0 tok/s** | 57.34s |
+
+**Assessment:**
+- **0.5B models:** Excellent for interactive use (>60 tok/s).
+- **3B models:** Good for interactive use (~17 tok/s). Suitable for LiteLLM backend.
+- **7B models:** Usable but slower (~8 tok/s). Acceptable for batch/async workloads.
+- **13B+ models:** Would require >10 GiB RAM for weights alone; with KV cache, likely
+  to swap on the 14.9 GiB system. Not recommended without iGPU offload.
+- **Single-model-per-device discipline** is enforced (per `ai-stack.md`).
+
+**Recommended models for LiteLLM backend:**
+- `qwen2.5:3b` (Q4_K_M) — best balance of speed and quality for CPU-only
+- `qwen2.5:7b` (Q4_K_M) — viable for non-interactive workloads
+
+---
+
+## 6. Deployment Workflow (Completed — nixinate)
 
 This is the runbook for the first "proven" deployment. It mirrors
 `documentation/x86-bootstrap-deployment-workflow.md` Stages 5–7.

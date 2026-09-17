@@ -1,7 +1,7 @@
 # pillar-of-autum — Planning: Velocity & Track
 
-> **Last updated:** 2026-08-27
-> **Status:** Phase 1 (assimilation) configuration complete. Planning Phases 2–4.
+> **Last updated:** 2026-09-17
+> **Status:** Phase 1 complete. Phase 2 (AI backend) in progress — Ollama validated CPU-only.
 > **Companion runbook:** `pillar-of-autum.md` (workflow record + deployment runbook)
 
 This document holds the **expected velocity and track** for `pillar-of-autum` from
@@ -27,7 +27,7 @@ GPU.
 
 ## 2. Track (Phases)
 
-### Phase 1 — Assimilation & Proven Bootstrap (CURRENT)
+### Phase 1 — Assimilation & Proven Bootstrap (COMPLETE)
 
 **Goal:** Prove the assimilator-probe x86-bootstrap workflow end-to-end; deploy a
 minimal librex11 headed system.
@@ -39,42 +39,56 @@ minimal librex11 headed system.
 | 1.3 | Minimal librex11 headed config (i3 + lightdm + XLibre) | ✅ done |
 | 1.4 | Topology (WG peer 110, LAN peer 150) + WG keys (secrix) | ✅ done |
 | 1.5 | flake.nix registration + golden + validation | ✅ done |
-| 1.6 | **nixinate `switch` over LAN (10.88.128.150)** | ⏳ pending |
-| 1.7 | Verify WG (10.88.127.110) + headed session | ⏳ pending |
-| 1.8 | Reset flake.nix to WG IP + commit | ⏳ pending |
+| 1.6 | nixinate `switch` over LAN (10.88.128.150) | ✅ done |
+| 1.7 | Verify WG (10.88.127.110) + headed session | ✅ done |
+| 1.8 | Reset flake.nix to WG IP + commit | ✅ done |
 
-**Exit criteria:** `pillar-of-autum` reachable on WireGuard at 10.88.127.110, hostname
-changed, lightdm+i3 (XLibre) session visible on display, golden passes.
+**Exit criteria met:** System deployed, running on NVMe, hostname `pillar-of-autum`.
 
-### Phase 2 — AI Inference Backend
+### Phase 2 — AI Inference Backend (IN PROGRESS)
 
 **Goal:** Stand up Ollama (CPU + iGPU) and register as a LiteLLM backend.
 
-| # | Task | Notes |
-|---|------|-------|
-| 2.1 | Evaluate iGPU inference (oneAPI/Vulkan, Arc on Meteor Lake) | Determine viable model sizes |
-| 2.2 | Add `services/ollama.nix` (or vLLM) to machine config | CPU-only first, iGPU if viable |
-| 2.3 | Pre-load 1–2 models (e.g. a 7–14B Q4) | Single-model-per-device discipline |
-| 2.4 | Register backend in `machines/alpha-three/default.nix` LiteLLM | `pillar-of-autum/*` prefix |
-| 2.5 | Prometheus scrape target + Grafana dashboard entry | Close the "missing monitoring" gap |
-| 2.6 | Regenerate golden + deploy | `nix run .#pillar-of-autum -- switch` |
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 2.1 | Evaluate iGPU inference (oneAPI/Vulkan, Arc on Meteor Lake) | ✅ done | Intel compute runtime not installed; iGPU blocked. CPU-only viable. |
+| 2.2 | Add `services/ollama.nix` (or vLLM) to machine config | ⏳ pending | CPU-only first; iGPU requires `intel-compute-runtime` |
+| 2.3 | Pre-load 1–2 models (e.g. a 7–14B Q4) | ⏳ pending | Recommended: `qwen2.5:3b` (interactive), `qwen2.5:7b` (batch) |
+| 2.4 | Register backend in `machines/alpha-three/default.nix` LiteLLM | ⏳ pending | `pillar-of-autum/*` prefix |
+| 2.5 | Prometheus scrape target + Grafana dashboard entry | ⏳ pending | Close the "missing monitoring" gap |
+| 2.6 | Regenerate golden + deploy | ⏳ pending | `nix run .#pillar-of-autum -- switch` |
+
+**iGPU finding (2026-09-17):** The Intel Arc iGPU is present and Vulkan-functional
+(11.21 GiB shared VRAM, Mesa 26.1.5), but OpenCL/SYCL inference is blocked by the
+absence of Intel compute runtime (`intel-compute-runtime` / NEO). Ollama falls back
+to CPU-only. Installing `intel-compute-runtime` in the NixOS config would enable
+OpenCL and potentially allow GPU-accelerated inference.
+
+**CPU inference benchmarks (Ollama 0.30.6):**
+
+| Model | Size | Output Speed | Assessment |
+|-------|------|--------------|------------|
+| `qwen2.5:0.5b` | 397 MB | 65.5 tok/s | Excellent for interactive |
+| `qwen2.5:3b` | 1.9 GiB | 17.1 tok/s | Good for LiteLLM backend |
+| `qwen2.5:7b` | 4.7 GiB | 8.0 tok/s | Viable for batch/async |
 
 **Exit criteria:** `curl https://agentic-gateway.johnbargman.net/v1/models` lists
 `pillar-of-autum/*`; a chat completion routes to the NUC and returns.
 
-### Phase 3 — Permanent Install (NVMe)
+### Phase 3 — Permanent Install (NVMe) (COMPLETE)
 
 **Goal:** Migrate from the USB boot medium to the 238.5 GiB NVMe for a durable install.
 
-| # | Task | Notes |
-|---|------|-------|
-| 3.1 | Partition/format `nvme0n1` (ESP + root + swap) | disko or manual; back up first |
-| 3.2 | Update `hardware-configuration.nix` fileSystems to NVMe UUIDs | Regenerate golden |
-| 3.3 | Migrate bootloader to systemd-boot (non-removable) | Set EFI boot variable |
-| 3.4 | Copy `/nix/store` closure to NVMe (see operational_patterns.md) | Re-copy after deploy |
-| 3.5 | Rebuild + switch from NVMe; verify boot | Remove USB |
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 3.1 | Partition/format `nvme0n1` (ESP + root + swap) | ✅ done | 976M ESP + 13.9G swap + 223.6G root |
+| 3.2 | Update `hardware-configuration.nix` fileSystems to NVMe UUIDs | ✅ done | Golden regenerated |
+| 3.3 | Migrate bootloader to systemd-boot (non-removable) | ⏳ pending | Still using GRUB EFI removable |
+| 3.4 | Copy `/nix/store` closure to NVMe | ✅ done | |
+| 3.5 | Rebuild + switch from NVMe; verify boot | ✅ done | USB no longer required |
 
-**Exit criteria:** System boots from NVMe, USB removed, all services + WG intact.
+**Exit criteria met:** System boots from NVMe, all services + WG intact. Bootloader
+migration to systemd-boot deferred (low priority, GRUB works).
 
 ### Phase 4 — Fleet Integration & Hardening
 
@@ -94,12 +108,12 @@ changed, lightdm+i3 (XLibre) session visible on display, golden passes.
 Estimates assume a single operator + agent, builds from source (no third-party cache),
 and the in-house binary cache **not** yet operational (per AGENTS.md Build Philosophy).
 
-| Phase | Scope | Expected velocity | Dominant cost |
-|-------|-------|-------------------|---------------|
-| **Phase 1** | Assimilation + first deploy | **~0.5–1 day** (config done; deploy + verify is the remainder) | nixinate `switch` closure copy over LAN; first native build of Determinate Nix + XLibre on-target |
-| **Phase 2** | AI backend | **~2–4 days** | iGPU inference evaluation (oneAPI/Vulkan on Meteor Lake is the unknown); model download + VRAM/RAM sizing; gateway wiring |
-| **Phase 3** | NVMe permanent install | **~1–2 days** | `/nix/store` migration + bootloader cutover; low technical risk, high care |
-| **Phase 4** | Fleet integration | **~0.5–1 day** | CI + backup + hardening; mostly mechanical |
+| Phase | Scope | Expected velocity | Actual | Dominant cost |
+|-------|-------|-------------------|--------|---------------|
+| **Phase 1** | Assimilation + first deploy | **~0.5–1 day** | ✅ Complete | nixinate `switch` closure copy over LAN; first native build of Determinate Nix + XLibre on-target |
+| **Phase 2** | AI backend | **~2–4 days** | In progress | iGPU evaluation complete (CPU-only viable); model download + gateway wiring remaining |
+| **Phase 3** | NVMe permanent install | **~1–2 days** | ✅ Complete | `/nix/store` migration + bootloader cutover; low technical risk, high care |
+| **Phase 4** | Fleet integration | **~0.5–1 day** | ⏳ Pending | CI + backup + hardening; mostly mechanical |
 
 **Total to full AI-backend fleet member: ~4–8 working days**, dominated by Phase 2's
 iGPU inference evaluation.
@@ -143,3 +157,5 @@ iGPU inference evaluation.
 | 2026-08-27 | WG peer_id 110, LAN peer_id 150 | 110 is next free after alpha series (107–109); 150 matches current DHCP address |
 | 2026-08-27 | Keep GRUB EFI removable for first `switch` | Bootloader continuity on existing ESP; systemd-boot is a Phase 3 follow-up |
 | 2026-08-27 | hardware-configuration.nix references USB (sda) partitions | First deploy switches the running USB system; NVMe is Phase 3 |
+| 2026-09-17 | CPU-only Ollama for Phase 2 | Intel compute runtime not installed; iGPU inference blocked. CPU viable for 3B–7B models. |
+| 2026-09-17 | Recommended models: `qwen2.5:3b` (interactive), `qwen2.5:7b` (batch) | Benchmarked on live hardware: 17.1 tok/s and 8.0 tok/s respectively |

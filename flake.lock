@@ -12,11 +12,11 @@
         "pure-nix-mcp": "pure-nix-mcp"
       },
       "locked": {
-        "lastModified": 1789666938,
-        "narHash": "sha256-uNyeo3JUnDfOEhD1lR0ZaNdfjaBVKhSks/cjAZJNpok=",
+        "lastModified": 1789675221,
+        "narHash": "sha256-5t1zVIVqhCvxE5e5rJArHbf7DDADavF161wwnnWah7g=",
         "owner": "mecha-team-zero",
         "repo": "llm-core",
-        "rev": "68bd331b5379acf866698549a6a74d56d2f8bf17",
+        "rev": "974850ec51e1cf968bc1f7f57e2af85c96633ad8",
         "type": "gitlab"
       },
       "original": {
