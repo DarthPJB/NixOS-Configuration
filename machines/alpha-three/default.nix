@@ -159,6 +159,16 @@
         timeout = 3600;
         mode = "chat";
       };
+      cluster-box-ornith9 = {
+        url = "http://10.88.127.211:11434/v1";
+        modelType = "openai";
+        apiKey = "none";
+        models = [ "ornith:9b" ];
+        maxInputTokens = 262144;
+        maxOutputTokens = 8192;
+        timeout = 3600;
+        mode = "chat";
+      };
       # pillar-of-autum — Intel Core Ultra 5 125H (16 GB RAM, CPU-only)
       pillar-qwen3b = {
         url = "http://10.88.127.110:11434/v1";

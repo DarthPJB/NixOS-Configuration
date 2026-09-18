@@ -28,7 +28,7 @@
     environmentVariables = {
       OLLAMA_MAX_LOADED_MODELS = "1";
       OLLAMA_NUM_PARALLEL = "1";
-      OLLAMA_KEEP_ALIVE = "-1"; # Keep loaded permanently — no idle unload
+      OLLAMA_KEEP_ALIVE = "1h"; # Unload after 1 hour idle — fleetwide standard
       OLLAMA_LOAD_TIMEOUT = "20m"; # Allow large models (Laguna S 96GB) to load without connection drop
     };
   };
@@ -110,9 +110,9 @@
     '';
   };
 
-  # Research service: neither the daemon nor model synchronization starts at
-  # boot. Operators explicitly start the daemon and stop it to release RAM.
-  systemd.services.ollama.wantedBy = lib.mkForce [ ];
+  # Ollama daemon starts at boot (no model loaded by default — models are
+  # loaded on-demand via keep_alive or explicit request).
+  # Model-loader remains manual-start: operators explicitly pull models.
   systemd.services.ollama-model-loader.wantedBy = lib.mkForce [ ];
   systemd.services.ollama.serviceConfig = {
     MemoryMax = "105G";
