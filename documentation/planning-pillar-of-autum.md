@@ -51,8 +51,8 @@ minimal librex11 headed system.
 
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 2.1 | Evaluate iGPU inference (oneAPI/Vulkan, Arc on Meteor Lake) | ✅ done | Intel compute runtime not installed; iGPU blocked. CPU-only viable. |
-| 2.2 | Add `services/ollama.nix` (or vLLM) to machine config | ⏳ pending | CPU-only first; iGPU requires `intel-compute-runtime` |
+| 2.1 | Evaluate iGPU inference (oneAPI/Vulkan, Arc on Meteor Lake) | ✅ done | Intel compute runtime now configured; Vulkan iGPU offload pending live test. |
+| 2.2 | Add `services/ollama.nix` to machine config | ✅ done | `machines/pillar-of-autum/ollama.nix` created; iGPU drivers in `default.nix` |
 | 2.3 | Pre-load 1–2 models (e.g. a 7–14B Q4) | ⏳ pending | Recommended: `qwen2.5:3b` (interactive), `qwen2.5:7b` (batch) |
 | 2.4 | Register backend in `machines/alpha-three/default.nix` LiteLLM | ⏳ pending | `pillar-of-autum/*` prefix |
 | 2.5 | Prometheus scrape target + Grafana dashboard entry | ⏳ pending | Close the "missing monitoring" gap |
@@ -101,6 +101,44 @@ migration to systemd-boot deferred (low priority, GRUB works).
 | 4.3 | Backup topology key (if applicable) | `topology.backup` |
 | 4.4 | genWireguard migration (overlord-iii) | When the pipeline lands |
 
+### Phase 5 — OpenVINO / NPU Exploration (FUTURE)
+
+**Goal:** Benchmark Intel NPU inference via OpenVINO; evaluate for fleet expansion.
+
+This phase begins after Ollama is operational and benchmarking knowledge is
+established. OpenVINO is a **separate inference engine** — it does not consume
+GGUF models and does not replace Ollama/vLLM. It targets INT8/INT4 quantized
+models optimised for Intel hardware, running on the dedicated NPU
+(`/dev/accel0`, `intel_vpu` driver, device `0x7d1d`).
+
+| # | Task | Notes |
+|---|------|-------|
+| 5.1 | Package `optimum-intel` (or pip venv) | HuggingFace → OpenVINO IR model conversion |
+| 5.2 | Test `openvino-genai` pipeline on CPU | Validate OpenVINO IR inference path without NPU |
+| 5.3 | Benchmark NPU inference via `intel_vpu` plugin | Compare tok/s against Ollama CPU/iGPU baselines |
+| 5.4 | Evaluate INT8/INT4 quantized models on NPU | OpenVINO's optimised quantisation path |
+| 5.5 | Document NPU vs CPU vs iGPU performance | Per-model, per-quantisation comparison table |
+| 5.6 | Evaluate `onednn` for bottom-up approach | Direct kernel/memory control for custom pipelines |
+
+**Available packages in `nixpkgs_llm` (2026-09-17):**
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `openvino` | 2026.3.0 | Core toolkit — inference engine, model optimizer, CPU/GPU/NPU plugins |
+| `openvino-genai` | 2026.3.0.0 | Generative AI pipeline library (LLMs, text/image/speech) |
+| `openvino-tokenizers` | 2026.3.0.0 | Tokenisation extensions |
+| `python3Packages.openvino` | 2026.3.0 | Python bindings |
+| `python3Packages.openvino-genai` | 2026.3.0.0 | Python GenAI API |
+| `intel-npu-driver` | 1.35.0 | Already deployed via `hardware.cpu.intel.npu.enable` |
+| `level-zero` | — | Low-level Intel compute API |
+| `onednn` / `onednn_2` | — | oneAPI Deep Neural Network Library |
+
+**Not packaged:** `optimum-intel` (HuggingFace integration). Would need to be
+packaged or used via pip in a venv for model conversion.
+
+**Exit criteria:** NPU inference benchmarked, tok/s comparison table published,
+recommendation on NPU viability for fleet inference.
+
 ---
 
 ## 3. Expected Velocity
@@ -111,9 +149,10 @@ and the in-house binary cache **not** yet operational (per AGENTS.md Build Philo
 | Phase | Scope | Expected velocity | Actual | Dominant cost |
 |-------|-------|-------------------|--------|---------------|
 | **Phase 1** | Assimilation + first deploy | **~0.5–1 day** | ✅ Complete | nixinate `switch` closure copy over LAN; first native build of Determinate Nix + XLibre on-target |
-| **Phase 2** | AI backend | **~2–4 days** | In progress | iGPU evaluation complete (CPU-only viable); model download + gateway wiring remaining |
+| **Phase 2** | AI backend | **~2–4 days** | In progress | Ollama config done; iGPU + gateway wiring remaining |
 | **Phase 3** | NVMe permanent install | **~1–2 days** | ✅ Complete | `/nix/store` migration + bootloader cutover; low technical risk, high care |
 | **Phase 4** | Fleet integration | **~0.5–1 day** | ⏳ Pending | CI + backup + hardening; mostly mechanical |
+| **Phase 5** | OpenVINO / NPU | **~2–3 days** | ⏳ Future | Model conversion pipeline; NPU benchmarking; `optimum-intel` packaging |
 
 **Total to full AI-backend fleet member: ~4–8 working days**, dominated by Phase 2's
 iGPU inference evaluation.
@@ -159,3 +198,6 @@ iGPU inference evaluation.
 | 2026-08-27 | hardware-configuration.nix references USB (sda) partitions | First deploy switches the running USB system; NVMe is Phase 3 |
 | 2026-09-17 | CPU-only Ollama for Phase 2 | Intel compute runtime not installed; iGPU inference blocked. CPU viable for 3B–7B models. |
 | 2026-09-17 | Recommended models: `qwen2.5:3b` (interactive), `qwen2.5:7b` (batch) | Benchmarked on live hardware: 17.1 tok/s and 8.0 tok/s respectively |
+| 2026-09-17 | `intel-compute-runtime` added to `default.nix` | Enables OpenCL/iGPU for Ollama Vulkan offload; per-system graphics in per-system config |
+| 2026-09-17 | OpenVINO/NPU deferred to Phase 5 | Ollama first → benchmarking → OpenVINO later. Separate engine, separate model format (IR, not GGUF). |
+| 2026-09-17 | `onednn` noted for bottom-up approach | Available in `nixpkgs_llm`; may serve as low-level backend for custom inference pipelines |

@@ -125,6 +125,29 @@
         timeout = 3600;
         mode = "chat";
       };
+      # pillar-of-autum — Intel Core Ultra 5 125H (16 GB RAM, CPU-only)
+      pillar-qwen3b = {
+        url = "http://10.88.127.110:11434/v1";
+        modelType = "openai";
+        apiKey = "none";
+        models = [ "pillar-qwen3b" ];
+        maxInputTokens = 8192;
+        maxOutputTokens = 2048;
+        timeout = 300;
+        mode = "chat";
+        supportsFunctionCalling = true;
+      };
+      pillar-qwen7b = {
+        url = "http://10.88.127.110:11434/v1";
+        modelType = "openai";
+        apiKey = "none";
+        models = [ "pillar-qwen7b" ];
+        maxInputTokens = 4096;
+        maxOutputTokens = 2048;
+        timeout = 600;
+        mode = "chat";
+        supportsFunctionCalling = true;
+      };
     };
   };
 
