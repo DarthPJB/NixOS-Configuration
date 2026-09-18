@@ -248,14 +248,76 @@ OpenVINO uses its own IR format — it does not consume GGUF. It is a **separate
 inference engine** from Ollama/vLLM, suited for INT8/INT4 quantized models that
 OpenVINO optimises specifically for Intel hardware.
 
-### 5.7 Deployment Strategy
+### 5.7 NPU Use Case — Homelab AI Vision (`environments/denton-glasses`)
+
+The NPU's real value is **not** LLM inference — it's **always-on, low-power
+vision and sensory inference** for edge-AI workloads. The `environments/denton-glasses.nix`
+component defines the fleet's machine-perception augmentation stack:
+
+- **Eye tracking** (OpenFace) — webcam → V4L2 → face/eye detection → gaze CSV
+- **Speech-to-text** (Voxtype/Whisper) — USB mic → PipeWire → Whisper → keyboard input
+
+Both workloads are **inference-bound, latency-sensitive, and power-sensitive** —
+exactly what the NPU was designed for.
+
+**NPU-fit workloads for denton-glasses:**
+
+| Workload | NPU feasibility | Performance | Power advantage |
+|----------|----------------|-------------|-----------------|
+| Face detection (OpenFace) | ✅ Excellent | 30+ fps real-time | ~1-3W vs ~15-30W iGPU |
+| Eye tracking (gaze estimation) | ✅ Excellent | Sub-frame latency | Always-on without battery drain |
+| Whisper tiny/base (STT) | ✅ Yes | ~1-2x realtime | ~2W vs ~15W GPU |
+| Whisper small/medium | ⚠️ Marginal | ~0.5x realtime | Model too large for SRAM |
+| Object detection (YOLO) | ✅ Excellent | 30+ fps video | Ideal for camera feeds |
+| Background blur / presence | ✅ Excellent | Real-time | Intel's primary NPU demo |
+
+**Architecture — NPU as denton-glasses backend:**
+
+```
+Webcam (V4L2) ──→ OpenFace (NPU via OpenVINO) ──→ gaze CSV
+                                                      │
+Microphone ──→ Whisper (NPU via OpenVINO) ──→ voxtype ──→ keyboard input
+                  ↑
+            /dev/accel0 (intel_vpu)
+            11 TOPS INT8, ~1-3W
+```
+
+**Why NPU over iGPU for vision tasks:**
+- **Power:** NPU draws ~1-3W vs ~15-30W for iGPU — critical for always-on workloads
+- **Thermals:** No fan spin-up during continuous camera inference
+- **Dedicated:** NPU is not shared with display/compute — no frame drops during eye tracking
+- **Privacy:** All inference on-silith, no cloud dependency
+
+**Why NPU is wrong for LLMs:**
+- 4 MB SRAM cannot hold LLM activations (even 1.5B INT4 is marginal)
+- CPU/iGPU have 11+ GB of working memory for KV cache
+- 11 TOPS is 10× less than a mid-range discrete GPU
+
+**Integration path (future):**
+1. Package `openvino` + `intel-npu-driver` from `pkgs_llm` into pillar-of-autum system
+2. Convert OpenFace models to OpenVINO IR (or use Intel's pre-optimised models)
+3. Convert Whisper tiny/base to OpenVINO IR via `optimum-intel`
+4. Create `services.denton-glasses.npu-backend` option to route inference to NPU
+5. Benchmark NPU vs iGPU vs CPU for each workload
+6. If validated, deploy as always-on vision node for the fleet
+
+**Candidate machines for NPU-backed denton-glasses:**
+- `pillar-of-autum` — Intel NPU (Meteor Lake), confirmed working
+- Future Intel Core Ultra machines with NPU silicon
+
+The NPU is **not a replacement** for the iGPU — it's a **complementary engine**
+for workloads where power efficiency and always-on capability matter more than
+raw throughput. The iGPU handles large models; the NPU handles continuous
+low-power inference.
+
+### 5.8 Deployment Strategy
 
 The intended deployment cycle for pillar-of-autum:
 
-1. **Ollama payload (current)** — deploy `services/ollama.nix`, benchmark CPU + iGPU
-   (Vulkan) inference, register as LiteLLM backend, develop operational confidence.
+1. **Ollama payload (complete)** — `services/ollama.nix` deployed, CPU inference
+   benchmarked, registered as LiteLLM backend, end-to-end validated.
 2. **Benchmarking & profiling** — establish tok/s baselines across model sizes,
-   measure iGPU offload gains once `intel-compute-runtime` + Vulkan validated,
+   measure iGPU offload gains once Vulkan offload validated on live system,
    compare CPU vs iGPU vs mixed execution.
 3. **OpenVINO / NPU (future)** — package `openvino-genai` + `optimum-intel`, convert
    candidate models to OpenVINO IR, benchmark NPU inference via `/dev/accel0`,

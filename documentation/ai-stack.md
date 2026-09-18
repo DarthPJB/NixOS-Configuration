@@ -4,7 +4,7 @@ Self-hosted inference for the Bargman-Tech fleet, using vLLM and Ollama for
 different operational roles behind one LiteLLM gateway.
 
 **Status**: Hybrid vLLM + Ollama configuration implemented; live validation complete  
-**Last updated**: 2026-09-03
+**Last updated**: 2026-09-18
 
 The evidence and decision behind this architecture are recorded in
 [`ai-inference-findings.md`](ai-inference-findings.md). The prior vLLM-only
@@ -37,6 +37,10 @@ graph TB
         CLUSTER["Ollama :11434<br/>Laguna XS Q4<br/>Ornith 35B"]
     end
 
+    subgraph "pillar-of-autum — Intel NUC"
+        PILLAR["Ollama :11434<br/>Qwen2.5 3B/7B<br/>CPU / manual start"]
+    end
+
     subgraph Monitoring
         PROM["Prometheus"]
         GRAFANA["Grafana"]
@@ -51,6 +55,7 @@ graph TB
     LITELLM --> CPU
     LITELLM --> OLLAMA
     LITELLM --> CLUSTER
+    LITELLM --> PILLAR
     PROM -.-> GPU
     PROM -.-> CPU
     PROM -.-> LITELLM
@@ -114,6 +119,8 @@ configuration.
 | `linda-qwen38/linda-qwen38-27b-q4-256k` | `10.88.127.88:11434/v1` | Ollama | CPU | 262144 | 8192 |
 | `cluster-box-laguna-xs/laguna-xs-2.1:q4_K_M` | `10.88.127.211:11434/v1` | Ollama | external | 262144 | 8192 |
 | `cluster-box-ornith35/ornith:35b` | `10.88.127.211:11434/v1` | Ollama | external | 262144 | 8192 |
+| `pillar-qwen3b/pillar-qwen3b` | `10.88.127.110:11434/v1` | Ollama | CPU (NUC) | 8192 | 2048 |
+| `pillar-qwen7b/pillar-qwen7b` | `10.88.127.110:11434/v1` | Ollama | CPU (NUC) | 4096 | 2048 |
 
 The gateway is externally available at:
 

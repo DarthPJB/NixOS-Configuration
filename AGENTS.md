@@ -366,6 +366,63 @@ nix run .#bargman-greeter-vm-serial    # headless serial debug
 nix build .#checks.x86_64-linux.bargman-greeter-login-test -L  # golden screenshot
 ```
 
+### Query Available Ollama Models
+
+Before adding models to `services/ollama.nix` or LiteLLM backends, verify the
+model exists in the Ollama registry and check its available sizes/context windows.
+
+**Fetch the full model list:**
+```bash
+# Complete list of model families and tags (~250 families, ~540 tags)
+curl -s https://ollama.com/library | grep -oP 'href="/library/[^"]+' | sed 's|href="/library/||' | sort -u
+```
+
+**Check a specific model's available tags and context:**
+```bash
+# Example: qwen3.6
+curl -s https://ollama.com/library/qwen3.6 | grep -E "([0-9]+b|context|latest)" | head -20
+```
+
+**Use the API to verify a model exists before pulling:**
+```bash
+# Check if a model tag exists (returns 200 or 404)
+curl -s -o /dev/null -w "%{http_code}" https://ollama.com/library/qwen3.6:27b
+```
+
+**Query a live Ollama instance for loaded models:**
+```bash
+# List models on LINDA's Ollama (requires SSH or WireGuard access)
+curl -s http://10.88.127.88:11434/api/tags | jq '.models[].name'
+
+# Show model details (context length, quantization, parameters)
+curl -s http://10.88.127.88:11434/api/show -d '{"name":"qwen3.6:27b"}' | jq '.model_info | to_entries[] | select(.key | test("context|parameter|quantiz"))'
+```
+
+**Key model families (as of 2026-09):**
+
+| Family | Sizes | Context | Notes |
+|--------|-------|---------|-------|
+| qwen3.6 | 27b, 35b | 256K | Vision, tools, thinking |
+| qwen3.5 | 0.8b–122b | 128K–256K | Multimodal |
+| qwen3 | 0.6b–235b | 32K–128K | Dense + MoE |
+| qwen2.5 | 0.5b–72b | 128K | Stable, well-tested |
+| gemma4 | e2b–31b | 128K–256K | MoE 26b (3.8B active) |
+| gemma3 | 270m–27b | 128K | Vision |
+| deepseek-r1 | 1.5b–671b | 128K | Reasoning |
+| llama3.1 | 8b–405b | 128K | Meta |
+| llama4 | — | — | Latest Meta |
+| mistral | 7b+ | 32K–128K | Various |
+| phi4 | 14b | 16K | Microsoft |
+
+**Workflow for adding a new model:**
+1. Check `https://ollama.com/library/<family>` for available tags
+2. Verify the tag exists and note its size/context
+3. Confirm the model fits the target machine's RAM (model + KV cache)
+4. Add to `loadModels` in `services/ollama.nix`
+5. Create a Modelfile with appropriate `num_ctx` and `num_thread`
+6. Register in `machines/alpha-three/default.nix` LiteLLM backends
+7. Regenerate golden for affected machines
+
 ---
 
 ## Deployment Flow

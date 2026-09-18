@@ -105,6 +105,40 @@
         mode = "chat";
         supportsFunctionCalling = true;
       };
+      # LINDA pillar comparison models — same num_ctx as pillar-of-autum for A/B testing
+      linda-qwen3-4b-32k = {
+        url = "http://10.88.127.88:11434/v1";
+        modelType = "openai";
+        apiKey = "none";
+        models = [ "linda-qwen3-4b-32k" ];
+        maxInputTokens = 32768;
+        maxOutputTokens = 8192;
+        timeout = 300;
+        mode = "chat";
+        supportsFunctionCalling = true;
+      };
+      linda-qwen35-9b-128k = {
+        url = "http://10.88.127.88:11434/v1";
+        modelType = "openai";
+        apiKey = "none";
+        models = [ "linda-qwen35-9b-128k" ];
+        maxInputTokens = 131072;
+        maxOutputTokens = 8192;
+        timeout = 600;
+        mode = "chat";
+        supportsFunctionCalling = true;
+      };
+      linda-gemma4-12b-256k = {
+        url = "http://10.88.127.88:11434/v1";
+        modelType = "openai";
+        apiKey = "none";
+        models = [ "linda-gemma4-12b-256k" ];
+        maxInputTokens = 262144;
+        maxOutputTokens = 8192;
+        timeout = 900;
+        mode = "chat";
+        supportsFunctionCalling = true;
+      };
       cluster-box-laguna-xs = {
         url = "http://10.88.127.211:11434/v1";
         modelType = "openai";
@@ -131,8 +165,8 @@
         modelType = "openai";
         apiKey = "none";
         models = [ "pillar-qwen3b" ];
-        maxInputTokens = 8192;
-        maxOutputTokens = 2048;
+        maxInputTokens = 32768;
+        maxOutputTokens = 8192;
         timeout = 300;
         mode = "chat";
         supportsFunctionCalling = true;
@@ -142,9 +176,42 @@
         modelType = "openai";
         apiKey = "none";
         models = [ "pillar-qwen7b" ];
-        maxInputTokens = 4096;
-        maxOutputTokens = 2048;
+        maxInputTokens = 32768;
+        maxOutputTokens = 8192;
         timeout = 600;
+        mode = "chat";
+        supportsFunctionCalling = true;
+      };
+      pillar-qwen3-4b-32k = {
+        url = "http://10.88.127.110:11434/v1";
+        modelType = "openai";
+        apiKey = "none";
+        models = [ "pillar-qwen3-4b-32k" ];
+        maxInputTokens = 32768;
+        maxOutputTokens = 8192;
+        timeout = 300;
+        mode = "chat";
+        supportsFunctionCalling = true;
+      };
+      pillar-qwen35-9b-128k = {
+        url = "http://10.88.127.110:11434/v1";
+        modelType = "openai";
+        apiKey = "none";
+        models = [ "pillar-qwen35-9b-128k" ];
+        maxInputTokens = 131072;
+        maxOutputTokens = 8192;
+        timeout = 600;
+        mode = "chat";
+        supportsFunctionCalling = true;
+      };
+      pillar-gemma4-12b-256k = {
+        url = "http://10.88.127.110:11434/v1";
+        modelType = "openai";
+        apiKey = "none";
+        models = [ "pillar-gemma4-12b-256k" ];
+        maxInputTokens = 262144;
+        maxOutputTokens = 8192;
+        timeout = 900;
         mode = "chat";
         supportsFunctionCalling = true;
       };

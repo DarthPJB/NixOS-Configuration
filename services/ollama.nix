@@ -18,6 +18,9 @@
       "laguna-xs-2.1:bf16"
       "laguna-s-2.1:q4_K_M"
       "qwen3.8:27b"
+      "qwen3:4b"
+      "qwen3.5:9b"
+      "gemma4:12b"
     ];
 
     # Host limits only — not model policy. CPU cores are assigned per model
@@ -67,6 +70,26 @@
     FROM qwen3.8:27b
     PARAMETER num_ctx 262144
     PARAMETER num_thread 48
+  '';
+
+  # Pillar comparison models — same num_ctx as pillar-of-autum for A/B testing.
+  # num_thread scaled up for LINDA's 48-core EPYC.
+  environment.etc."ollama/modelfiles/linda-qwen3-4b-32k".text = ''
+    FROM qwen3:4b
+    PARAMETER num_ctx 32768
+    PARAMETER num_thread 24
+  '';
+
+  environment.etc."ollama/modelfiles/linda-qwen35-9b-128k".text = ''
+    FROM qwen3.5:9b
+    PARAMETER num_ctx 131072
+    PARAMETER num_thread 32
+  '';
+
+  environment.etc."ollama/modelfiles/linda-gemma4-12b-256k".text = ''
+    FROM gemma4:12b
+    PARAMETER num_ctx 262144
+    PARAMETER num_thread 38
   '';
 
   # One-shot: materialise created tags after blobs exist.
