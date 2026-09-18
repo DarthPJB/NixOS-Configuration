@@ -108,9 +108,9 @@
     '';
   };
 
-  # Ollama daemon starts at boot (no model loaded by default — models are
-  # loaded on-demand via keep_alive or explicit request).
-  # Model-loader remains manual-start: operators explicitly pull models.
+  # Manual-start: neither the daemon nor model synchronization starts at boot.
+  # Operators explicitly start the daemon and stop it to release RAM.
+  systemd.services.ollama.wantedBy = lib.mkForce [ ];
   systemd.services.ollama-model-loader.wantedBy = lib.mkForce [ ];
   systemd.services.ollama.serviceConfig = {
     MemoryMax = "12G"; # 12 GB cap (system has ~15 GB total)
