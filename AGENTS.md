@@ -425,6 +425,30 @@ curl -s http://10.88.127.88:11434/api/show -d '{"name":"qwen3.6:27b"}' | jq '.mo
 
 ---
 
+## Pending Decisions
+
+### Cluster-box MAX_QUEUE Configuration
+**Date:** 2026-09-19
+**Status:** Deferred — needs fleet-wide queue policy decision
+
+**Context:**
+- Cluster-box runs `laguna-xs-2.1:q4_K_M` (33.4B params) with NUM_PARALLEL=1 (default)
+- Processing time: ~30 min per request (24K tokens at62 tok/s)
+- Current MAX_QUEUE=512 (Ollama default) — allows up to512 requests to wait
+- LiteLLM per-model timeout=3600s (1 hour), request_timeout=28800s (8 hours)
+- With MAX_QUEUE=512, last request waits ~256 hours — long after all timeouts expire
+
+**Trade-off:**
+- Low MAX_QUEUE (4-8): Fast failure notification, no silent timeouts, but rejects batch jobs
+- High MAX_QUEUE (64-512): Buffers burst traffic, but requests queue for hours then timeout silently
+- Middle ground (16-32): ~8-16 hours buffer, still no queue depth visibility
+
+**Recommendation:** MAX_QUEUE=8 — matches timeout reality, fast failure is more valuable than silent queuing, NUM_PARALLEL=1 is the real bottleneck
+
+**Action required:** Set MAX_QUEUE on cluster-box and LINDA when queue policy is decided. Also consider NUM_PARALLEL increase if batch throughput is needed.
+
+---
+
 ## Deployment Flow
 1. Run golden test: `nix run .#validate-goldens -- <machine>`
 2. Verify WireGuard keys exist: `ls secrets/public_keys/wireguard/wg_*_pub`

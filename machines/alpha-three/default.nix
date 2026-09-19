@@ -37,6 +37,8 @@
     environmentFileSecret = ../../secrets/litellm-env;
     # Expose /metrics for Prometheus scraping.
     callbacks = [ "prometheus" ];
+    # 8-hour header timeout for long-running CPU inference (cluster-box 33B model).
+    requestTimeout = 28800;
     backends = {
       # LINDA Ollama — one backend per created tag, same URL, honest metadata
       linda-ornith9 = {
