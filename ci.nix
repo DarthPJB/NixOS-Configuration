@@ -71,7 +71,7 @@ let
       steps = [
         {
           name = "Checkout";
-          uses = "actions/checkout@v4";
+          uses = "actions/checkout@v7";
         }
 
         {
@@ -146,7 +146,7 @@ let
       steps = [
         {
           name = "Checkout";
-          uses = "actions/checkout@v4";
+          uses = "actions/checkout@v7";
           "with" = {
             fetch-depth = "0"; # Full history for secret scanning
           };
@@ -213,7 +213,7 @@ let
       steps = [
         {
           name = "Checkout";
-          uses = "actions/checkout@v4";
+          uses = "actions/checkout@v7";
         }
 
         {

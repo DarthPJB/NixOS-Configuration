@@ -135,7 +135,6 @@ in
         "auto-allocate-uids"
         "cgroups"
       ];
-      extra-experimental-features = [ "ca-derivations" ];
       auto-allocate-uids = true;
       max-jobs = lib.mkDefault "auto";
       cores = lib.mkDefault 0;

@@ -128,6 +128,7 @@
       { "domain": "grafana.johnbargman.net", "ip": "10.88.128.1" },
       { "domain": "print-controller.johnbargman.net", "ip": "10.88.128.1" },
       { "domain": "minio.johnbargman.net", "ip": "10.88.128.1" },
+      { "domain": "gitea.johnbargman.net", "ip": "10.88.128.1" },
       { "domain": "ollama.johnbargman.net", "ip": "10.88.127.107" },
       { "domain": "johnbargman.com", "ip": "10.88.127.50" }
     ],
@@ -218,6 +219,13 @@
   "minio.johnbargman.net": [
     {
       "proxy_to": "10.88.127.3:2223",
+      "regex_prefix": true,
+      "proxy_headers": true
+    }
+  ],
+  "gitea.johnbargman.net": [
+    {
+      "proxy_to": "10.88.127.3:3000",
       "regex_prefix": true,
       "proxy_headers": true
     }

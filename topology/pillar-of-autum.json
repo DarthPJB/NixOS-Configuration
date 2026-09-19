@@ -17,5 +17,14 @@
   ],
   "hostname": "pillar-of-autum",
   "public_key_file": "secrets/public_keys/wireguard/wg_pillar-of-autum_pub",
-  "trust": 3
+  "trust": 3,
+  "firewall": {
+    "interfaces": {
+      "wireg0": {
+        "tcp": [
+          11434
+        ]
+      }
+    }
+  }
 }

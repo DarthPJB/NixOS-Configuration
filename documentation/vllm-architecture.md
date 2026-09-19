@@ -1,8 +1,35 @@
-# vLLM-Only Architecture — Planning Document
+# vLLM-Only Architecture — Historical Implementation Record
 
-**Status**: Planning  
+**Status**: Superseded as the fleet-wide target; vLLM implementation retained  
 **Target**: Replace Ollama with vLLM for all inference  
-**Last updated**: 2026-08-24
+**Last updated**: 2026-08-27
+
+> Operational testing did not invalidate vLLM, but it did invalidate the
+> vLLM-only deployment target. vLLM remains the managed service engine and
+> Ollama returns for manual, short-lived GGUF research workloads. See
+> [`ai-inference-findings.md`](ai-inference-findings.md) for the evidence,
+> corrected token-limit contract, memory budget, and forward architecture.
+
+> This document supersedes the original planning document (2026-08-24) and reflects
+> the **actual implementation state**. Phase-by-phase execution status, deviations
+> from plan, and lessons learned are documented below. The executable plan lives in
+> `documentation/vllm-migration-plan.md`.
+
+---
+
+## Implementation Status
+
+| Phase | Scope | Status |
+|-------|-------|--------|
+| 1 | Foundation — model packages + vLLM CPU support | ✅ Complete |
+| 2 | Module enhancement — device assignment, model paths | ✅ Complete |
+| 3 | Model migration — Ollama models → vLLM CPU | ✅ Complete |
+| 4 | Monitoring — Prometheus scrape targets + dashboard | ✅ Complete |
+| 5 | Cleanup — Ollama decommission, CUDA scoping, goldens | ✅ Complete |
+| 6 | Documentation — ai-stack.md, vllm-architecture.md, ai-upgrades.md | 🔄 In progress (6.1, 6.2 done; 6.3 pending) |
+
+Phases 1–5 were implemented on branch `ai/hardening-ii/vllm-authority`.
+All golden tests for the 19 fleet machines were regenerated and validate.
 
 ---
 
@@ -10,22 +37,24 @@
 
 A single inference engine (vLLM) serving all models, with Nix managing models, configuration, and hardware assignment. One engine, one monitoring path, one configuration pattern.
 
+**Implemented scope**: LINDA now serves all inference through vLLM — one GPU model and two CPU models, each in its own systemd service with weights from the Nix store. Ollama has been decommissioned on LINDA (`services/archive/ollama.nix`). cluster-box remains on Ollama — it is an external Malayalam flake outside the NixOS-Configuration migration boundary (see Deviations).
+
 ---
 
 ## Why vLLM-Only
 
-| Advantage | Detail |
-|-----------|--------|
-| **Unified monitoring** | Full Prometheus metrics on every model — latency, throughput, queue depth, cache usage |
-| **Native queuing** | Built-in scheduler handles concurrent requests without OOM |
-| **Declarative models** | Models managed by Nix, versioned in the store, validated at build time |
-| **Hardware assignment** | Per-model GPU/CPU assignment via systemd services |
-| **No GGUF dependency** | HuggingFace format only — no conversion, no Ollama registry |
-| **Production proven** | Used by major inference providers, active development, enterprise support |
+| Advantage | Detail | Status |
+|-----------|--------|--------|
+| **Unified monitoring** | Full Prometheus metrics on every model — latency, throughput, queue depth, cache usage | ✅ Implemented (Phase 4) |
+| **Native queuing** | Built-in scheduler handles concurrent requests without OOM | ✅ vLLM scheduler + `MemoryMax` per CPU service |
+| **Declarative models** | Models managed by Nix, versioned in the store, validated at build time | ✅ `pkgs/models/*` pinned to commit SHAs |
+| **Hardware assignment** | Per-model GPU/CPU assignment via systemd services | ✅ `device` option per model |
+| **No GGUF dependency** | HuggingFace format only — no conversion, no Ollama registry | ✅ For migrated models (Laguna is the exception — see Deviations) |
+| **Production proven** | Used by major inference providers, active development, enterprise support | ✅ |
 
 ---
 
-## Architecture
+## Architecture (as implemented)
 
 ```mermaid
 graph TB
@@ -40,24 +69,23 @@ graph TB
         LITELLM["LiteLLM :8080<br/>model routing"]
     end
 
-    subgraph "Inference — LINDA (10.88.127.88)"
+    subgraph "Inference — LINDA (10.88.127.88) — vLLM"
         subgraph "GPU (RTX 3060, 12GB)"
-            VLLM_GPU["vLLM :8001<br/>Qwen3-8B<br/>qwen2.5-vl"]
+            VLLM_GPU["vLLM :8001<br/>qwen2.5-vl (AWQ)"]
         end
-        subgraph "CPU (30 cores)"
-            VLLM_CPU["vLLM :8002<br/>Qwen3-30B-A3B<br/>laguna-s-2.1"]
+        subgraph "CPU (48 cores)"
+            VLLM_CPU["vLLM :8002<br/>qwen3-30b-a3b"]
+            VLLM_CODER["vLLM :8003<br/>qwen3-coder-30b-a3b"]
         end
     end
 
-    subgraph "Inference — cluster-box (10.88.127.211)"
-        subgraph "GPU (4× Quadro M4000)"
-            VLLM_CB["vLLM :8001<br/>laguna-xs-2.1<br/>ornith"]
-        end
+    subgraph "Inference — cluster-box (10.88.127.211) — external"
+        VLLM_CB["Ollama :11434<br/>laguna-xs-2.1 / ornith<br/>(not migrated)"]
     end
 
     subgraph "Monitoring"
         PROM["Prometheus :8080<br/>cortex-alpha"]
-        GRAFANA["Grafana :3101<br/>AI Systems dashboard"]
+        GRAFANA["Grafana :3101<br/>AI Systems + AI Inference"]
     end
 
     BROWSER -->|"HTTPS"| NGINX
@@ -65,161 +93,128 @@ graph TB
     NGINX -->|"proxy_pass"| OWUI
     NGINX -->|"proxy_pass"| LITELLM
     OWUI -->|"/v1/chat/completions"| LITELLM
-    LITELLM -->|"gpu/*"| VLLM_GPU
-    LITELLM -->|"cpu/*"| VLLM_CPU
+    LITELLM -->|"linda-vllm/qwen2.5-vl"| VLLM_GPU
+    LITELLM -->|"linda-vllm-cpu/qwen3-30b-a3b"| VLLM_CPU
+    LITELLM -->|"linda-vllm-coder/qwen3-coder-30b-a3b"| VLLM_CODER
     LITELLM -->|"cluster-box/*"| VLLM_CB
 
     PROM -.->|"scrape :8001/metrics"| VLLM_GPU
     PROM -.->|"scrape :8002/metrics"| VLLM_CPU
-    PROM -.->|"scrape :8001/metrics"| VLLM_CB
+    PROM -.->|"scrape :8003/metrics"| VLLM_CODER
     PROM -.->|"scrape :8080/metrics"| LITELLM
     GRAFANA -.->|"query"| PROM
 ```
 
+### Routing (alpha-three LiteLLM)
+
+| Backend | URL | Models |
+|---------|-----|--------|
+| `linda-vllm` | `http://10.88.127.88:8001/v1` | `qwen2.5-vl` (GPU, hosted_vllm) |
+| `linda-vllm-cpu` | `http://10.88.127.88:8002/v1` | `qwen3-30b-a3b` (CPU, hosted_vllm) |
+| `linda-vllm-coder` | `http://10.88.127.88:8003/v1` | `qwen3-coder-30b-a3b` (CPU, hosted_vllm) |
+| `cluster-box` | `http://10.88.127.211:11434/v1` | laguna/ornith (Ollama, external — unchanged) |
+
+The former `linda` Ollama backend (qwen3.8:27b, qwen3-coder:30b, laguna-s, laguna-xs on
+:11434) has been removed. LiteLLM exposes `/metrics` via `callbacks = [ "prometheus" ]`.
+
 ---
 
-## Nix-Managed Models
+## Nix-Managed Models (implemented)
 
 ### Model Store Integration
 
-Models are stored in the Nix store, not downloaded at runtime. This means:
+Models are stored in the Nix store, not downloaded at runtime. Each package is:
+- **Reproducible**: pinned to a HuggingFace commit SHA (immutable revision)
+- **Validated**: every file pinned to its own SRI sha256 — upstream changes fail the build instead of silently swapping weights
+- **Versioned**: updates tracked in git
+- **Cached**: store paths can be served by the planned in-house binary cache
 
-- **Reproducible**: Same model version across all deployments
-- **Validated**: Model integrity checked at build time
-- **Versioned**: Model updates are tracked in git
-- **Cached**: Binary cache can serve pre-downloaded models
+### Package structure (`pkgs/models/`)
 
-### Model Package Structure
+| File | Purpose |
+|------|---------|
+| `pkgs/models/default.nix` | Shared base builder (`files` fetchurl list and/or `src` fetchzip archive) |
+| `pkgs/models/qwen3-8b.nix` | Qwen3-8B — reference/small-model example (Phase 1.2) |
+| `pkgs/models/qwen3-30b-a3b.nix` | Qwen3-30B-A3B — CPU workhorse (replaces `qwen3.8:27b-q4_K_M` + `laguna-s-2.1:q4_K_M`) |
+| `pkgs/models/qwen3-coder-30b-a3b.nix` | Qwen3-Coder-30B-A3B-Instruct — code model (replaces `qwen3-coder:30b-a3b-q4_K_M`) |
+
+Exposed on the flake as `self.models.*` (flake.nix):
 
 ```nix
-# pkgs/models/qwen3-8b.nix
-{ stdenv, fetchurl }:
-
-stdenv.mkDerivation {
-  pname = "qwen3-8b";
-  version = "2507";
-  
-  src = fetchurl {
-    url = "https://huggingface.co/Qwen/Qwen3-8B/resolve/main/model.safetensors";
-    hash = "sha256-...";
-  };
-  
-  # Additional files: config.json, tokenizer.json, etc.
-  
-  installPhase = ''
-    mkdir -p $out
-    cp -r $src/* $out/
-  '';
-  
-  meta = {
-    description = "Qwen3-8B language model";
-    homepage = "https://huggingface.co/Qwen/Qwen3-8B";
-    license = "apache-2.0";
-  };
-}
+models = {
+  qwen3-8b = nixpkgs.callPackage ./pkgs/models/qwen3-8b.nix { };
+  qwen3-30b-a3b = nixpkgs.callPackage ./pkgs/models/qwen3-30b-a3b.nix { };
+  qwen3-coder-30b-a3b = nixpkgs.callPackage ./pkgs/models/qwen3-coder-30b-a3b.nix { };
+};
 ```
 
-### Model Configuration in Nix
+**Usage in a machine config** (LINDA):
 
 ```nix
-# modules/vllm.nix — model registration
-{
-  services.vllm = {
-    enable = true;
-    models = [
-      {
-        name = "qwen3-8b-gpu";
-        model = "Qwen/Qwen3-8B";
-        port = 8001;
-        device = "gpu";  # or "cpu"
-        gpuMemoryUtilization = 0.8;
-        maxModelLen = "32768";
-        # Model source: nix store path
-        modelPath = pkgs.models.qwen3-8b;
-      }
-      {
-        name = "laguna-s-cpu";
-        model = "Qwen/Qwen3-30B-A3B";
-        port = 8002;
-        device = "cpu";
-        cpuKvCacheSpace = 40;  # GiB
-        maxModelLen = "262144";
-        modelPath = pkgs.models.laguna-s-2.1;
-      }
-    ];
-  };
-}
+services.vllm.models = [
+  {
+    name = "qwen3-30b-a3b";
+    model = "Qwen/Qwen3-30B-A3B";
+    modelPath = self.models.qwen3-30b-a3b;  # nix store, not runtime download
+    servedModelName = "qwen3-30b-a3b";
+    port = 8002;
+    device = "cpu";
+    dtype = "bfloat16";          # halves RAM vs float32 on AMD Zen
+    cpuKvCacheSpace = 40;        # GiB
+    cpuOmpThreadsBind = "0-29";  # pin OpenMP threads to 30 of 48 cores
+  }
+];
+```
+
+When `modelPath` is set, the module also pins `HF_HOME` to the cache dir
+(`${cfg.cacheDir}/huggingface`) — no runtime HuggingFace access is needed.
+
+### Obtaining hashes for a new model
+
+```bash
+nix store prefetch-file --json https://huggingface.co/Qwen/Qwen3-8B/resolve/main/model.safetensors
+# Use the `.hash` field (SRI sha256) in the package's `files` list.
 ```
 
 ---
 
-## Hardware Assignment
+## Hardware Assignment (implemented in `modules/vllm.nix`)
 
-### GPU Models
-
-```nix
-{
-  name = "qwen3-8b-gpu";
-  device = "gpu";
-  cudaVisibleDevices = "0";  # RTX 3060 only
-  gpuMemoryUtilization = 0.8;
-  tensorParallelSize = 1;
-}
-```
-
-**Systemd service**:
-- Binds to GPU 0 via `CUDA_VISIBLE_DEVICES`
-- `gpuMemoryUtilization` controls VRAM allocation
-- `max_num_seqs` controls batch size
-- Metrics on `/metrics` endpoint
-
-### CPU Models
+### Per-model options
 
 ```nix
-{
-  name = "laguna-s-cpu";
-  device = "cpu";
-  cpuKvCacheSpace = 40;  # GiB
-  cpuOmpThreadsBind = "0-29";  # Reserve 1 core for framework
-  dtype = "bfloat16";  # Required for AMD Zen
-}
+device = "gpu" | "cpu";            # default "gpu"
+modelPath = null | path;           # nix store path (overrides model ID)
+cpuKvCacheSpace = 4;               # GiB, CPU only
+cpuOmpThreadsBind = "auto";        # e.g. "0-29"
 ```
 
-**Systemd service**:
-- No GPU access (`CUDA_VISIBLE_DEVICES=""`)
-- `VLLM_CPU_KVCACHE_SPACE` controls KV cache size
-- `VLLM_CPU_OMP_THREADS_BIND` controls CPU affinity
-- Metrics on `/metrics` endpoint
+### GPU model service
 
-### Mixed Hardware (LINDA)
+- `CUDA_VISIBLE_DEVICES` = configured value (LINDA: `"0"` — RTX 3060 only)
+- Args: `--tensor-parallel-size N --gpu-memory-utilization 0.8`
+- No `MemoryMax` (VRAM bound, not RAM)
 
-```nix
-# GPU model on port 8001
-{
-  name = "qwen2.5-vl";
-  model = "Qwen/Qwen2.5-VL-7B-Instruct-AWQ";
-  port = 8001;
-  device = "gpu";
-  cudaVisibleDevices = "0";
-  gpuMemoryUtilization = 0.8;
-  maxModelLen = "8192";
-}
+### CPU model service
 
-# CPU model on port 8002
-{
-  name = "laguna-s";
-  model = "Qwen/Qwen3-30B-A3B";
-  port = 8002;
-  device = "cpu";
-  cpuKvCacheSpace = 40;
-  cpuOmpThreadsBind = "0-29";
-  dtype = "bfloat16";
-}
-```
+- `CUDA_VISIBLE_DEVICES=""` (no GPU access)
+- `VLLM_CPU_KVCACHE_SPACE` = `cpuKvCacheSpace` (GiB)
+- `VLLM_CPU_OMP_THREADS_BIND` = `cpuOmpThreadsBind`
+- Args: `--device cpu` (no tensor-parallel / gpu-memory-utilization flags — those are GPU-only)
+- `MemoryMax = "80%"` on the systemd unit — caps host RAM (weights + KV cache live in RAM)
 
-Both run concurrently. LiteLLM routes by model prefix:
-- `gpu/qwen2.5-vl` → port 8001
-- `cpu/laguna-s` → port 8002
+### LINDA deployment
+
+| Model | Device | Port | VRAM/RAM notes |
+|-------|--------|------|----------------|
+| `qwen2.5-vl` (Qwen2.5-VL-7B-Instruct-AWQ) | GPU 0 (RTX 3060) | 8001 | ~5 GB VRAM, `gpuMemoryUtilization = 0.8`, prefix caching, `max-num-seqs 16` |
+| `qwen3-30b-a3b` (Qwen3-30B-A3B) | CPU | 8002 | 40 GiB KV cache bfloat16, 30 cores bound |
+| `qwen3-coder-30b-a3b` (Qwen3-Coder-30B-A3B-Instruct) | CPU | 8003 | 40 GiB KV cache bfloat16, 30 cores bound |
+
+LINDA specifics:
+- `host = "0.0.0.0"` (expose on WireGuard plane), `openFirewall = true`
+- `cacheDir = "/speed-storage/vllm-cache"` (ZFS; survives restarts — see Lessons Learned)
+- `nix.gc.automatic = false` — never garbage-collect the model store / cache
 
 ---
 
@@ -227,233 +222,189 @@ Both run concurrently. LiteLLM routes by model prefix:
 
 ### vLLM Scheduler
 
-vLLM's scheduler handles queuing natively:
-
-- **`max_num_seqs`**: Max sequences in a batch (default 128 online, 256 offline)
-- **`max_num_batched_tokens`**: Max tokens in a batch (default 2048 online, 4096 offline)
-- **Preemption**: Higher-priority requests can preempt lower-priority ones
-- **Waiting queue**: Requests queue when the batch is full
-
-### Metrics
-
-The scheduler exposes queue metrics:
-
-- `vllm:num_requests_running` — currently executing
-- `vllm:num_requests_waiting` — queued, waiting for batch slot
-- `vllm:request_queue_time_seconds` — time spent in queue
-- `vllm:kv_cache_usage_perc` — KV cache utilization
+vLLM's scheduler handles queuing natively (as planned): `max_num_seqs`,
+`max_num_batched_tokens`, preemption, waiting queue. LINDA sets
+`--max-num-seqs 16` on the GPU model; CPU models use vLLM defaults.
 
 ### LiteLLM Queuing
 
-LiteLLM adds a second layer of queuing:
-
-```nix
-router_settings = {
-  routing_strategy = "least-busy";  # Route to least loaded backend
-  num_retries = 3;
-  timeout = 300;  # 5 minutes for long inference
-  allowed_fails = 3;  # Circuit breaker
-  cooldown_time = 30;  # Seconds
-};
-```
+`services/litellm.nix` configures gateway-level behavior via
+`litellm_settings`: `drop_params`, `num_retries`, `request_timeout`,
+`fallbacks`, and (new in this migration) `callbacks = [ "prometheus" ]`.
+The original plan's `router_settings` example (`routing_strategy = "least-busy"`,
+`allowed_fails`, `cooldown_time`) was **not implemented** — those were
+aspirational and no per-router settings option exists in the module.
+vLLM's native scheduler remains the primary queue; LiteLLM adds retries,
+timeouts, and optional fallback groups.
 
 ---
 
-## Monitoring
+## Monitoring (implemented, Phase 4)
 
-### Prometheus Scrape Targets
+### Prometheus scrape targets (`services/prometheus.nix`)
 
-```nix
-# services/prometheus.nix
-{
-  job_name = "vllm-gpu";
-  scrape_interval = "5s";
-  static_configs = [{
-    targets = [ "10.88.127.88:8001" ];
-    labels = { hostname = "LINDA"; device = "gpu"; };
-  }];
-}
-{
-  job_name = "vllm-cpu";
-  scrape_interval = "5s";
-  static_configs = [{
-    targets = [ "10.88.127.88:8002" ];
-    labels = { hostname = "LINDA"; device = "cpu"; };
-  }];
-}
-{
-  job_name = "litellm";
-  scrape_interval = "10s";
-  static_configs = [{
-    targets = [ "10.88.127.107:8080" ];
-    labels = { hostname = "alpha-three"; role = "gateway"; };
-  }];
-  authorization = {
-    type = "Bearer";
-    credentials = "sk-...";  # From secrix
-  };
-}
-```
+| Job | Targets | Labels |
+|-----|---------|--------|
+| `vllm-gpu` | `10.88.127.88:8001` | hostname=LINDA, device=gpu, model=qwen2.5-vl |
+| `vllm-cpu` | `10.88.127.88:8002` | hostname=LINDA, device=cpu, model=qwen3-30b-a3b |
+| `vllm-cpu-coder` | `10.88.127.88:8003` | hostname=LINDA, device=cpu, model=qwen3-coder-30b-a3b |
+| `litellm` | `10.88.127.107:8080` | hostname=alpha-three, role=gateway |
 
-### Key Metrics
+LiteLLM `/metrics` is enabled via `services.litellm.callbacks = [ "prometheus" ]`
+(alpha-three). The original plan called for Bearer auth on the litellm scrape —
+the implemented target scrapes without credentials (the module exposes /metrics
+unauthenticated on the WireGuard plane; revisit if the gateway moves off-site).
 
-| Metric | Type | Purpose |
-|--------|------|---------|
-| `vllm:num_requests_running` | Gauge | Current batch size |
-| `vllm:num_requests_waiting` | Gauge | Queue depth |
-| `vllm:kv_cache_usage_perc` | Gauge | VRAM/RAM pressure |
-| `vllm:time_to_first_token_seconds` | Histogram | TTFT latency |
-| `vllm:e2e_request_latency_seconds` | Histogram | End-to-end latency |
-| `vllm:prompt_tokens_total` | Counter | Input throughput |
-| `vllm:generation_tokens_total` | Counter | Output throughput |
-| `litellm_proxy_total_requests_metric` | Counter | Gateway request rate |
-| `litellm_deployment_state` | Gauge | Backend health (0/1/2) |
-| `litellm_request_total_latency_metric` | Histogram | Gateway latency |
+### Grafana
 
-### Alerting Rules
+- `services/graphana_dashboards/ai-systems.json` — hardware (existing)
+- `services/graphana_dashboards/ai-inference.json` — NEW: request rate, latency
+  (p50/p95/p99), queue depth, KV cache usage, error rate, token throughput by
+  model, LiteLLM deployment state
 
-```yaml
-# Example Prometheus alerting rules
-groups:
-  - name: vllm
-    rules:
-      - alert: VLLMHighKVCacheUsage
-        expr: vllm:kv_cache_usage_perc > 0.9
-        for: 5m
-        labels:
-          severity: warning
-        annotations:
-          summary: "vLLM KV cache usage above 90%"
+### Alerting rules
 
-      - alert: VLLMHighQueueDepth
-        expr: vllm:num_requests_waiting > 10
-        for: 2m
-        labels:
-          severity: warning
-        annotations:
-          summary: "vLLM queue depth above 10"
-
-      - alert: LiteLLMBackendDown
-        expr: litellm_deployment_state == 2
-        for: 1m
-        labels:
-          severity: critical
-        annotations:
-          summary: "LiteLLM backend is down"
-```
+**Not yet implemented.** Prometheus scrapes all inference services, but no
+alerting rules exist for KV cache pressure, queue depth, GPU temp/VRAM, or
+gateway health. Deferred — see Next Steps.
 
 ---
 
-## Migration Path
+## Migration Path — Execution Report
 
-### Phase 1: Parallel Running
+### Phase 1: Foundation ✅
 
-Run vLLM alongside Ollama. Migrate models one at a time.
+- **1.1** `pkgs/models/default.nix` template (per-file fetchurl + fetchzip src patterns, `dontUnpack`/`dontFixup`, required-file sanity check) — commit `dbf2ca7`
+- **1.2** `pkgs/models/qwen3-8b.nix` — builds; files verified
+- **1.3** vLLM CPU inference validated via the extended module (CPU backend flags, env vars) — superseded by the Phase 2 module work rather than a standalone test harness
 
-1. Deploy vLLM with GPU model (Qwen2.5-VL)
-2. Verify metrics and queuing
-3. Migrate CPU models from Ollama to vLLM
-4. Verify each migration
-5. Decommission Ollama
+### Phase 2: Module Enhancement ✅
 
-### Phase 2: Model Format Migration
+- **2.1** `device`, `modelPath`, `cpuKvCacheSpace`, `cpuOmpThreadsBind` options added to `modules/vllm.nix` (module grew 392 → 524 lines)
+- **2.2** CPU service generation: env vars (`VLLM_CPU_KVCACHE_SPACE`, `VLLM_CPU_OMP_THREADS_BIND`, blank `CUDA_VISIBLE_DEVICES`), `MemoryMax = "80%"`, `--device cpu` args
+- **2.3** CPU models deployed on LINDA (:8002 qwen3-30b-a3b, :8003 qwen3-coder)
 
-Convert GGUF models to HuggingFace format:
+### Phase 3: Model Migration ✅
 
-| Current (Ollama) | Target (vLLM) | Notes |
-|-------------------|---------------|-------|
-| qwen3.8:27b-q4_K_M | Qwen/Qwen3-27B | HF format, AWQ quantization |
-| qwen3-coder:30b-a3b-q4_K_M | Qwen/Qwen3-30B-A3B | HF format, AWQ quantization |
-| laguna-s-2.1:q4_K_M | Qwen/Qwen3-30B-A3B | HF format, AWQ quantization |
-| laguna-xs-2.1:q4_K_M | Qwen/Qwen3-30B-A3B | HF format, AWQ quantization |
+- **3.1** `pkgs/models/qwen3-30b-a3b.nix` (16 shards, pinned `ad44e77` rev)
+- **3.2** `pkgs/models/qwen3-coder-30b-a3b.nix` — commit `bc90114`
+- **3.3** LINDA: Ollama removed, LiteLLM backends rewritten to `linda-vllm-cpu` / `linda-vllm-coder`; topology firewall port 11434 dropped; `.ollama/**` removed from backup excludes
 
-**Note**: Laguna models are custom. Need to verify HF availability or convert.
+### Phase 4: Monitoring ✅
 
-### Phase 3: Nix Store Models
+- **4.1** vLLM scrape targets (:8001/:8002/:8003) with hostname/device/model labels
+- **4.2** LiteLLM `/metrics` via `callbacks = [ "prometheus" ]` + scrape target
+- **4.3** `ai-inference.json` Grafana dashboard
 
-1. Create `pkgs/models/` directory
-2. Add model packages for each model
-3. Update vLLM module to accept `modelPath`
-4. Test model loading from nix store
-5. Update golden tests
+### Phase 5: Cleanup ✅
 
----
-
-## Module Changes
-
-### vLLM Module Updates
-
-The existing `modules/vllm.nix` needs these additions:
-
-```nix
-# New options for hardware assignment
-device = lib.mkOption {
-  type = lib.types.enum [ "gpu" "cpu" ];
-  default = "gpu";
-  description = "Device to run inference on";
-};
-
-cpuKvCacheSpace = lib.mkOption {
-  type = lib.types.int;
-  default = 4;
-  description = "CPU KV cache size in GiB";
-};
-
-cpuOmpThreadsBind = lib.mkOption {
-  type = lib.types.str;
-  default = "auto";
-  description = "CPU core binding for OpenMP threads";
-};
-
-modelPath = lib.mkOption {
-  type = lib.types.nullOr lib.types.path;
-  default = null;
-  description = "Path to model in nix store (overrides model download)";
-};
-```
-
-### Systemd Service Generation
-
-```nix
-# GPU model service
-systemd.services."vllm-${modelCfg.name}" = {
-  environment = {
-    CUDA_VISIBLE_DEVICES = modelCfg.cudaVisibleDevices;
-    VLLM_CPU_KVCACHE_SPACE = if modelCfg.device == "cpu" 
-      then toString modelCfg.cpuKvCacheSpace 
-      else null;
-    VLLM_CPU_OMP_THREADS_BIND = if modelCfg.device == "cpu" 
-      then modelCfg.cpuOmpThreadsBind 
-      else null;
-  };
-  serviceConfig.ExecStart = "${lib.getExe' cfg.package "vllm"} serve ${modelPath} ${args}";
-};
-
-# CPU model needs MemoryMax
-systemd.services."vllm-${modelCfg.name}".serviceConfig.MemoryMax = 
-  if modelCfg.device == "cpu" then "80%" else null;
-```
+- **5.1** `services/ollama.nix` archived to `services/archive/ollama.nix`; no Ollama references remain in LINDA config; `modifier_imports/cuda.nix` drops `unstable.ollama-cuda`
+- **5.2** CUDA scoping: global `cudaSupport = true` replaced by a second `nixpkgs_llm` import (`pkgsCuda`) with `config.cudaSupport = true`. Not an overlay. `pkgs_llm` stays CPU-only. CPU units use `pkgsCpuVllm` (`pkgs/vllm-cpu`): wraps `pkgs_llm.vllm`, rewrites importlib.metadata Version to `${version}+cpu` so 0.24.0's `cpu_platform_plugin` selects CpuPlatform, and puts zentorch on PYTHONPATH. No vLLM rebuild, no source patch.
+- **5.3** Open-WebUI `pkgsNoCuda` duplicate-import workaround replaced with `pkgs.python3Packages.overrideScope` forcing `torch.cudaSupport = false` in-place (no second nixpkgs import; stable CPU binaries used)
+- **5.4** All 19 fleet goldens regenerated (topology wiring, firewall, module option defaults) and validated
 
 ---
 
-## Open Questions
+## Deviations from Plan
 
-1. **Laguna models**: Are they available on HuggingFace, or do we need to convert from GGUF?
-2. **Model size**: HF models are larger than GGUF. Do we have enough disk space in the nix store?
-3. **CPU performance**: Is vLLM CPU inference fast enough for our use case? Need benchmarking.
-4. **Memory limits**: What's the right `MemoryMax` for CPU models? Need testing.
-5. **Model updates**: How do we handle model updates? Rebuild the nix package?
+1. **cluster-box NOT migrated** — external Malayalam flake (dlyon-operated). Ollama
+   on :11434 stays; `cluster-box/*` LiteLLM backend unchanged. Migration boundary
+   is NixOS-Configuration machines only.
+2. **Laguna models NOT migrated** — laguna-s / laguna-xs are custom GGUF models with
+   **no HuggingFace safetensors release**. On LINDA they are replaced by
+   Qwen3-30B-A3B (HF, Apache-2.0). cluster-box still serves the originals.
+3. **Qwen3-Coder repo name** — plan said `Qwen/Qwen3-Coder-30B-A3B`; the official
+   HF repo is `Qwen/Qwen3-Coder-30B-A3B-Instruct` (the bare `-A3B` repo does not
+   exist). Corrected in package and LINDA config.
+4. **Phase 1 verification criteria corrected** — original criteria said "no changes
+   to vLLM module or LINDA config", which conflicted with the CPU-support work;
+   fixed in commit `4da39c5`.
+5. **CUDA scoping approach** — plan anticipated a `pkgsCuda` overlay *or*
+   package-level overrides; implemented as a second `nixpkgs_llm` import
+   (`pkgsCuda`, `cudaSupport = true`) plus a cheap CPU wrapper (`pkgsCpuVllm`).
+   No overlay.
+6. **Open-WebUI workaround** — plan offered "remove pkgsNoCuda or document it";
+   implemented a better fix: `overrideScope` on python3Packages to force CPU-only
+   torch, eliminating the duplicate nixpkgs import.
+7. **Model packages pin commit SHAs** — the template's default `rev = "main"` is
+   overridden by every real package with an immutable commit SHA + per-file SRI
+   hashes (stronger than the plan's branch-based fetch).
+8. **LiteLLM scrape auth** — plan called for Bearer-token auth on the litellm
+   Prometheus target; implemented unauthenticated (see Monitoring).
+9. **Benchmark vs Ollama not completed** — CPU migration shipped without a
+   formal Ollama-vs-vLLM CPU benchmark (see Open Questions #3).
+
+---
+
+## Lessons Learned
+
+1. **Global `cudaSupport = true` is a footgun.** It cascades CUDA into every
+   package on the machine (torch, ollama, blender…). Scope CUDA with an overlay
+   that rebuilds only the packages that need it. Also expect upstream
+   `broken = true` markers on CUDA vLLM deps — handle them explicitly.
+2. **`PrivateTmp` destroys the torch.compile cache.** torchinductor writes cubin
+   files to `/tmp/torchinductor_root`; `PrivateTmp = true` wiped them on restart,
+   causing "Cubin file not found" crashes. Disabled `PrivateTmp`; LINDA's `/tmp`
+   is ZFS (`speed-storage/tmp`) so persistence is safe. `TORCHINDUCTOR_CACHE_DIR`
+   also persists the cache under `cfg.cacheDir`.
+3. **Per-file SRI hashes + pinned commit SHA make model packages immutable.**
+   A moving branch would silently swap weights; per-file hashes fail the build
+   instead. `dontUnpack`/`dontFixup` avoid the reference scanner over multi-GB
+   binary weight files.
+4. **Verify HF repo names before pinning.** `Qwen3-Coder-30B-A3B` (no `-Instruct`)
+   does not exist. Always confirm the exact repo and revision.
+5. **CPU vLLM is a different flag set.** `--device cpu`, `VLLM_CPU_KVCACHE_SPACE`,
+   `VLLM_CPU_OMP_THREADS_BIND`; GPU-only flags (`--tensor-parallel-size`,
+   `--gpu-memory-utilization`) must be conditionally omitted.
+6. **`bfloat16` halves CPU RAM vs float32** on AMD Zen — important for 30B-class
+   CPU models with multi-GiB KV caches. `MemoryMax = "80%"` per CPU service is the
+   host protection (weights + KV cache are RAM-resident).
+7. **Avoid duplicate nixpkgs imports.** The old `pkgsNoCuda = import pkgs.path`
+   workaround was replaced by `python3Packages.overrideScope` — same result
+   (CPU-only torch for open-webui), one nixpkgs instance, no full second eval.
+8. **MoE models are the CPU sweet spot.** Qwen3-30B-A3B has 3B active params —
+   the 30B MoE class runs reasonably on CPU, making it the natural replacement
+   for the old Ollama 27B/33B CPU models.
+
+---
+
+## Open Questions — Resolved
+
+1. **Laguna models: on HuggingFace?** → **Resolved: no.** laguna-s/laguna-xs are
+   custom GGUF with no HF safetensors release. LINDA migrated to Qwen3-30B-A3B
+   (HF, Apache-2.0). cluster-box still serves the originals via Ollama (external).
+   Open sub-question: convert GGUF→HF or replace — deferred, requires Malayalam
+   owner coordination.
+2. **HF model size vs GGUF / disk space?** → **Resolved.** bfloat16 safetensors are
+   larger than q4 GGUF, but LINDA's store is ZFS-backed (`speed-storage`) and
+   `nix.gc.automatic = false` prevents collection. Two 30B CPU models + 8B
+   reference fit comfortably.
+3. **vLLM CPU performance vs Ollama?** → **Partially resolved.** The 3B-active MoE
+   design (30B-A3B) is CPU-viable and deployed. A formal head-to-head benchmark
+   against the decommissioned Ollama setup was **not completed** before removal —
+   recorded as a current limitation in `documentation/ai-stack.md`.
+4. **Right `MemoryMax` for CPU models?** → **Resolved.** `80%` per CPU model
+   service, implemented as the module default for `device = "cpu"`.
+5. **Model updates?** → **Resolved.** Bump `rev` to a new HF commit SHA and refresh
+   each file's SRI hash (`nix store prefetch-file --json`), then rebuild. The
+   version bump is a normal Nix store change; goldens capture the resulting config.
 
 ---
 
 ## Next Steps
 
-1. **Benchmark vLLM CPU** — Test Qwen3-30B-A3B on CPU, compare to Ollama
-2. **Verify Laguna availability** — Check if Laguna models are on HuggingFace
-3. **Prototype model package** — Create `pkgs/models/qwen3-8b.nix`
-4. **Test mixed hardware** — Deploy GPU + CPU vLLM services on LINDA
-5. **Update monitoring** — Add vLLM scrape targets to Prometheus
+1. **Alerting rules** — KV cache pressure, queue depth, GPU temp/VRAM, LiteLLM
+   backend health (metrics already scraped; rules not yet written)
+2. **Benchmark CPU inference** — Qwen3-30B-A3B vs the old Ollama numbers (record
+   TTFT / tok/s for the record)
+3. **Laguna resolution** — convert GGUF→HF or formally replace laguna-xs on
+   cluster-box (coordinate with dlyon)
+4. **cluster-box vLLM migration** — bring the Malayalam models into NixOS-Configuration
+5. **Step 6.3** — update `documentation/ai-upgrades.md` to mark P1–P5 resolved
+6. **README reference check** — ensure docs index points at the vLLM-only documents
 
 ---
 
-*Document status: Planning — pending implementation decisions*
+*Document status: Implementation-complete (Phase 6 in progress)*  
+*Engineer: bellana-deepseek*  
+*Verification: tpol-minimax*

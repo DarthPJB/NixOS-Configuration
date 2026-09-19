@@ -18,6 +18,7 @@
 { config
 , lib
 , pkgs
+, pkgs_llm
 , self
 , hostname
 , ...
@@ -30,6 +31,8 @@
     ../../modules/enable-wg-topology.nix
     # Headed environment: i3 + lightdm + bargman greeter (same as alpha-one).
     ../../environments/i3wm_darthpjb.nix
+    # Ollama inference service (CPU-only + Vulkan iGPU, WireGuard-bound).
+    ./ollama.nix
   ];
 
   enableWgTopology.enable = true;
@@ -39,7 +42,15 @@
   # xlibre-overlay.nixosModules.overlay-xlibre-xserver (flake.nix).
   # Intel Core Ultra 5 125H integrated graphics — modesetting driver.
   # lightdm + i3 are enabled by environments/i3wm_darthpjb.nix (as on alpha-one).
-  hardware.graphics.enable = true;
+  hardware.graphics = {
+    enable = true;
+    extraPackages = with pkgs; [
+      intel-compute-runtime # OpenCL NEO runtime (iGPU compute for Ollama/Vulkan)
+      intel-media-driver # VA-API hardware video decode
+      libva-vdpau-driver # VA-API to VDPAU bridge
+      libvdpau-va-gl # VDPAU to VA-API bridge
+    ];
+  };
 
   # ── Bootloader ────────────────────────────────────────────────
   # Mirror the assimilator-probe bootstrap image (GRUB EFI removable) so the
