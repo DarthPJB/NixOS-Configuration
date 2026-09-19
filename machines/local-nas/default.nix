@@ -25,6 +25,7 @@
       listen-addr = "10.88.127.3";
     })
     ../../server_services/minio-insecure.nix
+    ../../server_services/gitea.nix
     ../../environments/neovim.nix
     ../../environments/emacs.nix
     ../../environments/sshd.nix
