@@ -20,6 +20,7 @@ in
     ../../modules/enable-wg-topology.nix
     (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
     (import ../../services/acme_server.nix { fqdn = "johnbargman.com"; })
+    (import ../../services/acme_server.nix { fqdn = "fabrication-forge.net"; })
   ];
 
   security.acme.defaults.email = "commander@johnbargman.net";
@@ -87,10 +88,35 @@ in
     "johnbargman.com" = {
       # Public: serves release site
       locations."/".root = lib.mkForce personal-site.packages.${pkgs.stdenv.hostPlatform.system}.personal-site;
+      # Gitea subpath proxy — matches Gitea's documented subpath config exactly.
+      # extraConfig-only: no proxyPass/proxyWebsockets options to avoid the nginx
+      # module generating a conflicting proxy_pass directive.
+      locations."~ ^/(code/frame|v2)($|/)" = {
+        extraConfig = ''
+          rewrite ^ $request_uri;
+          rewrite ^/(code/frame($|/))?(.*) /$3 break;
+          proxy_pass http://10.88.127.3:3000$uri;
+          proxy_http_version 1.1;
+          client_max_body_size 512M;
+          proxy_set_header Connection $http_connection;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+        '';
+      };
     };
     # WireGuard split-horizon: staging site on WG IP only
     "johnbargman.com-lan" = {
       locations."/".root = lib.mkForce personal-site.packages.${pkgs.stdenv.hostPlatform.system}.personal-site-staging;
+    };
+    # Fabrication Forge alias — 301 redirect to canonical frame URL.
+    # enableACME + acme_server.nix (imported above) provisions a cert via DNS-01.
+    "fabrication-forge.net" = {
+      forceSSL = true;
+      enableACME = true;
+      locations."/".return = "301 https://johnbargman.com/code/";
     };
   };
 

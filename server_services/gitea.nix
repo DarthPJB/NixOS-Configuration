@@ -138,23 +138,24 @@ in
     minioSecretAccessKey = secret "gitea-minio-secret-key";
     settings = {
       server = {
-        DOMAIN = "gitea.johnbargman.net";
-        ROOT_URL = "https://gitea.johnbargman.net/";
+        DOMAIN = "johnbargman.com";
+        ROOT_URL = "https://johnbargman.com/code/frame/";
+        PUBLIC_URL_DETECTION = "never";
         HTTP_ADDR = wgIp;
         HTTP_PORT = httpPort;
         DISABLE_SSH = true;
-        LANDING_PAGE = "login";
+        LANDING_PAGE = "home";
       };
       service = {
         DISABLE_REGISTRATION = true;
-        REQUIRE_SIGNIN_VIEW = true;
+        REQUIRE_SIGNIN_VIEW = false;
       };
       session.COOKIE_SECURE = true;
       security = {
         DISABLE_GIT_HOOKS = true;
         IMPORT_LOCAL_PATHS = false;
         PASSWORD_HASH_ALGO = "argon2";
-        REVERSE_PROXY_TRUSTED_PROXIES = "10.88.127.1/32,10.88.128.1/32";
+        REVERSE_PROXY_TRUSTED_PROXIES = "10.88.127.1/32,10.88.128.1/32,10.88.127.50/32";
       };
       lfs = {
         # Inherit MINIO_* from [storage]. Setting STORAGE_TYPE here blanks the endpoint.
