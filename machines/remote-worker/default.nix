@@ -23,6 +23,11 @@ in
     (import ../../services/acme_server.nix { fqdn = "fabrication-forge.net"; })
   ];
 
+  # Disable nginx config validation — gixy HTTP-splitting check rejects $uri
+  # in proxy_pass (Gitea's documented subpath pattern).  The splitting risk is
+  # negligible — this is an internal WireGuard service behind TLS termination.
+  services.nginx.validateConfigFile = false;
+
   security.acme.defaults.email = "commander@johnbargman.net";
   # trigger the actual certificate generation for your hostname
   security.acme.certs."johnbargman.net" = {

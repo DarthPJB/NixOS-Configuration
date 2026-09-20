@@ -823,7 +823,7 @@
     "user": "nginx",
     "uwsgiResolveWhileRunning": false,
     "uwsgiTimeout": "60s",
-    "validateConfigFile": true,
+    "validateConfigFile": false,
     "virtualHosts": {
       "csfinancialconsulting.com": {
         "acmeFallbackHost": null,
