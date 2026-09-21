@@ -140,21 +140,42 @@ in
       server = {
         DOMAIN = "gitea.johnbargman.net";
         ROOT_URL = "https://gitea.johnbargman.net/";
+        PUBLIC_URL_DETECTION = "auto";
         HTTP_ADDR = wgIp;
         HTTP_PORT = httpPort;
         DISABLE_SSH = true;
-        LANDING_PAGE = "login";
+        LANDING_PAGE = "home";
       };
       service = {
+        # Registration form disabled — no public self-registration.
+        # Auto-registration happens via reverse proxy auth header
+        # (X-WEBAUTH-USER) from cortex-alpha for WireGuard clients.
         DISABLE_REGISTRATION = true;
-        REQUIRE_SIGNIN_VIEW = true;
+        REQUIRE_SIGNIN_VIEW = false;
+        # Reverse proxy authentication — auto-register WireGuard users
+        ENABLE_REVERSE_PROXY_AUTHENTICATION = true;
+        ENABLE_REVERSE_PROXY_AUTHENTICATION_API = true;
+        ENABLE_REVERSE_PROXY_AUTO_REGISTRATION = true;
+        ENABLE_REVERSE_PROXY_EMAIL = true;
+        # Disable unused login methods — reduce attack surface
+        ENABLE_OPENID_SIGNIN = false;
+        ENABLE_BASIC_AUTHENTICATION = false;
+        # Keep password + passkey login
+        ENABLE_PASSWORD_SIGNIN_FORM = true;
+        ENABLE_PASSKEY_AUTHENTICATION = true;
       };
       session.COOKIE_SECURE = true;
       security = {
         DISABLE_GIT_HOOKS = true;
         IMPORT_LOCAL_PATHS = false;
         PASSWORD_HASH_ALGO = "argon2";
-        REVERSE_PROXY_TRUSTED_PROXIES = "10.88.127.1/32,10.88.128.1/32";
+        REVERSE_PROXY_TRUSTED_PROXIES = "10.88.127.1/32,10.88.128.1/32,10.88.127.50/32";
+        # Restrict registration emails to internal domain
+        EMAIL_DOMAIN_ALLOWLIST = "johnbargman.net";
+        # Password hardening
+        MIN_PASSWORD_LENGTH = 12;
+        PASSWORD_COMPLEXITY = "upper,digit,spec";
+        PASSWORD_CHECK_PWN = true;
       };
       lfs = {
         # Inherit MINIO_* from [storage]. Setting STORAGE_TYPE here blanks the endpoint.

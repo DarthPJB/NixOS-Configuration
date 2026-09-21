@@ -1322,13 +1322,13 @@
       "code.johnbargman.net": {
         "acmeFallbackHost": null,
         "acmeRoot": "/var/lib/acme/acme-challenge",
-        "addSSL": true,
+        "addSSL": false,
         "basicAuth": {},
         "basicAuthFile": null,
         "default": false,
         "enableACME": false,
         "extraConfig": "",
-        "forceSSL": false,
+        "forceSSL": true,
         "globalRedirect": null,
         "http2": true,
         "http3": true,
@@ -1337,22 +1337,23 @@
         "listen": [],
         "listenAddresses": [
           "10.88.128.1",
-          "10.88.127.1"
+          "10.88.127.1",
+          "82.5.173.252"
         ],
         "locations": {
-          "~/": {
+          "/": {
             "alias": null,
             "basicAuth": {},
             "basicAuthFile": null,
-            "extraConfig": "proxy_set_header Host $host;\nproxy_set_header X-Real-IP $remote_addr;\nproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\nproxy_set_header X-Forwarded-Proto $scheme;\nproxy_set_header Upgrade $http_upgrade;\nproxy_set_header Connection $connection_upgrade;\n",
+            "extraConfig": "",
             "fastcgiParams": {},
             "index": null,
             "priority": 1000,
-            "proxyPass": "http://10.88.127.3:80",
-            "proxyWebsockets": true,
+            "proxyPass": null,
+            "proxyWebsockets": false,
             "recommendedProxySettings": false,
             "recommendedUwsgiSettings": false,
-            "return": null,
+            "return": "301 https://johnbargman.com/code/",
             "root": null,
             "tryFiles": null,
             "uwsgiPass": null
@@ -1501,7 +1502,7 @@
             "alias": null,
             "basicAuth": {},
             "basicAuthFile": null,
-            "extraConfig": "proxy_set_header Host $host;\nproxy_set_header X-Real-IP $remote_addr;\nproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\nproxy_set_header X-Forwarded-Proto $scheme;\nproxy_set_header Upgrade $http_upgrade;\nproxy_set_header Connection $connection_upgrade;\n",
+            "extraConfig": "proxy_set_header Host $host;\nproxy_set_header X-Real-IP $remote_addr;\nproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\nproxy_set_header X-Forwarded-Proto $scheme;\nproxy_set_header Upgrade $http_upgrade;\nproxy_set_header Connection $connection_upgrade;\n\nproxy_set_header X-WEBAUTH-USER \"wguser\";\nproxy_set_header X-WEBAUTH-EMAIL \"wguser@johnbargman.net\";\n",
             "fastcgiParams": {},
             "index": null,
             "priority": 1000,

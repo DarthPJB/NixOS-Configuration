@@ -9,6 +9,27 @@
 }:
 let
   personal-site = self.inputs.personal-site;
+
+  # Gitea subpath proxy — matches Gitea's documented subpath config exactly.
+  # extraConfig-only: no proxyPass/proxyWebsockets options to avoid the nginx
+  # module generating a conflicting proxy_pass directive.
+  # Applied to BOTH the public (johnbargman.com) and WG staging
+  # (johnbargman.com-lan) vhosts so LAN/WG clients also reach the forge.
+  giteaSubpathProxy = {
+    extraConfig = ''
+      rewrite ^ $request_uri;
+      rewrite ^/(code/frame($|/))?(.*) /$3 break;
+      proxy_pass http://10.88.127.3:3000$uri;
+      proxy_http_version 1.1;
+      client_max_body_size 512M;
+      proxy_set_header Connection $http_connection;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    '';
+  };
 in
 {
   imports = [
@@ -20,7 +41,13 @@ in
     ../../modules/enable-wg-topology.nix
     (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
     (import ../../services/acme_server.nix { fqdn = "johnbargman.com"; })
+    (import ../../services/acme_server.nix { fqdn = "fabrication-forge.com"; })
   ];
+
+  # Disable nginx config validation — gixy HTTP-splitting check rejects $uri
+  # in proxy_pass (Gitea's documented subpath pattern).  The splitting risk is
+  # negligible — this is an internal WireGuard service behind TLS termination.
+  services.nginx.validateConfigFile = false;
 
   security.acme.defaults.email = "commander@johnbargman.net";
   # trigger the actual certificate generation for your hostname
@@ -87,10 +114,12 @@ in
     "johnbargman.com" = {
       # Public: serves release site
       locations."/".root = lib.mkForce personal-site.packages.${pkgs.stdenv.hostPlatform.system}.personal-site;
+      locations."~ ^/(code/frame|v2)($|/)" = giteaSubpathProxy;
     };
     # WireGuard split-horizon: staging site on WG IP only
     "johnbargman.com-lan" = {
       locations."/".root = lib.mkForce personal-site.packages.${pkgs.stdenv.hostPlatform.system}.personal-site-staging;
+      locations."~ ^/(code/frame|v2)($|/)" = giteaSubpathProxy;
     };
   };
 

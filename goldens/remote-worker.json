@@ -575,6 +575,42 @@
         "validMinDays": null,
         "webroot": "/var/lib/acme/acme-challenge"
       },
+      "fabrication-forge.com": {
+        "allowKeysForGroup": "_mkRemovedOptionModule",
+        "credentialFiles": {},
+        "csr": null,
+        "csrKey": null,
+        "directory": "/var/lib/acme/fabrication-forge.com",
+        "dnsPropagationCheck": false,
+        "dnsProvider": "gandiv5",
+        "dnsResolver": null,
+        "domain": "fabrication-forge.com",
+        "email": "commander@johnbargman.net",
+        "enableDebugLogs": true,
+        "environmentFile": "/run/system-keys/dns01",
+        "extraDomainNames": [],
+        "extraDomains": "_mkMergedOptionModule",
+        "extraLegoFlags": [],
+        "extraLegoRenewFlags": [],
+        "extraLegoRunFlags": [],
+        "group": "nginx",
+        "inheritDefaults": true,
+        "keyType": "ec256",
+        "listenHTTP": null,
+        "ocspMustStaple": false,
+        "postRun": "",
+        "profile": null,
+        "reloadServices": [
+          "nginx.service"
+        ],
+        "renewInterval": "daily",
+        "renewJitter": "24h",
+        "s3Bucket": null,
+        "server": "https://acme-v02.api.letsencrypt.org/directory",
+        "user": "_mkRemovedOptionModule",
+        "validMinDays": null,
+        "webroot": null
+      },
       "johnbargman.com": {
         "allowKeysForGroup": "_mkRemovedOptionModule",
         "credentialFiles": {},
@@ -787,7 +823,7 @@
     "user": "nginx",
     "uwsgiResolveWhileRunning": false,
     "uwsgiTimeout": "60s",
-    "validateConfigFile": true,
+    "validateConfigFile": false,
     "virtualHosts": {
       "csfinancialconsulting.com": {
         "acmeFallbackHost": null,
@@ -944,6 +980,57 @@
         "sslTrustedCertificate": null,
         "useACMEHost": null
       },
+      "fabrication-forge.com": {
+        "acmeFallbackHost": null,
+        "acmeRoot": null,
+        "addSSL": false,
+        "basicAuth": {},
+        "basicAuthFile": null,
+        "default": false,
+        "enableACME": true,
+        "extraConfig": "",
+        "forceSSL": true,
+        "globalRedirect": null,
+        "http2": true,
+        "http3": true,
+        "http3_hq": false,
+        "kTLS": false,
+        "listen": [],
+        "listenAddresses": [
+          "10.0.1.42"
+        ],
+        "locations": {
+          "~/": {
+            "alias": null,
+            "basicAuth": {},
+            "basicAuthFile": null,
+            "extraConfig": "proxy_set_header Host $host;\nproxy_set_header X-Real-IP $remote_addr;\nproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\nproxy_set_header X-Forwarded-Proto $scheme;\nproxy_set_header Upgrade $http_upgrade;\nproxy_set_header Connection $connection_upgrade;\n",
+            "fastcgiParams": {},
+            "index": null,
+            "priority": 1000,
+            "proxyPass": "http://10.88.127.3:3000",
+            "proxyWebsockets": true,
+            "recommendedProxySettings": false,
+            "recommendedUwsgiSettings": false,
+            "return": null,
+            "root": null,
+            "tryFiles": null,
+            "uwsgiPass": null
+          }
+        },
+        "onlySSL": false,
+        "quic": false,
+        "redirectCode": 301,
+        "rejectSSL": false,
+        "reuseport": false,
+        "root": null,
+        "serverAliases": [],
+        "serverName": null,
+        "sslCertificate": "<eval-error>",
+        "sslCertificateKey": "<eval-error>",
+        "sslTrustedCertificate": null,
+        "useACMEHost": null
+      },
       "johnbargman.com": {
         "acmeFallbackHost": null,
         "acmeRoot": null,
@@ -978,6 +1065,23 @@
             "recommendedUwsgiSettings": false,
             "return": null,
             "root": "<derivation:personal-site-release>",
+            "tryFiles": null,
+            "uwsgiPass": null
+          },
+          "~ ^/(code/frame|v2)($|/)": {
+            "alias": null,
+            "basicAuth": {},
+            "basicAuthFile": null,
+            "extraConfig": "rewrite ^ $request_uri;\nrewrite ^/(code/frame($|/))?(.*) /$3 break;\nproxy_pass http://10.88.127.3:3000$uri;\nproxy_http_version 1.1;\nclient_max_body_size 512M;\nproxy_set_header Connection $http_connection;\nproxy_set_header Upgrade $http_upgrade;\nproxy_set_header Host $host;\nproxy_set_header X-Real-IP $remote_addr;\nproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\nproxy_set_header X-Forwarded-Proto $scheme;\n",
+            "fastcgiParams": {},
+            "index": null,
+            "priority": 1000,
+            "proxyPass": null,
+            "proxyWebsockets": false,
+            "recommendedProxySettings": false,
+            "recommendedUwsgiSettings": false,
+            "return": null,
+            "root": null,
             "tryFiles": null,
             "uwsgiPass": null
           }
@@ -1029,6 +1133,23 @@
             "recommendedUwsgiSettings": false,
             "return": null,
             "root": "<derivation:personal-site-staging>",
+            "tryFiles": null,
+            "uwsgiPass": null
+          },
+          "~ ^/(code/frame|v2)($|/)": {
+            "alias": null,
+            "basicAuth": {},
+            "basicAuthFile": null,
+            "extraConfig": "rewrite ^ $request_uri;\nrewrite ^/(code/frame($|/))?(.*) /$3 break;\nproxy_pass http://10.88.127.3:3000$uri;\nproxy_http_version 1.1;\nclient_max_body_size 512M;\nproxy_set_header Connection $http_connection;\nproxy_set_header Upgrade $http_upgrade;\nproxy_set_header Host $host;\nproxy_set_header X-Real-IP $remote_addr;\nproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\nproxy_set_header X-Forwarded-Proto $scheme;\n",
+            "fastcgiParams": {},
+            "index": null,
+            "priority": 1000,
+            "proxyPass": null,
+            "proxyWebsockets": false,
+            "recommendedProxySettings": false,
+            "recommendedUwsgiSettings": false,
+            "return": null,
+            "root": null,
             "tryFiles": null,
             "uwsgiPass": null
           }
