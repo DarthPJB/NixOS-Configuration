@@ -982,7 +982,7 @@
       },
       "fabrication-forge.net": {
         "acmeFallbackHost": null,
-        "acmeRoot": "/var/lib/acme/acme-challenge",
+        "acmeRoot": null,
         "addSSL": false,
         "basicAuth": {},
         "basicAuthFile": null,
@@ -996,21 +996,23 @@
         "http3_hq": false,
         "kTLS": false,
         "listen": [],
-        "listenAddresses": [],
+        "listenAddresses": [
+          "10.0.1.42"
+        ],
         "locations": {
-          "/": {
+          "~/": {
             "alias": null,
             "basicAuth": {},
             "basicAuthFile": null,
-            "extraConfig": "",
+            "extraConfig": "proxy_set_header Host $host;\nproxy_set_header X-Real-IP $remote_addr;\nproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\nproxy_set_header X-Forwarded-Proto $scheme;\nproxy_set_header Upgrade $http_upgrade;\nproxy_set_header Connection $connection_upgrade;\n",
             "fastcgiParams": {},
             "index": null,
             "priority": 1000,
-            "proxyPass": null,
-            "proxyWebsockets": false,
+            "proxyPass": "http://10.88.127.3:3000",
+            "proxyWebsockets": true,
             "recommendedProxySettings": false,
             "recommendedUwsgiSettings": false,
-            "return": "301 https://johnbargman.com/code/",
+            "return": null,
             "root": null,
             "tryFiles": null,
             "uwsgiPass": null

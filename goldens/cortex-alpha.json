@@ -1485,7 +1485,7 @@
         "basicAuthFile": null,
         "default": false,
         "enableACME": false,
-        "extraConfig": "client_max_body_size 512M;\n",
+        "extraConfig": "client_max_body_size 512M;\nproxy_set_header X-WEBAUTH-USER \"wguser\";\nproxy_set_header X-WEBAUTH-EMAIL \"wguser@johnbargman.net\";\n",
         "forceSSL": false,
         "globalRedirect": null,
         "http2": true,

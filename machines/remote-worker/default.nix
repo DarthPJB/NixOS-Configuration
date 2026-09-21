@@ -116,13 +116,6 @@ in
     "johnbargman.com-lan" = {
       locations."/".root = lib.mkForce personal-site.packages.${pkgs.stdenv.hostPlatform.system}.personal-site-staging;
     };
-    # Fabrication Forge alias — 301 redirect to canonical frame URL.
-    # enableACME + acme_server.nix (imported above) provisions a cert via DNS-01.
-    "fabrication-forge.net" = {
-      forceSSL = true;
-      enableACME = true;
-      locations."/".return = "301 https://johnbargman.com/code/";
-    };
   };
 
   # Overlay: nextcloud exporter credentials (secrix paths; topology delivers enable+port)
