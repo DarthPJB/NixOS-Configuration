@@ -147,8 +147,17 @@ in
         LANDING_PAGE = "home";
       };
       service = {
+        # Registration disabled — admin creates accounts via UI or
+        # `gitea admin user create`.  WireGuard users request accounts through
+        # the human process; public users see public repos only.
         DISABLE_REGISTRATION = true;
         REQUIRE_SIGNIN_VIEW = false;
+        # Disable unused login methods — reduce attack surface
+        ENABLE_OPENID_SIGNIN = false;
+        ENABLE_BASIC_AUTHENTICATION = false;
+        # Keep password + passkey login
+        ENABLE_PASSWORD_SIGNIN_FORM = true;
+        ENABLE_PASSKEY_AUTHENTICATION = true;
       };
       session.COOKIE_SECURE = true;
       security = {
@@ -156,6 +165,10 @@ in
         IMPORT_LOCAL_PATHS = false;
         PASSWORD_HASH_ALGO = "argon2";
         REVERSE_PROXY_TRUSTED_PROXIES = "10.88.127.1/32,10.88.128.1/32,10.88.127.50/32";
+        # Password hardening
+        MIN_PASSWORD_LENGTH = 12;
+        PASSWORD_COMPLEXITY = "upper,digit,spec";
+        PASSWORD_CHECK_PWN = true;
       };
       lfs = {
         # Inherit MINIO_* from [storage]. Setting STORAGE_TYPE here blanks the endpoint.
