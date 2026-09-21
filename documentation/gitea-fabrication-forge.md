@@ -17,7 +17,7 @@ links independently.
                  ┌─────────────────────────────┐
 public ─────────▶│ remote-worker (nginx)       │──┐
                  │  johnbargman.com/code/frame │  │ WireGuard
-                 │  fabrication-forge.net      │  │
+                 │  fabrication-forge.com      │  │
                  └─────────────────────────────┘  │
                                                   ▼
                                     local-nas Gitea (10.88.127.3:3000)
@@ -33,7 +33,7 @@ LAN / WG ───────▶│ cortex-alpha (nginx)        │──┘
 | URL | Gateway | Registration | Notes |
 |---|---|---|---|
 | `https://gitea.johnbargman.net` | cortex-alpha (LAN/WG) | ✅ reverse-proxy auth | Canonical domain; `DOMAIN` in Gitea |
-| `https://fabrication-forge.net` | remote-worker (public) | ❌ disabled | Standalone public forge |
+| `https://fabrication-forge.com` | remote-worker (public) | ❌ disabled | Standalone public forge |
 | `https://johnbargman.com/code/frame/` | remote-worker (public) | ❌ disabled | Subpath proxy for iframe embed |
 | `https://code.johnbargman.net` | cortex-alpha | — | 301 → `https://johnbargman.com/code/` |
 | `https://git.johnbargman.net` | cortex-alpha (legacy cgit) | — | Unchanged |
@@ -84,7 +84,7 @@ Gitea itself has no per-domain registration setting. Registration is gated by
   `gitea.johnbargman.net` vhost. That vhost listens only on the WireGuard/LAN IPs
   (`genNginx` derives them from topology), so **only WireGuard clients** trigger
   auto-registration.
-- **remote-worker** does NOT set the header. `fabrication-forge.net` and the
+- **remote-worker** does NOT set the header. `fabrication-forge.com` and the
   `johnbargman.com/code/frame` subpath proxy therefore present login but never
   auto-register a user.
 
@@ -150,9 +150,9 @@ WireGuard-internal service behind TLS termination.
 
 ## ACME
 
-`fabrication-forge.net` uses DNS-01 via Gandi (`services/acme_server.nix`
+`fabrication-forge.com` uses DNS-01 via Gandi (`services/acme_server.nix`
 imported in `remote-worker/default.nix`), same pattern as `johnbargman.com`.
-DNS A-record for `fabrication-forge.net` is added manually when ready.
+DNS A-record for `fabrication-forge.com` is added manually when ready.
 
 ---
 

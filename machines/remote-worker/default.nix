@@ -20,7 +20,7 @@ in
     ../../modules/enable-wg-topology.nix
     (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
     (import ../../services/acme_server.nix { fqdn = "johnbargman.com"; })
-    (import ../../services/acme_server.nix { fqdn = "fabrication-forge.net"; })
+    (import ../../services/acme_server.nix { fqdn = "fabrication-forge.com"; })
   ];
 
   # Disable nginx config validation — gixy HTTP-splitting check rejects $uri

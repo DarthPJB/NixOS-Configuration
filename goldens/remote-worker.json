@@ -575,16 +575,16 @@
         "validMinDays": null,
         "webroot": "/var/lib/acme/acme-challenge"
       },
-      "fabrication-forge.net": {
+      "fabrication-forge.com": {
         "allowKeysForGroup": "_mkRemovedOptionModule",
         "credentialFiles": {},
         "csr": null,
         "csrKey": null,
-        "directory": "/var/lib/acme/fabrication-forge.net",
+        "directory": "/var/lib/acme/fabrication-forge.com",
         "dnsPropagationCheck": false,
         "dnsProvider": "gandiv5",
         "dnsResolver": null,
-        "domain": "fabrication-forge.net",
+        "domain": "fabrication-forge.com",
         "email": "commander@johnbargman.net",
         "enableDebugLogs": true,
         "environmentFile": "/run/system-keys/dns01",
@@ -980,7 +980,7 @@
         "sslTrustedCertificate": null,
         "useACMEHost": null
       },
-      "fabrication-forge.net": {
+      "fabrication-forge.com": {
         "acmeFallbackHost": null,
         "acmeRoot": null,
         "addSSL": false,

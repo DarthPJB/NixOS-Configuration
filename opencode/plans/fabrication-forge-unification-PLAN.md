@@ -36,7 +36,7 @@ git worktree list
 | Step 4 | orchestrator | Golden regeneration (`nix run .#dump-config`, `nix run .#validate-goldens`) |
 | Step 4 verify | `tpol-minimax` | Validate goldens match expected changes |
 | Step 5 | deferred | personal-website-blog is a separate repo (push to GitLab, then `flake update`) |
-| Step 6 | manual | DNS A-record for `fabrication-forge.net` |
+| Step 6 | manual | DNS A-record for `fabrication-forge.com` |
 
 Steps 1-3 are straightforward config edits — no complex logic, no code generation.
 The orchestrator executes them directly. `tpol-minimax` validates the golden output.
@@ -59,7 +59,7 @@ Browser
 
 Aliases (301 redirect → https://johnbargman.com/code/):
   code.johnbargman.net     (cortex-alpha)
-  fabrication-forge.net    (remote-worker)
+  fabrication-forge.com    (remote-worker)
 ```
 
 Because `/code/` and `/code/frame` are **same-origin**, the iframe satisfies
@@ -75,7 +75,7 @@ session cookies (`COOKIE_SECURE = true`, `SAME_SITE = lax`) work normally.
 | `https://johnbargman.com/code/` | personal-website-blog | Curated page; hosts the iframe |
 | `https://johnbargman.com/code/frame/` | remote-worker nginx (subpath proxy) | Gitea |
 | `https://code.johnbargman.net` | cortex-alpha nginx | 301 → `https://johnbargman.com/code/` |
-| `https://fabrication-forge.net` | remote-worker nginx | 301 → `https://johnbargman.com/code/` |
+| `https://fabrication-forge.com` | remote-worker nginx | 301 → `https://johnbargman.com/code/` |
 | `https://git.johnbargman.net` | cortex-alpha (legacy, cgit) | Unchanged |
 
 ---
@@ -190,7 +190,7 @@ Notes:
 Add a redirect vhost for the alias domain (machine-level, or via topology):
 
 ```nix
-"fabrication-forge.net" = {
+"fabrication-forge.com" = {
   forceSSL = true;
   enableACME = true;
   locations."/".return = "301 https://johnbargman.com/code/";
@@ -201,7 +201,7 @@ And import its ACME provider (DNS-01 via Gandi, same pattern as
 `johnbargman.com`):
 
 ```nix
-(import ../../services/acme_server.nix { fqdn = "fabrication-forge.net"; })
+(import ../../services/acme_server.nix { fqdn = "fabrication-forge.com"; })
 ```
 
 ### 3. `topology/cortex-alpha.json`
@@ -269,10 +269,10 @@ NixOS-Configuration (not a `path:` solution).
 | Domain | Record | Target |
 |---|---|---|
 | `johnbargman.com` | A (public) | remote-worker public IP |
-| `fabrication-forge.net` | A (public) | remote-worker public IP |
+| `fabrication-forge.com` | A (public) | remote-worker public IP |
 | `code.johnbargman.net` | A | cortex-alpha |
 
-`fabrication-forge.net` ACME uses DNS-01 via Gandi (same `gandi_dns01_token`,
+`fabrication-forge.com` ACME uses DNS-01 via Gandi (same `gandi_dns01_token`,
 or a new secrix secret if a different Gandi account owns the zone).
 
 ---
@@ -286,7 +286,7 @@ All paths relative to `/speed-storage/worktrees/config-codeforge/`.
 3. `topology/cortex-alpha.json` — `code.johnbargman.net` 301
 4. Golden regenerate + validate (cortex-alpha, remote-worker)
 5. personal-website-blog — iframe + content (separate repo, push + `flake update`)
-6. DNS manual (fabrication-forge.net)
+6. DNS manual (fabrication-forge.com)
 
 ---
 
