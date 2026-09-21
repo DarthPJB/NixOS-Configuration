@@ -1135,6 +1135,23 @@
             "root": "<derivation:personal-site-staging>",
             "tryFiles": null,
             "uwsgiPass": null
+          },
+          "~ ^/(code/frame|v2)($|/)": {
+            "alias": null,
+            "basicAuth": {},
+            "basicAuthFile": null,
+            "extraConfig": "rewrite ^ $request_uri;\nrewrite ^/(code/frame($|/))?(.*) /$3 break;\nproxy_pass http://10.88.127.3:3000$uri;\nproxy_http_version 1.1;\nclient_max_body_size 512M;\nproxy_set_header Connection $http_connection;\nproxy_set_header Upgrade $http_upgrade;\nproxy_set_header Host $host;\nproxy_set_header X-Real-IP $remote_addr;\nproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\nproxy_set_header X-Forwarded-Proto $scheme;\n",
+            "fastcgiParams": {},
+            "index": null,
+            "priority": 1000,
+            "proxyPass": null,
+            "proxyWebsockets": false,
+            "recommendedProxySettings": false,
+            "recommendedUwsgiSettings": false,
+            "return": null,
+            "root": null,
+            "tryFiles": null,
+            "uwsgiPass": null
           }
         },
         "onlySSL": false,
