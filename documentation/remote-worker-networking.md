@@ -41,3 +41,12 @@ DNS entry defined in `topology/cortex-alpha.nix` under `dns.static`.
 | `csfincon.us` | `10.0.1.42` | `flake.nix` |
 | `nextcloud.johnbargman.net` | `10.0.1.42`, `10.88.127.50` | `nextcloud.nix` |
 | `nextcloud.johnbargman.com` | `10.0.1.42`, `10.88.127.50` | `nextcloud.nix` |
+| `fabrication-forge.net` | `10.0.1.42` | `topology/remote-worker.json` |
+
+## Gitea Subpath Proxy
+
+`johnbargman.com` also serves a Gitea subpath proxy at `/code/frame/` (regex
+location `~ ^/(code/frame|v2)($|/)`), forwarding over WireGuard to
+`local-nas` (`10.88.127.3:3000`). See
+[`gitea-fabrication-forge.md`](./gitea-fabrication-forge.md) for full details,
+including the `PUBLIC_URL_DETECTION = "auto"` navigation caveat.

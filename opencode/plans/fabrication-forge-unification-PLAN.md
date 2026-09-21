@@ -1,9 +1,17 @@
 # Fabrication Forge Unification Plan
 
 **Date:** 2026-09-20
-**Status:** Finalized — ready for execution
+**Status:** Executed — implementation deviated from original frame-canonical design
 **Branch:** `feat/config-codeforge`
-**Goal:** Consolidate Gitea, the Fabrication Forge brand, and the `/code/` page into one public code forge embedded in the personal website.
+**Goal:** Consolidate Gitea, the Fabrication Forge brand, and the `/code/` page into one public code forge.
+
+> **Note:** This plan documents the original *frame-canonical* design
+> (`PUBLIC_URL_DETECTION = "never"`, iframe at `/code/frame`). The final
+> implementation diverged: it uses **`PUBLIC_URL_DETECTION = "auto"`** with
+> **multi-domain** entry points and **reverse-proxy authentication**
+> (`X-WEBAUTH-USER`) for WireGuard-only registration. See
+> [`documentation/gitea-fabrication-forge.md`](../../documentation/gitea-fabrication-forge.md)
+> for the authoritative record of what actually shipped.
 
 ---
 
