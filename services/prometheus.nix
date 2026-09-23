@@ -39,6 +39,22 @@ let
   deploymentTargets = map
     (name: "${getWgIp topology.${name}}:${deploymentExporterPort}")
     (attrNames wgHosts);
+
+  # ── Generated dashboards ──────────────────────────────────
+  # Templates + monitoring inventory -> Grafana dashboard attrsets.
+  # Host membership (rename transforms, job unions, per-machine fan-out) is
+  # derived from topology, so adding/removing a machine updates every generated
+  # dashboard. Static domain dashboards remain under ./graphana_dashboards.
+  inventory = (import ../lib/topology/inventory.nix { inherit lib; }) { inherit registry; };
+  genDashboard = (import ../lib/topology/genDashboard.nix { inherit lib; }) { inherit inventory; };
+  generatedDashboards = import ../lib/topology/dashboard_templates { dash = genDashboard; };
+  generatedDashboardDir = pkgs.linkFarm "grafana-dashboards-generated"
+    (lib.mapAttrsToList
+      (name: dashboard: {
+        name = "${name}.json";
+        path = (pkgs.formats.json { }).generate "${name}.json" dashboard;
+      })
+      generatedDashboards);
 in
 {
   # TODO: with convergence style, automate scraper addition.
@@ -324,7 +340,20 @@ in
       enable = true;
       dashboards.settings.providers = [
         {
-          name = "default";
+          # Topology-generated dashboards (fleet-wide + per-machine fan-out).
+          name = "topology";
+          type = "file";
+          updateIntervalSeconds = 300; # 5m — standard poll duration
+          allowUiUpdates = false;
+          disableDeletion = false;
+          options = {
+            path = "${generatedDashboardDir}";
+            foldersFromFilesStructure = false;
+          };
+        }
+        {
+          # Hand-authored domain dashboards (AI, ZFS, storage, disk health...).
+          name = "static";
           type = "file";
           updateIntervalSeconds = 300; # 5m — standard poll duration
           allowUiUpdates = false;
