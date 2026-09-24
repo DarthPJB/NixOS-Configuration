@@ -45,7 +45,7 @@ let
   # Host membership (rename transforms, job unions, per-machine fan-out) is
   # derived from topology, so adding/removing a machine updates every generated
   # dashboard. Static domain dashboards remain under ./graphana_dashboards.
-  inventory = (import ../lib/topology/inventory.nix { inherit lib; }) { inherit registry; };
+  inventory = (import ../lib/monitoring/inventory.nix { inherit lib; }) { inherit self registry; };
   genDashboard = (import ../lib/topology/genDashboard.nix { inherit lib; }) { inherit inventory; };
   generatedDashboards = import ../lib/topology/dashboard_templates { dash = genDashboard; };
   generatedDashboardDir = pkgs.linkFarm "grafana-dashboards-generated"

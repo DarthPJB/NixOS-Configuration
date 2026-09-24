@@ -163,7 +163,8 @@ topologyConfigs (attrset of hostname → config attrset, merged into modules lis
 - `lib/topology/genBackup.nix` — Backup generator (conditional on topology.backup)
 - `lib/topology/genWireguard.nix` — WireGuard generator (wired separately, deferred to overlord-iii)
 - `lib/topology/mkRegistry.nix` — Registry pipeline for topology validation
-- `lib/topology/inventory.nix` — Monitoring inventory (canonical scraped-host list per job; feeds dashboards)
+- `lib/monitoring/inventory.nix` — Monitoring inventory (union of blessed scrape baseline + config-derived discovery; feeds dashboards)
+- `documentation/monitoring-automation.md` — Dashboard/inventory automation (Phase 1 done; Phase 2 scrape generation is future work)
 - `lib/topology/genDashboard.nix` — Grafana dashboard generator (inventory → dashboard attrsets; pure data transform)
 - `lib/topology/dashboard_templates/` — Dashboard templates (fleet, network, per-machine CPU fan-out, service health)
 - `services/graphana_dashboards/` — Hand-authored domain dashboards (AI, ZFS, storage, disk health); generated dashboards live in the store via `prometheus.nix`
