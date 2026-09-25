@@ -261,10 +261,10 @@ The inactive large-model port 8003 scrape has been removed. Ollama does not
 provide vLLM-equivalent native metrics; node-level memory and CPU metrics remain
 available for its 96 GiB service envelope.
 
-Grafana dashboards:
+Grafana dashboards (generated — `lib/topology/dashboard_templates/`):
 
-- `services/graphana_dashboards/ai-systems.json`
-- `services/graphana_dashboards/ai-inference.json`
+- `lib/topology/dashboard_templates/ai-systems.nix`
+- `lib/topology/dashboard_templates/ai-inference.nix`
 
 ## Declarative Validation
 

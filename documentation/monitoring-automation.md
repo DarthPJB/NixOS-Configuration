@@ -2,7 +2,30 @@
 
 **Scope:** How Grafana dashboards and the Prometheus monitoring inventory are
 generated from topology + evaluated config, and what remains to automate.
-**Status:** Phase 1 complete. Phase 2 is future work (see below).
+**Status:** Phase 1 complete, deployed and verified on `local-nas`. Phase 2 is
+future work (see below).
+**Last verified:** 2026-09-25 — 9 generated dashboards provisioned from the
+Nix store, all `provisioned`, legacy DB state clean.
+
+---
+
+## Dashboard inventory
+
+All 9 dashboards are generated from `lib/topology/dashboard_templates/` via
+`lib/topology/genDashboard.nix` + `lib/monitoring/inventory.nix`. There is no
+static dashboard JSON.
+
+| UID | Title | Covers | Host generation |
+|---|---|---|---|
+| `fleet-cpu-disk` | Fleet Admin (heavy) | CPU, mem, disk, network, energy, GPU, services + "Node Detail" (swap/IOPS/latency/PSI/procs, folded from remote-builder) | rename transforms, node job union |
+| `fleet-cpu-disk-light` | Fleet Overview (display) | CPU, mem, disk, filesystem, ZFS | rename transforms, node job union |
+| `fleet-network` | Fleet Network | interface bandwidth, status, errors, drops | rename transforms |
+| `cpu-frequency-per-machine` | CPU Frequency (per machine) | per-host core-frequency heatmap | full per-host fan-out + layout |
+| `service-health` | Service Health | systemd unit failures, key services | templated |
+| `storage-health` | Storage Health | SMART, temp, sectors, lifetime, disk I/O/latency/queue, filesystem, ZFS | rename transforms |
+| `ai-systems` | AI Systems | GPU util, VRAM, temp, power, clocks | GPU job union + renames (was hardcoded IPs) |
+| `ai-inference` | AI Inference | vLLM/LiteLLM request rate, latency, KV cache, errors | model-scoped (no host gen) |
+| `fleet-deployment` | Fleet Deployment Status | NixOS generation, version, uptime, kernel | rename transforms |
 
 ---
 
@@ -87,6 +110,34 @@ Auto-generate the monitoring inventory and all Grafana dashboards.
 
 Verified: adding a machine with exporters enabled (e.g. `pillar-of-autum`) now
 appears in generated dashboards automatically — no dashboard edits required.
+
+---
+
+## Deployment & verification
+
+Deployed to `local-nas` and verified over SSH (2026-09-25):
+
+- Grafana healthy (`/api/health` = 200); single `topology` file provider → the
+  generated store dir. No `static` provider.
+- Unified storage (`resource` table) holds exactly the 9 expected dashboards,
+  every one marked **`provisioned`** (immutable Nix config).
+- Legacy DB state clean: `dashboard` table = 0 rows, `dashboard_provisioning`
+  = 0 links. (A prior deploy left 9 stale rows from an old provisioning path;
+  these were removed imperatively so the deploy is declarative.)
+- Folds/deletions landed: `remote-builder` → `fleet-cpu-disk` "Node Detail";
+  `ai-systems` has zero hardcoded `instance=~` selectors; legacy dashboards
+  (`failstate`, `linda-system`, `network-wireguard`, `remote-builder`,
+  `storage-io`, `zfs-health`, `disk-health`) absent.
+
+**Verification commands** (on `local-nas`):
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" http://10.88.127.3:3101/api/health
+ls /nix/store/*-grafana-dashboards-generated/
+sqlite3 /var/lib/grafana/data/grafana.db \
+  "SELECT name FROM resource WHERE \"group\"='dashboard.grafana.app' ORDER BY name"
+sqlite3 /var/lib/grafana/data/grafana.db \
+  "SELECT COUNT(*) FROM dashboard"   # expect 0
+```
 
 ---
 
