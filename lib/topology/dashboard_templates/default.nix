@@ -10,4 +10,10 @@
   fleet-network = dash.mkDashboard (import ./fleet-network.nix { inherit dash; });
   cpu-frequency-per-machine = dash.mkDashboard (import ./cpu-frequency.nix { inherit dash; });
   service-health = dash.mkDashboard (import ./service-health.nix { inherit dash; });
+
+  # Folded from the legacy static domain dashboards.
+  storage-health = dash.mkDashboard (import ./storage-health.nix { inherit dash; });
+  ai-systems = dash.mkDashboard (import ./ai-systems.nix { inherit dash; });
+  ai-inference = dash.mkDashboard (import ./ai-inference.nix { inherit dash; });
+  fleet-deployment = dash.mkDashboard (import ./fleet-deployment.nix { inherit dash; });
 }

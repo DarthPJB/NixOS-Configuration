@@ -40,11 +40,11 @@ self.nixosConfigurations ──→ config introspection ──→ enabled export
   Deliberately **not** in `lib/topology/` — the topology toolset must stay pure
   (JSON in, attrset out). See `documentation/topology-principle.md`.
 - `lib/topology/genDashboard.nix` — pure inventory → dashboard generator.
-- `lib/topology/dashboard_templates/` — dashboard templates.
-- `services/graphana_dashboards/` — remaining hand-authored domain dashboards
-  (AI, ZFS, storage, disk health, deployment, remote-builder).
+- `lib/topology/dashboard_templates/` — dashboard templates (fleet, network,
+  per-machine CPU fan-out, service health, storage, AI, deployment).
 - `services/prometheus.nix` — wires the inventory and provisions generated
-  dashboards from the Nix store.
+  dashboards from the Nix store. All dashboards are generated — there is no
+  static dashboard JSON.
 
 ### Inventory construction
 
@@ -72,12 +72,16 @@ with **stable ordering**:
 
 ## Phase 1 — COMPLETE (golden-safe)
 
-Auto-generate the monitoring inventory and Grafana dashboards.
+Auto-generate the monitoring inventory and all Grafana dashboards.
 
 - Inventory from config introspection + topology IPs + externals + job mapping,
   unioned with the blessed baseline, stable ordering.
-- Generated dashboards provisioned from the Nix store via a dedicated Grafana
-  file provider; static domain dashboards unchanged.
+- **All dashboards are generated** and provisioned from the Nix store via a
+  single Grafana file provider. The legacy hand-authored static dashboards were
+  folded into generative templates (`storage-health` consolidating
+  ZFS/storage/disk-health, `ai-systems`, `ai-inference`, `fleet-deployment`) or
+  folded into existing ones (`remote-builder`'s unique panels → `fleet-cpu-disk`
+  "Node Detail"). No static dashboard JSON remains.
 - **Golden impact: none.** Grafana is not serialized in `lib/serialize-config.nix`,
   so the inventory and dashboards can shift freely.
 

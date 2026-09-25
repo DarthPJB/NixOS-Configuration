@@ -340,7 +340,7 @@ in
       enable = true;
       dashboards.settings.providers = [
         {
-          # Topology-generated dashboards (fleet-wide + per-machine fan-out).
+          # All dashboards are topology/inventory-generated — no static JSON.
           name = "topology";
           type = "file";
           updateIntervalSeconds = 300; # 5m — standard poll duration
@@ -349,18 +349,6 @@ in
           options = {
             path = "${generatedDashboardDir}";
             foldersFromFilesStructure = false;
-          };
-        }
-        {
-          # Hand-authored domain dashboards (AI, ZFS, storage, disk health...).
-          name = "static";
-          type = "file";
-          updateIntervalSeconds = 300; # 5m — standard poll duration
-          allowUiUpdates = false;
-          disableDeletion = false;
-          options = {
-            path = ./graphana_dashboards;
-            foldersFromFilesStructure = true;
           };
         }
       ];

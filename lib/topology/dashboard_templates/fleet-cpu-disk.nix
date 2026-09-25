@@ -389,5 +389,150 @@
         { expr = "(node_systemd_unit_state{state=\"failed\", job=\"node\"}) > 0"; legendFormat = "{{instance}} {{name}}"; }
       ];
     })
+    # ── Node Detail ──────────────────────────────────────────
+    # Folded from remote-builder.json (unique panels not covered above),
+    # re-scoped to all nodes. Memory breakdown, swap, IOPS, latency, PSI,
+    # process counts.
+    (dash.row { title = "Node Detail"; y = 83; })
+    (dash.panel {
+      type = "timeseries";
+      title = "Memory Breakdown (all nodes)";
+      x = 0;
+      y = 84;
+      w = 12;
+      h = 8;
+      fieldConfig = {
+        unit = "bytes";
+        custom = {
+          fillOpacity = 30;
+          lineWidth = 2;
+          spanNulls = false;
+          stacking = { group = "A"; mode = "normal"; };
+        };
+      };
+      options = {
+        legend = { displayMode = "table"; placement = "bottom"; showLegend = true; calcs = [ "lastNotNull" ]; };
+        tooltip = { mode = "multi"; sort = "desc"; };
+      };
+      transformations = dash.renames.nodeBare;
+      targets = [
+        { expr = "node_memory_MemTotal_bytes{job=~\"__NODE_JOBS__\"}"; legendFormat = "{{instance}} Total"; refId = "A"; }
+        { expr = "node_memory_Active_bytes{job=~\"__NODE_JOBS__\"}"; legendFormat = "{{instance}} Active"; refId = "B"; }
+        { expr = "node_memory_Cached_bytes{job=~\"__NODE_JOBS__\"}"; legendFormat = "{{instance}} Cached"; refId = "C"; }
+        { expr = "node_memory_Buffers_bytes{job=~\"__NODE_JOBS__\"}"; legendFormat = "{{instance}} Buffers"; refId = "D"; }
+        { expr = "node_memory_MemFree_bytes{job=~\"__NODE_JOBS__\"}"; legendFormat = "{{instance}} Free"; refId = "E"; }
+      ];
+    })
+    (dash.panel {
+      type = "timeseries";
+      title = "Swap Usage (all nodes)";
+      x = 12;
+      y = 84;
+      w = 12;
+      h = 8;
+      fieldConfig = {
+        unit = "bytes";
+        custom = {
+          fillOpacity = 30;
+          lineWidth = 2;
+          spanNulls = false;
+          stacking = { group = "A"; mode = "normal"; };
+        };
+      };
+      options = {
+        legend = { displayMode = "table"; placement = "bottom"; showLegend = true; calcs = [ "lastNotNull" ]; };
+        tooltip = { mode = "multi"; sort = "desc"; };
+      };
+      transformations = dash.renames.nodeBare;
+      targets = [
+        { expr = "node_memory_SwapTotal_bytes{job=~\"__NODE_JOBS__\"}"; legendFormat = "{{instance}} Total"; refId = "A"; }
+        { expr = "node_memory_SwapTotal_bytes{job=~\"__NODE_JOBS__\"} - node_memory_SwapFree_bytes{job=~\"__NODE_JOBS__\"}"; legendFormat = "{{instance}} Used"; refId = "B"; }
+      ];
+    })
+    (dash.panel {
+      type = "timeseries";
+      title = "Disk IOPS (all nodes)";
+      x = 0;
+      y = 92;
+      w = 12;
+      h = 8;
+      fieldConfig = {
+        unit = "iops";
+        custom = { fillOpacity = 30; lineWidth = 2; spanNulls = false; };
+      };
+      options = {
+        legend = { displayMode = "table"; placement = "bottom"; showLegend = true; calcs = [ "mean" ]; };
+        tooltip = { mode = "multi"; sort = "desc"; };
+      };
+      transformations = dash.renames.nodeBare;
+      targets = [
+        { expr = "rate(node_disk_reads_completed_total{job=~\"__NODE_JOBS__\",device!~\"^(loop|ram|sr).*\"}[5m])"; legendFormat = "{{instance}} {{device}} read"; refId = "A"; }
+        { expr = "-rate(node_disk_writes_completed_total{job=~\"__NODE_JOBS__\",device!~\"^(loop|ram|sr).*\"}[5m])"; legendFormat = "{{instance}} {{device}} write"; refId = "B"; }
+      ];
+    })
+    (dash.panel {
+      type = "timeseries";
+      title = "Disk Latency (all nodes)";
+      x = 12;
+      y = 92;
+      w = 12;
+      h = 8;
+      fieldConfig = {
+        unit = "ms";
+        custom = { fillOpacity = 20; lineWidth = 2; spanNulls = false; };
+      };
+      options = {
+        legend = { displayMode = "table"; placement = "bottom"; showLegend = true; calcs = [ "mean" "max" ]; };
+        tooltip = { mode = "multi"; sort = "desc"; };
+      };
+      transformations = dash.renames.nodeBare;
+      targets = [
+        { expr = "rate(node_disk_read_time_seconds_total{job=~\"__NODE_JOBS__\",device!~\"^(loop|ram|sr).*\"}[5m]) / rate(node_disk_reads_completed_total{job=~\"__NODE_JOBS__\",device!~\"^(loop|ram|sr).*\"}[5m]) * 1000"; legendFormat = "{{instance}} {{device}} read"; refId = "A"; }
+        { expr = "rate(node_disk_write_time_seconds_total{job=~\"__NODE_JOBS__\",device!~\"^(loop|ram|sr).*\"}[5m]) / rate(node_disk_writes_completed_total{job=~\"__NODE_JOBS__\",device!~\"^(loop|ram|sr).*\"}[5m]) * 1000"; legendFormat = "{{instance}} {{device}} write"; refId = "B"; }
+      ];
+    })
+    (dash.panel {
+      type = "timeseries";
+      title = "Pressure Stall Information (all nodes)";
+      x = 0;
+      y = 100;
+      w = 12;
+      h = 6;
+      fieldConfig = {
+        unit = "s";
+        custom = { fillOpacity = 10; lineWidth = 2; };
+      };
+      options = {
+        legend = { displayMode = "list"; placement = "bottom"; showLegend = false; };
+        tooltip = { mode = "single"; };
+      };
+      transformations = dash.renames.nodeBare;
+      targets = [
+        { expr = "node_pressure_cpu_waiting_seconds_total{job=~\"__NODE_JOBS__\"}"; legendFormat = "{{instance}} CPU pressure"; refId = "A"; }
+        { expr = "node_pressure_io_waiting_seconds_total{job=~\"__NODE_JOBS__\"}"; legendFormat = "{{instance}} IO pressure"; refId = "B"; }
+        { expr = "node_pressure_memory_waiting_seconds_total{job=~\"__NODE_JOBS__\"}"; legendFormat = "{{instance}} Memory pressure"; refId = "C"; }
+      ];
+    })
+    (dash.panel {
+      type = "timeseries";
+      title = "Processes (running / blocked, all nodes)";
+      x = 12;
+      y = 100;
+      w = 12;
+      h = 6;
+      fieldConfig = {
+        unit = "short";
+        custom = { fillOpacity = 10; };
+      };
+      options = {
+        legend = { displayMode = "list"; placement = "bottom"; showLegend = false; };
+        tooltip = { mode = "single"; };
+      };
+      transformations = dash.renames.nodeBare;
+      targets = [
+        { expr = "node_procs_running{job=~\"__NODE_JOBS__\"}"; legendFormat = "{{instance}} Running"; refId = "A"; }
+        { expr = "node_procs_blocked{job=~\"__NODE_JOBS__\"}"; legendFormat = "{{instance}} Blocked"; refId = "B"; }
+      ];
+    })
   ];
 }
