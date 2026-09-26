@@ -13,11 +13,11 @@
         "pure-nix-mcp": "pure-nix-mcp"
       },
       "locked": {
-        "lastModified": 1789995510,
-        "narHash": "sha256-BBNcMUjHnTT2Oe8Z6NpS9qvihya3hwW9nA82IPJNq48=",
+        "lastModified": 1790325377,
+        "narHash": "sha256-BD0ZUtroBXEHEg8fDuVYpDLjd+Xp9yICljDwJ+dJuMg=",
         "owner": "mecha-team-zero",
         "repo": "llm-core",
-        "rev": "72aa5234987f4c2ede2337852e4e08c5b3e0e3eb",
+        "rev": "41a00050de6ff687c94fe00320947a644dbb65cc",
         "type": "gitlab"
       },
       "original": {
@@ -1349,6 +1349,24 @@
         "url": "https://gitlab.com/mecha-team-zero/Malayalam.git"
       }
     },
+    "media-pipeline": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_25"
+      },
+      "locked": {
+        "lastModified": 1787661628,
+        "narHash": "sha256-f0XqSngUCTNyEm9lOPugNE/snygyiQZ39F/Rub4SBgc=",
+        "ref": "refs/heads/main",
+        "rev": "095373b6db4dc39b16ea67ed421d7995f58e625d",
+        "revCount": 2,
+        "type": "git",
+        "url": "ssh://git@gitlab.com/mecha-team-zero/media-pipeline-v3"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@gitlab.com/mecha-team-zero/media-pipeline-v3"
+      }
+    },
     "nix": {
       "inputs": {
         "flake-parts": "flake-parts",
@@ -1980,6 +1998,22 @@
     },
     "nixpkgs_25": {
       "locked": {
+        "lastModified": 1787498568,
+        "narHash": "sha256-9i/VTdusq/+NM/tz+J1Re+ojkMB8MBf0QshnYfzHz30=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "56c02bc00adcf003215cc4bd996d6efaf4cff188",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_26": {
+      "locked": {
         "lastModified": 1780243769,
         "narHash": "sha256-x5UQuRsH3MqI0U9afaXSNqzTPSeZlRLvFAav2Ux1pNw=",
         "owner": "NixOS",
@@ -1994,7 +2028,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_26": {
+    "nixpkgs_27": {
       "locked": {
         "lastModified": 1784356753,
         "narHash": "sha256-12KrbMiWLcf8m7pCvAtZh1ZrgF85ZXDXvfR/fWTKy84=",
@@ -2010,7 +2044,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_27": {
+    "nixpkgs_28": {
       "locked": {
         "lastModified": 1763678758,
         "narHash": "sha256-+hBiJ+kG5IoffUOdlANKFflTT5nO3FrrR2CA3178Y5s=",
@@ -2026,29 +2060,13 @@
         "type": "github"
       }
     },
-    "nixpkgs_28": {
+    "nixpkgs_29": {
       "locked": {
         "lastModified": 1788316716,
         "narHash": "sha256-bc7rSpXIdn9QWGNqfWcPZWOhEVF8NoeAZkWq0XWnf/k=",
         "owner": "NixOS",
         "repo": "nixpkgs",
         "rev": "3ed67ec0a4d3c7ab4ae1f04f8ee8df07bfa506a2",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_29": {
-      "locked": {
-        "lastModified": 1784356753,
-        "narHash": "sha256-12KrbMiWLcf8m7pCvAtZh1ZrgF85ZXDXvfR/fWTKy84=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "61b7c44c4073f0b827768aff0049561b5110ea5a",
         "type": "github"
       },
       "original": {
@@ -2070,6 +2088,22 @@
       "original": {
         "owner": "NixOS",
         "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_30": {
+      "locked": {
+        "lastModified": 1784356753,
+        "narHash": "sha256-12KrbMiWLcf8m7pCvAtZh1ZrgF85ZXDXvfR/fWTKy84=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "61b7c44c4073f0b827768aff0049561b5110ea5a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -2393,14 +2427,15 @@
     },
     "personal-site": {
       "inputs": {
-        "nixpkgs": "nixpkgs_25"
+        "media-pipeline": "media-pipeline",
+        "nixpkgs": "nixpkgs_26"
       },
       "locked": {
-        "lastModified": 1787583056,
-        "narHash": "sha256-cMRaDMXH4Pb9pflgvrGhELDuZlGPgRzPm9IIH1d9lN8=",
+        "lastModified": 1790331699,
+        "narHash": "sha256-xl//3p8ReLwMEtEgaKVSCoXVZrY/z7i6hvt4cXSUGbo=",
         "ref": "refs/heads/main",
-        "rev": "4ec10291a8f78d81f986606bef2360c22cea61bf",
-        "revCount": 85,
+        "rev": "9f09ec91548e3b5972ecc71a652378771b8b8e7a",
+        "revCount": 89,
         "type": "git",
         "url": "https://gitlab.com/mecha-team-zero/bargman-website.git"
       },
@@ -2470,7 +2505,7 @@
     "ratty": {
       "inputs": {
         "crane": "crane",
-        "nixpkgs": "nixpkgs_26"
+        "nixpkgs": "nixpkgs_27"
       },
       "locked": {
         "lastModified": 1785362724,
@@ -2569,7 +2604,7 @@
     },
     "secrix_3": {
       "inputs": {
-        "nixpkgs": "nixpkgs_27"
+        "nixpkgs": "nixpkgs_28"
       },
       "locked": {
         "lastModified": 1784646685,
@@ -2625,7 +2660,7 @@
       "inputs": {
         "flake-compat": "flake-compat_4",
         "nix-gaming": "nix-gaming",
-        "nixpkgs": "nixpkgs_28",
+        "nixpkgs": "nixpkgs_29",
         "treefmt-nix": "treefmt-nix_2"
       },
       "locked": {
@@ -3077,7 +3112,7 @@
     "xlibre-overlay": {
       "inputs": {
         "flake-parts": "flake-parts_5",
-        "nixpkgs": "nixpkgs_29"
+        "nixpkgs": "nixpkgs_30"
       },
       "locked": {
         "lastModified": 1785768669,
