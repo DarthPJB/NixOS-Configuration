@@ -11,25 +11,10 @@ let
 in
 {
 
-  services.openssh.extraConfig = ''
-    # Only this block applies to connections on port 22
-        Match LocalPort 22
-          # Allow only git from the VPN subnet
-          AllowUsers git@10.88.127.0/24
-
-          # Explicitly reinforce (optional but clearer)
-          PermitRootLogin no
-          PasswordAuthentication no
-  '';
+  # Port 22 / git-ssh plane policy lives in server_services/git-ssh.nix
+  # (shared by Gitea and this legacy gitolite stack).
   networking.firewall.interfaces."wireg0".allowedTCPPorts = [
     80
-    22
-  ];
-  services.openssh.listenAddresses = lib.mkIf (wgIp != null) [
-    {
-      addr = wgIp;
-      port = 22;
-    }
   ];
 
   services.uwsgi = {

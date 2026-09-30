@@ -61,6 +61,61 @@ let
       ${lib.getExe' mc "mc"} mb --ignore-existing gitealfs/git-lfs >/dev/null
     '';
   };
+
+  # ── Fabrication Forge branding ─────────────────────────────────────────────
+  # Runtime asset layer: Gitea layers ${customDir}/public and
+  # ${customDir}/templates over its built-in assets at startup. The tree is
+  # built here and symlinked in whole (declarative, upgrade-safe).
+  branding = pkgs.callPackage ./gitea-branding { };
+
+  # ── Identity: LDAP (the fleet's OpenLDAP on cortex-alpha) ──────────────────
+  # server_services/ldap.nix on cortex-alpha is the real, deployed directory
+  # (LDAPS :636, dc=johnbargman,dc=net). Gitea authenticates against it with an
+  # anonymous search bind + per-user bind: the directory's olcAccess already
+  # grants `anonymous auth` on userPassword and `* read` elsewhere, so no shared
+  # service credential exists or is required. Auth sources are DB rows, so the
+  # source is reconciled declaratively by the oneshot below.
+  ldap = {
+    # Stable reconciliation key for `gitea admin auth` add/update.
+    name = "johnbargman-ldap";
+    host = "ldap.johnbargman.net";
+    port = 636;
+    userSearchBase = "dc=johnbargman,dc=net";
+    userFilter = "(&(objectClass=inetOrgPerson)(uid=%s))";
+  };
+
+  provisionLdap = pkgs.writeShellApplication {
+    name = "gitea-ldap-provision";
+    runtimeInputs = [ pkgs.gitea pkgs.coreutils pkgs.gawk ];
+    text = ''
+      export GITEA_WORK_DIR=${stateDir}
+      export GITEA_CUSTOM=${stateDir}/custom
+      export HOME=${stateDir}
+      GITEA_CONFIG=${confDir}/app.ini
+
+      ID="$(${lib.getExe pkgs.gitea} --config "$GITEA_CONFIG" admin auth list \
+        | ${lib.getExe pkgs.gawk} -v n="${ldap.name}" '$2==n {print $1; exit}')"
+
+      ARGS=(
+        --name "${ldap.name}"
+        --security-protocol LDAPS
+        --host "${ldap.host}"
+        --port "${toString ldap.port}"
+        --user-search-base "${ldap.userSearchBase}"
+        --user-filter "${ldap.userFilter}"
+        --username-attribute uid
+        --firstname-attribute givenName
+        --surname-attribute sn
+        --email-attribute mail
+      )
+
+      if [ -z "$ID" ]; then
+        ${lib.getExe pkgs.gitea} --config "$GITEA_CONFIG" admin auth add-ldap "''${ARGS[@]}"
+      else
+        ${lib.getExe pkgs.gitea} --config "$GITEA_CONFIG" admin auth update-ldap --id "$ID" "''${ARGS[@]}"
+      fi
+    '';
+  };
 in
 {
   secrix.system.secrets = {
@@ -109,11 +164,35 @@ in
     };
   };
 
+  # Reconcile the LDAP source to the declared state on every boot.
+  systemd.services.gitea-ldap-provision = {
+    description = "Provision LDAP authentication source for Gitea (OpenLDAP on cortex-alpha)";
+    after = [ "gitea.service" ];
+    requires = [ "gitea.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      User = "gitea";
+      Group = "gitea";
+      WorkingDirectory = stateDir;
+      Environment = [
+        "GITEA_WORK_DIR=${stateDir}"
+        "GITEA_CUSTOM=${stateDir}/custom"
+        "HOME=${stateDir}"
+      ];
+      ExecStart = lib.getExe provisionLdap;
+    };
+  };
+
   systemd.tmpfiles.rules = [
     "d ${stateDir} 0750 gitea gitea -"
     "d ${stateDir}/custom 0750 gitea gitea -"
     "d ${confDir} 0750 gitea gitea -"
     "Z ${stateDir}/custom 0750 gitea gitea -"
+    # Fabrication Forge branding — the whole asset layer comes from the store.
+    "L+ ${stateDir}/custom/public - - - - ${branding}/public"
+    "L+ ${stateDir}/custom/templates - - - - ${branding}/templates"
   ];
 
   systemd.services.gitea = {
@@ -131,6 +210,7 @@ in
 
   services.gitea = {
     enable = true;
+    appName = "Fabrication Forge";
     stateDir = stateDir;
     lfs.enable = true;
     lfs.contentDir = "${stateDir}/lfs";
@@ -143,26 +223,53 @@ in
         PUBLIC_URL_DETECTION = "auto";
         HTTP_ADDR = wgIp;
         HTTP_PORT = httpPort;
-        DISABLE_SSH = true;
+        # git+ssh on port 22 over WireGuard, served by the SYSTEM sshd
+        # (server_services/git-ssh.nix owns the port-22 plane and auth policy).
+        # Gitea's built-in SSH server is deliberately not used.
+        DISABLE_SSH = false;
+        START_SSH_SERVER = false;
+        SSH_DOMAIN = "gitea.johnbargman.net";
+        SSH_PORT = 22;
         LANDING_PAGE = "home";
       };
       service = {
-        # Registration form disabled — no public self-registration.
-        # Auto-registration happens via reverse proxy auth header
-        # (X-WEBAUTH-USER) from cortex-alpha for WireGuard clients.
+        # Registration form disabled — accounts come from the directory.
         DISABLE_REGISTRATION = true;
         REQUIRE_SIGNIN_VIEW = false;
-        # Reverse proxy authentication — auto-register WireGuard users
-        ENABLE_REVERSE_PROXY_AUTHENTICATION = true;
-        ENABLE_REVERSE_PROXY_AUTHENTICATION_API = true;
-        ENABLE_REVERSE_PROXY_AUTO_REGISTRATION = true;
-        ENABLE_REVERSE_PROXY_EMAIL = true;
-        # Disable unused login methods — reduce attack surface
-        ENABLE_OPENID_SIGNIN = false;
-        ENABLE_BASIC_AUTHENTICATION = false;
-        # Keep password + passkey login
+        SHOW_REGISTRATION_BUTTON = false;
+        # The sign-in form is the transport for LDAP authentication (Gitea
+        # looks the user up in the directory and binds with their password).
+        # The previous static X-WEBAUTH-USER reverse-proxy header was an
+        # unauthenticated identity (every WireGuard client collapsed into one
+        # `wguser` account) and is gone. Break-glass stays on the `gitea admin`
+        # CLI (gitea-create-admin).
         ENABLE_PASSWORD_SIGNIN_FORM = true;
+        ENABLE_BASIC_AUTHENTICATION = false;
         ENABLE_PASSKEY_AUTHENTICATION = true;
+        # Legacy OpenID 2.0 is not part of the identity path.
+        ENABLE_OPENID_SIGNIN = false;
+        ENABLE_REVERSE_PROXY_AUTHENTICATION = false;
+        ENABLE_REVERSE_PROXY_AUTHENTICATION_API = false;
+        ENABLE_REVERSE_PROXY_AUTO_REGISTRATION = false;
+        ENABLE_REVERSE_PROXY_EMAIL = false;
+      };
+      # Identity is directory-owned: LDAP users cannot edit it inside Gitea.
+      admin = {
+        EXTERNAL_USER_DISABLE_FEATURES = "change_username,change_full_name,manage_credentials";
+      };
+      ui = {
+        DEFAULT_THEME = "fabrication-forge";
+        THEMES = "fabrication-forge,gitea-auto,gitea-light,gitea-dark";
+      };
+      "ui.meta" = {
+        AUTHOR = "Bargman-Tech";
+        DESCRIPTION = "Fabrication Forge — private Git infrastructure for Bargman-Tech engineering.";
+        KEYWORDS = "git,fabrication forge,bargman-tech,engineering";
+      };
+      other = {
+        SHOW_FOOTER_VERSION = false;
+        SHOW_FOOTER_TEMPLATE_LOAD_TIME = false;
+        SHOW_FOOTER_POWERED_BY = false;
       };
       session.COOKIE_SECURE = true;
       security = {

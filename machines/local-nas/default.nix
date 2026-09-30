@@ -15,6 +15,7 @@
   imports = [
     # ../../configuration.nix — already in commonModules (flake.nix), do not duplicate
     ../../server_services/gitolite.nix
+    ../../server_services/git-ssh.nix
     ./hardware-configuration.nix
     ../../modules/enable-wg-topology.nix
     ../../modifier_imports/zram.nix

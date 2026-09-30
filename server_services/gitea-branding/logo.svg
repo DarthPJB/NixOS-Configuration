@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Fabrication Forge">
+  <defs>
+    <linearGradient id="forge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f1af7f"/>
+      <stop offset="1" stop-color="#d46623"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#1a140f"/>
+  <path d="M32 8 L52 20 L52 44 L32 56 L12 44 L12 20 Z"
+        fill="none" stroke="url(#forge)" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M23 44 L23 20 L43 20 L43 27 L31 27 L31 30 L41 30 L41 37 L31 37 L31 44 Z"
+        fill="#f8f8f8"/>
+</svg>

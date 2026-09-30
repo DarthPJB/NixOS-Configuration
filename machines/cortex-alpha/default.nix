@@ -67,23 +67,16 @@ in
     publish.enable = false;
   };
 
-  # Gitea vhost on LAN gateway — WireGuard clients only.
-  # Reverse proxy auth: nginx sets X-WEBAUTH-USER header so Gitea
-  # auto-registers WireGuard users.  The vhost listens only on the
-  # WireGuard/LAN IPs (set by genNginx from topology), so only trusted
-  # network clients can reach it.
+  # Gitea vhost on LAN gateway — WireGuard clients only. The vhost listens
+  # only on the WireGuard/LAN IPs (set by genNginx from topology), so only
+  # trusted network clients can reach it.
   #
-  # NOTE: the header MUST be set inside the location block (locations."~/").
-  # Setting it at the server level is silently dropped — nginx does not
-  # inherit server-level proxy_set_header into a location that defines its
-  # own (the topology-generated ~/ block sets Host/X-Real-IP/etc).
+  # Login identity comes from Authentik via OIDC (see server_services/gitea.nix);
+  # the previous static X-WEBAUTH-USER header was an unauthenticated identity
+  # and has been removed.
   services.nginx.virtualHosts."gitea.johnbargman.net" = {
     extraConfig = ''
       client_max_body_size 512M;
-    '';
-    locations."~/".extraConfig = ''
-      proxy_set_header X-WEBAUTH-USER "wguser";
-      proxy_set_header X-WEBAUTH-EMAIL "wguser@johnbargman.net";
     '';
   };
 
