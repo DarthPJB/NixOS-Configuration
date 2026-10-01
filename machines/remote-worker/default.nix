@@ -15,8 +15,13 @@ let
   # module generating a conflicting proxy_pass directive.
   # Applied to BOTH the public (johnbargman.com) and WG staging
   # (johnbargman.com-lan) vhosts so LAN/WG clients also reach the forge.
-  giteaSubpathProxy = {
-    extraConfig = ''
+  # blockAccounts: public faces only — Gitea has no per-domain auth settings,
+  # so the account namespace (/user/...) is 404'd here to guarantee NO login
+  # outside WireGuard.  gitea.johnbargman.net keeps the full login surface.
+  giteaSubpathProxy = { blockAccounts ? false }: {
+    extraConfig = lib.optionalString blockAccounts ''
+      if ($request_uri ~ "^/(code/frame/)?(user|login)([/?]|$)") { return 404; }
+    '' + ''
       rewrite ^ $request_uri;
       rewrite ^/(code/frame($|/))?(.*) /$3 break;
       proxy_pass http://10.88.127.3:3000$uri;
@@ -114,12 +119,31 @@ in
     "johnbargman.com" = {
       # Public: serves release site
       locations."/".root = lib.mkForce personal-site.packages.${pkgs.stdenv.hostPlatform.system}.personal-site;
-      locations."~ ^/(code/frame|v2)($|/)" = giteaSubpathProxy;
+      # Public face — block the account namespace so there is NO login
+      # outside WireGuard (Gitea has no per-domain auth settings).
+      locations."~ ^/(code/frame|v2)($|/)" = giteaSubpathProxy { blockAccounts = true; };
     };
-    # WireGuard split-horizon: staging site on WG IP only
+    # WireGuard split-horizon: staging site on WG IP only.
+    # WG face — full login surface kept (reverse-proxy auth + form).
     "johnbargman.com-lan" = {
       locations."/".root = lib.mkForce personal-site.packages.${pkgs.stdenv.hostPlatform.system}.personal-site-staging;
-      locations."~ ^/(code/frame|v2)($|/)" = giteaSubpathProxy;
+      locations."~ ^/(code/frame|v2)($|/)" = giteaSubpathProxy { };
+    };
+    # Fabrication Forge — standalone public Gitea face, embedded
+    # cross-origin by johnbargman.com /code/.  The site iframe is
+    # same-scheme cross-origin, so Gitea's default
+    # X-Frame-Options: SAMEORIGIN would block it: hide that header and
+    # pin an explicit frame-ancestors allowlist instead.  Account
+    # namespace 404'd: read-only outside WireGuard.
+    "fabrication-forge.com" = {
+      extraConfig = ''
+        client_max_body_size 512M;
+      '';
+      locations."~/".extraConfig = ''
+        if ($request_uri ~ "^/(user|login)([/?]|$)") { return 404; }
+        proxy_hide_header X-Frame-Options;
+        add_header Content-Security-Policy "frame-ancestors https://johnbargman.com http://localhost:9090" always;
+      '';
     };
   };
 

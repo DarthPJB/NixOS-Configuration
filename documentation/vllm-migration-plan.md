@@ -266,6 +266,11 @@ Create `services/graphana_dashboards/ai-inference.json` with panels for:
 
 Reference: `services/graphana_dashboards/ai-systems.json` (existing hardware dashboard), vLLM metrics documentation in `documentation/ai-upgrades.md`
 
+> **Note (2026-09-25):** dashboards are now generated. `ai-inference` and
+> `ai-systems` live as generative templates in
+> `lib/topology/dashboard_templates/` (`.nix`), not static JSON. See
+> `documentation/monitoring-automation.md`.
+
 **Success criteria**: Dashboard JSON is valid Grafana format. Panels reference correct Prometheus metrics.
 
 ---
