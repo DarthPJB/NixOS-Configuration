@@ -10,6 +10,7 @@
 # whole by server_services/gitea.nix:
 #   public/assets/css/theme-fabrication-forge.css
 #   public/assets/img/{logo,favicon}.{svg,png}
+#   public/assets/img/{avatar_default.png,emoji/forge.png}
 #   templates/custom/{header,footer,extra_links}.tmpl
 runCommand "gitea-fabrication-forge-branding"
 {
@@ -20,7 +21,7 @@ runCommand "gitea-fabrication-forge-branding"
   };
 }
   ''
-    ${lib.getExe' coreutils "mkdir"} -p $out/public/assets/css $out/public/assets/img $out/templates/custom
+    ${lib.getExe' coreutils "mkdir"} -p $out/public/assets/css $out/public/assets/img $out/public/assets/img/emoji $out/templates/custom
 
     ${lib.getExe' coreutils "cp"} ${./theme-fabrication-forge.css} $out/public/assets/css/theme-fabrication-forge.css
     ${lib.getExe' coreutils "cp"} ${./logo.svg} $out/public/assets/img/logo.svg
@@ -28,6 +29,9 @@ runCommand "gitea-fabrication-forge-branding"
 
     ${lib.getExe resvg} --width 512 ${./logo.svg} $out/public/assets/img/logo.png
     ${lib.getExe resvg} --width 64 ${./favicon.svg} $out/public/assets/img/favicon.png
+    # :forge: custom emoji and the default avatar share the brand mark.
+    ${lib.getExe resvg} --width 64 ${./logo.svg} $out/public/assets/img/emoji/forge.png
+    ${lib.getExe resvg} --width 200 ${./logo.svg} $out/public/assets/img/avatar_default.png
 
     ${lib.getExe' coreutils "cp"} ${./templates/header.tmpl} $out/templates/custom/header.tmpl
     ${lib.getExe' coreutils "cp"} ${./templates/footer.tmpl} $out/templates/custom/footer.tmpl

@@ -264,6 +264,12 @@ in
       ui = {
         DEFAULT_THEME = "fabrication-forge";
         THEMES = "fabrication-forge,gitea-auto,gitea-light,gitea-dark";
+        # File-tree glyphs: `basic` octicons inherit theme colours; the
+        # default `material` set is off-brand for the forge.
+        FILE_ICON_THEME = "basic";
+        FOLDER_ICON_THEME = "basic";
+        # `:forge:` renders the brand mark from assets/img/emoji/forge.png.
+        CUSTOM_EMOJIS = "git,gitea,codeberg,gitlab,github,gogs,forge";
       };
       "ui.meta" = {
         AUTHOR = "Bargman-Tech";
