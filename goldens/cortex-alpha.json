@@ -384,6 +384,7 @@
       "enp3s0": {
         "allowedTCPPortRanges": [],
         "allowedTCPPorts": [
+          22,
           443,
           2208
         ],
@@ -398,6 +399,7 @@
       "wireg0": {
         "allowedTCPPortRanges": [],
         "allowedTCPPorts": [
+          22,
           443,
           3100,
           3101,
@@ -460,6 +462,7 @@
       "enp3s0": {
         "allowedTCPPortRanges": [],
         "allowedTCPPorts": [
+          22,
           443,
           2208
         ],
@@ -474,6 +477,7 @@
       "wireg0": {
         "allowedTCPPortRanges": [],
         "allowedTCPPorts": [
+          22,
           443,
           3100,
           3101,
@@ -625,7 +629,7 @@
     "rulesetFile": null,
     "tables": {
       "nixos-fw": {
-        "content": "set temp-ports {\n  comment \"Temporarily opened ports\"\n  type inet_proto . inet_service\n  flags interval\n  auto-merge\n}\n\nchain rpfilter {\n  type filter hook prerouting priority mangle + 10; policy drop;\n\n  meta nfproto ipv4 udp sport . udp dport { 67 . 68, 68 . 67 } accept comment \"DHCPv4 client/server\"\n  fib saddr . mark . iif oif exists accept\n\n  jump rpfilter-allow\n\n  \n\n}\n\n\nchain rpfilter-allow {\n  \n}\n\nchain input {\n  type filter hook input priority filter; policy drop;\n\n  iifname { \"lo\" } accept comment \"trusted interfaces\"\n\n  # Multicast ICMPv6 echo replies get marked as invalid by conntrack.\n  # Accept them before conntrack to avoid dropped replies.\n  icmpv6 type echo-reply accept\n\n  # Some ICMPv6 types like NDP is untracked\n  ct state vmap {\n    invalid : drop,\n    established : accept,\n    related : accept,\n    new : jump input-allow,\n    untracked: jump input-allow,\n  }\n\n  \n  \n  \n\n  \n\n}\n\nchain input-allow {\n\n   tcp dport { 22, 636, 1108 } accept\n udp dport { 5353 } accept\niifname enp2s0 tcp dport { 2208 } accept\niifname enp2s0 udp dport { 2108, 2207, 4171, 4175, 4179, 17780, 17781, 17782, 17783, 17784, 17785, 27015 } accept\niifname enp3s0 tcp dport { 443, 2208 } accept\niifname enp3s0 udp dport { 53, 67, 1108, 2108 } accept\niifname wireg0 tcp dport { 443, 3100, 3101, 3102, 3107, 3111, 9100 } accept\niifname wireg0 udp dport { 1108 } accept\n\n\n  meta l4proto . th dport @temp-ports accept\n\n  icmp type echo-request  accept comment \"allow ping\"\n\n\n  icmpv6 type != { nd-redirect, 139 } accept comment \"Accept all ICMPv6 messages except redirects and node information queries (type 139).  See RFC 4890, section 4.4.\"\n  ip6 daddr fe80::/64 udp dport 546 accept comment \"DHCPv6 client\"\n\n  \n\n}\n\n\n",
+        "content": "set temp-ports {\n  comment \"Temporarily opened ports\"\n  type inet_proto . inet_service\n  flags interval\n  auto-merge\n}\n\nchain rpfilter {\n  type filter hook prerouting priority mangle + 10; policy drop;\n\n  meta nfproto ipv4 udp sport . udp dport { 67 . 68, 68 . 67 } accept comment \"DHCPv4 client/server\"\n  fib saddr . mark . iif oif exists accept\n\n  jump rpfilter-allow\n\n  \n\n}\n\n\nchain rpfilter-allow {\n  \n}\n\nchain input {\n  type filter hook input priority filter; policy drop;\n\n  iifname { \"lo\" } accept comment \"trusted interfaces\"\n\n  # Multicast ICMPv6 echo replies get marked as invalid by conntrack.\n  # Accept them before conntrack to avoid dropped replies.\n  icmpv6 type echo-reply accept\n\n  # Some ICMPv6 types like NDP is untracked\n  ct state vmap {\n    invalid : drop,\n    established : accept,\n    related : accept,\n    new : jump input-allow,\n    untracked: jump input-allow,\n  }\n\n  \n  \n  \n\n  \n\n}\n\nchain input-allow {\n\n   tcp dport { 22, 636, 1108 } accept\n udp dport { 5353 } accept\niifname enp2s0 tcp dport { 2208 } accept\niifname enp2s0 udp dport { 2108, 2207, 4171, 4175, 4179, 17780, 17781, 17782, 17783, 17784, 17785, 27015 } accept\niifname enp3s0 tcp dport { 22, 443, 2208 } accept\niifname enp3s0 udp dport { 53, 67, 1108, 2108 } accept\niifname wireg0 tcp dport { 22, 443, 3100, 3101, 3102, 3107, 3111, 9100 } accept\niifname wireg0 udp dport { 1108 } accept\n\n\n  meta l4proto . th dport @temp-ports accept\n\n  icmp type echo-request  accept comment \"allow ping\"\n\n\n  icmpv6 type != { nd-redirect, 139 } accept comment \"Accept all ICMPv6 messages except redirects and node information queries (type 139).  See RFC 4890, section 4.4.\"\n  ip6 daddr fe80::/64 udp dport 546 accept comment \"DHCPv6 client\"\n\n  \n\n}\n\n\n",
         "enable": true,
         "family": "inet",
         "name": "nixos-fw"
@@ -1147,7 +1151,7 @@
       "package": "<derivation:nginx-sso-0.27.8>"
     },
     "stateDir": "<eval-error>",
-    "streamConfig": "",
+    "streamConfig": "upstream gitea_git_ssh {\n  server 10.88.127.3:22;\n}\nserver {\n  listen 10.88.127.1:22;\n  listen 10.88.128.1:22;\n  proxy_pass gitea_git_ssh;\n  proxy_bind 10.88.127.1;\n  proxy_connect_timeout 5s;\n  proxy_timeout 1h;\n}\n",
     "tailscaleAuth": {
       "enable": false,
       "expectedTailnet": "",
