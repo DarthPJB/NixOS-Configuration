@@ -216,6 +216,14 @@ in
     enable = true;
     appName = "Fabrication Forge";
     stateDir = stateDir;
+    # Database per the original spec: the fleet PostgreSQL (postgres.nix).
+    # createDatabase (default) wires ensureDatabases/ensureUsers; the socket
+    # default /run/postgresql matches postgres.nix's `local all all trust`.
+    database = {
+      type = "postgres";
+      name = "gitea";
+      user = "gitea";
+    };
     lfs.enable = true;
     lfs.contentDir = "${stateDir}/lfs";
     minioAccessKeyId = secret "gitea-minio-access-key";
