@@ -55,7 +55,7 @@ per-host links at the domain root — no `/code/frame` prefix problem, and no
     client_max_body_size 512M;
   '';
   locations."~/".extraConfig = ''
-    if ($request_uri ~ "^/(user|login)([/?]|$)") { return 404; }
+    if ($request_uri ~ "^/(user|login)([/?]|$)") { return 302 https://fabrication-forge.com/; }
     proxy_hide_header X-Frame-Options;
     add_header Content-Security-Policy "frame-ancestors https://johnbargman.com http://localhost:9090" always;
   '';
@@ -71,10 +71,10 @@ per-host links at the domain root — no `/code/frame` prefix problem, and no
 ## Public Endpoints Are Read-Only (no login outside WireGuard)
 
 Gitea has no per-domain auth settings. Login is disabled at the **nginx edge**
-on public faces only:
+on public faces only. Account paths are not a dead end — they redirect home:
 
-- `fabrication-forge.com` → `/user/*` and `/login*` return 404
-- `johnbargman.com/code/frame/*` (public subpath) → same 404 gate
+- `fabrication-forge.com` → `/user/*` and `/login*` 302 → `https://fabrication-forge.com/`
+- `johnbargman.com/code/frame/*` (public subpath) → same gate, same redirect
 
 WireGuard-only faces keep the full login surface:
 
@@ -82,7 +82,7 @@ WireGuard-only faces keep the full login surface:
   form login work as before
 - `johnbargman.com-lan` (WG staging subpath) — untouched
 
-`if` + `return 404` is one of nginx's safe `if` uses; it fires in the rewrite
+`if` + `return 302` is one of nginx's safe `if` uses; it fires in the rewrite
 phase before any `proxy_pass`.
 
 ## Gitea Configuration — `server_services/gitea.nix`

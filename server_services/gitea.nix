@@ -190,9 +190,6 @@ in
     "d ${stateDir}/custom 0750 gitea gitea -"
     "d ${confDir} 0750 gitea gitea -"
     "Z ${stateDir}/custom 0750 gitea gitea -"
-    # Fabrication Forge branding — the whole asset layer comes from the store.
-    "L+ ${stateDir}/custom/public - - - - ${branding}/public"
-    "L+ ${stateDir}/custom/templates - - - - ${branding}/templates"
   ];
 
   systemd.services.gitea = {
@@ -205,6 +202,13 @@ in
     serviceConfig.ProtectHome = lib.mkForce false;
     preStart = lib.mkBefore ''
       ${lib.getExe seedSecrets}
+
+      # Fabrication Forge branding — the whole asset layer comes from the
+      # store. Linked here instead of via tmpfiles: tmpfiles only runs at
+      # boot, but branding must apply on every configuration switch.
+      ${lib.getExe' pkgs.coreutils "rm"} -rf ${stateDir}/custom/public ${stateDir}/custom/templates
+      ${lib.getExe' pkgs.coreutils "ln"} -s ${branding}/public ${stateDir}/custom/public
+      ${lib.getExe' pkgs.coreutils "ln"} -s ${branding}/templates ${stateDir}/custom/templates
     '';
   };
 
