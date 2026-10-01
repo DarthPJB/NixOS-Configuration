@@ -25,6 +25,19 @@ let
     else
       null;
 
+  # Keys for `git` come from Gitea's authorized_keys. sshd reads that file as
+  # the LOGIN user, and `git` cannot read gitea's 0700 state directory — so the
+  # file is fetched by a helper running as the gitea service user instead of
+  # being opened directly. Survives runtime key regeneration; no perms surgery.
+  # sshd appends the login name as an argument; the helper ignores it.
+  giteaAuthorizedKeys = pkgs.writeShellApplication {
+    name = "gitea-authorized-keys";
+    runtimeInputs = [ pkgs.coreutils ];
+    text = ''
+      ${lib.getExe' pkgs.coreutils "cat"} /bulk-storage/gitea/.ssh/authorized_keys
+    '';
+  };
+
   # Login shell for `git`: sshd runs it as "<shell> -c '<authorized_keys
   # command>'". Forward exactly that forced command to the gitea service
   # user; refuse everything else. No shell access of its own.
@@ -56,11 +69,12 @@ in
           PermitRootLogin no
           PasswordAuthentication no
 
-        # `git` authenticates against Gitea's authorized_keys (same file the
-        # service writes); its login shell re-execs the forced command as
-        # `gitea` via the sudo rule below.
+        # `git` authenticates against Gitea's authorized_keys, fetched as the
+        # gitea service user (see giteaAuthorizedKeys); its login shell
+        # re-execs the forced command as `gitea` via the sudo rule below.
         Match LocalPort 22 User git
-          AuthorizedKeysFile /bulk-storage/gitea/.ssh/authorized_keys
+          AuthorizedKeysCommand ${lib.getExe giteaAuthorizedKeys}
+          AuthorizedKeysCommandUser gitea
           PermitRootLogin no
           PasswordAuthentication no
   '';
