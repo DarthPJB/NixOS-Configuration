@@ -242,6 +242,9 @@ in
         START_SSH_SERVER = false;
         SSH_DOMAIN = "gitea.johnbargman.net";
         SSH_PORT = 22;
+        # Published clone identity: git@gitea.johnbargman.net:owner/repo.git.
+        # The `git` OS account is an entrypoint (see git-ssh.nix).
+        SSH_USER = "git";
         LANDING_PAGE = "home";
       };
       service = {

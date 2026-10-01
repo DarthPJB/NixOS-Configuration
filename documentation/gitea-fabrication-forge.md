@@ -40,7 +40,7 @@ LAN / WG ───────▶│ cortex-alpha (nginx)        │──┘
 | `https://fabrication-forge.com` | remote-worker (public) | ❌ disabled | Standalone public forge; **embedded cross-origin** by `johnbargman.com/code/` |
 | `https://johnbargman.com/code/frame/` | remote-worker (public) | ❌ disabled | Subpath proxy for iframe embed |
 | `https://code.johnbargman.net` | cortex-alpha | — | 301 → `https://johnbargman.com/code/` |
-| `https://git.johnbargman.net` | cortex-alpha (legacy cgit) | — | Unchanged |
+| `https://git.johnbargman.net` | cortex-alpha (legacy cgit) | — | **Retired 2026-10-01** — gitolite/cgit deprecated by Gitea |
 
 ## Cross-Origin Embed (johnbargman.com `/code/` → fabrication-forge.com)
 
