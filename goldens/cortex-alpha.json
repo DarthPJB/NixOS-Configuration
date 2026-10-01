@@ -1012,7 +1012,8 @@
         "/minio.johnbargman.net/10.88.128.1",
         "/gitea.johnbargman.net/10.88.128.1",
         "/ollama.johnbargman.net/10.88.127.107",
-        "/johnbargman.com/10.88.127.50"
+        "/johnbargman.com/10.88.127.50",
+        "/fabrication-forge.com/10.88.127.50"
       ],
       "bogus-priv": [
         true

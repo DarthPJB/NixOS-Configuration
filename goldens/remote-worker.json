@@ -988,7 +988,7 @@
         "basicAuthFile": null,
         "default": false,
         "enableACME": true,
-        "extraConfig": "",
+        "extraConfig": "client_max_body_size 512M;\n",
         "forceSSL": true,
         "globalRedirect": null,
         "http2": true,
@@ -997,14 +997,15 @@
         "kTLS": false,
         "listen": [],
         "listenAddresses": [
-          "10.0.1.42"
+          "10.0.1.42",
+          "10.88.127.50"
         ],
         "locations": {
           "~/": {
             "alias": null,
             "basicAuth": {},
             "basicAuthFile": null,
-            "extraConfig": "proxy_set_header Host $host;\nproxy_set_header X-Real-IP $remote_addr;\nproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\nproxy_set_header X-Forwarded-Proto $scheme;\nproxy_set_header Upgrade $http_upgrade;\nproxy_set_header Connection $connection_upgrade;\n",
+            "extraConfig": "proxy_set_header Host $host;\nproxy_set_header X-Real-IP $remote_addr;\nproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\nproxy_set_header X-Forwarded-Proto $scheme;\nproxy_set_header Upgrade $http_upgrade;\nproxy_set_header Connection $connection_upgrade;\n\nif ($request_uri ~ \"^/(user|login)([/?]|$)\") { return 404; }\nproxy_hide_header X-Frame-Options;\nadd_header Content-Security-Policy \"frame-ancestors https://johnbargman.com http://localhost:9090\" always;\n",
             "fastcgiParams": {},
             "index": null,
             "priority": 1000,
@@ -1072,7 +1073,7 @@
             "alias": null,
             "basicAuth": {},
             "basicAuthFile": null,
-            "extraConfig": "rewrite ^ $request_uri;\nrewrite ^/(code/frame($|/))?(.*) /$3 break;\nproxy_pass http://10.88.127.3:3000$uri;\nproxy_http_version 1.1;\nclient_max_body_size 512M;\nproxy_set_header Connection $http_connection;\nproxy_set_header Upgrade $http_upgrade;\nproxy_set_header Host $host;\nproxy_set_header X-Real-IP $remote_addr;\nproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\nproxy_set_header X-Forwarded-Proto $scheme;\n",
+            "extraConfig": "if ($request_uri ~ \"^/(code/frame/)?(user|login)([/?]|$)\") { return 404; }\nrewrite ^ $request_uri;\nrewrite ^/(code/frame($|/))?(.*) /$3 break;\nproxy_pass http://10.88.127.3:3000$uri;\nproxy_http_version 1.1;\nclient_max_body_size 512M;\nproxy_set_header Connection $http_connection;\nproxy_set_header Upgrade $http_upgrade;\nproxy_set_header Host $host;\nproxy_set_header X-Real-IP $remote_addr;\nproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\nproxy_set_header X-Forwarded-Proto $scheme;\n",
             "fastcgiParams": {},
             "index": null,
             "priority": 1000,

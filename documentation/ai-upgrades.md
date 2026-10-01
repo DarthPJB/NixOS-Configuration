@@ -116,8 +116,9 @@ These are the issues that blocked production-grade AI infrastructure, in order o
 > (`vllm-cpu` :8002), vLLM CPU coder (`vllm-cpu-coder` :8003), and LiteLLM
 > (`litellm` :8080, with `callbacks: ["prometheus"]` enabled). Each vLLM target
 > is labelled with hostname, device, and model. An `ai-inference` Grafana
-> dashboard was added under `services/graphana_dashboards/` for request rate,
-> latency, queue depth, KV cache usage, error rate, and token throughput.
+> dashboard is generated from `lib/topology/dashboard_templates/ai-inference.nix`
+> for request rate, latency, queue depth, KV cache usage, error rate, and token
+> throughput.
 > (Ollama had no `/metrics` endpoint; with Ollama retired, this monitoring gap is
 > closed.)
 
@@ -236,7 +237,7 @@ decision are marked ~~struck~~.
 2. ✅ Add Prometheus scrape target for LiteLLM (port 8080) — `litellm` job in `services/prometheus.nix`
 3. ✅ Add Prometheus scrape target for vLLM (port 8001) — plus 8002/8003 (`vllm-gpu`, `vllm-cpu`, `vllm-cpu-coder`)
 4. ~~Write custom Ollama exporter~~ — **OBSOLETE**: Ollama retired; vLLM exposes `/metrics` natively
-5. ✅ Create Grafana dashboard for inference metrics — `services/graphana_dashboards/ai-inference.json`
+5. ✅ Create Grafana dashboard for inference metrics — now generated from `lib/topology/dashboard_templates/ai-inference.nix`
 
 ### Phase 2: Multi-Model Safety (Medium Cost, High Value)
 

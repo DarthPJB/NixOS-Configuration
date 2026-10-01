@@ -257,8 +257,8 @@ unauthenticated on the WireGuard plane; revisit if the gateway moves off-site).
 
 ### Grafana
 
-- `services/graphana_dashboards/ai-systems.json` — hardware (existing)
-- `services/graphana_dashboards/ai-inference.json` — NEW: request rate, latency
+- `lib/topology/dashboard_templates/ai-systems.nix` — hardware (generated)
+- `lib/topology/dashboard_templates/ai-inference.nix` — request rate, latency
   (p50/p95/p99), queue depth, KV cache usage, error rate, token throughput by
   model, LiteLLM deployment state
 
@@ -294,7 +294,7 @@ gateway health. Deferred — see Next Steps.
 
 - **4.1** vLLM scrape targets (:8001/:8002/:8003) with hostname/device/model labels
 - **4.2** LiteLLM `/metrics` via `callbacks = [ "prometheus" ]` + scrape target
-- **4.3** `ai-inference.json` Grafana dashboard
+- **4.3** `ai-inference` Grafana dashboard (generative template)
 
 ### Phase 5: Cleanup ✅
 

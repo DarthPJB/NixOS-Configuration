@@ -4,6 +4,10 @@
 **Status:** Implemented, validated, pending deploy
 **Machine:** Gitea runs on `local-nas` (`10.88.127.3:3000`, WireGuard-only)
 
+> **2026-09-25:** personal-site `/code/` now embeds `fabrication-forge.com`
+> cross-origin (iframe nav works natively); public faces are read-only
+> (login 404'd at the nginx edge, WireGuard faces keep full login).
+
 ---
 
 ## Architecture
@@ -32,11 +36,54 @@ LAN / WG ───────▶│ cortex-alpha (nginx)        │──┘
 
 | URL | Gateway | Registration | Notes |
 |---|---|---|---|
-| `https://gitea.johnbargman.net` | cortex-alpha (LAN/WG) | ✅ reverse-proxy auth | Canonical domain; `DOMAIN` in Gitea |
-| `https://fabrication-forge.com` | remote-worker (public) | ❌ disabled | Standalone public forge |
+| `https://gitea.johnbargman.net` | cortex-alpha (LAN/WG) | ✅ reverse-proxy auth | Canonical domain; `DOMAIN` in Gitea; full login surface |
+| `https://fabrication-forge.com` | remote-worker (public) | ❌ disabled | Standalone public forge; **embedded cross-origin** by `johnbargman.com/code/` |
 | `https://johnbargman.com/code/frame/` | remote-worker (public) | ❌ disabled | Subpath proxy for iframe embed |
 | `https://code.johnbargman.net` | cortex-alpha | — | 301 → `https://johnbargman.com/code/` |
 | `https://git.johnbargman.net` | cortex-alpha (legacy cgit) | — | Unchanged |
+
+## Cross-Origin Embed (johnbargman.com `/code/` → fabrication-forge.com)
+
+The personal site embeds `https://fabrication-forge.com/` in a **cross-origin**
+iframe. Gitea's `PUBLIC_URL_DETECTION = "auto"` therefore builds correct
+per-host links at the domain root — no `/code/frame` prefix problem, and no
+`sub_filter` rewriting. Changes on `remote-worker`:
+
+```nix
+"fabrication-forge.com" = {
+  extraConfig = ''
+    client_max_body_size 512M;
+  '';
+  locations."~/".extraConfig = ''
+    if ($request_uri ~ "^/(user|login)([/?]|$)") { return 404; }
+    proxy_hide_header X-Frame-Options;
+    add_header Content-Security-Policy "frame-ancestors https://johnbargman.com http://localhost:9090" always;
+  '';
+};
+```
+
+- `X-Frame-Options: SAMEORIGIN` (Gitea default) would block the cross-origin
+  embed — hidden and replaced with an explicit `frame-ancestors` allowlist.
+- LAN/WG split-horizon: `dns.static` maps `fabrication-forge.com` →
+  `10.88.127.50` (remote-worker WG IP) and the vhost listens on that address,
+  so LAN clients reach the forge over WireGuard with no egress.
+
+## Public Endpoints Are Read-Only (no login outside WireGuard)
+
+Gitea has no per-domain auth settings. Login is disabled at the **nginx edge**
+on public faces only:
+
+- `fabrication-forge.com` → `/user/*` and `/login*` return 404
+- `johnbargman.com/code/frame/*` (public subpath) → same 404 gate
+
+WireGuard-only faces keep the full login surface:
+
+- `gitea.johnbargman.net` (cortex-alpha) — untouched; reverse-proxy auth +
+  form login work as before
+- `johnbargman.com-lan` (WG staging subpath) — untouched
+
+`if` + `return 404` is one of nginx's safe `if` uses; it fires in the rewrite
+phase before any `proxy_pass`.
 
 ## Gitea Configuration — `server_services/gitea.nix`
 
@@ -127,8 +174,10 @@ locations."~ ^/(code/frame|v2)($|/)" = {
 
 Because `PUBLIC_URL_DETECTION = "auto"`, Gitea emits URLs from the `Host` header
 (`johnbargman.com`) **without** the `/code/frame` prefix. The iframe renders the
-home page but **internal navigation is broken** — an accepted limitation pending
-a future fix.
+home page but **internal navigation is broken** — an accepted limitation. The
+site therefore embeds `https://fabrication-forge.com/` cross-origin (domain
+root, `auto` detection correct) rather than this subpath; the subpath remains
+for `code.johnbargman.net` aliasing and direct access.
 
 `services.nginx.validateConfigFile = false` is set on remote-worker because the
 gixy static analyzer flags `$uri` in `proxy_pass` as a potential HTTP-splitting
