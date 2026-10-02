@@ -35,7 +35,9 @@
     fsType = "vfat";
   };
 
-  swapDevices = [{ device = "/dev/disk/by-uuid/a4002615-68ef-4f3f-9ac7-a66f36d40ba2"; }];
+  # Swap disabled: sdd2 repurposed as ZFS SLOG for bulk-storage.
+  # 31G zram swap is sufficient. See default.nix for SLOG details.
+  # swapDevices = [{ device = "/dev/disk/by-uuid/a4002615-68ef-4f3f-9ac7-a66f36d40ba2"; }];
 
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
