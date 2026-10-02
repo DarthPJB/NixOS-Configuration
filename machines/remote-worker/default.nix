@@ -20,7 +20,7 @@ let
   # outside WireGuard.  gitea.johnbargman.net keeps the full login surface.
   giteaSubpathProxy = { blockAccounts ? false }: {
     extraConfig = lib.optionalString blockAccounts ''
-      if ($request_uri ~ "^/(code/frame/)?(user|login)([/?]|$)") { return 404; }
+      if ($request_uri ~ "^/(code/frame/)?(user|login)([/?]|$)") { return 302 https://$host/; }
     '' + ''
       rewrite ^ $request_uri;
       rewrite ^/(code/frame($|/))?(.*) /$3 break;
@@ -140,7 +140,7 @@ in
         client_max_body_size 512M;
       '';
       locations."~/".extraConfig = ''
-        if ($request_uri ~ "^/(user|login)([/?]|$)") { return 404; }
+        if ($request_uri ~ "^/(user|login)([/?]|$)") { return 302 https://fabrication-forge.com/; }
         proxy_hide_header X-Frame-Options;
         add_header Content-Security-Policy "frame-ancestors https://johnbargman.com http://localhost:9090" always;
       '';
