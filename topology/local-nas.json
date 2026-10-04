@@ -24,5 +24,53 @@
       "interface": "tailscale0"
     }
   ],
-  "public_key_file": "secrets/public_keys/wireguard/wg_local-nas_pub"
+  "public_key_file": "secrets/public_keys/wireguard/wg_local-nas_pub",
+  "backup": {
+    "configFile": "../secrets/rclone-b2-config-file",
+    "user": "minio",
+    "targets": {
+      "b2-obsidian": {
+        "filePath": "minio:obsidian-v3",
+        "remoteName": "b2:minio-backup-bargman/obsidian-v3",
+        "mode": "copy",
+        "calendar": "Sun *-*-* 03:00:00",
+        "bwlimit": "5M"
+      },
+      "b2-home": {
+        "filePath": "minio:linda-home",
+        "remoteName": "b2:minio-backup-bargman/linda-home",
+        "mode": "copy",
+        "calendar": "Sun *-*-* 03:00:00",
+        "bwlimit": "5M"
+      },
+      "b2-bargman-tech": {
+        "filePath": "minio:bargman-tech",
+        "remoteName": "b2:minio-backup-bargman/bargman-tech",
+        "mode": "copy",
+        "calendar": "Sun *-*-* 03:00:00",
+        "bwlimit": "5M"
+      },
+      "b2-minecraft": {
+        "filePath": "minio:minecraft-backups",
+        "remoteName": "b2:minio-backup-bargman/minecraft-backups",
+        "mode": "copy",
+        "calendar": "Sun *-*-* 03:00:00",
+        "bwlimit": "5M"
+      },
+      "b2-fs-v3-88": {
+        "filePath": "minio:fs-v3-88",
+        "remoteName": "b2:minio-backup-bargman/fs-v3-88",
+        "mode": "copy",
+        "calendar": "Sun *-*-* 03:00:00",
+        "bwlimit": "5M"
+      },
+      "b2-downloads": {
+        "filePath": "minio:downloads",
+        "remoteName": "b2:minio-backup-bargman/downloads",
+        "mode": "copy",
+        "calendar": "Sun *-*-* 03:00:00",
+        "bwlimit": "5M"
+      }
+    }
+  }
 }
