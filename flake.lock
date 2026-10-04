@@ -2508,15 +2508,15 @@
         "nixpkgs": "nixpkgs_27"
       },
       "locked": {
-        "lastModified": 1785362724,
-        "narHash": "sha256-ndEMBoRD7c2A1brCc5Qv5WQgTX5QQfbsD6qPxID0JTg=",
-        "owner": "orhun",
+        "lastModified": 1791126160,
+        "narHash": "sha256-Q9VuWr/aa3Dsn+fhh0Q1cRZ+b+Oox1HEnJq4XuG9Cc4=",
+        "owner": "DarthPJB",
         "repo": "ratty",
-        "rev": "eb1ef47b99d56a5df86bb67302e41a5255dad2f3",
+        "rev": "92ac913ad2e686e06640cd09e5a2e613ee99c7de",
         "type": "github"
       },
       "original": {
-        "owner": "orhun",
+        "owner": "DarthPJB",
         "repo": "ratty",
         "type": "github"
       }
