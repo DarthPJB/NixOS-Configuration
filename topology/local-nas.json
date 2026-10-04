@@ -34,42 +34,144 @@
         "remoteName": "b2:minio-backup-bargman/obsidian-v3",
         "mode": "copy",
         "calendar": "Sun *-*-* 03:00:00",
-        "bwlimit": "5M"
+        "bwlimit": "5M",
+        "extraFlags": [
+          "--fast-list",
+          "--b2-chunk-size",
+          "64M",
+          "--transfers",
+          "1",
+          "--checkers",
+          "1",
+          "--retries",
+          "3",
+          "--low-level-retries",
+          "10",
+          "--contimeout",
+          "30s",
+          "--timeout",
+          "300s"
+        ]
       },
       "b2-home": {
         "filePath": "minio:linda-home",
         "remoteName": "b2:minio-backup-bargman/linda-home",
         "mode": "copy",
         "calendar": "Sun *-*-* 03:00:00",
-        "bwlimit": "5M"
+        "bwlimit": "5M",
+        "extraFlags": [
+          "--fast-list",
+          "--b2-chunk-size",
+          "64M",
+          "--transfers",
+          "1",
+          "--checkers",
+          "1",
+          "--retries",
+          "3",
+          "--low-level-retries",
+          "10",
+          "--contimeout",
+          "30s",
+          "--timeout",
+          "300s"
+        ]
       },
       "b2-bargman-tech": {
         "filePath": "minio:bargman-tech",
         "remoteName": "b2:minio-backup-bargman/bargman-tech",
         "mode": "copy",
         "calendar": "Sun *-*-* 03:00:00",
-        "bwlimit": "5M"
+        "bwlimit": "5M",
+        "extraFlags": [
+          "--fast-list",
+          "--b2-chunk-size",
+          "64M",
+          "--transfers",
+          "1",
+          "--checkers",
+          "1",
+          "--retries",
+          "3",
+          "--low-level-retries",
+          "10",
+          "--contimeout",
+          "30s",
+          "--timeout",
+          "300s"
+        ]
       },
       "b2-minecraft": {
         "filePath": "minio:minecraft-backups",
         "remoteName": "b2:minio-backup-bargman/minecraft-backups",
         "mode": "copy",
         "calendar": "Sun *-*-* 03:00:00",
-        "bwlimit": "5M"
+        "bwlimit": "5M",
+        "extraFlags": [
+          "--fast-list",
+          "--b2-chunk-size",
+          "64M",
+          "--transfers",
+          "1",
+          "--checkers",
+          "1",
+          "--retries",
+          "3",
+          "--low-level-retries",
+          "10",
+          "--contimeout",
+          "30s",
+          "--timeout",
+          "300s"
+        ]
       },
       "b2-fs-v3-88": {
         "filePath": "minio:fs-v3-88",
         "remoteName": "b2:minio-backup-bargman/fs-v3-88",
         "mode": "copy",
         "calendar": "Sun *-*-* 03:00:00",
-        "bwlimit": "5M"
+        "bwlimit": "5M",
+        "extraFlags": [
+          "--fast-list",
+          "--b2-chunk-size",
+          "64M",
+          "--transfers",
+          "1",
+          "--checkers",
+          "1",
+          "--retries",
+          "3",
+          "--low-level-retries",
+          "10",
+          "--contimeout",
+          "30s",
+          "--timeout",
+          "300s"
+        ]
       },
       "b2-downloads": {
         "filePath": "minio:downloads",
         "remoteName": "b2:minio-backup-bargman/downloads",
         "mode": "copy",
         "calendar": "Sun *-*-* 03:00:00",
-        "bwlimit": "5M"
+        "bwlimit": "5M",
+        "extraFlags": [
+          "--fast-list",
+          "--b2-chunk-size",
+          "64M",
+          "--transfers",
+          "1",
+          "--checkers",
+          "1",
+          "--retries",
+          "3",
+          "--low-level-retries",
+          "10",
+          "--contimeout",
+          "30s",
+          "--timeout",
+          "300s"
+        ]
       }
     }
   }
