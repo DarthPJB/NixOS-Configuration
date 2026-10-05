@@ -1,11 +1,12 @@
 # LDR-001 — Fleet Spec, Tracks & Architecture Boundaries
 
 **Type:** Living Decision Record (one living document — corrections in place, never forked)
-**Version:** 1.2
+**Version:** 1.3
 **Date:** 2026-10-05
 **Author:** USS-Voyager (Captain), for user QA review
-**Status:** D-02/D-03/D-04/D-05/D-06/D-07 **RESOLVED** (user rulings 2026-10-05).
-D-01 **UNDER DISCUSSION** — pros/cons breakdown session.
+**Status:** **D-01 … D-07 ALL RESOLVED** (user rulings 2026-10-05). Target
+architecture captured (§4 — enterprise orchestration design). Non-blocking
+design questions remain (Q-01…Q-04).
 
 Registers: **R\*** = resolved fact · **F\*** = finding/fault · **D-\*** = decision · **R-F\*** = remediation action
 
@@ -29,16 +30,21 @@ documentation. **R-01 … R-09** are statements the documentation must reflect.
 | R-07 | **Deployment product**: fleet exported via `github:Bargman-Tech/nixinate`; OpenCode-only support. Pipeline: build → test → validate → deploy. | promptdeploy-analysis, infrastructure-2-evaluation-model |
 | R-08 | **Modularisation exists along ownership boundaries** — three tiers are already in the tree (see §4). Monolith is the default; extraction requires a stated boundary. | flake.nix cluster-box/denton-glasses/LLM-CORE blocks |
 | R-09 | Documentation describes **current state**; plans live in separate docs (`opencode/plans/`); archived material must not read as active guidance. | strategic_planning_prompt.md:49-53 (enforced this revision) |
+| R-10 | **Standard deployment doctrine (user, 2026-10-05):** this repo deploys **all** systems, automatically, eventually. Every system's flake input is **registered in this `flake.nix`** — mandatory. This repo defines the actual state of the machine; **an unregistered configuration is never switched.** Source may live elsewhere; deployment authority does not. | User ruling 2026-10-05 |
+| R-11 | **Enterprise orchestration target (user, 2026-10-05):** break out of the mono-repo into a clearly defined machine-orchestration design — toolkit repos (`lib`, `LLM-CORE`, `github-ci`) + clean per-machine config repos (own goldens, own `topology.json`, own llm-fleet JSONs, exported via **custom flake schema**) + this repo as **parent orchestrator** (register → validate → deploy). The parent validates *its own evaluation* against the consumed machine's schema-exported JSON — **without violating the flake boundary**. Service definitions port out slowly over time. | User spec 2026-10-05 |
 
 **F-20 (spec gap):** the grand-vision vocabulary (netrunner, fabrication forge,
 siloed/proprietary split) exists only in repo docs, not in the shared notes.
-**F-21 (spec gap):** "Monolithic codebases embraced" (shared notes) vs the
-mecha-team-zero multi-flake split (LLM-CORE, Malayalam, denton-glasses,
-assimilator-probe, personal-site) is **unreconciled** — this is exactly what §4
-must resolve. **F-22 (spec gap):** Flake Schemas doctrine is unimplemented in
-`flake.nix` and unmentioned in active docs. **F-23 (contradiction):** shared
-principles say "never `nix flake update`" while `operations-runbooks.md` and
-`gitea-customization-options.md` show `nix flake update` commands.
+**F-21: RESOLVED (2026-10-05)** — the monolith-vs-modular tension is resolved by
+R-10/R-11: the monolith becomes the **orchestrator** (deployment authority,
+registration, validation); source splits into enterprise repos. "Monolithic
+codebases embraced" holds for the orchestration layer.
+**F-22: RESOLVED BY DESIGN (2026-10-05)** — the Flake Schemas doctrine now has
+its purpose: custom flake schemas are the **contract mechanism** by which machine
+repos export their truth (goldens, topology, llm-fleet JSON) across the flake
+boundary for parent-side validation. Implementation follows in the `lib` toolkit.
+**F-23 (contradiction):** shared principles say "never `nix flake update`" while
+`operations-runbooks.md` and `gitea-customization-options.md` show `nix flake update` commands.
 
 ---
 
@@ -63,7 +69,8 @@ principles say "never `nix flake update`" while `operations-runbooks.md` and
 | Track | State | Next gate |
 |---|---|---|
 | **PR #24 `web-updates`** | CI in flight (Gitea branding, PostgreSQL migration, gitolite retirement, B2 backup targets); assumed complete for docs purposes | Green CI → merge decision (secrets confirmed age/secrix — see F-15) |
-| **gaming-host-1 pivot → `game-server-1`** | **NEW MISSION (user, 2026-10-05):** the machine becomes a **remote-development machine** and hosts the game server for the **free-agent game** (co-developed). **Extraction decided (D-02): entire machine separated, Malayalam-pattern (tier-3 passthrough)** — maintained separately, freezable. | Standalone flake + architecture-passthrough contract; name change `gaming-host-1` → `game-server-1` |
+| **Enterprise orchestration split (P1–P5)** | **MASTER TRACK (user spec, 2026-10-05):** mono-repo → enterprise machine-orchestration design. Toolkit repos (`lib`, `LLM-CORE`, `github-ci`) + clean machine repos (own goldens/topology/llm-fleet via custom flake schema) + parent as standard deployment. §4.4 | P1: `lib` schema contract |
+| **gaming-host-1 pivot → machine repo** | **NEW MISSION (user, 2026-10-05):** becomes a **remote-development machine** hosting the **free-agent game server** (co-developed). **First extraction (D-02)** into `bargman-tech/gaming-host-1` — clean minimal NixOS config, own truth files, separately maintained / freezable. | P2 of the master track |
 | **Documentation QA review** | This document + archive | D-01/D-05/D-06 remain open |
 | **Backup/offsite formalisation** | Replication live but no restore-test procedure fleet-wide (F-08) | User decision D-05 |
 
@@ -134,87 +141,90 @@ Severity: **critical / major / minor**. Status: **open** (needs user call or wor
 
 ---
 
-## 4. Architecture Boundaries & Modularisation Direction
+## 4. Architecture Boundaries — Enterprise Orchestration Design
 
-### 4.1 The three tiers already in the tree (R-08, evidenced)
+**D-01 RESOLVED (user spec, 2026-10-05).** The boundary question is settled by
+the target architecture itself: break out of the mono-repo into a clearly
+defined **enterprise-grade nix machine-orchestration design** (R-11). The A/B/C
+options discussion is closed — this design supersedes it.
 
-| Tier | Pattern | Prior art | Ownership | Lifecycle |
-|---|---|---|---|---|
-| **1. Monolith** (default) | `machines/` + `server_services/` + `modules/` inside NixOS-Configuration | the fleet itself | John88 | topology transforms, goldens, CI |
-| **2. Module-export flake** | External flake exports `nixosModules.*`, composed via `extraModules` | denton-glasses (`eye-tracking`, `voxtype`); LLM-CORE (`opencode-fleet`); assimilator-probe | shared / mecha-team-zero | golden-tested as part of host closure |
-| **3. Verbatim passthrough** | External flake owns the entire `nixosConfiguration`; parent passes it through with `extendModules` + `mkForce` on **deployment metadata only** | **Malayalam / cluster-box** (`git+https://gitlab.com/mecha-team-zero/Malayalam.git`) | external operator (dlyon); parent holds architectural authority only | **Excluded** from topology transforms, goldens, CI |
+### 4.1 The target stack (user spec, 2026-10-05)
 
-Malayalam contract (fl.nix:851-889 + Malayalam `documents/architecture-passthrough.md`):
-system closure identical across deploy paths; only nixinate host/sshUser/port may
-differ; `git+https` input format required for netrc auth.
+| Repo | Role |
+|---|---|
+| `bargman-tech/lib` | **Supporting toolkit** — shared utilities; **defines the custom flake schema contract** (golden/topology/llm-fleet JSON export shape) used by machine repos and the parent alike |
+| `bargman-tech/LLM-CORE` | Supporting toolkit — agent fleet generation (already extracted) |
+| `bargman-tech/github-ci` | Supporting toolkit — CI generation (today's `ci.nix` + `ci/generate-workflow.nix` shape) |
+| `bargman-tech/gaming-host-1` | **Machine repo** — very clean minimal NixOS configuration. Carries **its own** golden tests, `topology.json`, and llm-fleet JSONs, exported as a **custom flake schema** |
+| `bargman-tech/nixos-configuration` | **Parent project** — the standard deployment. Registers every machine's flake input, **validates its own evaluation** against the consumed machine's schema-exported JSON, deploys all systems |
 
-### 4.2 Proposed boundary principle — **D-01 OPEN (Captain recommendation: A)**
+### 4.2 The invariant and the variable
 
-> A component is extracted into a standalone flake when it crosses an
-> **ownership boundary** (different operator), an **appliance boundary**
-> (self-contained hardware/product), or a **reuse boundary** (consumed by other
-> repos). Everything else stays in the monolith.
+- **Invariant (R-10):** deployment authority is *here*. Every system's flake
+  input is recorded in this `flake.nix`; this repo defines the machine's actual
+  state; **no registration → no switch.** Automatically, eventually, all systems.
+- **Variable:** where the *source* is maintained. Source may live in an
+  independently maintained, freezable repo; its truth (goldens, topology,
+  llm-fleet) travels with it through the schema.
 
-Options for D-01:
-- **A.** Adopt as written; tier-2 for shared components, tier-3 for external ownership.
-- **B.** Stricter: only ownership boundaries justify extraction (monolith-maximalist).
-- **C.** Looser: also extract by domain (e.g., Gitea stack, AI stack) for independent release cadence.
+### 4.3 Cross-flake validation without boundary violation
 
-**Captain's briefing (user requested direction — 2026-10-05):**
+The golden discipline survives the flake boundary intact:
 
-Recommend **A**. The tree already embodies A — it is both descriptive of the
-three existing tiers and prescriptive for what comes next. The selected first
-extraction (D-02: game-server-1 / free-agent game) hits **all three triggers**:
-appliance (game server), ownership (co-developed free-agent project), and reuse
-(remote-development access). Option B would block the game-server base-module
-extraction (a stated future project) — module extraction has value even without
-external ownership. Option C would extract Gitea/AI/monitoring by domain, but
-those are single-owner and golden-tested against topology; the extraction cost
-exceeds the benefit until a boundary appears — it also conflicts with the
-"monolithic codebases embraced" doctrine in the shared notes (F-21).
-A is the only option that reconciles F-21 (monolith default) with R-08 (tiered
-modularisation exists) without flake sprawl.
+```
+machine repo (e.g. gaming-host-1)                parent (nixos-configuration)
+───────────────────────────────                  ────────────────────────────
+nixosConfigurations.gaming-host-1 ─────────────► evaluate (parent's own evaluation)
+schemas.truth = {                                  │
+  goldens/gaming-host-1.json,                      │   compare eval
+  topology.json,                            ─────► │   ⇄ schema-exported goldens
+  llm-fleet.json                                   │
+}  (defined by bargman-tech/lib)                    ▼
+                                            match  → state defined → deploy
+                                            mismatch → BLOCK switch
+```
 
-### 4.3 Extraction programme — **D-02 DECIDED (user, 2026-10-05)**
+- The parent consumes the machine's JSON **through the flake schema output** —
+  never by reaching into the machine's tree. Flake boundary unviolated.
+- The machine repo regenerates its goldens when *its* config changes
+  (intentional-change discipline unchanged, just relocated).
+- This is the purpose the Flake Schemas doctrine (R-04) always pointed at —
+  schemas are the **contract mechanism**, defined once in `lib`, exported by
+  machine repos, consumed by the parent (resolves F-22).
 
-**Ruling: `game-server-1` (today's gaming-host-1) is the FIRST extraction, and
-the ENTIRE machine separates — Malayalam pattern (tier-3 verbatim passthrough).**
-User intent: the machine must be **maintained separately and freezable**. The
-previously proposed split design (game-server module extracted, machine base
-kept in the monolith) is **SUPERSEDED** — it does not deliver freeze capability,
-because `flake.lock` is global to a flake: a machine that must freeze while the
-fleet moves **must** own its own flake.
+### 4.4 Migration programme
 
-| Piece | Goes where | Tier | Why |
-|---|---|---|---|
-| **Entire `nixosConfigurations.game-server-1`** | New standalone flake (free-agent / game-server-1 repo in `/speed-storage/bargman-tech/`) | **3 — verbatim passthrough** (Malayalam pattern) | Separate maintenance + freeze: own `flake.lock`, own CI, own release cadence. Co-developed free-agent game server lives with the project. |
-| Fleet consumption | `flake.nix` passthrough + nixinate `extendModules`/`mkForce` on **deployment metadata only** | — | Same contract as cluster-box (closure identical across deploy paths) |
+Phased, deliberate (Phase Discipline). Service definitions port out slowly.
 
-**Tier-3 obligations (Malayalam contract, to be written as
-`documents/architecture-passthrough.md` in the new flake):**
-- Owned by John88 (unlike cluster-box's dlyon), but **lifecycle-managed externally**
-- **Excluded** from topology transforms, golden tests, and CI build jobs
-  (`lib/golden_coverage.nix` carve-out; CI exclusions)
-- Only deployment metadata may differ from the flake's own evaluation
-- Fleet-wide concerns that still cross the boundary (WireGuard keys, secrix
-  recipients, user management) are handover items — enumerated at extraction time
-- "Frozen" means input-pinned by design: security updates are deliberate acts
-  on the standalone flake, not side-effects of fleet churn
+| Phase | Work | Gate |
+|---|---|---|
+| **P1** | `bargman-tech/lib` toolkit: custom schema definition + golden/topology validation utilities extracted from today's `lib/` (serialize-config, golden tooling, topology generators as needed) | schema contract approved; goldens still pass in-place |
+| **P2** | **gaming-host-1 machine repo** (first extraction, D-02): minimal NixOS config + own `topology.json` + own goldens + llm-fleet JSON → schema export; parent registers input and validates | parent eval matches machine goldens; deploy path proven (Malayalam passthrough mechanics as prior art) |
+| **P3** | `bargman-tech/github-ci` toolkit: CI generation ported out; per-machine repos get lean own CI where they maintain source | fleet CI still green; matrices still auto-derived from registration |
+| **P4** | Subsequent machine repos follow (candidate order below) + **services slowly port out** to owning machine repos / `lib` | each machine: same validation gate |
+| **P5** | Parent becomes pure orchestrator: registration, validation, deployment | AGENTS.md + development-guide rewritten to the design |
 
-| Candidate | Tier | Rationale | Status |
-|---|---|---|---|
-| **game-server-1 (gaming-host-1) — whole machine** | 3 | D-02 ruling; freeze + independent maintenance + co-developed game server | **SELECTED — first extraction** |
-| Game-server shared base module | 2 | 5× SteamCMD/user/firewall/tmpfiles duplication | folded into the extraction (the standalone flake IS the base) |
-| Gitea / Fabrication Forge stack | 2 or 3 | Self-contained; brand is product-facing | parked (D-01 discussion) |
-| AI stack (ollama module + LiteLLM schema) | 2 | Reused across LINDA, pillar-of-autum, alpha-three | parked (D-01 discussion) |
-| Monitoring (inventory + dashboard gen) | 2 | Already a coherent `lib/` + templates unit | parked (D-01 discussion) |
-| Backup/rclone-target | 2 | Small, shared across 4 machines | parked (D-01 discussion) |
+| Candidate | Target | Status |
+|---|---|---|
+| **gaming-host-1 → machine repo** (remote-dev + free-agent game server) | `bargman-tech/gaming-host-1` | **SELECTED — first extraction (D-02)** |
+| cluster-box | Malayalam (external) | already outside; remains the external-ownership variant of this pattern |
+| Gitea / Fabrication Forge stack | service port-out (own repo or `lib`) | gradual (P4) |
+| AI stack (ollama/LiteLLM schema) | toolkit or machine-local | gradual (P4) |
+| Monitoring (inventory + dashboards) | `lib` toolkit | gradual (P4) |
+| Backup/rclone-target | `lib` toolkit | gradual (P4) |
+| Topology generators (`gen*`) | `lib` toolkit | gradual (P4) |
 
-### 4.4 Boundary hygiene required regardless of D-01/D-02
+### 4.5 Prior art and boundary hygiene
 
-- The AGENTS.md Architecture Boundary (generator-vs-user-Nix) is settled (2026-10-05: genNginx emits the full topology-derived vhost surface).
-- Tier-3 members must stay carved out of topology/goldens/CI (cluster-box is the proof; now recorded in AGENTS.md Fleet Status).
-- Any extraction must declare its tier, owner, and lifecycle obligations in its own `documents/architecture-passthrough.md`-style contract.
+- **Malayalam/cluster-box** is the proven external-ownership variant: verbatim
+  passthrough + `extendModules`/`mkForce` on deployment metadata only; contract
+  in the Malayalam repo's `documents/architecture-passthrough.md`.
+- The AGENTS.md Architecture Boundary (generator-vs-user-Nix) remains settled
+  and moves with the topology generators into `lib` when they port (P4).
+- Every machine repo carries a contract document (owner, freeze policy, schema
+  version, handover items: WireGuard keys, secrix recipients, users).
+- Golden regeneration authority follows the source: the machine repo regenerates
+  its own goldens; the parent never edits them.
 
 ---
 
@@ -253,21 +263,25 @@ fleet moves **must** own its own flake.
 
 ## 7. Close
 
-**Version 1.2 — 2026-10-05.**
+**Version 1.3 — 2026-10-05.**
 
 ### Decisions resolved (user rulings, 2026-10-05)
 
 | ID | Ruling |
 |---|---|
-| **D-02** | **Entire machine separates — Malayalam pattern (tier-3 passthrough).** game-server-1 (gaming-host-1) becomes a remote-development machine hosting the free-agent game server (co-developed), maintained separately and **freezable**. Split design superseded (freeze requires its own flake.lock). See §4.3. |
+| **D-01** | **RESOLVED by the enterprise orchestration spec (§4).** Mono-repo → toolkit repos (`lib`, `LLM-CORE`, `github-ci`) + clean machine repos (own goldens/topology/llm-fleet exported via custom flake schema defined in `lib`) + this repo as parent/standard deployment. Parent validates its own evaluation against the consumed machine's schema JSON without violating the flake boundary. Services port out slowly. The A/B/C discussion is closed. |
+| **D-02** | **gaming-host-1 is the first machine repo** (`bargman-tech/gaming-host-1`) — remote-dev + free-agent game server, separately maintained, freezable. P2 of the master track. |
 | **D-03** | **`nix flake update` per input only.** Wholesale update prohibited. Documented in AGENTS.md + runbooks. |
 | **D-04** | **No re-keying now.** pillar-of-autum works; host-key doctrine (F-02/F-03) deferred to the **next hardening phase**. |
 | **D-05** | **Backup posture is by design.** Upload costs minimal; unlimited retention intentional; deletion is **manual**. No restore-test mandate at this time. |
 | **D-06** | **Routed to Malayalam documentation.** MAX_QUEUE analysis + recommendation recorded in Malayalam `documents/known-issues.md` §7; to be actioned independently on a short-term horizon. |
 | **D-07** | **`b2_master_sync_token` is held in reserve with intent** — not an orphan. Do not delete. Recorded in operations-runbooks. |
 
-### Open decisions
+### Open questions (non-blocking, design detail for P1/P2)
 
-| ID | Question | Status |
-|---|---|---|
-| **D-01** | Boundary principle (A / B / C) | **UNDER DISCUSSION (user, 2026-10-05)** — pros/cons breakdown requested; D-02's freeze-motive is the decisive new evidence (see §4.2 note). Awaiting discussion outcome. |
+| ID | Question |
+|---|---|
+| Q-01 | Machine repo naming: `bargman-tech/gaming-host-1` (matches the spec list) vs `game-server-1` (the pivot name)? Rename of the machine itself is a separate, later decision. |
+| Q-02 | Schema contract scope in `lib`: goldens + topology + llm-fleet only, or also monitoring/backup declarations? |
+| Q-03 | During migration, does gaming-host-1 keep parent-side golden coverage until P2 completes (recommended — continuous validation), or drop it at extraction? |
+| Q-04 | `github-ci` toolkit: extract `ci.nix` as-is first, or redesign the workflow shape while extracting? |
