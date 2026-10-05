@@ -3,8 +3,9 @@
 **Machine:** LINDA (AMD Threadripper workstation) — NOT gaming-host-1
 **Goal:** Actively run the Windows gaming VM with GPU passthrough using the
 prior working stack (GTX 1050 + ASMedia USB 3.1 + Looking Glass + Scream).
-**Version:** 1.0 — 2026-10-05
-**Status:** DIAGNOSTICS COMPLETE — plan gated on open decisions (D-1…D-6)
+**Version:** 1.1 — 2026-10-05
+**Status:** PHASE 0 COMPLETE (via `deploy@LINDA -p 1108`, user-granted) —
+execution gated on D-2, D-4, D-5
 
 ---
 
@@ -38,6 +39,45 @@ prior working stack (GTX 1050 + ASMedia USB 3.1 + Looking Glass + Scream).
 - **R7.** `scream-ivshmem` user service is loaded but **dead**: it binds `br0`,
   which no longer exists (bridge→bond→plain interfaces history).
 
+### Phase 0 results (privileged reads, 2026-10-05, `deploy@LINDA -p 1108`)
+
+- **R8.** The domain **`win-11-gaming-base` is still DEFINED in libvirt**
+  (shut off). UUID `d9377588-28e4-4257-905a-95012babe705`. No `virsh define`
+  needed — only `virsh start`. Also defined: linux2024, ubuntu-gpu,
+  ubuntu20.04-desktop/terminal (irrelevant, shut off).
+- **R9.** The live domain XML (dumpxml == `win-11-gaming-base.xml`) passes
+  exactly: `0000:46:00.0` (ASMedia USB), `0000:4d:00.0` (GTX 1050),
+  `0000:4d:00.1` (1050 audio) — managed='yes' hostdevs. Confirms the prior
+  working set matches current hardware.
+- **R10.** Domain details (the prior working stack in full):
+  q35 (`pc-q35-7.1`), OVMF at `/run/libvirt/nix-ovmf/OVMF_CODE.fd` +
+  NVRAM `win-11-base_VARS.fd`, 32 GB RAM (memfd/shared), 20 vCPU
+  host-passthrough with `<kvm hidden='on'/>` + `hypervisor` feature disabled
+  (NVIDIA Code-43 mitigation), TPM tpm-tis v2.0 (swtpm), disk
+  `win11-base-gaming.qcow2` (SATA) + **`/dev/zd0` virtio block** =
+  zvol `speed-storage/steam-library-win` (788 GB used — game library),
+  virtiofs share `/bulk-storage/` → `88_FS`, `<shmem name='looking-glass'>`
+  ivshmem-plain 128 MB + `<shmem name='scream'>` ivshmem-plain 2 MB,
+  network `<interface type='bridge'><source bridge='br0'/>` virtio,
+  SPICE graphics localhost, watchdog itco.
+- **R11.** **OVMF runtime links are MISSING** today: `/run/libvirt/nix-ovmf/`
+  contains only qemu's bundled edk2 firmware — no `OVMF_CODE.fd`/`OVMF_VARS.fd`
+  templates (those appear only when `qemu.ovmf.enable = true`). The domain
+  CANNOT boot until OVMF is restored in `virtualisation-libvirtd.nix`.
+- **R12.** Disk estate is healthy: `win11-base-gaming.qcow2` is a **standalone
+  qcow2** (100 GiB virtual / 72.6 GiB used — NO backing chain),
+  `win11-base-Parent.qcow2` also standalone (legacy). swtpm state
+  `tpm2-00.permall` mtime **2025-10-16** for the domain UUID — TPM/BitLocker
+  continuity preserved.
+- **R13.** Live network: `enp69s0f0` UP with `10.88.128.88/24`; `br0` does not
+  exist. Config declares `enp69s0f0.useDHCP = true` (commented-out
+  `bridges."br0"` block sits ready in `machines/LINDA/default.nix`). Firewall
+  rules for 4010/27015/Sunshine etc. are keyed to `enp69s0f0`.
+- **R14.** XML archaeology: `win-11-gaming-base-nvidia.xml` ==
+  `win-11-gaming-oldconfig.xml` (identical sha256) — that era passed the
+  **RTX 3060** (`21:00.0/.1`). The 2025-10-16 `win-11-gaming-base.xml` is the
+  post-swap config passing the 1050 set. Both archived in-repo.
+
 ## Register — Findings (F*)
 
 - **F1.** No Windows domain XML ever lived in the repo — the working stack was
@@ -65,49 +105,65 @@ prior working stack (GTX 1050 + ASMedia USB 3.1 + Looking Glass + Scream).
   (VMware Workstation vGPU) and sets `transparent_hugepage=never`. Any
   hugepages plan for the Windows VM must use explicit hugetlb reservation, not
   THP.
+- **F9.** The domain is defined and complete — restoration is host-side only
+  (VFIO + OVMF + br0). No domain surgery required for the baseline path.
+- **F10.** macvtap/direct attachment is ruled out for D-2: guest→host traffic
+  on macvtap is broken by design, which would kill Scream unicast audio
+  (guest→host). The bridge model is required by the prior working stack.
+- **F11.** Restoring `br0` moves the host's LAN identity (IP/firewall) from
+  `enp69s0f0` to `br0`. This must go in via `nixos-rebuild boot` + reboot
+  (same reboot as VFIO), NEVER `switch` — a live network move would sever the
+  deployment session mid-change.
+- **F12.** The guest's Scream sender mode is in-guest state we cannot read;
+  host-side Oct-2025 reality was unicast `-i br0 -p 4010` (tmpfile
+  `/dev/shm/scream` was removed 2025-07-21). The `<shmem name='scream'>`
+  device in the XML is therefore vestigial as a receiver path — keep it (harmless)
+  but expect unicast.
 
 ## Register — Open Decisions (human authority — execution is GATED on these)
 
-- **D-1. Passthrough device set.** Proposal: GTX 1050 (`10de:1c81` + `10de:0fb9`)
-  and ASMedia USB 3.1 (`1b21:2142`) — exactly the last working set. RTX 3060
-  remains the host GPU. *Confirm or amend.*
-- **D-2. VM network model.** Prior `br0` bridge is gone. Options:
-  (a) libvirt `virbr0` NAT (simplest; Scream binds virbr0; no LAN presence),
-  (b) macvtap/bridge on `enp69s0f0` (LAN presence for game streaming/Sunshine
-  from the VM — matches the open firewall ports),
-  (c) restore a `br0` bridge over `enp69s0f0`. *Recommendation: (b) if LAN
-  visibility for the VM is wanted, else (a).*
-- **D-3. Audio path.** Scream unicast on the chosen interface (fix `br0`→new
-  iface, port 4010 already firewalled) vs. Scream ivshmem (`/dev/shm/scream`
-  tmpfile, prior LINDACORE-era). *Recommendation: keep unicast, one-line fix.*
-- **D-4. VM RAM budget.** With ~107/125 GB host usage, decide VM memory (e.g.
-  16–32 GB) and whether to reserve explicit hugepages (2 MB pages × N) or rely
-  on normal pages. *Recommendation: 16 GB normal pages first; hugepages later
-  if latency demands it.*
-- **D-5. Golden regeneration authorization.** VFIO restore is an intentional
-  config change; `goldens/LINDA.json` must be regenerated and this requires
-  express user authorization per AGENTS.md. *Required before deploy.*
-- **D-6. Domain XML custody.** Recover `win-11-gaming-base.xml` into the repo
-  (proposal: `machines/LINDA/windows-vm/win-11-gaming-base.xml`) as the recorded
-  source of truth, with the domain still managed by libvirt/virt-manager
-  (imperative define), OR keep XML out-of-band only. *Recommendation: recover
-  into repo.*
+- **D-1. Passthrough device set. — RESOLVED by user directive ("use the prior
+  working stack") + R9:** GTX 1050 (`10de:1c81` + `10de:0fb9`) and ASMedia USB
+  3.1 (`1b21:2142`) at `0000:4d:00.0/.1` + `0000:46:00.0`. RTX 3060 stays host.
+- **D-2. VM network model. — REFINED by R10/F10:** the domain XML requires
+  `br0`; Scream requires guest→host comms. The faithful path is **restore `br0`
+  bridge over `enp69s0f0`** (uncomment the ready-made block in
+  `machines/LINDA/default.nix`), move firewall keys to `br0`, keep the domain
+  XML untouched. *This is a reboot-gated network change (F11) — needs explicit
+  user GO.* Alternative (deviation from prior art): rewrite the domain NIC to
+  `virbr0` NAT + Scream to virbr0 — no host network risk, but the VM loses LAN
+  presence (no LAN game streaming/Sunshine-from-guest).
+- **D-3. Audio path. — RESOLVED by prior art (F12):** Scream unicast on br0
+  port 4010 (service exists; becomes functional again once br0 returns).
+  No host change beyond D-2.
+- **D-4. VM RAM budget. — OPEN.** Domain wants 32 GB (prior art) but host runs
+  ~107/125 GB used. Options: (a) trust ballooning (memballoon virtio is in the
+  XML) and start as-is; (b) reduce `currentMemory` to 16 GB; (c) stop/trim AI
+  services while gaming. *Recommendation: (a) first — start the VM, watch
+  `free`, reduce only if the host swaps.*
+- **D-5. Golden regeneration authorization. — OPEN (express user authority
+  required).** VFIO + OVMF + br0 restore changes LINDA's config;
+  `goldens/LINDA.json` must be regenerated after the change lands and before
+  deploy.
+- **D-6. Domain XML custody. — DONE (Phase 0).** Both XML generations archived
+  at `machines/LINDA/windows-vm/` (sha256-verified against host). Domain stays
+  imperative (libvirt-defined, already defined on host) with repo-archived XML
+  as the recorded source of truth.
 
 ## Phased Plan (execution order; each phase gates the next)
 
-### Phase 0 — Recover prior-art artifacts (read-only + one privileged read)
-1. As John88 on LINDA (or user-assisted sudo): copy
-   `/var/lib/libvirt/qemu/win-11-gaming-base.xml`,
-   `win-11-gaming-base-nvidia.xml`, `win-11-gaming-oldconfig.xml` to the repo
-   (D-6 location).
-2. `qemu-img info --backing-chain` on `win11-base-gaming.qcow2` and
-   `win11-base-Parent.qcow2` — record chain, format, and virtual sizes.
-3. `virsh -c qemu:///system list --all` + `net-list --all` as John88 — confirm
-   whether any domain is still *defined* (vs. only XML files on disk).
-4. Record `ls /var/lib/libvirt/swtpm/` — confirm TPM state file survives
-   (Win11 requires TPM continuity).
-**Acceptance:** XMLs + backing-chain report + TPM state inventory archived in
-the repo; findings appended to F-register.
+### Phase 0 — Recover prior-art artifacts — COMPLETE (2026-10-05)
+1. ~~As John88 on LINDA: copy domain XMLs~~ DONE — both generations archived
+   in `machines/LINDA/windows-vm/` (sha256 match host originals: base
+   `a6ad7d4f…`, nvidia/oldconfig `aa22e3ba…`).
+2. ~~Backing-chain check~~ DONE — `win11-base-gaming.qcow2` standalone qcow2,
+   100 GiB virtual / 72.6 GiB used; `win11-base-Parent.qcow2` standalone legacy.
+3. ~~virsh inventory~~ DONE — `win-11-gaming-base` DEFINED (shut off); default
+   NAT network active; pools: default, iso, nvram, pool, result, testing-qcow,
+   Z-images.
+4. ~~swtpm state~~ DONE — `tpm2-00.permall` (9,220 B) present for domain UUID,
+   mtime 2025-10-16. TPM continuity preserved.
+**Acceptance:** MET — XMLs + chain report + TPM inventory in repo/plan.
 
 ### Phase 1 — Declarative VFIO restoration (Nix changes)
 1. `modifier_imports/virtualisation-libvirtd.nix`: uncomment OVMF block
@@ -121,11 +177,15 @@ the repo; findings appended to F-register.
    - optional belt-and-braces: `initrd.preDeviceCommands` driver_override for
      `0000:4d:00.0 0000:4d:00.1 0000:46:00.0` — with the FIXED redirect form
      (`echo "vfio-pci" > /sys/bus/pci/devices/$DEV/driver_override`) per F3.
-3. Fix Scream per D-3 (interface name update).
+3. Per D-2 (if br0 GO): uncomment the `bridges."br0"` block over `enp69s0f0`,
+   move `enp69s0f0.useDHCP` to `br0`, mirror the `firewall.interfaces`
+   keys onto `br0` (keep `wireg0` as-is).
 4. Regenerate `goldens/LINDA.json` (D-5 authorization), validate:
    `nix run .#validate-goldens -- LINDA`.
-**Acceptance:** eval clean, golden matches regenerated baseline, nixos-rebuild
-test passes on LINDA.
+5. Deploy with `nixos-rebuild boot` (NOT `switch`) — F11: the br0 move must
+   only take effect at reboot, together with VFIO.
+**Acceptance:** eval clean, golden matches regenerated baseline, boot entry
+staged on LINDA.
 
 ### Phase 2 — Reboot + binding verification (observation)
 1. Reboot LINDA. Verify:
@@ -135,15 +195,14 @@ test passes on LINDA.
 2. Host sanity: Sunshine, Ollama, WireGuard unaffected.
 **Acceptance:** vfio-pci owns group 41 + group 37; host display stack intact.
 
-### Phase 3 — Domain restore
-1. `virsh define` from recovered `win-11-gaming-base.xml` (adjust disk/nvram
-   paths if anything moved; they should not have).
-2. Reconcile XML against Phase 2 reality: hostdev addresses (`0000:4d:00.0/1`,
-   `0000:46:00.0`), ivshmem/looking-glass device, sound device, TPM backend
-   (swtpm), network per D-2.
+### Phase 3 — Domain restore (now: verify, not define)
+1. Domain is ALREADY defined (R8) — no `virsh define` needed. Verify only:
+   `virsh dumpxml win-11-gaming-base` matches `machines/LINDA/windows-vm/win-11-gaming-base.xml`.
+2. Reconcile against Phase 2 reality: hostdev addresses (`0000:4d:00.0/1`,
+   `0000:46:00.0`), ivshmem/looking-glass device, TPM backend (swtpm),
+   network per D-2 (br0 present).
 3. Do NOT snapshot/restore across the GPU swap — cold boot the domain.
-**Acceptance:** `virsh dumpxml win-11-gaming-base` shows expected hostdevs; VM
-boots to Windows login.
+**Acceptance:** `virsh start win-11-gaming-base` succeeds; VM boots to Windows login.
 
 ### Phase 4 — Guest-side bring-up
 1. Windows: NVIDIA driver (GTX 1050), Looking Glass host app (B7 era matches
@@ -179,8 +238,18 @@ boots to Windows login.
 | E10 | `git show 3762764^:machines/LINDA/default.nix` | prior VFIO recipe: initrd vfio modules, `extraModprobeConfig ids=1b21:2142,10de:1c81,10de:0fb9`, `DEVS="0000:46:00.0 0000:4d:00.0 0000:4d:00.1"` override loop (commented even then) |
 | E11 | `git show 709c553^:machines/LINDACORE.nix.save` | fullest prior stack: vfio + OVMF + swtpm + LG + Scream ivshmem + br0 bridge |
 | E12 | `free -g` | 125 GB total, 107 used, 18 available (D-4 relevance) |
+| E13 | `ssh deploy@LINDA -p 1108 'sudo virsh list --all'` | `win-11-gaming-base` DEFINED, shut off (also linux2024, ubuntu-gpu, ubuntu20.04-*) |
+| E14 | `sudo virsh dumpxml win-11-gaming-base` | hostdevs `0000:46:00.0`, `0000:4d:00.0`, `0000:4d:00.1`; loader `/run/libvirt/nix-ovmf/OVMF_CODE.fd`; 32 GB; 20 vCPU; kvm hidden; TPM tpm-tis; bridge `br0`; shmem looking-glass 128 MB + scream 2 MB; disk sda=`win11-base-gaming.qcow2`, vda=`/dev/zd0` |
+| E15 | `ls /run/libvirt/nix-ovmf/` | only qemu-bundled edk2 files — **no `OVMF_CODE.fd`/`OVMF_VARS.fd` templates** (OVMF module option commented out → VM cannot boot today) |
+| E16 | `sudo zfs list -t volume` | `/dev/zd0` = `speed-storage/steam-library-win` (788 GB referenced) |
+| E17 | `sudo find /var/lib/libvirt/swtpm/d9377588-…` | `tpm2-00.permall` 9,220 B, mtime 2025-10-16 (TPM continuity OK) |
+| E18 | `sudo qemu-img info --backing-chain win11-base-gaming.qcow2` | standalone qcow2, 100 GiB virtual / 72.6 GiB used — no backing file |
+| E19 | `sudo diff win-11-gaming-base-nvidia.xml win-11-gaming-base.xml` | hostdevs `21:00.0/.1+46:00.0` (old) → `46:00.0+4d:00.0/.1` (final); same loader/nvram paths |
+| E20 | `ip link show br0` | does not exist; `enp69s0f0` = 10.88.128.88/24 |
 
 ---
 
-**Version 1.0 — 2026-10-05 — Janeway (USS-Voyager).**
-**Next action:** user answers D-1…D-6 → Phase 0 privileged reads → Phase 1 edits.
+**Version 1.1 — 2026-10-05 — Janeway (USS-Voyager).** Phase 0 complete;
+D-1/D-3/D-6 resolved; D-2/D-4/D-5 open.
+**Next action:** user answers D-2 (br0 GO?), D-4 (RAM), D-5 (golden authority)
+→ Phase 1 Nix edits.
