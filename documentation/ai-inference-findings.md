@@ -85,6 +85,11 @@ load weights into RAM; inference does.
 
 ## Target LINDA Service Layout
 
+> **Historical (2026-10-05).** This hybrid vLLM+Ollama layout **did not stick**:
+> no machine enables `modules/vllm.nix` as of 2026-10-05. The live layout is
+> Ollama on LINDA (`services/ollama.nix`) with LiteLLM routing on alpha-three —
+> see `ai-stack.md`. Retained as the decision record's target at time of writing.
+
 | Engine | Service | Device | Lifecycle | Purpose |
 |---|---|---|---|---|
 | vLLM | `vllm-qwen2.5-vl` | RTX 3060 | Manual start | Small GPU vision/tool development |

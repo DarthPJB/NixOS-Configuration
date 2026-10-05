@@ -383,8 +383,11 @@ are golden-free). Current `validate-goldens` results:
 | cortex-alpha | nginx vhost loses `X-WEBAUTH-*` lines | wguser holdover removed |
 | cortex-alpha | `services.dnsmasq` gains `ldap.johnbargman.net` | LDAP reachability |
 
-**Status: goldens NOT regenerated (user decision 2026-09-29).** Both machines
-stay blocked on golden mismatch until the user authorizes:
+**Status: RESOLVED.** Goldens were regenerated after the gitolite-retirement
+commits (2026-10-01); `goldens/local-nas.json` contains `gitea@10.88.127.0/24`
+and `goldens/cortex-alpha.json` contains `ldap.johnbargman.net`. Historical note:
+the user decision of 2026-09-29 held regeneration until the policy landed.
+Regeneration commands (recorded for reference):
 
 ```bash
 nix run .#dump-config -- local-nas    | jq -S . > goldens/local-nas.json

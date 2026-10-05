@@ -29,7 +29,7 @@ alongside LINDA and cluster-box.
 
 The assimilator-probe was deployed via the generic `x86-bootstrap` raw-disk image
 (USB boot, GRUB EFI removable). Discovery followed the standard protocol
-(`documentation/x86-bootstrap-deployment-workflow.md`, Stage 2):
+(`documentation/archive/x86-bootstrap-deployment-workflow.md`, Stage 2):
 
 | Step | Command | Result |
 |------|---------|--------|
@@ -336,7 +336,7 @@ envelope.
 ## 6. Deployment Workflow (Completed — nixinate)
 
 This is the runbook for the first "proven" deployment. It mirrors
-`documentation/x86-bootstrap-deployment-workflow.md` Stages 5–7.
+`documentation/archive/x86-bootstrap-deployment-workflow.md` Stages 5–7.
 
 ### Pre-deployment checklist
 
@@ -382,7 +382,7 @@ This is the runbook for the first "proven" deployment. It mirrors
 
 ---
 
-## 6. Key Differences from Prior Deployments
+## 7. Key Differences from Prior Deployments
 
 | Aspect | arm-bootstrap (ARM) | x86-bootstrap → pillar-of-autum |
 |--------|---------------------|----------------------------------|
@@ -397,7 +397,7 @@ This is the runbook for the first "proven" deployment. It mirrors
 
 ---
 
-## 7. Lessons / Notes
+## 8. Lessons / Notes
 
 1. **Spelling discipline:** `pillar-of-autum` (no extra `n`). Enforced in code comments,
    topology `hostname`, and golden.

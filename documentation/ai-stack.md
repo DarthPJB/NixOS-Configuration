@@ -11,8 +11,8 @@ gateway live; `modules/vllm.nix` exists but no machine enables it
 The evidence and decision behind this architecture are recorded in
 [`ai-inference-findings.md`](ai-inference-findings.md). The prior vLLM-only
 migration remains documented in
-[`vllm-architecture.md`](vllm-architecture.md) as a historical implementation
-record.
+[`archive/vllm-architecture.md`](archive/vllm-architecture.md) as a historical
+implementation record.
 
 ## Architecture
 

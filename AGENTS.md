@@ -3,6 +3,8 @@
 **Scope:** Build philosophy, constraints, critical rules, common tasks.
 **Not scope:** Repository structure (see documentation/development-guide.md),
 project planning (see opencode/plans/), deployments (see documentation/operations-runbooks.md).
+**Spec, tracks, faults, boundaries:** See documentation/LDR-001-fleet-spec-and-boundaries.md
+(living decision record — open decisions gate remediation).
 **Topology architecture:** See documentation/topology-architecture.md for the generator diagram and data flow.
 **Topology principle:** See documentation/topology-principle.md for the canonical architecture principle.
 
@@ -154,6 +156,12 @@ storage-array, display-0 — preserved in `flake.nix` `dormantConfigurations` fo
 goldens, excluded from `nixosConfigurations` to prevent accidental deployment).
 **22 golden files** in `goldens/`: 20 machine goldens (x86-bootstrap has none)
 plus `ci.json` and `bargman-greeter-vm.json`.
+**Unmanaged fleet member:** `cluster-box` — external passthrough from the
+`Malayalam` flake (owned and operated by dlyon on GitLab; John88 holds
+architectural authority only). Not covered by topology transforms, golden tests,
+or CI build jobs. Deployment metadata only may be overridden (nixinate
+`extendModules` + `mkForce`). See `flake.nix` cluster-box block and the
+Malayalam repo's `documents/architecture-passthrough.md`.
 Nginx vhosts managed fleetwide: ~25 named vhosts — topology-driven on
 cortex-alpha (11 named + catchall, incl. `print-controller.johnbargman.net`),
 ad-hoc on remote-worker (10), alpha-three (2: agentic-gateway, ollama),

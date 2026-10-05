@@ -1,14 +1,14 @@
 # Assimilator Deployment Workflow — Corrected Methodology
 
 > **Last updated:** 2026-08-30
-> **Status:** Active — replaces the flawed Stage 3 host-key extraction in `x86-bootstrap-deployment-workflow.md`
+> **Status:** Active — replaces the flawed Stage 3 host-key extraction in `archive/x86-bootstrap-deployment-workflow.md`
 > **Scope:** x86_64 machines assimilated via the assimilator-probe workflow
 
 ## Purpose
 
 This document codifies the **correct three-step deployment methodology** for machines
 assimilated via the assimilator-probe x86-bootstrap workflow. It replaces the flawed
-host-key extraction step (Stage 3) in `x86-bootstrap-deployment-workflow.md`, which
+host-key extraction step (Stage 3) in `archive/x86-bootstrap-deployment-workflow.md`, which
 incorrectly assumes the probe's transient, auto-generated SSH host key can serve as
 the permanent device identity.
 
@@ -291,7 +291,7 @@ nix run .#pillar-of-autum --option builders '' -- switch
 
 ## Why the Existing Workflow Is Wrong
 
-The documented workflow in `x86-bootstrap-deployment-workflow.md` Stage 3 says:
+The documented workflow in `archive/x86-bootstrap-deployment-workflow.md` Stage 3 says:
 
 > **Stage 3: Extract Host Key**
 > The device has a fresh SSH host key generated at boot. Capture it for fleet known_hosts.

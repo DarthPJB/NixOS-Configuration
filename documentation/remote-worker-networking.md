@@ -27,7 +27,7 @@ noting the external NAT mapping.
 - **Internal (LAN/WG)**: resolves to `10.88.127.50` (remote-worker WG) → staging site
 - **External**: resolves via public DNS to `193.16.42.101` → NAT → `10.0.1.42` → release site
 
-DNS entry defined in `topology/cortex-alpha.nix` under `dns.static`.
+DNS entry defined in `topology/cortex-alpha.json` under `dns.static`.
 
 ## Nginx VHosts
 

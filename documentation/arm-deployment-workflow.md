@@ -134,7 +134,7 @@ Each device needs unique WireGuard keys.
 4. **Commit and push:**
    ```bash
    git add flake.nix && git commit -m "deploy: reset <hostname> to WG IP"
-   git push origin jb/overlord-I
+   git push origin <your-work-branch>
    ```
 
 ## Stage 7: Verify
