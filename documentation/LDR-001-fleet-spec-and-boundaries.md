@@ -1,11 +1,11 @@
 # LDR-001 — Fleet Spec, Tracks & Architecture Boundaries
 
 **Type:** Living Decision Record (one living document — corrections in place, never forked)
-**Version:** 1.1
+**Version:** 1.2
 **Date:** 2026-10-05
 **Author:** USS-Voyager (Captain), for user QA review
-**Status:** Partially decided — D-02/D-03/D-04/D-07 **RESOLVED** (user rulings
-2026-10-05); D-01/D-05/D-06 **OPEN** with briefings supplied below
+**Status:** D-02/D-03/D-04/D-05/D-06/D-07 **RESOLVED** (user rulings 2026-10-05).
+D-01 **UNDER DISCUSSION** — pros/cons breakdown session.
 
 Registers: **R\*** = resolved fact · **F\*** = finding/fault · **D-\*** = decision · **R-F\*** = remediation action
 
@@ -63,7 +63,7 @@ principles say "never `nix flake update`" while `operations-runbooks.md` and
 | Track | State | Next gate |
 |---|---|---|
 | **PR #24 `web-updates`** | CI in flight (Gitea branding, PostgreSQL migration, gitolite retirement, B2 backup targets); assumed complete for docs purposes | Green CI → merge decision (secrets confirmed age/secrix — see F-15) |
-| **gaming-host-1 pivot → `game-server-1`** | **NEW MISSION (user, 2026-10-05):** the machine becomes a **remote-development machine** and hosts the game server for the **free-agent game** (co-developed). First modularisation extraction (D-02). Game servers currently disabled — preserved config becomes the seed of the extraction. | D-01 boundary principle + extraction-tier confirmation (§4.3 design) |
+| **gaming-host-1 pivot → `game-server-1`** | **NEW MISSION (user, 2026-10-05):** the machine becomes a **remote-development machine** and hosts the game server for the **free-agent game** (co-developed). **Extraction decided (D-02): entire machine separated, Malayalam-pattern (tier-3 passthrough)** — maintained separately, freezable. | Standalone flake + architecture-passthrough contract; name change `gaming-host-1` → `game-server-1` |
 | **Documentation QA review** | This document + archive | D-01/D-05/D-06 remain open |
 | **Backup/offsite formalisation** | Replication live but no restore-test procedure fleet-wide (F-08) | User decision D-05 |
 
@@ -102,10 +102,10 @@ Severity: **critical / major / minor**. Status: **open** (needs user call or wor
 |---|---|---|---|
 | F-06 | PR CI wall-clock 3–5.5h; exactly 2 runner instances documented for x86 builds | major | open |
 | F-07 | LINDA cold-cache builds ~6h (12h job timeout) — standing constraint | major | open |
-| F-08 | **No backup restore-test procedure exists fleet-wide** — while B2/MinIO replication is now load-bearing | major | open (D-05) |
-| F-09 | MinIO backup bucket unbounded: 46 files / 743 GB vs source 8 files / 163 GB; no lifecycle policy | major | open |
+| F-08 | No backup restore-test procedure fleet-wide | major | **decided-accepted (D-05, 2026-10-05)** — posture is **by design**; no drill mandate at this time |
+| F-09 | MinIO backup bucket retains ALL history (46 files / 743 GB vs source 8 files / 163 GB) | major | **resolved — BY DESIGN (D-05)**: upload costs minimal; unlimited retention intentional; deletion is **manual** |
 | F-10 | **Gitea settings are not covered by golden tests** (`dump-config` doesn't serialize `services.gitea.settings`) — validated only by `nixos-rebuild build` | major | decided-accepted |
-| F-11 | **cluster-box MAX_QUEUE decision open since 2026-09-19** — MAX_QUEUE=512 with NUM_PARALLEL=1 allows ~256h queue vs 1h LiteLLM timeout; recommendation MAX_QUEUE=8 unactioned | major | **open (D-06 — briefing supplied 2026-10-05)** |
+| F-11 | **cluster-box MAX_QUEUE decision open since 2026-09-19** — MAX_QUEUE=512 with NUM_PARALLEL=1 allows ~256h queue vs 1h LiteLLM timeout | major | **routed (D-06)** — recorded in **Malayalam** `documents/known-issues.md` §7 with recommendation; dlyon to action independently (short-term horizon) |
 | F-12 | Monitoring Phase 2 unimplemented; pillar-of-autum scrape target missing (dashboard already generated); 4 stale smartctl targets pinned as legacy | major | decided-deferred |
 | F-13 | genWireguard client migration pending (overlord-iii) — 16 machines on legacy module | major | decided-deferred |
 | F-14 | AI stack end-to-end gates open: gateway harness completion never recorded; near-128K memory measurement never done | major | open |
@@ -177,31 +177,38 @@ modularisation exists) without flake sprawl.
 
 ### 4.3 Extraction programme — **D-02 DECIDED (user, 2026-10-05)**
 
-**Ruling: `game-server-1` (today's gaming-host-1) is the FIRST extraction.** The
-machine pivots to a **remote-development machine** and hosts the game server for
-the **free-agent game** (co-developed). Remaining candidates below stay parked.
-
-**Recommended extraction design (pending D-01 confirmation) — split by boundary:**
+**Ruling: `game-server-1` (today's gaming-host-1) is the FIRST extraction, and
+the ENTIRE machine separates — Malayalam pattern (tier-3 verbatim passthrough).**
+User intent: the machine must be **maintained separately and freezable**. The
+previously proposed split design (game-server module extracted, machine base
+kept in the monolith) is **SUPERSEDED** — it does not deliver freeze capability,
+because `flake.lock` is global to a flake: a machine that must freeze while the
+fleet moves **must** own its own flake.
 
 | Piece | Goes where | Tier | Why |
 |---|---|---|---|
-| **Free-agent game server** (game config, data dirs, backup targets, updates) | Standalone flake in the free-agent project repo (mecha-team-zero / co-dev space) | **2** — exports `nixosModules.*`, composed via `extraModules` | Ownership boundary: co-developed. Co-devs iterate on the game server without touching fleet config. |
-| **Machine base** (remote-dev environment, WireGuard, topology, secrix, sshd) | Stays in NixOS-Configuration monolith | **1** | Keeps goldens/CI/topology coverage — avoids the Malayalam carve-out cost while John88 remains the operator. |
-| **Whole-machine passthrough** (Malayalam style) | — | 3 | **Not recommended yet** — only if the free-agent project grows its own operator. Costs: loses goldens/topology/CI, requires an architecture-passthrough contract. |
+| **Entire `nixosConfigurations.game-server-1`** | New standalone flake (free-agent / game-server-1 repo in `/speed-storage/bargman-tech/`) | **3 — verbatim passthrough** (Malayalam pattern) | Separate maintenance + freeze: own `flake.lock`, own CI, own release cadence. Co-developed free-agent game server lives with the project. |
+| Fleet consumption | `flake.nix` passthrough + nixinate `extendModules`/`mkForce` on **deployment metadata only** | — | Same contract as cluster-box (closure identical across deploy paths) |
 
-Also planned with the pivot: machine rename `gaming-host-1` → `game-server-1`
-(topology JSON, flake registration, golden regeneration — intentional config
-change, golden regen authorized). The disabled game-server modules become the
-seed of the extracted flake.
+**Tier-3 obligations (Malayalam contract, to be written as
+`documents/architecture-passthrough.md` in the new flake):**
+- Owned by John88 (unlike cluster-box's dlyon), but **lifecycle-managed externally**
+- **Excluded** from topology transforms, golden tests, and CI build jobs
+  (`lib/golden_coverage.nix` carve-out; CI exclusions)
+- Only deployment metadata may differ from the flake's own evaluation
+- Fleet-wide concerns that still cross the boundary (WireGuard keys, secrix
+  recipients, user management) are handover items — enumerated at extraction time
+- "Frozen" means input-pinned by design: security updates are deliberate acts
+  on the standalone flake, not side-effects of fleet churn
 
 | Candidate | Tier | Rationale | Status |
 |---|---|---|---|
-| **game-server-1 (gaming-host-1) — free-agent game server + remote-dev** | 2 (split) | D-02 ruling; all three boundary triggers | **SELECTED — first extraction** |
-| Game-server shared base module | 2 | Kills 5× SteamCMD/user/firewall/tmpfiles duplication | subsumed by the extraction above |
-| Gitea / Fabrication Forge stack | 2 or 3 | Self-contained; brand is product-facing | parked (only under D-01 option C) |
-| AI stack (ollama module + LiteLLM schema) | 2 | Reused across LINDA, pillar-of-autum, alpha-three | parked |
-| Monitoring (inventory + dashboard gen) | 2 | Already a coherent `lib/` + templates unit | parked |
-| Backup/rclone-target | 2 | Small, shared across 4 machines | parked |
+| **game-server-1 (gaming-host-1) — whole machine** | 3 | D-02 ruling; freeze + independent maintenance + co-developed game server | **SELECTED — first extraction** |
+| Game-server shared base module | 2 | 5× SteamCMD/user/firewall/tmpfiles duplication | folded into the extraction (the standalone flake IS the base) |
+| Gitea / Fabrication Forge stack | 2 or 3 | Self-contained; brand is product-facing | parked (D-01 discussion) |
+| AI stack (ollama module + LiteLLM schema) | 2 | Reused across LINDA, pillar-of-autum, alpha-three | parked (D-01 discussion) |
+| Monitoring (inventory + dashboard gen) | 2 | Already a coherent `lib/` + templates unit | parked (D-01 discussion) |
+| Backup/rclone-target | 2 | Small, shared across 4 machines | parked (D-01 discussion) |
 
 ### 4.4 Boundary hygiene required regardless of D-01/D-02
 
@@ -246,21 +253,21 @@ seed of the extracted flake.
 
 ## 7. Close
 
-**Version 1.1 — 2026-10-05.**
+**Version 1.2 — 2026-10-05.**
 
 ### Decisions resolved (user rulings, 2026-10-05)
 
 | ID | Ruling |
 |---|---|
-| **D-02** | **game-server-1 (gaming-host-1) is the first extraction.** Machine pivots to remote-development + free-agent game server (co-developed). Design in §4.3. |
+| **D-02** | **Entire machine separates — Malayalam pattern (tier-3 passthrough).** game-server-1 (gaming-host-1) becomes a remote-development machine hosting the free-agent game server (co-developed), maintained separately and **freezable**. Split design superseded (freeze requires its own flake.lock). See §4.3. |
 | **D-03** | **`nix flake update` per input only.** Wholesale update prohibited. Documented in AGENTS.md + runbooks. |
 | **D-04** | **No re-keying now.** pillar-of-autum works; host-key doctrine (F-02/F-03) deferred to the **next hardening phase**. |
+| **D-05** | **Backup posture is by design.** Upload costs minimal; unlimited retention intentional; deletion is **manual**. No restore-test mandate at this time. |
+| **D-06** | **Routed to Malayalam documentation.** MAX_QUEUE analysis + recommendation recorded in Malayalam `documents/known-issues.md` §7; to be actioned independently on a short-term horizon. |
 | **D-07** | **`b2_master_sync_token` is held in reserve with intent** — not an orphan. Do not delete. Recorded in operations-runbooks. |
 
-### Open decisions — briefings supplied (2026-10-05)
+### Open decisions
 
-| ID | Question | Briefing |
+| ID | Question | Status |
 |---|---|---|
-| **D-01** | Boundary principle | **Captain recommends A** — full rationale in §4.2. A reconciles the monolith doctrine (F-21) with the three existing tiers and unlocks the D-02 extraction cleanly. B blocks the game-server module; C causes flake sprawl on golden-tested single-owner stacks. |
-| **D-05** | Backup restore-testing | **What exists:** two-hop chain — machines → MinIO (LINDA/terminal-zero → `minio:obsidian-v3`; gaming-host-1 → `minio:minecraft-backups`) → B2 (`b2:minio-backup-bargman/*` — obsidian-v3, linda-home, bargman-tech, minecraft-backups, fs-v3-88 + 1). Restore must traverse B2→MinIO→machine **and** the secrix-encrypted rclone configs — the decryption path is itself an untested failure mode. **Options:** (a) **Tiered drills** — monthly automated `rclone check` (hash verify, ~zero egress cost), quarterly manual sample-restore of latest backups to a scratch target (trivial B2 egress ~$0.01/GB), annual full-restore drill of `obsidian-v3` (the irreplaceable 88-DB knowledge base); (b) quarterly sample-restore only; (c) accept risk. **Captain recommends (a)** — cost is negligible next to 743 GB of unverified backups (F-09). Deliverable: `documentation/backup-restore-testing.md` runbook + timers. |
-| **D-06** | MAX_QUEUE | **What exists:** cluster-box runs `laguna-xs-2.1:q4_K_M` (33.4B) at NUM_PARALLEL=1 — ~30 min/request; Ollama default MAX_QUEUE=512 means request #512 waits ~256h while LiteLLM per-model timeout is 1h (request_timeout 8h). Every timeout expires long before service — silent failure accumulation. LINDA runs NUM_PARALLEL=1, MAX_LOADED_MODELS=1 (RAM safety for Laguna S 96GB loads). **Options:** (a) **MAX_QUEUE=8 on LINDA + request dlyon set the same on cluster-box** (cluster-box is Malayalam-managed — we hold architectural authority but dlyon operates it); keep NUM_PARALLEL=1; fail-fast beats silent queuing; agent fleet can reroute. (b) MAX_QUEUE=16–32 (burst buffer for batch jobs, ~8–16h garbage tail). (c) Leave 512 and rely on LiteLLM timeouts. (d) Raise NUM_PARALLEL instead (real throughput lever but roughly doubles KV-cache RAM — risky next to 96GB model loads). **Captain recommends (a)** — matches the timeout reality; also verify the exact Ollama env var name on the running version before applying. |
+| **D-01** | Boundary principle (A / B / C) | **UNDER DISCUSSION (user, 2026-10-05)** — pros/cons breakdown requested; D-02's freeze-motive is the decisive new evidence (see §4.2 note). Awaiting discussion outcome. |
