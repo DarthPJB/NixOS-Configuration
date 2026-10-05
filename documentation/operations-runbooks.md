@@ -45,6 +45,8 @@ Consolidated reference for operational procedures, security model, and secret ma
 
 Service accounts are isolated per-service. No shared accounts. No root login.
 
+Port map: port 22 on the WireGuard plane is the **git-ssh plane** (`server_services/git-ssh.nix`) — `Match LocalPort 22` → `AllowUsers git@10.88.127.0/24 gitea@10.88.127.0/24`. `git` is the published Gitea SSH identity (forced command re-execs as `gitea`); `build` shares the same port via `users/build.nix` (`Match LocalPort 22 User build Address 10.88.127.0/24`). Admin/human SSH is port 1108 only (`environments/sshd.nix`). MinIO listens on 2222 (`server_services/minio-insecure.nix`).
+
 ---
 
 ## SSH Access Model
@@ -57,6 +59,7 @@ Service accounts are isolated per-service. No shared accounts. No root login.
 | Deploy configuration | `deploy` | Manual (user authorizes) | `nix run .#gaming-host-1 -- switch` |
 | Administrative commands | `deploy` | Manual (user authorizes) | `ssh -p 1108 deploy@10.88.127.52 "sudo systemctl restart nginx"` |
 | Personal access | `John88` | Manual (key-based) | `ssh -p 1108 John88@10.88.127.52` |
+| Clone/push repositories (port 22, git-ssh plane) | `git` (re-execs as `gitea`) | Automatic (key-based via Gitea `authorized_keys`, forced command) | `git clone ssh://git@10.88.127.3:22/org/repo.git` |
 
 ### inspect User — Passive System Inspection
 
@@ -71,8 +74,8 @@ The `inspect` user is the standard way to passively access systems for monitorin
 # Check service status
 ssh -p 1108 inspect@10.88.127.52 "systemctl status nginx.service"
 
-# Read recent logs
-ssh -p 1108 inspect@10.88.127.52 "journalctl -u minecraft-curseforge-all-the-mons -n 100"
+# Read recent logs (game-server units are disabled since 2026-10-04)
+ssh -p 1108 inspect@10.88.127.52 "journalctl -u nginx -n 100"
 
 # Check disk usage
 ssh -p 1108 inspect@10.88.127.52 "df -h && zpool status"
@@ -108,7 +111,7 @@ ssh -p 1108 deploy@10.88.127.52 "sudo systemctl restart nginx"
 The `build` user is used exclusively for remote Nix builds via `ssh-ng` protocol:
 
 - **No sudo** — cannot modify system state
-- **Port 22 only** — other users denied on port 22
+- **Port 22 (git-ssh plane)** — `Match LocalPort 22 User build Address 10.88.127.0/24` (`users/build.nix`); shares port 22 with `git`/`gitea`
 - **WireGuard only** — accessible only via VPN
 
 ---
@@ -322,9 +325,11 @@ Under no circumstances shall any password be recited, transmitted, saved to a fi
 3. Generate WireGuard keys (see Secrix workflow above)
 4. Add to topology (`topology/<machine>.json` — planar JSON topology)
 5. Add to `flake.nix`
-6. Test configuration locally
-7. Deploy to machine
-8. Verify operation
+6. Generate golden: `nix run .#dump-config --option builders '' -- <machine> | jq -S . > goldens/<machine>.json`
+7. Validate golden: `nix run .#validate-goldens --option builders '' -- <machine>`
+8. Test configuration locally
+9. Deploy to machine
+10. Verify operation
 
 ## Runbook: Service Deployment
 
@@ -365,11 +370,11 @@ zpool status
 iostat -x 1
 
 # Deploy a machine
-nix run .#hostname -- switch
+nix run .#hostname --option builders '' -- switch
 
-# Check network config against golden
-nix run .#check-network -- hostname
+# Check config against golden
+nix run .#validate-goldens --option builders '' -- hostname
 
 # Dump machine config
-nix run .#dump-config -- hostname | jq -S .
+nix run .#dump-config --option builders '' -- hostname | jq -S .
 ```

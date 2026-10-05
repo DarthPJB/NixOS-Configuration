@@ -1,14 +1,22 @@
 # AI Infrastructure Upgrades — Planning Document
 
-**Status**: Historical vLLM-only upgrade record; hybrid operation now active  
+**Status**: Historical vLLM-only upgrade record; Ollama is the live inference
+layer (vLLM undeployed as of 2026-10-05)  
 **Started**: 2026-08-24  
-**Last updated**: 2026-08-27
+**Last updated**: 2026-10-05
 
 > This document records the completed vLLM-only upgrade work. Operational usage
-> subsequently established a hybrid vLLM/Ollama design without discarding the
-> module, model packaging, isolation, or monitoring improvements. See
-> [`ai-inference-findings.md`](ai-inference-findings.md) and
+> subsequently moved the fleet to **Ollama-primary** operation without
+> discarding the module, model packaging, isolation, or monitoring improvements.
+> See [`ai-inference-findings.md`](ai-inference-findings.md) and
 > [`ai-stack.md`](ai-stack.md) for the current architecture.
+>
+> **Clarification (2026-10-05):** the "✅ RESOLVED — vLLM-only migration" markers
+> below record what the vLLM-only migration delivered **at the time**. That
+> end-state was superseded by Ollama-primary operation: live inference is Ollama
+> on LINDA and pillar-of-autum via the LiteLLM gateway on alpha-three;
+> `modules/vllm.nix` exists but no machine enables it. The markers are kept as
+> historical record.
 
 ---
 
@@ -192,13 +200,16 @@ These are the issues that blocked production-grade AI infrastructure, in order o
 | Per-model config | ✅ Engine args | `max_num_seqs`, `gpu_memory_utilization`, `max_model_len` |
 | Chat templates | ✅ Configurable | `--chat-template` flag or model's tokenizer_config.json |
 | Multi-model | ✅ Per-model services | Each model gets its own systemd service |
-| CPU inference | ✅ Supported | `--device cpu` (deployed on LINDA: qwen3-30b-a3b :8002, qwen3-coder :8003) |
+| CPU inference | ✅ Supported | `--device cpu` (historical/undeployed: ran on LINDA as qwen3-30b-a3b :8002, qwen3-coder :8003 in the vLLM era; no `:8002`/`:8003` service in `machines/` as of 2026-10-05) |
 
 ### Ollama
 
-> **Retired from the fleet** as part of the vLLM-only migration — the table below
-> documents its capabilities for reference only. `services/ollama.nix` is archived
-> at `services/archive/ollama.nix`. Laguna models (laguna-s/laguna-xs) still run on
+> **Retired from the fleet (since reversed)** as part of the vLLM-only migration
+> — the table below documents its capabilities for reference only. In the vLLM
+> era `services/ollama.nix` was archived at `services/archive/ollama.nix`
+> (historical; no `services/archive/` path remains in the tree). As of
+> 2026-10-05 Ollama is live again on LINDA (`services/ollama.nix`) and
+> pillar-of-autum. Laguna models (laguna-s/laguna-xs) still run on
 > Ollama on cluster-box pending review (custom GGUF, not on HuggingFace).
 
 | Feature | Status | Notes |

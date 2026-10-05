@@ -18,24 +18,29 @@ Consolidated reference for codebase structure, coding conventions, and developme
   - `<machine>.json` - Per-machine topology (coordinate, planes, hub relationships, DNS, nginx, firewall, WireGuard)
   - `_template.json` - Template for new machines
 - `goldens/` - Golden test files (sacrosanct)
-  - `<machine>.json` - Golden test references for each machine
+  - `<machine>.json` - Golden test references for each machine (x86-bootstrap has none)
+  - `ci.json`, `bargman-greeter-vm.json` - Non-machine golden references
 - `lib/topology/` - Topology transformation functions
-  - `mk*.nix` - Transformers (topology data → flat settings)
-  - `gen*.nix` - Generators (settings → NixOS config)
+  - `mktopology.nix` - Orchestrator (reads JSON, calls generators)
+  - `mkRegistry.nix` - Cross-machine validation; `mkHostsEntries.nix` - hosts entries
+  - `gen*.nix` - Generators (JSON → NixOS config): `genFirewall`, `genDns`, `genNginx`, `genBackup`, `genWireguard`, `genNetwork`, `genTailscale`, `genForwarding`, `genMonitoring`, `genDashboard`
+  - `dashboard_templates/` - Dashboard templates consumed by `genDashboard`
   - `validate.nix` - Topology validation
   - `utils.nix` - Shared utilities
+  - `archive/` - Retired code (incl. `topology-derive.nix`)
+- `lib/monitoring/inventory.nix` - Monitoring inventory (blessed scrape baseline + config-derived discovery)
 - `lib/serialize-config.nix` - The config serializer (used by `dump-config` and `checks.network-config-*`)
 - `lib/golden_coverage.nix` - Coverage audit (checks if every machine has a golden)
 - `modules/` - NixOS modules
-  - `topology-derive.nix` - Topology-driven network configuration (hub + clients)
-  - `enable-wg-topology.nix` - WireGuard client module (deployed on 13 machines)
+  - `enable-wg-topology.nix` - WireGuard client module (deployed on 16 machines)
+  - Also `core-router.nix`, `core-router-topology.nix`, `lightdm-webkit2-greeter.nix`, `nixos-deployment-exporter.nix`, `smart-monitoring.nix`, `ssh-multiplex.nix`, `sysdiag.nix`, `vllm.nix` (former `topology-derive.nix` is archived at `lib/topology/archive/`)
 - `environments/` - Environment modules for software collections (e.g., `code.nix`, `browsers.nix`)
 - `users/` - User account configurations (one file per user)
 
 ### Supporting Directories
 - `lib/` - Shared utility functions and libraries
-- `services/` - Service-specific configurations (e.g., `nextcloud.nix`, `prometheus.nix`)
-- `server_services/` - Server-specific service configurations (game servers, etc.)
+- `services/` - Service-specific configurations (e.g., `prometheus.nix`, `ollama.nix`, `nix-cache-serve.nix`)
+- `server_services/` - Server-specific service configurations (e.g., `gitea.nix`, `postgres.nix`, `git-ssh.nix`, `nextcloud.nix`; `game_servers/` is disabled)
 - `modifier_imports/` - System-wide modifiers and features (virtualization, builders, energy saving)
 - `secrets/` - Encrypted secrets managed by secrix
   - `private_keys/` - WireGuard private keys (encrypted)
@@ -108,7 +113,7 @@ These practices are strictly prohibited in this repository:
 - [ ] Run `nix fmt` to format code (do NOT run on entire codebase without explicit permission)
 - [ ] Run `nix flake check` to validate
 - [ ] Run `nix flake show` to verify evaluation
-- [ ] Run `nix run .#check-network -- <machine>` to verify topology config
+- [ ] Run `nix run .#validate-goldens --option builders '' -- <machine>` to verify config against golden
 - [ ] Test build with `nixos-rebuild build --flake .#hostname`
 - [ ] Write descriptive commit message
 - [ ] Verify no secrets are committed
@@ -124,24 +129,24 @@ These practices are strictly prohibited in this repository:
    cp /tmp/pub secrets/public_keys/wireguard/wg_<machine>_pub
    rm /tmp/priv /tmp/pub
    ```
-4. Generate golden: `nix run .#dump-config -- <machine> | jq -S . > goldens/<machine>.json`
-5. Validate: `nix run .#check-network -- <machine>`
+4. Generate golden: `nix run .#dump-config --option builders '' -- <machine> | jq -S . > goldens/<machine>.json`
+5. Validate: `nix run .#validate-goldens --option builders '' -- <machine>`
 6. First deploy via LAN IP, then switch to WireGuard
 
 ### Deployment
 
 ```bash
 # Deploy a machine (nixinate)
-nix run .#hostname -- switch
+nix run .#hostname --option builders '' -- switch
 
-# Check network config against golden
-nix run .#check-network -- hostname
+# Check config against golden
+nix run .#validate-goldens --option builders '' -- hostname
 
 # Dump machine config
-nix run .#dump-config -- hostname | jq -S .
+nix run .#dump-config --option builders '' -- hostname | jq -S .
 
 # Dry-run activation
-nix run .#hostname -- --dry-activate
+nix run .#hostname --option builders '' -- --dry-activate
 ```
 
 ---

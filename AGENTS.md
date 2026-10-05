@@ -6,11 +6,13 @@ project planning (see opencode/plans/), deployments (see documentation/operation
 **Topology architecture:** See documentation/topology-architecture.md for the generator diagram and data flow.
 **Topology principle:** See documentation/topology-principle.md for the canonical architecture principle.
 
-## Current Issues — 2026-07-26
+## Current Issues — 2026-10-05
 
-These are the leading issues on `overlord-ii-planar-topology`. The branch will not
-be considered complete or deployable until Phase B core tasks are implemented
-and validated against goldens.
+The `overlord-ii-planar-topology` work is **complete and merged**. Phase B
+core tasks are implemented and validated against goldens. The current frontier
+is the Fabrication Forge / Gitea track (see `documentation/gitea-fabrication-forge.md`),
+the backup/offsite track (topology `backup` keys + B2 replication), and the
+deferred overlord-iii client-side WireGuard migration.
 
 ### Architecture Boundary — READ THIS FIRST
 
@@ -18,14 +20,18 @@ The two-layer topology architecture enforces a strict boundary.
 **This boundary must never be violated by any agent, reviewer, or code change.**
 
 ```
-topology/<machine>.json  ──→  gen*.nix generators  ──→  minimal skeleton
+topology/<machine>.json  ──→  gen*.nix generators  ──→  topology-derived config
   (source of truth)              (topology-derived)       (vhost names, listen
-                                                          addrs, proxy_to, acme)
+                                                          addrs, proxy_to, acme,
+                                                          forceSSL, addSSL,
+                                                          proxyWebsockets, proxy
+                                                          headers, static roots,
+                                                          return codes, defaults)
                                                               │
 machines/<machine>/default.nix  ──→  user Nix config  ───────┤
-services/*.nix                                             (forceSSL, roots,
-environments/*.nix                                          headers, websockets,
-                                                           returns, packages)
+services/*.nix                                             (flake-input packages,
+environments/*.nix                                          overlays, extraModules,
+                                                           user-specific extras)
                                                               │
                                                    NixOS module merge
                                                               ↓
@@ -34,10 +40,13 @@ environments/*.nix                                          headers, websockets,
                                                    golden = ground truth
 ```
 
-**The generator produces ONLY topology-derived fields.**  It does NOT produce
-forceSSL, addSSL, proxyWebsockets, proxy headers, static root resolution,
-return codes, or default vhost flags.  Those come from the machine's Nix
-configuration and are merged via the NixOS module system.
+**The generator produces ONLY topology-derived fields.**  `genNginx.nix` emits
+the complete topology-derived vhost surface: forceSSL, addSSL, enableACME,
+useACMEHost, listenAddresses, proxyWebsockets, proxy headers, static roots,
+return codes, and default vhost flags — all driven by `topology/<machine>.json`.
+Anything that cannot be expressed in topology JSON (flake-input packages such as
+carmelsite, module overlays, user extras) comes from the machine's Nix
+configuration and is merged via the NixOS module system.
 
 **The golden is the MERGED result of both sources.**  When a generator is
 wired, it replaces the topology-derived portion of the config.  The machine
@@ -50,20 +59,23 @@ from user configuration has fundamentally misunderstood the architecture.**
 
 **B4. Wire the two-layer topology architecture into machine configs.**
 **COMPLETED.** The `mktopology` function (`lib/topology/mktopology.nix`) wires
-`genFirewall`, `genDns`, `genNginx`, and `genBackup` into all machine configs
-at the flake level. `genWireguard` is deferred to overlord-iii (see below).
+`genFirewall`, `genDns`, `genNginx`, `genBackup`, and `genWireguard` (hub-only,
+conditional on `topology.wireguard`) into machine configs at the flake level.
+Client-side WireGuard still comes from `modules/enable-wg-topology.nix`;
+migration of clients is the deferred overlord-iii work.
 
 **B5. Wire backup topology pipeline into a module.**
 **COMPLETED.** `genBackup.nix` is wired into `mktopology.nix` and activates
-conditionally on `topology.backup` keys. At minimum one machine needs `backup`
-keys in its topology JSON to validate the pipeline (pending).
+conditionally on `topology.backup` keys. The pipeline is **validated in
+production**: `topology.backup` keys exist on gaming-host-1, LINDA, local-nas,
+and terminal-zero (B2/rclone offsite replication via `lib/rclone-target.nix`).
 
 ### Phase B — Actionable Pending Review
 
 **B1. Cortex-alpha hardcoded IP addresses.**
 **RESOLVED.** `genNetwork.nix` now derives interface addresses from topology
 coordinates for hub machines. Hardcoded IP removed from `machines/cortex-alpha/default.nix`.
-Validated against golden — all 19 machines pass.
+Validated against golden — all machines pass.
 
 **B2. Remote-worker ad-hoc nginx config.**
 **BY DESIGN.** Webroot is set in user Nix config; only topology is defined in JSON.
@@ -109,10 +121,12 @@ Default-on caching (e.g., DetSys "magic nix cache") that may exfiltrate code
 is not acceptable without conscious authorization. Builds must complete from
 source within our controlled environment unless a specific exception is granted.
 
-**Planned: In-House Binary Cache.** We will operate our own Nix binary cache
-server within the closed environment, dogfooding our infrastructure
-capabilities. Until the cache is operational, builds complete from source.
-No third-party cache is configured in CI. See `documentation/ci-readme.md` for status.
+**In-House Binary Cache: OPERATIONAL.** `services/nix-cache-serve.nix` runs
+signed `nix-serve` on remote-builder (port 5001, TLS at `cache.johnbargman.net`),
+wired into `flake.nix` `nixConfig.extra-substituters` and fleet
+`trusted-substituters`. Approved third-party inputs in `nixConfig`: FlakeHub
+(flake inputs) and `install.determinate.systems` (Determinate Nix artifacts).
+No other third-party cache is configured in CI. See `documentation/ci-readme.md`.
 
 ### Golden Tests Are Ground Truth
 Golden tests represent the canonical correct state. If a golden test fails,
@@ -135,9 +149,15 @@ is dead code until wired into a machine's config and validated against golden.
 
 ## Fleet Status
 
-**19 machines** in `machines/`, **20 goldens** in `goldens/`.
-Nginx vhosts managed fleetwide: ~21 active across cortex-alpha (topology-driven),
-remote-worker (ad-hoc), gaming-host-1, local-nas, print-controller.
+**21 machine directories** in `machines/`, of which **3 are dormant** (alpha-two,
+storage-array, display-0 — preserved in `flake.nix` `dormantConfigurations` for
+goldens, excluded from `nixosConfigurations` to prevent accidental deployment).
+**22 golden files** in `goldens/`: 20 machine goldens (x86-bootstrap has none)
+plus `ci.json` and `bargman-greeter-vm.json`.
+Nginx vhosts managed fleetwide: ~25 named vhosts — topology-driven on
+cortex-alpha (11 named + catchall, incl. `print-controller.johnbargman.net`),
+ad-hoc on remote-worker (10), alpha-three (2: agentic-gateway, ollama),
+gaming-host-1 (1). Game servers on gaming-host-1 are disabled (2026-10-04).
 
 ### Active Architecture (Production)
 
@@ -161,7 +181,7 @@ topologyConfigs (attrset of hostname → config attrset, merged into modules lis
 - `lib/topology/genDns.nix` — DNS/DHCP generator (conditional on topology.dns / lan_dhcp)
 - `lib/topology/genNginx.nix` — Nginx proxy generator
 - `lib/topology/genBackup.nix` — Backup generator (conditional on topology.backup)
-- `lib/topology/genWireguard.nix` — WireGuard generator (wired separately, deferred to overlord-iii)
+- `lib/topology/genWireguard.nix` — WireGuard generator (wired for hub via topology.wireguard; client migration pending in overlord-iii)
 - `lib/topology/mkRegistry.nix` — Registry pipeline for topology validation
 - `lib/monitoring/inventory.nix` — Monitoring inventory (union of blessed scrape baseline + config-derived discovery; feeds dashboards)
 - `documentation/monitoring-automation.md` — Dashboard/inventory automation (Phase 1 done; Phase 2 scrape generation is future work)
@@ -172,7 +192,7 @@ topologyConfigs (attrset of hostname → config attrset, merged into modules lis
 - `documentation/topology-principle.md` — Canonical architecture principle
 - `lib/serialize-config.nix` — The one config serializer (used by `dump-config` and `checks.network-config-*`)
 - `lib/golden_coverage.nix` — Coverage tracking (audit tool)
-- `modules/enable-wg-topology.nix` — WireGuard client module (deployed on 14 machines; pending migration to genWireguard in overlord-iii)
+- `modules/enable-wg-topology.nix` — WireGuard client module (deployed on 16 machines; pending migration to genWireguard in overlord-iii)
 - `topologyConfigs` — Attrset merged into each `nixosConfiguration` via `modules` list (flake.nix:147, 187)
 
 ### Two-Layer Topology Architecture (Active)
@@ -201,7 +221,7 @@ final configuration
 **Key Principles:**
 - Generators are pure JSON-to-attrset functions — no module system, no user Nix
 - mktopology is a pure function: `path → { hostname = config attrset; ... }`
-- WireGuard is NOT wired into mktopology — deferred to overlord-iii
+- WireGuard hub config is generated (conditional on `topology.wireguard`); clients remain on `enable-wg-topology.nix` until overlord-iii
 - `specialArgs = { inherit topologyData; }` still passes raw JSON to machines for backward compat
 
 **Generator Files:**
@@ -209,10 +229,10 @@ final configuration
 - `lib/topology/genDns.nix` — DNS/DHCP generator (conditional)
 - `lib/topology/genNginx.nix` — Nginx proxy generator (always active)
 - `lib/topology/genBackup.nix` — Backup generator (conditional)
-- `lib/topology/genWireguard.nix` — WireGuard generator (deferred to overlord-iii)
+- `lib/topology/genWireguard.nix` — WireGuard generator (hub-only; client migration deferred to overlord-iii)
 
 **Status:** `mktopology` is live for all machines with topology JSON files.
-`enable-wg-topology.nix` remains deployed for WireGuard (pending migration in overlord-iii).
+`enable-wg-topology.nix` remains deployed for WireGuard clients (pending migration in overlord-iii).
 `topology-derive.nix` is archived at `lib/topology/archive/topology-derive.nix`.
 
 ### Topology-Gen Branch (Merged)
@@ -223,8 +243,8 @@ The `planar-topology` / `overlord-ii-planar-topology` branches overhauled the to
 - `lib/topology/gen*.nix` — pure generators (firewall, DNS, nginx, backup, wireguard)
 - Generators wired via `topologyConfigs` in flake.nix, not via commonModules
 - `topology-derive.nix` archived to `lib/topology/archive/`
-- WireGuard integration deferred to overlord-iii
-- Goldens regenerated for all 19 machines
+- WireGuard hub integration live; client migration deferred to overlord-iii
+- Goldens regenerated for all machines
 - `genNginx.nix` ACME propagation bug fixed
 - Extensive test coverage added
 

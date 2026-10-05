@@ -1,7 +1,8 @@
 # Gitea / Fabrication Forge — Deployment Reference
 
-**Branch:** `feat/config-codeforge`
-**Status:** Implemented, validated, pending deploy
+**Branch:** `feat/config-codeforge` (merged history)
+**Status:** Implemented and integrated — gitolite/cgit retired 2026-10-01, `git-ssh`
+live on port 22; fleet PostgreSQL and Fabrication Forge branding landed
 **Machine:** Gitea runs on `local-nas` (`10.88.127.3:3000`, WireGuard-only)
 
 > **2026-09-25:** personal-site `/code/` now embeds `fabrication-forge.com`
@@ -36,7 +37,7 @@ LAN / WG ───────▶│ cortex-alpha (nginx)        │──┘
 
 | URL | Gateway | Registration | Notes |
 |---|---|---|---|
-| `https://gitea.johnbargman.net` | cortex-alpha (LAN/WG) | ✅ reverse-proxy auth | Canonical domain; `DOMAIN` in Gitea; full login surface |
+| `https://gitea.johnbargman.net` | cortex-alpha (LAN/WG) | ❌ disabled (LDAP + form login) | Canonical domain; `DOMAIN` in Gitea; full login surface |
 | `https://fabrication-forge.com` | remote-worker (public) | ❌ disabled | Standalone public forge; **embedded cross-origin** by `johnbargman.com/code/` |
 | `https://johnbargman.com/code/frame/` | remote-worker (public) | ❌ disabled | Subpath proxy for iframe embed |
 | `https://code.johnbargman.net` | cortex-alpha | — | 301 → `https://johnbargman.com/code/` |
@@ -78,8 +79,8 @@ on public faces only. Account paths are not a dead end — they redirect home:
 
 WireGuard-only faces keep the full login surface:
 
-- `gitea.johnbargman.net` (cortex-alpha) — untouched; reverse-proxy auth +
-  form login work as before
+- `gitea.johnbargman.net` (cortex-alpha) — untouched; LDAP + form login (and
+  passkeys) work as before
 - `johnbargman.com-lan` (WG staging subpath) — untouched
 
 `if` + `return 302` is one of nginx's safe `if` uses; it fires in the rewrite
@@ -122,6 +123,15 @@ security = {
 };
 ```
 
+### Database — fleet PostgreSQL
+
+Gitea runs on the fleet PostgreSQL (`server_services/postgres.nix`):
+`database = { type = "postgres"; name = "gitea"; user = "gitea"; }` with
+`createDatabase` (default) wiring `ensureDatabases`/`ensureUsers`. The socket
+default `/run/postgresql` matches postgres.nix's `local all all trust` on the
+unix socket — no password material is involved. The Postgres data dir lives on
+`/bulk-storage/postgres/`.
+
 ### WireGuard-Only Identity (LDAP against the fleet's OpenLDAP)
 
 Login identity comes from the **OpenLDAP directory on cortex-alpha**
@@ -151,8 +161,22 @@ removed (2026-09-29).
 Gitea serves git+ssh through the **system sshd** on port 22 of the WireGuard
 address (human/admin SSH stays on 1108). `server_services/git-ssh.nix` owns the
 port-22 auth policy (`AllowUsers git@10.88.127.0/24 gitea@10.88.127.0/24`);
-Gitea runs external SSH (`START_SSH_SERVER = false`, `SSH_PORT = 22`) and keeps
-`authorized_keys` in `~gitea/.ssh`.
+Gitea runs external SSH (`START_SSH_SERVER = false`, `SSH_PORT = 22`).
+`authorized_keys` lives at `/bulk-storage/gitea/.ssh/authorized_keys` (Gitea
+state dir is `/bulk-storage/gitea`). `git` (Gitea's `SSH_USER`) is an entrypoint
+account only — its forced command re-execs as the `gitea` service user, which
+owns the data dir and database.
+
+### Theming / Branding — `server_services/gitea-branding/`
+
+The `Fabrication Forge` theme ships in `server_services/gitea-branding/`
+(`theme-fabrication-forge.css`, `logo.svg`/`favicon.svg`, template hooks
+`header`/`footer`/`extra_links.tmpl`). `server_services/gitea.nix` builds the
+`custom/`-shaped branding tree and symlinks it into
+`${stateDir}/custom/{public,templates}` on every start, with
+`ui.DEFAULT_THEME = "fabrication-forge"` and `appName = "Fabrication Forge"`.
+Full detail — delivery pattern, theme discovery, module surface — lives in
+`documentation/gitea-customization-options.md` §4.
 
 ## Nginx Subpath Proxy — `machines/remote-worker/default.nix`
 

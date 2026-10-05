@@ -9,7 +9,7 @@ The topology system transforms JSON configuration files into NixOS config attrse
 ```mermaid
 graph TD
     subgraph "Source of Truth"
-        J["topology/*.json<br/>(31 machines)"]
+        J["topology/*.json<br/>(per-machine)"]
     end
     
     subgraph "Pure Generators (JSON → attrset)"
@@ -44,7 +44,7 @@ graph TD
     subgraph "Output"
         NC["nixosConfigurations"]
         GN2["goldens/*.json"]
-        CN["check-network"]
+        CN["validate-goldens"]
         DF["dump-config"]
     end
 
@@ -138,6 +138,13 @@ Each generator is a pure function that takes JSON data and produces a NixOS conf
 | `genNginx.nix` | `topology` | `{ services.nginx = {...}; }` |
 | `genBackup.nix` | `topology.backup` | `{ environment.rclone-target = {...}; }` |
 | `genWireguard.nix` | `settings` | `{ networking.wireguard = {...}; }` |
+| `genNetwork.nix` | `topology.coordinate` (hub machines) | `{ networking.interfaces = {...}; }` |
+| `genTailscale.nix` | `topology.advertised_tailscale_routes` | `{ services.tailscale = {...}; }` |
+| `genForwarding.nix` | `topology.routes` | `{ networking.nftables = {...}; }` |
+| `genMonitoring.nix` | `topology.exporters` | `{ services.prometheus.exporters = {...}; }` |
+| `genDashboard.nix` | monitoring inventory | Grafana dashboard attrsets |
+
+> **WireGuard caveat:** `genWireguard.nix` is wired for the hub only (conditional on `topology.wireguard` — currently cortex-alpha). Clients still get their WireGuard config from `modules/enable-wg-topology.nix`.
 
 ### 3. Orchestration
 `mktopology.nix` reads all JSON files and calls generators:
@@ -170,7 +177,7 @@ The merge order matters: later modules override earlier ones for simple options.
 ### 6. Validation
 Goldens verify the merged output:
 - `dump-config` serializes the full NixOS config
-- `check-network` compares against golden files
+- `validate-goldens` compares against golden files
 - Any mismatch blocks deployment
 
 ## Key Principles
@@ -236,7 +243,7 @@ services.nginx.virtualHosts."example.com" = {
 
 ### Step 4: Validate
 ```bash
-nix run .#check-network -- my-server
+nix run .#validate-goldens --option builders '' -- my-server
 ```
 
 ### Migration Rules
@@ -285,6 +292,6 @@ nix run .#check-network -- my-server
 
 ## See Also
 
-- `PRINCIPLE.md` — The architecture principle (stated in full)
+- `documentation/topology-principle.md` — The architecture principle (stated in full)
 - `AGENTS.md` — Build philosophy and constraints
 - `documentation/development-guide.md` — Development workflow

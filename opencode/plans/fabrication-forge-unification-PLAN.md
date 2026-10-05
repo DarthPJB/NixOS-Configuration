@@ -8,10 +8,15 @@
 > **Note:** This plan documents the original *frame-canonical* design
 > (`PUBLIC_URL_DETECTION = "never"`, iframe at `/code/frame`). The final
 > implementation diverged: it uses **`PUBLIC_URL_DETECTION = "auto"`** with
-> **multi-domain** entry points and **reverse-proxy authentication**
-> (`X-WEBAUTH-USER`) for WireGuard-only registration. See
+> **multi-domain** entry points. (The plan-era **reverse-proxy authentication**
+> `X-WEBAUTH-USER` was removed 2026-09-29 — login is LDAP + form.) See
 > [`documentation/gitea-fabrication-forge.md`](../../documentation/gitea-fabrication-forge.md)
 > for the authoritative record of what actually shipped.
+>
+> **Superseded (2026-10-01):** decision **D3** (gitolite/cgit retained as
+> legacy) no longer holds — gitolite/cgit were retired 2026-10-01 and
+> `server_services/git-ssh.nix` owns the `git@` door. The rest of the plan is
+> kept as historical record.
 
 ---
 

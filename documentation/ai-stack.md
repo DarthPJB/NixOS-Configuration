@@ -1,10 +1,12 @@
 # AI Infrastructure Stack
 
-Self-hosted inference for the Bargman-Tech fleet, using vLLM and Ollama for
-different operational roles behind one LiteLLM gateway.
+Self-hosted inference for the Bargman-Tech fleet, using Ollama behind one
+LiteLLM gateway (vLLM is available as a managed-service engine but is not
+deployed).
 
-**Status**: Hybrid vLLM + Ollama configuration implemented; live validation complete  
-**Last updated**: 2026-09-18
+**Status**: Ollama-primary deployed — Ollama (LINDA, pillar-of-autum) + LiteLLM
+gateway live; `modules/vllm.nix` exists but no machine enables it
+**Last updated**: 2026-10-05
 
 The evidence and decision behind this architecture are recorded in
 [`ai-inference-findings.md`](ai-inference-findings.md). The prior vLLM-only
@@ -28,8 +30,8 @@ graph TB
     end
 
     subgraph "LINDA — managed inference"
-        GPU["vLLM :8001<br/>Qwen2.5-VL-3B AWQ<br/>RTX 3060"]
-        CPU["vLLM :8002<br/>Qwen3.8-27B BF16<br/>CPU / 262K"]
+        GPU["vLLM :8001 (historical, undeployed)<br/>Qwen2.5-VL-3B AWQ<br/>RTX 3060"]
+        CPU["vLLM :8002 (historical, undeployed)<br/>Qwen3.8-27B BF16<br/>CPU / 262K"]
         OLLAMA["Ollama :11434<br/>Ornith 9B/35B<br/>Laguna XS/S<br/>Qwen3.8 27B<br/>CPU / manual start"]
     end
 
@@ -109,8 +111,8 @@ configuration.
 
 | Public model ID | Backend | Engine | Device | Context metadata | Output metadata |
 |---|---|---|---|---:|---:|
-| `linda-vllm/qwen2.5-vl` | `10.88.127.88:8001/v1` | vLLM | RTX 3060 | 8192 | 2048 |
-| `linda-vllm-cpu/qwen38-27b` | `10.88.127.88:8002/v1` | vLLM | CPU | 262144 | 8192 |
+| `linda-vllm/qwen2.5-vl` | `10.88.127.88:8001/v1` | vLLM (historical — undeployed) | RTX 3060 | 8192 | 2048 |
+| `linda-vllm-cpu/qwen38-27b` | `10.88.127.88:8002/v1` | vLLM (historical — undeployed) | CPU | 262144 | 8192 |
 | `linda-ornith9/linda-ornith9-q4-256k` | `10.88.127.88:11434/v1` | Ollama | CPU | 262144 | 8192 |
 | `linda-ornith35/linda-ornith35-q4-256k` | `10.88.127.88:11434/v1` | Ollama | CPU | 262144 | 8192 |
 | `linda-laguna-xs/linda-laguna-xs-q4-256k` | `10.88.127.88:11434/v1` | Ollama | CPU | 262144 | 8192 |
@@ -122,6 +124,13 @@ configuration.
 | `pillar-qwen3b/pillar-qwen3b` | `10.88.127.110:11434/v1` | Ollama | CPU (NUC) | 8192 | 2048 |
 | `pillar-qwen7b/pillar-qwen7b` | `10.88.127.110:11434/v1` | Ollama | CPU (NUC) | 4096 | 2048 |
 
+The `vLLM` rows above are historical — no machine enables `modules/vllm.nix` as
+of 2026-10-05 (there is no `:8001`/`:8002` service on LINDA). The live gateway
+routes are the Ollama `:11434` backends declared in
+`machines/alpha-three/default.nix` (`linda-qwen38-27b-q4-256k`,
+`linda-qwen3-4b-32k`, `linda-qwen35-9b-128k`, `linda-gemma4-12b-256k`,
+`pillar-qwen3b`/`7b`/`3-4b-32k`/`35-9b-128k`, …).
+
 The gateway is externally available at:
 
 ```text
@@ -131,6 +140,9 @@ https://agentic-gateway.johnbargman.net
 nginx terminates TLS and proxies to LiteLLM on `127.0.0.1:8080`.
 
 ## LINDA vLLM Services
+
+> Historical — not deployed: no machine enables `modules/vllm.nix` as of
+> 2026-10-05. The services below document the vLLM-era LINDA config.
 
 ### GPU service: Qwen2.5-VL-3B AWQ
 
@@ -249,7 +261,8 @@ completion requires deployment and a live request. That live gate remains open.
 
 ## Monitoring
 
-Prometheus scrapes:
+Prometheus scrapes (the `vllm-*` rows are historical — those jobs are not
+present in `services/prometheus.nix` as of 2026-10-05; vLLM is undeployed):
 
 | Job | Target | Labels |
 |---|---|---|
@@ -285,11 +298,11 @@ intentional. They are not regenerated to conceal refactoring differences.
 | File | Purpose |
 |---|---|
 | `documentation/ai-inference-findings.md` | Usage findings and accepted forward design |
-| `modules/vllm.nix` | Per-model vLLM service module |
-| `services/ollama.nix` | CPU-only, manual LINDA research service |
+| `modules/vllm.nix` | Per-model vLLM service module (undeployed — no machine enables it) |
+| `services/ollama.nix` | Live inference service (LINDA; pillar-of-autum has `machines/pillar-of-autum/ollama.nix`) |
 | `services/litellm.nix` | Gateway backend schema and generated model metadata |
-| `machines/LINDA/default.nix` | Active GPU and CPU vLLM services |
-| `machines/alpha-three/default.nix` | Gateway route declarations |
+| `machines/LINDA/default.nix` | LINDA machine config (Ollama-backed model profiles) |
+| `machines/alpha-three/default.nix` | Gateway route declarations (Ollama `:11434` backends) |
 | `services/prometheus.nix` | Inference and gateway scrape targets |
 | `topology/LINDA.json` | WireGuard-scoped Ollama firewall port |
 | `scripts/llm-bench.sh` | Benchmark script for cold/warm timing measurements |
@@ -303,8 +316,18 @@ intentional. They are not regenerated to conceal refactoring differences.
 
 ## Remaining Live Gates
 
-1. Deploy LINDA and alpha-three.
-2. Confirm both vLLM `/v1/models` endpoints.
+Current (Ollama-primary) gates:
+
+1. Close the monitoring gap: Prometheus scrape target for pillar-of-autum Ollama
+   (dashboard entry is already generated automatically).
+2. Run an OpenCode harness through the LiteLLM gateway (`linda-qwen38` /
+   `linda-qwen38-27b-q4-256k`) and record a non-empty completion.
+3. Exercise a near-128K request on LINDA and measure resident memory.
+
+Historical (vLLM-era gates — superseded; vLLM is undeployed as of 2026-10-05):
+
+1. ~~Deploy LINDA and alpha-three.~~ (done)
+2. ~~Confirm both vLLM `/v1/models` endpoints.~~ (no vLLM service deployed)
 3. Run an OpenCode harness through `linda-vllm/qwen2.5-vl` and record a non-empty
    completion.
 4. Exercise a near-128K request on the CPU service and measure resident memory.
