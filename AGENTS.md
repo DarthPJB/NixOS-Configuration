@@ -7,6 +7,9 @@ project planning (see opencode/plans/), deployments (see documentation/operation
 (living decision record — open decisions gate remediation).
 **Topology architecture:** See documentation/topology-architecture.md for the generator diagram and data flow.
 **Topology principle:** See documentation/topology-principle.md for the canonical architecture principle.
+**LINDA Windows gaming VM / GPU passthrough:** See documentation/linda-windows-gaming-vm.md
+(architecture, recreation doctrine, backup strategy) and the living plan at
+opencode/plans/windows-gpu-passthrough-PLAN.md.
 
 ## Current Issues — 2026-10-05
 
@@ -15,6 +18,14 @@ core tasks are implemented and validated against goldens. The current frontier
 is the Fabrication Forge / Gitea track (see `documentation/gitea-fabrication-forge.md`),
 the backup/offsite track (topology `backup` keys + B2 replication), and the
 deferred overlord-iii client-side WireGuard migration.
+
+**LINDA Windows GPU passthrough restoration (active, 2026-10-05):** the
+`win-11-gaming-base` VM (GTX 1050 + ASMedia USB passthrough, Looking Glass,
+Scream) is being restored using the prior working stack — fully declarative
+(NixOS br0 networking + NixVirt domain/networks, NOT the platonic VMs
+wrapper), with the VM estate backed up to B2 before any mutation. Phases 3–5
+(reboot, physical checks, Windows bring-up) are user-manual. All findings,
+rulings, and evidence: `opencode/plans/windows-gpu-passthrough-PLAN.md`.
 
 ### Architecture Boundary — READ THIS FIRST
 
