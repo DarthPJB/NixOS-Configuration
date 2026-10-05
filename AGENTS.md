@@ -260,6 +260,11 @@ The `planar-topology` / `overlord-ii-planar-topology` branches overhauled the to
 
 ## CRITICAL Constraints
 
+### Flake Update Policy (User Ruling 2026-10-05)
+`nix flake update` is allowed **per input only** (e.g. `nix flake update nixpkgs_stable`).
+Wholesale `nix flake update` (all inputs at once) is **PROHIBITED** — input drift
+must be deliberate and reviewable, one input at a time.
+
 ### Formatter Configuration
 **DO NOT CHANGE THE FORMATTER CONFIGURATION** without explicit user approval.
 - Current formatter: `nixpkgs.nixpkgs-fmt` (declared in `formatter."x86_64-linux"`)

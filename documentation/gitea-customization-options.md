@@ -61,7 +61,8 @@ updated in June 2026; the lock points at July 2026 (stable) and July 2026
 Consequences:
 
 - All settings documented upstream for 1.27.2 apply to the deployed instance.
-- To upgrade Gitea, update the flake input (`nix flake update nixpkgs_stable`);
+- To upgrade Gitea, update the flake input (`nix flake update nixpkgs_stable`
+  — per-input only, fleet policy);
   there is no separate Gitea pin to maintain.
 - The clone at `v1.27.2` is the correct reference for the *running* code.
 

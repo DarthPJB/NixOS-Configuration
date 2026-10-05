@@ -153,6 +153,17 @@ nix run .#secrix edit secrets/existing_file -- -i ~/.ssh/id_ed25519
 | `-r RECIPIENT` | Encrypt to an ad-hoc public key |
 | `-i IDENTITY` | Private key for decryption (rekey/edit only) |
 
+### Known Secrets Inventory
+
+| Secret | Purpose | Status |
+|---|---|---|
+| `secrets/rclone-config-file` | rclone remote config (MinIO) for local backup targets | active — consumed via `topology/*.json` `backup.configFile` |
+| `secrets/rclone-b2-config-file` | rclone B2 offsite config | active — consumed by `topology/local-nas.json` B2 replication targets |
+| `secrets/b2_master_sync_token` | Backblaze B2 master application key | **Held in reserve (intentional, user decision 2026-10-05)** — not referenced by config today; retained for future use (e.g. bucket lifecycle management, account-level tooling). Do NOT delete as "orphan". |
+| `secrets/cache-priv-key` | nix-serve signing key (in-house cache) | active — `services/nix-cache-serve.nix` |
+| `secrets/gandi_dns01_token` | Gandi DNS-01 ACME | active |
+| `secrets/public_keys/wireguard/wg_*_pub` | WireGuard public keys | active |
+
 ### Usage in NixOS Modules
 
 **System Secrets:**
@@ -349,8 +360,16 @@ Under no circumstances shall any password be recited, transmitted, saved to a fi
 # Nix garbage collection
 nix-collect-garbage -d
 
-# Update flake inputs
-nix flake update
+# Update flake inputs (PER-INPUT ONLY — fleet policy, user ruling 2026-10-05)
+# Wholesale `nix flake update` (all inputs at once) is PROHIBITED.
+nix flake update <input-name>
+```
+
+> **Flake update policy:** `nix flake update` is allowed **per input only**
+> (e.g. `nix flake update nixpkgs_stable`). Updating all inputs in one shot is
+> prohibited — input drift must be deliberate and reviewable one input at a time.
+
+```bash
 
 # Check system health
 systemctl --failed
