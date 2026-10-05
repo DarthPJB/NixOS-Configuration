@@ -33,7 +33,7 @@
     hype-train-outlaw.url = "git+https://gitlab.com/mecha-team-zero/macha-orchestration";
     star-citizen.url = "github:LovingMelody/nix-citizen";
     xlibre-overlay.url = "git+https://codeberg.org/takagemacoed/xlibre-overlay";
-    ratty.url = "github:orhun/ratty";
+    ratty.url = "github:DarthPJB/ratty";
     ikbaeb-th = { url = "github:DarthPJB/IKBAEB-th"; };
     bargman-assets.url = "git+https://gitlab.com/mecha-team-zero/bargman-assets.git";
     denton-glasses.url = "git+https://gitlab.com/mecha-team-zero/denton-glasses.git";

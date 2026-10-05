@@ -85,7 +85,7 @@
           "- .mozilla/**",
           "- .thunderbird/**",
           "+ Pictures/**",
-          "0 Monero/**",
+          "- Monero/**",
           "- .cache/**",
           "- .local/**",
           "- Games/**",

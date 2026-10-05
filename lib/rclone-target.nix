@@ -93,6 +93,16 @@
                 These take precedence over excludePatterns when set.
               '';
             };
+            extraFlags = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+              description = ''
+                Extra rclone flags appended to the command. Examples:
+                  - "--fast-list"
+                  - "--transfers" "1"
+                  - "--retries" "3"
+              '';
+            };
           };
         }
       );
@@ -119,14 +129,15 @@
           resyncFlag = lib.optionalString isResync " --resync";
           excludeFlags = lib.concatMapStrings (p: " --exclude '${p}'") target.excludePatterns;
           filterFlags = lib.concatMapStrings (r: " --filter '${r}'") target.filterRules;
+          extraFlags = lib.concatMapStrings (f: " ${f}") target.extraFlags;
           skipLinksFlag = " --skip-links";
           # Use filter rules if set, otherwise use exclude patterns
           patternFlags = if target.filterRules != [ ] then filterFlags else excludeFlags;
         in
         if target.mode == "bisync" then
-          "${lib.getExe pkgs.rclone} ${flags} bisync${resyncFlag} --resilient --recover --max-lock 2m --conflict-resolve newer --check-access${skipLinksFlag}${patternFlags} ${target.filePath} ${target.remoteName}"
+          "${lib.getExe pkgs.rclone} ${flags} bisync${resyncFlag} --resilient --recover --max-lock 2m --conflict-resolve newer --check-access${skipLinksFlag}${patternFlags}${extraFlags} ${target.filePath} ${target.remoteName}"
         else
-          "${lib.getExe pkgs.rclone} ${flags} copy${skipLinksFlag}${patternFlags} ${target.filePath} ${target.remoteName}";
+          "${lib.getExe pkgs.rclone} ${flags} copy${skipLinksFlag}${patternFlags}${extraFlags} ${target.filePath} ${target.remoteName}";
 
       mkSecrets = lib.concatMapAttrs
         (name: target: {

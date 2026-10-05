@@ -110,11 +110,11 @@
         "nixpkgs": "nixpkgs_10"
       },
       "locked": {
-        "lastModified": 1785431187,
-        "narHash": "sha256-asuVNR9b67icvzjUUiMGLIDKBTfbctrIwF5b/7kGPX4=",
+        "lastModified": 1790864205,
+        "narHash": "sha256-i4QgLyS+CWWXcTi6UZBWnhrSIdC4L0rER/onm1JbsZ0=",
         "ref": "refs/heads/main",
-        "rev": "1eadcc176d7647458a1c651f720b612b370a5f10",
-        "revCount": 41,
+        "rev": "cc22600f5b873df413620dae82930d2b6152124a",
+        "revCount": 44,
         "type": "git",
         "url": "https://gitlab.com/mecha-team-zero/carmelsite.git"
       },
@@ -2431,11 +2431,11 @@
         "nixpkgs": "nixpkgs_26"
       },
       "locked": {
-        "lastModified": 1790800434,
-        "narHash": "sha256-BTctvLK74y/lQIc+DmQlisynEPFE7scTf2QhhVPYLUM=",
+        "lastModified": 1790865676,
+        "narHash": "sha256-oEdFtEa6MqiNLDoIAp6eOc7Kkn2Y7gYFvRj4C//QDYs=",
         "ref": "refs/heads/main",
-        "rev": "0fd8630fbb3cd48b7afc4334f9b68556ccf187da",
-        "revCount": 95,
+        "rev": "7ac38a2744b8aa7e51cdb81122ee6887bf6c89c5",
+        "revCount": 98,
         "type": "git",
         "url": "https://gitlab.com/mecha-team-zero/bargman-website.git"
       },
@@ -2508,15 +2508,15 @@
         "nixpkgs": "nixpkgs_27"
       },
       "locked": {
-        "lastModified": 1785362724,
-        "narHash": "sha256-ndEMBoRD7c2A1brCc5Qv5WQgTX5QQfbsD6qPxID0JTg=",
-        "owner": "orhun",
+        "lastModified": 1791126160,
+        "narHash": "sha256-Q9VuWr/aa3Dsn+fhh0Q1cRZ+b+Oox1HEnJq4XuG9Cc4=",
+        "owner": "DarthPJB",
         "repo": "ratty",
-        "rev": "eb1ef47b99d56a5df86bb67302e41a5255dad2f3",
+        "rev": "92ac913ad2e686e06640cd09e5a2e613ee99c7de",
         "type": "github"
       },
       "original": {
-        "owner": "orhun",
+        "owner": "DarthPJB",
         "repo": "ratty",
         "type": "github"
       }

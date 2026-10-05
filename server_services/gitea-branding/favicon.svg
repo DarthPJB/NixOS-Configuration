@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Fabrication Forge">
+  <path d="M32 4 L56 18 L56 46 L32 60 L8 46 L8 18 Z"
+        fill="#1a140f" stroke="#e8722c" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M23 44 L23 20 L43 20 L43 27 L31 27 L31 30 L41 30 L41 37 L31 37 L31 44 Z"
+        fill="#f8f8f8"/>
+</svg>

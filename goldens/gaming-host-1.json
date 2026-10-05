@@ -216,7 +216,6 @@
     "ext4": true
   },
   "environment.systemPackages": [
-    "<derivation:mcrcon-0.7.2>",
     "<derivation:btop-1.4.7>",
     "<derivation:nano-9.2>",
     "<derivation:wget-1.25.0>",
@@ -283,16 +282,13 @@
     "<derivation:shadow-4.19.4>",
     "<derivation:bash-interactive-5.3p9>",
     "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
     "<derivation:bash-interactive-5.3p9>",
     "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
-    "<derivation:shadow-4.19.4>",
     "<derivation:bash-interactive-5.3p9>",
-    "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
     "<derivation:shadow-4.19.4>",
@@ -351,16 +347,11 @@
           80,
           443,
           1108,
-          2108,
-          7777,
-          8080,
-          25565
+          2108
         ],
         "allowedUDPPortRanges": [],
         "allowedUDPPorts": [
-          2108,
-          7777,
-          7778
+          2108
         ]
       },
       "wireg0": {
@@ -380,16 +371,11 @@
       80,
       443,
       1108,
-      2108,
-      7777,
-      8080,
-      25565
+      2108
     ],
     "allowedUDPPortRanges": [],
     "allowedUDPPorts": [
-      2108,
-      7777,
-      7778
+      2108
     ],
     "autoLoadConntrackHelpers": false,
     "backend": "iptables",

@@ -14,7 +14,7 @@
 
   imports = [
     # ../../configuration.nix — already in commonModules (flake.nix), do not duplicate
-    ../../server_services/gitolite.nix
+    ../../server_services/git-ssh.nix
     ./hardware-configuration.nix
     ../../modules/enable-wg-topology.nix
     ../../modifier_imports/zram.nix
@@ -57,6 +57,11 @@
     "archive"
     "bulk-storage"
   ];
+
+  # SLOG: Former swap partition (sdd2) added as ZFS intent log device for
+  # bulk-storage. This decouples sync writes from the slow raidz1 SMR drives.
+  # Added imperatively: zpool add -f bulk-storage log /dev/sdd2
+  # Swap is zram-only (31G). Verify with: zpool status bulk-storage
   services.zfs = {
     autoScrub.enable = true;
     trim.enable = true;

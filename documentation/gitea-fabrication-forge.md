@@ -40,7 +40,7 @@ LAN / WG ───────▶│ cortex-alpha (nginx)        │──┘
 | `https://fabrication-forge.com` | remote-worker (public) | ❌ disabled | Standalone public forge; **embedded cross-origin** by `johnbargman.com/code/` |
 | `https://johnbargman.com/code/frame/` | remote-worker (public) | ❌ disabled | Subpath proxy for iframe embed |
 | `https://code.johnbargman.net` | cortex-alpha | — | 301 → `https://johnbargman.com/code/` |
-| `https://git.johnbargman.net` | cortex-alpha (legacy cgit) | — | Unchanged |
+| `https://git.johnbargman.net` | cortex-alpha (legacy cgit) | — | **Retired 2026-10-01** — gitolite/cgit deprecated by Gitea |
 
 ## Cross-Origin Embed (johnbargman.com `/code/` → fabrication-forge.com)
 
@@ -55,7 +55,7 @@ per-host links at the domain root — no `/code/frame` prefix problem, and no
     client_max_body_size 512M;
   '';
   locations."~/".extraConfig = ''
-    if ($request_uri ~ "^/(user|login)([/?]|$)") { return 404; }
+    if ($request_uri ~ "^/(user|login)([/?]|$)") { return 302 https://fabrication-forge.com/; }
     proxy_hide_header X-Frame-Options;
     add_header Content-Security-Policy "frame-ancestors https://johnbargman.com http://localhost:9090" always;
   '';
@@ -71,10 +71,10 @@ per-host links at the domain root — no `/code/frame` prefix problem, and no
 ## Public Endpoints Are Read-Only (no login outside WireGuard)
 
 Gitea has no per-domain auth settings. Login is disabled at the **nginx edge**
-on public faces only:
+on public faces only. Account paths are not a dead end — they redirect home:
 
-- `fabrication-forge.com` → `/user/*` and `/login*` return 404
-- `johnbargman.com/code/frame/*` (public subpath) → same 404 gate
+- `fabrication-forge.com` → `/user/*` and `/login*` 302 → `https://fabrication-forge.com/`
+- `johnbargman.com/code/frame/*` (public subpath) → same gate, same redirect
 
 WireGuard-only faces keep the full login surface:
 
@@ -82,7 +82,7 @@ WireGuard-only faces keep the full login surface:
   form login work as before
 - `johnbargman.com-lan` (WG staging subpath) — untouched
 
-`if` + `return 404` is one of nginx's safe `if` uses; it fires in the rewrite
+`if` + `return 302` is one of nginx's safe `if` uses; it fires in the rewrite
 phase before any `proxy_pass`.
 
 ## Gitea Configuration — `server_services/gitea.nix`
@@ -100,15 +100,15 @@ server = {
 service = {
   DISABLE_REGISTRATION = true;             # no public self-registration form
   REQUIRE_SIGNIN_VIEW = false;             # public repos visible anonymously
-  # Reverse proxy auth — WireGuard clients auto-register via X-WEBAUTH-USER
-  ENABLE_REVERSE_PROXY_AUTHENTICATION = true;
-  ENABLE_REVERSE_PROXY_AUTHENTICATION_API = true;
-  ENABLE_REVERSE_PROXY_AUTO_REGISTRATION = true;
-  ENABLE_REVERSE_PROXY_EMAIL = true;
-  ENABLE_OPENID_SIGNIN = false;
+  # Login is LDAP against cortex-alpha's OpenLDAP — see server_services/gitea.nix
+  ENABLE_PASSWORD_SIGNIN_FORM = true;      # the TRANSPORT for LDAP login
   ENABLE_BASIC_AUTHENTICATION = false;
-  ENABLE_PASSWORD_SIGNIN_FORM = true;
+  ENABLE_OPENID_SIGNIN = false;
   ENABLE_PASSKEY_AUTHENTICATION = true;
+  ENABLE_REVERSE_PROXY_AUTHENTICATION = false;   # wguser header removed 2026-09-29
+  ENABLE_REVERSE_PROXY_AUTHENTICATION_API = false;
+  ENABLE_REVERSE_PROXY_AUTO_REGISTRATION = false;
+  ENABLE_REVERSE_PROXY_EMAIL = false;
 };
 security = {
   DISABLE_GIT_HOOKS = true;
@@ -122,32 +122,37 @@ security = {
 };
 ```
 
-### WireGuard-Only Registration
+### WireGuard-Only Identity (LDAP against the fleet's OpenLDAP)
 
-Gitea itself has no per-domain registration setting. Registration is gated by
-**where the `X-WEBAUTH-USER` header originates**:
+Login identity comes from the **OpenLDAP directory on cortex-alpha**
+(`server_services/ldap.nix`, LDAPS :636, `dc=johnbargman,dc=net`), registered
+declaratively by `gitea-ldap-provision` in `server_services/gitea.nix`.
+The previous static `X-WEBAUTH-USER: wguser` header was an unauthenticated
+identity — every WireGuard client collapsed into one account — and has been
+removed (2026-09-29).
 
-- **cortex-alpha** sets `X-WEBAUTH-USER` / `X-WEBAUTH-EMAIL` on the
-  `gitea.johnbargman.net` vhost. That vhost listens only on the WireGuard/LAN IPs
-  (`genNginx` derives them from topology), so **only WireGuard clients** trigger
-  auto-registration.
-- **remote-worker** does NOT set the header. `fabrication-forge.com` and the
-  `johnbargman.com/code/frame` subpath proxy therefore present login but never
-  auto-register a user.
+- Gitea authenticates with an **anonymous search bind + per-user bind** — the
+  directory's `olcAccess` already permits `anonymous auth` on `userPassword`
+  and `* read` elsewhere, so **no shared service credential exists**.
+- `DISABLE_REGISTRATION = true` stays; Gitea auto-creates its account record on
+  first successful directory login (`inetOrgPerson` entries with `uid`/`mail`/
+  `givenName`/`sn`).
+- The sign-in form stays enabled — it is the transport for LDAP login.
+- Identity is directory-owned: `admin.EXTERNAL_USER_DISABLE_FEATURES` blocks
+  username/fullname/credential edits inside Gitea.
+- The WireGuard-only constraint is structural: Gitea's HTTP listener binds the
+  WireGuard address, and the Gitea→LDAP leg uses
+  `ldap.johnbargman.net -> 10.88.127.1` (WG plane, wildcard-cert TLS). Public
+  faces keep their nginx `/user/*` + `/login*` 404 gate.
+- Break-glass is CLI-only (`gitea admin` via the `gitea-create-admin` unit).
 
-```nix
-# machines/cortex-alpha/default.nix
-services.nginx.virtualHosts."gitea.johnbargman.net".extraConfig = ''
-  client_max_body_size 512M;
-  proxy_set_header X-WEBAUTH-USER "wguser";
-  proxy_set_header X-WEBAUTH-EMAIL "wguser@johnbargman.net";
-'';
-```
+### git+ssh (port 22, WireGuard)
 
-> **Known limitation:** the header is currently a **static value** — every
-> WireGuard client auto-registers as the same `wguser` account. Per-peer identity
-> requires nginx to distinguish WireGuard peers (client certs or a peer→username
-> map), which is future work.
+Gitea serves git+ssh through the **system sshd** on port 22 of the WireGuard
+address (human/admin SSH stays on 1108). `server_services/git-ssh.nix` owns the
+port-22 auth policy (`AllowUsers git@10.88.127.0/24 gitea@10.88.127.0/24`);
+Gitea runs external SSH (`START_SSH_SERVER = false`, `SSH_PORT = 22`) and keeps
+`authorized_keys` in `~gitea/.ssh`.
 
 ## Nginx Subpath Proxy — `machines/remote-worker/default.nix`
 
