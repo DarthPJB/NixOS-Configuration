@@ -5,10 +5,10 @@
 prior working stack (GTX 1050 + ASMedia USB 3.1 + Looking Glass + Scream),
 fully declarative (NixOS networking + NixVirt libvirt config), with the VM
 estate backed up to Backblaze B2 before any mutation.
-**Version:** 2.1 — 2026-10-05
-**Status:** PHASE 0 COMPLETE. All rulings in (D-2/D-4/D-5/D-8/D-9). Phases 3–5
-are user-manual actions. Phase 1 (local-nas replication, weekly B2) ready to
-execute.
+**Version:** 2.2 — 2026-10-05
+**Status:** PHASE 0 COMPLETE. Live bind test done (R23/R24). OVMF corrected to
+the 26.05 default (R21). Interim networking under discussion (D-10). Phase 1
+(B2 backup) still first execution step.
 
 ---
 
@@ -179,6 +179,43 @@ is LINDA. Recreation path from nothing:
   (restore: `rclone cat | zstd -d | zfs receive`), with rclone's
   `--b2-chunk-size` handling large objects.
 
+### Round-3 findings (live, 2026-10-05 evening, `deploy@LINDA`)
+
+- **R21.** **OVMF legacy confirmed (user correction).** As of NixOS 26.05 the
+  `qemu.ovmf.enable` / `OVMFFull` block is legacy. Verified live:
+  `virsh domcapabilities` reports the default loader
+  `/run/libvirt/nix-ovmf/edk2-x86_64-code.fd` with firmware autoselect
+  (`<enum name='firmware'><value>efi</value></enum>`); QEMU 10.2.4 ships
+  firmware descriptors (`share/qemu/firmware/60-edk2-x86_64.json`). The
+  descriptor's nvram-template is `edk2-i386-vars.fd` — **540,672 B, exactly
+  matching the existing `win-11-base_VARS.fd`** → the domain moves to the
+  modern default loader with **zero NVRAM migration**.
+- **R22.** **USB topology behind ASMedia `46:00.0` (buses 5+6):** bus 5
+  carries HID keyboard + HID mouse, a UVC webcam (+ its audio), a USB audio
+  device, and a Billboard device — the deliberate "VM peripheral set".
+  Bus 7 (AMD controller) carries a separate HID pair + USB audio (likely the
+  host input set). Passing `46:00.0` detaches the bus-5 set from the host —
+  intended by design (prior art), but the physical arrangement (host input on
+  the AMD controller) must be confirmed before the VFIO reboot.
+- **R23.** **`NVRM: ignoring the legacy GPU 0000:4d:00.0`** (dmesg) — the host
+  NVIDIA driver rejects the GTX 1050 as a legacy GPU (probe error -1). The
+  1050 is *structurally* guaranteed unbound on the host (not luck); zero
+  race for vfio-pci. Guest-side: the Windows driver installed in Phase 5 must
+  still support GP107 — verify against the NVIDIA support matrix / use the
+  last-known-good guest driver from the Oct-2025 era.
+- **R24.** **Live bind test (user-directed):** IDs double-checked against
+  live lspci — exact match (`10de:1c81`, `10de:0fb9`, `1b21:2142`).
+  `0000:4d:00.0` **bound to vfio-pci successfully** (`Kernel driver in use:
+  vfio-pci`, `/dev/vfio/41` group device created). `0000:4d:00.1` late-bind
+  **hangs**: sysfs writes to it block (power-control write never landed,
+  bind never completes) — its `reset_method` is `bus`-only and its power is
+  interlocked with the GPU via vga_switcheroo ("D0 power state depends on
+  0000:4d:00.0"). This demonstrates precisely why the prior art claims devices
+  **at boot via `vfio-pci ids=`** (before snd_hda_intel/vga_switcheroo take
+  hold): boot-time claim is the deterministic path. 46:00.0 was NOT touched
+  (R22 — input devices aboard). 4d:00.0 remains vfio-bound (inert, desired
+  end-state; `driver_override` is not persistent across reboot).
+
 ## Register — Findings (F*)
 
 - **F1.** No Windows domain XML ever lived in the repo — the working stack was
@@ -261,17 +298,43 @@ is LINDA. Recreation path from nothing:
   Sunday window is acceptable, the platonic pattern verbatim is the simplest
   correct answer. Hand-rolled chain management or `zfsbackup-go` (purpose-built
   full+incremental streams to S3/B2 with manifests) if incrementals are wanted.
+- **F20.** **The OVMF fix belongs in the domain definition, not the module.**
+  With the 26.05 default loader (R21), the declarative domain simply uses
+  firmware autoselect (`firmware='efi'`) or the explicit
+  `edk2-x86_64-code.fd` loader path — the legacy `qemu.ovmf.enable` block
+  stays retired. The existing NVRAM file needs no migration (size-verified).
+- **F21.** **Interim networking (user hesitant re br0).** The VM can run on
+  libvirt's existing `default` NAT network (virbr0) with zero host network
+  changes — no LAN identity move, no networking risk in the VFIO reboot.
+  Trade-off: no LAN IP for the guest (no inbound LAN-to-VM, e.g.
+  Moonlight/Sunshine *from* the guest); guest outbound is full (Steam,
+  matchmaking via NAT); Scream moves to virbr0/192.168.122.1 (one-line
+  service change); guest→host works over the gateway. macvtap stays ruled
+  out (F10) unless audio moves to ivshmem. br0 remains the D-2 endgame and
+  can land later in its own deliberate window, alongside the subnet-routing
+  phase.
 
 ## Register — Decisions
 
 - **D-1. Passthrough device set. — RESOLVED** (user directive "prior working
   stack" + R9): GTX 1050 (`10de:1c81` + `10de:0fb9`) + ASMedia USB 3.1
   (`1b21:2142`) at `0000:4d:00.0/.1` + `0000:46:00.0`. RTX 3060 stays host.
-- **D-2. VM network model. — RESOLVED by user ruling (2026-10-05):** declarative
-  NixOS-defined networking — restore `br0` bridge over `enp69s0f0` in
-  `machines/LINDA/default.nix` (uncomment ready block), move DHCP + firewall
-  keys to `br0`, keep domain NIC as-is. Libvirt networks also declared
-  (NixVirt). Local subnet routing = future phase (R16 pattern).
+- **D-2. VM network model. — ENDGAME per user ruling (2026-10-05):** declarative
+  NixOS-defined networking — `br0` bridge over `enp69s0f0` in
+  `machines/LINDA/default.nix`, DHCP + firewall keys on `br0`, domain NIC
+  unchanged. Libvirt networks declared (NixVirt). Local subnet routing = later
+  phase (R16 pattern). **Interim (user hesitant re the network move):** see
+  D-10 — the initial re-activation may run the VM on libvirt `default` NAT
+  with zero host network changes; br0 then lands in its own window.
+- **D-10. Interim networking for initial re-activation. — OPEN (user asked to
+  discuss).** Options: (a) **libvirt `default` NAT (virbr0)** — recommended:
+  zero host risk, no reboot-network change, Scream rebinds to virbr0/192.168.122.1;
+  guest loses LAN presence until br0. (b) macvtap — LAN IP without bridge,
+  but guest→host broken (Scream dies unless audio moves to ivshmem — the XML's
+  `scream` shmem device would have to be revived). (c) br0 now — endgame
+  fidelity, but the identity move the user is hesitant about.
+  Recommendation: (a) now, (c) in its own deliberate window with the
+  subnet-routing work.
 - **D-3. Audio path. — RESOLVED** (prior art, F12): Scream unicast on br0:4010.
 - **D-4. VM RAM budget. — RESOLVED by user ruling:** leave as-is (32 GB known
   good; ballooning already in XML).
@@ -345,18 +408,24 @@ and verified in `b2:minio-backup-bargman/linda-win11-vm`. Confirms D-8 scope.
      D-2, referenced by the domain as before).
    - acceptance eval: generated domain XML diff-clean vs
      `machines/LINDA/windows-vm/win-11-gaming-base.xml` (F14).
-2. `modifier_imports/virtualisation-libvirtd.nix`: uncomment OVMF block
-   (`ovmf.enable = true; packages = [ pkgs.OVMFFull.fd ];`).
+2. **Firmware (R21/F20):** the domain's `<os>` section moves to the 26.05
+   default — firmware autoselect (`firmware='efi'`) or explicit loader
+   `/run/libvirt/nix-ovmf/edk2-x86_64-code.fd` + existing NVRAM
+   `win-11-base_VARS.fd` (size-verified compatible). The legacy `qemu.ovmf`
+   module block stays retired.
 3. `machines/LINDA/default.nix`:
    - initrd `availableKernelModules`: re-add `vfio_pci`, `vfio_iommu_type1`, `vfio`;
      initrd `kernelModules`: `[ "vfio_pci" ]`
    - `kernelModules`: re-add `vfio_pci`, `vfio_iommu_type1`, `vfio`
    - `boot.extraModprobeConfig`: `options vfio-pci ids=10de:1c81,10de:0fb9,1b21:2142`
+     — **boot-time claim is mandatory** (R24: late binding of the audio
+     function hangs on vga_switcheroo/bus-reset; the ids= path claims both
+     functions before the host HDA stack, as the prior art did)
    - optional belt-and-braces: `initrd.preDeviceCommands` driver_override for
      `0000:4d:00.0 0000:4d:00.1 0000:46:00.0` — FIXED redirect form (F3).
-   - **Networking (D-2):** uncomment `bridges."br0"` over `enp69s0f0`;
-     `enp69s0f0.useDHCP = false`; `br0.useDHCP = true`; mirror
-     `firewall.interfaces` keys onto `br0` (keep `wireg0` as-is).
+   - **Networking:** per D-10 outcome — interim (a): domain NIC → `default`
+     NAT, Scream → virbr0, no host network changes; OR endgame (c): the br0
+     restoration (F11 reboot-gated rules apply).
 4. Regenerate `goldens/LINDA.json` (D-5 authorized):
    `nix run .#dump-config -- LINDA | jq -S . > goldens/LINDA.json`, then
    `nix run .#validate-goldens -- LINDA`.
@@ -432,10 +501,16 @@ regenerated + validated; boot entry staged on LINDA.
 | E22 | `grep b2: topology/local-nas.json` | six `b2:minio-backup-bargman/*` replication targets, Sun 03:00, 5M, `--b2-chunk-size 64M` |
 | E23 | `systemctl cat rclone-sync-obsidian-v3.service` (LINDA) | `rclone … bisync … minio:obsidian-v3` runs as User=John88, config decrypted to `/run/rclone-sync-*-keys/config-file` |
 | E24 | `grep rclone LINDA + local-nas topology` | LINDA: 3 minio targets (user John88); local-nas: B2 replication (user minio, config `secrets/rclone-b2-config-file`) |
+| E25 | `sudo virsh domcapabilities --virttype kvm` + firmware descriptor read | default loader `/run/libvirt/nix-ovmf/edk2-x86_64-code.fd`, firmware autoselect `efi`; `60-edk2-x86_64.json` maps nvram-template `edk2-i386-vars.fd` (540,672 B == existing `win-11-base_VARS.fd`) |
+| E26 | `lsusb -t` + `/sys/bus/pci/devices/0000:46:00.0/usb*` | buses 5+6 behind ASMedia; bus 5 = HID keyboard + mouse + UVC webcam + USB audio (VM peripheral set); NOT bound to vfio (input aboard) |
+| E27 | `sudo dmesg \| grep -i "nvrM\|vfio\|4d:00"` | `NVRM: ignoring the legacy GPU 0000:4d:00.0` (probe -1); `vfio-pci 0000:4d:00.0: vgaarb: VGA decodes changed` |
+| E28 | live bind test (driver_override + sysfs bind) | `4d:00.0` → vfio-pci ✓, `/dev/vfio/41` ✓; `4d:00.1` bind/power writes hang (`reset_method: bus`, vga_switcheroo interlock) — boot-time `ids=` required (R24) |
 
 ---
 
-**Version 2.1 — 2026-10-05 — Janeway (USS-Voyager).** All decisions resolved;
-recreation model recorded; ZFS-stream long-term path answered (F18/F19).
-**Next action:** Phase 1 execution — topology backup targets + ACL fix +
-deploy local-nas & LINDA (backup-only) + initial sync verified in B2.
+**Version 2.2 — 2026-10-05 — Janeway (USS-Voyager).** OVMF corrected (26.05
+default loader, NVRAM-compatible); live bind test done (GPU ✓, audio function
+teaches the boot-time-ids lesson); USB peripheral set mapped; D-10 interim
+networking open (recommendation: NAT now, br0 later).
+**Next action:** user picks D-10 option → Phase 1 execution (B2 backup) →
+Phase 2 change-set.

@@ -60,9 +60,12 @@ plus initrd vfio modules (early bind; nvidia must not claim the 1050).
 ## The Domain — `win-11-gaming-base` (prior working stack)
 
 - **UUID:** `d9377588-28e4-4257-905a-95012babe705`
-- **Firmware:** OVMF (`/run/libvirt/nix-ovmf/OVMF_CODE.fd` — requires
-  `virtualisation.libvirtd.qemu.ovmf.enable = true`), NVRAM
-  `win-11-base_VARS.fd`
+- **Firmware:** UEFI via the **NixOS 26.05 default loader** — QEMU-bundled
+  edk2 (`/run/libvirt/nix-ovmf/edk2-x86_64-code.fd`, firmware autoselect
+  `efi`). The legacy `qemu.ovmf.enable`/`OVMFFull` block is NOT used (user
+  correction 2026-10-05). NVRAM `win-11-base_VARS.fd` (540,672 B) is
+  size-compatible with the modern `edk2-i386-vars.fd` template — no
+  migration needed.
 - **CPU/RAM:** 20 vCPU host-passthrough, 32 GB memfd/shared,
   `<kvm hidden='on'/>` + `hypervisor` feature disabled (NVIDIA Code-43
   mitigation) — known-good, leave as-is (user ruling)
@@ -124,6 +127,27 @@ no native ZFS support (transport only). Copy the platonic pipeline shape
 (`zfs send | gzip`) → upload) with the incremental `zfs send -I` upgrade if
 weekly full sends prove heavy. An isolated *dataset* suffices; a separate pool
 adds only I/O isolation.
+
+## Known Quirks (verified live, 2026-10-05)
+
+1. **Host nvidia rejects the 1050:** dmesg `NVRM: ignoring the legacy GPU
+   0000:4d:00.0` (probe error -1). The card is structurally unbound on the
+   host — vfio-pci has zero race for it. **Guest caveat:** the Windows driver
+   must still support GP107 — use a known-good branch (the Oct-2025 era
+   driver worked).
+2. **Boot-time vfio binding is mandatory:** the 1050's HD-audio function
+   (`4d:00.1`) cannot be late-bound — sysfs writes hang (its `reset_method`
+   is `bus`-only; power is interlocked with the GPU via vga_switcheroo).
+   The prior art's `vfio-pci ids=` + initrd modules claim both functions at
+   boot before `snd_hda_intel`/vga_switcheroo engage. Live test: `4d:00.0`
+   bound cleanly (`/dev/vfio/41` created); `4d:00.1` hung — do not retry the
+   late bind.
+3. **ASMedia USB (`46:00.0`) carries host input:** buses 5+6 behind it hold
+   a HID keyboard + mouse, UVC webcam, and USB audio (the deliberate "VM
+   peripheral set"); a separate HID pair + audio sit on the AMD controller
+   (bus 7, presumed host input). Passing the controller is intended — but
+   confirm the physical input arrangement before the VFIO reboot. It was NOT
+   touched in the live test.
 
 ## Current Work
 
