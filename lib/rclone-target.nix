@@ -103,6 +103,18 @@
                   - "--retries" "3"
               '';
             };
+            user = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = ''
+                Optional per-target user to run the rclone service as.
+                Defaults to the top-level `environment.rclone-target.user`.
+                Use for targets whose source paths are unreadable by the
+                default user (e.g. root-owned VM images on datasets without
+                POSIX ACL support). Copy-mode targets are safe as root —
+                they perform no local writes.
+              '';
+            };
           };
         }
       );
@@ -178,7 +190,7 @@
                 Type = "oneshot";
                 ExecStartPre = execStartPre;
                 ExecStart = mkCommand name target false;
-                User = cfg.user;
+                User = if target.user != null then target.user else cfg.user;
               };
               onFailure = lib.optionals (target.mode == "bisync") [ "rclone-sync-${name}-resync.service" ];
             };
@@ -188,7 +200,7 @@
               serviceConfig = {
                 Type = "oneshot";
                 ExecStart = mkCommand name target true;
-                User = cfg.user;
+                User = if target.user != null then target.user else cfg.user;
               };
             };
           })

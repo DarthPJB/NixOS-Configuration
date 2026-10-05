@@ -276,10 +276,14 @@ is LINDA. Recreation path from nothing:
   write (mtime change) triggers a full weekly re-upload at the 5M bwlimit
   (~5.7 h). Acceptable v1; upgrade path is ZFS snapshot + `zfs send`
   incremental streams via `rclone rcat` (the estate is on ZFS). Flagged D-9.
-- **F16.** rclone on LINDA runs as John88 but the VM image/XML are root-600 —
-  the backup target needs either a per-target `user` extension in
-  `lib/rclone-target.nix`/`genBackup.nix`, or tmpfiles/ACL grants for John88
-  on the scoped paths. Implementation detail of Phase 1.
+- **F16.** rclone on LINDA runs as John88 but the VM image/XML are root-600.
+  **ACL path ruled out (2026-10-05 live):** the ZFS dataset
+  `speed-storage/var-lib-libvirt` has `acltype=off` (POSIX ACLs impossible),
+  and systemd-tmpfiles refuses the rules ("unsafe path transition" across
+  qemu-libvirtd→root ownership). **Resolution: per-target `user` option in
+  `lib/rclone-target.nix`** (nullOr str, defaults to machine user) — the four
+  `win11-gaming-*` copy-mode targets run as root (no local writes → no
+  litter). Implemented 2026-10-05 (commit follows).
 - **F17.** Backup must land BEFORE any mutation (VFIO/NixVirt changes) — the
   known-good state is currently unprotected offsite.
 - **F18.** **Isolated pool verdict (D-9):** viable and clean, but an isolated
