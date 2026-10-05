@@ -5,10 +5,10 @@
 prior working stack (GTX 1050 + ASMedia USB 3.1 + Looking Glass + Scream),
 fully declarative (NixOS networking + NixVirt libvirt config), with the VM
 estate backed up to Backblaze B2 before any mutation.
-**Version:** 2.2 — 2026-10-05
-**Status:** PHASE 0 COMPLETE. Live bind test done (R23/R24). OVMF corrected to
-the 26.05 default (R21). Interim networking under discussion (D-10). Phase 1
-(B2 backup) still first execution step.
+**Version:** 2.3 — 2026-10-05
+**Status:** PHASE 0 COMPLETE. Live bind test done. **D-1 AMENDED — USB
+passthrough dropped (user ruling); GPU pair only.** D-10 taken as confirmed
+(Option A NAT interim). Phase 1 (B2 backup) next.
 
 ---
 
@@ -316,9 +316,16 @@ is LINDA. Recreation path from nothing:
 
 ## Register — Decisions
 
-- **D-1. Passthrough device set. — RESOLVED** (user directive "prior working
-  stack" + R9): GTX 1050 (`10de:1c81` + `10de:0fb9`) + ASMedia USB 3.1
-  (`1b21:2142`) at `0000:4d:00.0/.1` + `0000:46:00.0`. RTX 3060 stays host.
+- **D-1. Passthrough device set. — AMENDED by user ruling (2026-10-05, round
+  3): "do not pass through the USB any longer; this is no longer required."**
+  Final set: **GTX 1050 pair only** — `0000:4d:00.0` (`10de:1c81`) +
+  `0000:4d:00.1` (`10de:0fb9`). The ASMedia USB 3.1 (`0000:46:00.0`,
+  `1b21:2142`) **stays on the host** (xhci_hcd) — its HID/webcam/audio set
+  (R22) is never detached. Consequences: `vfio-pci ids=10de:1c81,10de:0fb9`
+  (no `1b21:2142`); the declarative domain drops the `46:00.0` hostdev (an
+  intentional delta vs the archived prior-art XML — F14's diff-clean test
+  must allow exactly this one removal); guest USB comes via the existing
+  emulated qemu-xhci + SPICE `redirdev` channels in the XML.
 - **D-2. VM network model. — ENDGAME per user ruling (2026-10-05):** declarative
   NixOS-defined networking — `br0` bridge over `enp69s0f0` in
   `machines/LINDA/default.nix`, DHCP + firewall keys on `br0`, domain NIC
@@ -326,15 +333,11 @@ is LINDA. Recreation path from nothing:
   phase (R16 pattern). **Interim (user hesitant re the network move):** see
   D-10 — the initial re-activation may run the VM on libvirt `default` NAT
   with zero host network changes; br0 then lands in its own window.
-- **D-10. Interim networking for initial re-activation. — OPEN (user asked to
-  discuss).** Options: (a) **libvirt `default` NAT (virbr0)** — recommended:
-  zero host risk, no reboot-network change, Scream rebinds to virbr0/192.168.122.1;
-  guest loses LAN presence until br0. (b) macvtap — LAN IP without bridge,
-  but guest→host broken (Scream dies unless audio moves to ivshmem — the XML's
-  `scream` shmem device would have to be revived). (c) br0 now — endgame
-  fidelity, but the identity move the user is hesitant about.
-  Recommendation: (a) now, (c) in its own deliberate window with the
-  subnet-routing work.
+- **D-10. Interim networking for initial re-activation. — RESOLVED (user
+  "good", 2026-10-05):** Option A — the VM runs on libvirt `default` NAT
+  (virbr0) for initial re-activation: zero host network changes, Scream
+  rebinds to virbr0/192.168.122.1. br0 endgame lands in its own deliberate
+  window with the subnet-routing phase (D-2 endgame unchanged).
 - **D-3. Audio path. — RESOLVED** (prior art, F12): Scream unicast on br0:4010.
 - **D-4. VM RAM budget. — RESOLVED by user ruling:** leave as-is (32 GB known
   good; ballooning already in XML).
@@ -401,8 +404,10 @@ and verified in `b2:minio-backup-bargman/linda-win11-vm`. Confirms D-8 scope.
    - domain `win-11-gaming-base` via `domain.writeXML` (or `pkgs.writeText`
      full-fidelity — F14) from the archived XML; `active = false` initially,
      `restart = false`; UUID `d9377588-28e4-4257-905a-95012babe705`.
-   - **hostdev PCI addresses as module options** (defaults = `46:00.0`,
-     `4d:00.0`, `4d:00.1`) per the Recreation Model portability caveat.
+     **Intentional delta vs archived XML (D-1):** drop the `0000:46:00.0`
+     hostdev block; all else diff-clean.
+   - **hostdev PCI addresses as module options** (defaults = `4d:00.0`,
+     `4d:00.1`) per the Recreation Model portability caveat.
    - libvirt network(s) declared via `network.writeXML` (keep the existing
      `default` NAT network managed/declared; `br0` remains a *host* bridge per
      D-2, referenced by the domain as before).
@@ -417,12 +422,13 @@ and verified in `b2:minio-backup-bargman/linda-win11-vm`. Confirms D-8 scope.
    - initrd `availableKernelModules`: re-add `vfio_pci`, `vfio_iommu_type1`, `vfio`;
      initrd `kernelModules`: `[ "vfio_pci" ]`
    - `kernelModules`: re-add `vfio_pci`, `vfio_iommu_type1`, `vfio`
-   - `boot.extraModprobeConfig`: `options vfio-pci ids=10de:1c81,10de:0fb9,1b21:2142`
-     — **boot-time claim is mandatory** (R24: late binding of the audio
-     function hangs on vga_switcheroo/bus-reset; the ids= path claims both
-     functions before the host HDA stack, as the prior art did)
+   - `boot.extraModprobeConfig`: `options vfio-pci ids=10de:1c81,10de:0fb9`
+     (D-1 amended set — no USB) — **boot-time claim is mandatory** (R24: late
+     binding of the audio function hangs on vga_switcheroo/bus-reset; the
+     ids= path claims both functions before the host HDA stack, as the prior
+     art did)
    - optional belt-and-braces: `initrd.preDeviceCommands` driver_override for
-     `0000:4d:00.0 0000:4d:00.1 0000:46:00.0` — FIXED redirect form (F3).
+     `0000:4d:00.0 0000:4d:00.1` only — FIXED redirect form (F3).
    - **Networking:** per D-10 outcome — interim (a): domain NIC → `default`
      NAT, Scream → virbr0, no host network changes; OR endgame (c): the br0
      restoration (F11 reboot-gated rules apply).
@@ -437,10 +443,11 @@ regenerated + validated; boot entry staged on LINDA.
 ### Phase 3 — Reboot + binding verification (USER-MANUAL + observation)
 1. **User action:** reboot LINDA (physical presence for the display check).
    Verify:
-   - `lspci -nnk`: `4d:00.0`, `4d:00.1`, `46:00.0` → "Kernel driver in use: vfio-pci"
+   - `lspci -nnk`: `4d:00.0`, `4d:00.1` → "Kernel driver in use: vfio-pci"
+   - `46:00.0` stays `xhci_hcd` (D-1: no USB passthrough — host input intact)
    - `21:00.0` still nvidia; all 3 monitors correct (KMS names HDMI-A-1/A-2/DP-2)
    - `lsmod | grep vfio` populated; `dmesg | grep -i "AMD-Vi\|vfio"` clean
-   - `br0` up with `10.88.128.88/24` (or DHCP lease); SSH/Sunshine reachable
+   - host networking untouched (D-10: no br0 yet); SSH/Sunshine reachable as today
 2. Host sanity: Scream service alive on br0; Ollama/vLLM, WireGuard unaffected.
 **Acceptance:** vfio-pci owns group 41 + group 37; host display + network intact.
 

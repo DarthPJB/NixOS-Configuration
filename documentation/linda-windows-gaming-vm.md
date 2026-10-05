@@ -11,8 +11,9 @@
 ## Purpose
 
 LINDA hosts a Windows 11 gaming VM (`win-11-gaming-base`) with full GPU
-passthrough (GTX 1050), USB controller passthrough (ASMedia ASM2142), Looking
-Glass display, Scream audio, and a virtiofs share. The stack worked in
+passthrough (GTX 1050 pair), Looking Glass display, Scream audio, and a
+virtiofs share. (USB controller passthrough was part of the original stack
+but is retired — user ruling 2026-10-05.) The stack worked in
 production until 2025-12 (GPU retired to host) / 2026-06 (VFIO stripped in a
 cleanup). This document records the architecture, the prior-art inventory, and
 the design decisions of the 2026-10 restoration so future development starts
@@ -51,11 +52,12 @@ drop-in, or two option changes.
 |-----|--------|-------------|------|
 | `0000:21:00.0/.1` | NVIDIA GA104 — **RTX 3060** + HD-audio (`10de:2487`, `10de:228b`) | 54 | HOST primary (3 monitors: HDMI-A-1 1080p portrait, HDMI-A-2 4K primary, DP-2 1080p portrait) |
 | `0000:4d:00.0/.1` | NVIDIA GP107 — **GTX 1050** + HD-audio (`10de:1c81`, `10de:0fb9`) | 41 | PASSTHROUGH → VM |
-| `0000:46:00.0` | ASMedia ASM2142 USB 3.1 (`1b21:2142`) | 37 | PASSTHROUGH → VM (USB) |
+| `0000:46:00.0` | ASMedia ASM2142 USB 3.1 (`1b21:2142`) | 37 | **HOST** — USB passthrough dropped (user ruling 2026-10-05); carries the HID/webcam/audio set |
 | `/dev/zd0` | ZFS zvol `speed-storage/steam-library-win` (788 GB) | — | VM game library disk (virtio) |
 
-VFIO binding: `boot.extraModprobeConfig: options vfio-pci ids=10de:1c81,10de:0fb9,1b21:2142`
-plus initrd vfio modules (early bind; nvidia must not claim the 1050).
+VFIO binding: `boot.extraModprobeConfig: options vfio-pci ids=10de:1c81,10de:0fb9`
+(D-1 amended: GPU pair only — no USB) plus initrd vfio modules (early bind;
+nvidia must not claim the 1050 — it never will, see quirks).
 
 ## The Domain — `win-11-gaming-base` (prior working stack)
 
@@ -142,12 +144,11 @@ adds only I/O isolation.
    boot before `snd_hda_intel`/vga_switcheroo engage. Live test: `4d:00.0`
    bound cleanly (`/dev/vfio/41` created); `4d:00.1` hung — do not retry the
    late bind.
-3. **ASMedia USB (`46:00.0`) carries host input:** buses 5+6 behind it hold
-   a HID keyboard + mouse, UVC webcam, and USB audio (the deliberate "VM
-   peripheral set"); a separate HID pair + audio sit on the AMD controller
-   (bus 7, presumed host input). Passing the controller is intended — but
-   confirm the physical input arrangement before the VFIO reboot. It was NOT
-   touched in the live test.
+3. **ASMedia USB (`46:00.0`) stays on the host (D-1 amended, 2026-10-05):**
+   USB passthrough is no longer required. Buses 5+6 behind the controller
+   (HID keyboard + mouse, UVC webcam, USB audio) remain host devices — the
+   input-set risk is retired. Guest USB rides the emulated qemu-xhci + SPICE
+   `redirdev` channels already present in the domain XML.
 
 ## Current Work
 
