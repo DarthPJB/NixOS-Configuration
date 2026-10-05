@@ -2,10 +2,31 @@
 
 **Machine:** LINDA (AMD Threadripper workstation) — NOT gaming-host-1
 **Goal:** Actively run the Windows gaming VM with GPU passthrough using the
-prior working stack (GTX 1050 + ASMedia USB 3.1 + Looking Glass + Scream).
-**Version:** 1.1 — 2026-10-05
-**Status:** PHASE 0 COMPLETE (via `deploy@LINDA -p 1108`, user-granted) —
-execution gated on D-2, D-4, D-5
+prior working stack (GTX 1050 + ASMedia USB 3.1 + Looking Glass + Scream),
+fully declarative (NixOS networking + NixVirt libvirt config), with the VM
+estate backed up to Backblaze B2 before any mutation.
+**Version:** 2.0 — 2026-10-05
+**Status:** PHASE 0 COMPLETE. User rulings received (D-2/D-4/D-5). Phases
+restructured: B2 backup first, then declarative stack. Gated on D-8 (backup
+scope confirm) only.
+
+---
+
+## User Rulings (2026-10-05)
+
+- **D-2 ruling:** "We want nixos-configuration defined networking, ideally for
+  our system libvirt configuration also; we may later even expand to local
+  subnet routing." → Fully declarative: host networking in Nix config, libvirt
+  domains/networks declared in Nix config too. Future phase for local subnet
+  routing.
+- **D-4 ruling:** "Leave as is; the prior image and configuration is known
+  good." → 32 GB / 20 vCPU domain untouched.
+- **D-5 ruling:** "See D2." → Golden regeneration authorized as part of the
+  declarative work.
+- **New requirement 1:** Ensure the current VM image and XML configuration are
+  backed up to Backblaze (B2) — as part of this plan, before change.
+- **New requirement 2:** Libvirt/VM configuration must be declarative —
+  possibly leveraging the platonic.systems VMs toolkit.
 
 ---
 
@@ -35,16 +56,15 @@ execution gated on D-2, D-4, D-5
   `swtpm.enable = true` (Win11 TPM requirement covered). OVMF block is
   **commented out** and must be restored.
 - **R6.** LINDA RAM: 125 GB total, ~107 GB used at observation time (AI
-  workloads resident). VM memory must be budgeted against this.
+  workloads resident). Per D-4 the domain keeps 32 GB as-is (known good).
 - **R7.** `scream-ivshmem` user service is loaded but **dead**: it binds `br0`,
   which no longer exists (bridge→bond→plain interfaces history).
 
 ### Phase 0 results (privileged reads, 2026-10-05, `deploy@LINDA -p 1108`)
 
 - **R8.** The domain **`win-11-gaming-base` is still DEFINED in libvirt**
-  (shut off). UUID `d9377588-28e4-4257-905a-95012babe705`. No `virsh define`
-  needed — only `virsh start`. Also defined: linux2024, ubuntu-gpu,
-  ubuntu20.04-desktop/terminal (irrelevant, shut off).
+  (shut off). UUID `d9377588-28e4-4257-905a-95012babe705`. Also defined:
+  linux2024, ubuntu-gpu, ubuntu20.04-desktop/terminal (irrelevant, shut off).
 - **R9.** The live domain XML (dumpxml == `win-11-gaming-base.xml`) passes
   exactly: `0000:46:00.0` (ASMedia USB), `0000:4d:00.0` (GTX 1050),
   `0000:4d:00.1` (1050 audio) — managed='yes' hostdevs. Confirms the prior
@@ -65,8 +85,8 @@ execution gated on D-2, D-4, D-5
   templates (those appear only when `qemu.ovmf.enable = true`). The domain
   CANNOT boot until OVMF is restored in `virtualisation-libvirtd.nix`.
 - **R12.** Disk estate is healthy: `win11-base-gaming.qcow2` is a **standalone
-  qcow2** (100 GiB virtual / 72.6 GiB used — NO backing chain),
-  `win11-base-Parent.qcow2` also standalone (legacy). swtpm state
+  qcow2** (100 GiB virtual / 72.6 GiB used — NO backing chain; file length
+  99.8 GiB), `win11-base-Parent.qcow2` also standalone (legacy). swtpm state
   `tpm2-00.permall` mtime **2025-10-16** for the domain UUID — TPM/BitLocker
   continuity preserved.
 - **R13.** Live network: `enp69s0f0` UP with `10.88.128.88/24`; `br0` does not
@@ -78,12 +98,41 @@ execution gated on D-2, D-4, D-5
   **RTX 3060** (`21:00.0/.1`). The 2025-10-16 `win-11-gaming-base.xml` is the
   post-swap config passing the 1050 set. Both archived in-repo.
 
+### Toolkit + backup architecture findings (2026-10-05)
+
+- **R15.** The platonic VMs toolkit lives at
+  `/speed-storage/repo/platonic.systems/vms/` (lowercase `vms`, own git repo).
+  It wraps **NixVirt** (`github:AshleyYakeley/NixVirt`) via
+  `modules/platonic-libvirt.nix` (`virtualisation.platonic-vms` options) and
+  imports `nixvirt.nixosModules.default`. Capabilities: declarative domains
+  (`virtualisation.libvirt.connections."qemu:///system".domains` with
+  `domain.writeXML`), declarative networks (`network.writeXML`), storage
+  pools, qcow2 image-building services, and SSH power-control users
+  (`ssh vm.<name>.poweron@hyperhyper`). VM types: `nixos | linux | windows`
+  (windows template exists with `nvram_path` support).
+- **R16.** The toolkit is **host-bound to hyperhyper**: its routed network is
+  `virbr0` on `100.128.0.0/16` with Tailscale subnet routing in mind
+  (`forward.mode = "route"` — their comment: NAT's LIBVIRT_FWI breaks subnet
+  routing; route mode + hypervisor-level NAT is the pattern), deployment is
+  PR-based onto that host, and IP/MAC allocation is driven by tenant VM IDs.
+- **R17.** The B2 pipeline already exists fleet-wide:
+  - Machines → rclone (`secrets/rclone-config-file`) → `minio:<bucket>` on local-nas
+  - local-nas → rclone (`secrets/rclone-b2-config-file`, user `minio`) →
+    `b2:minio-backup-bargman/<bucket>`, Sundays 03:00, bwlimit 5M, B2-tuned
+    flags (`--b2-chunk-size 64M` etc.) — see `topology/local-nas.json`
+    (`b2-obsidian`, `b2-home`, `b2-bargman-tech`, `b2-minecraft`, `b2-fs-v3-88`,
+    `b2-downloads`).
+  - `secrets/b2_master_sync_token` held in reserve (user decision 2026-10-05).
+- **R18.** LINDA backup targets today (`topology/LINDA.json` → genBackup):
+  `obsidian-v3` (bisync 60s), `88-FS-V3` (copy q2h, 10M), `bargman-tech`
+  (copy hourly, 10M) — all to `minio:`. rclone services run as **John88**.
+
 ## Register — Findings (F*)
 
 - **F1.** No Windows domain XML ever lived in the repo — the working stack was
   virt-manager-driven, state on the ZFS dataset. The XMLs on disk are the
-  authoritative prior art and must be recovered into the repo (root-600; needs
-  John88/sudo read — see Phase 0).
+  authoritative prior art and are now recovered into the repo (root-600;
+  recovered via `deploy` channel in Phase 0).
 - **F2.** The last working passthrough device set (commit `a30466f`, 2025-10-03
   "swap GPUs", preserved in the Oct-16 XML era):
   `vfio-pci ids=10de:1c81,10de:0fb9,1b21:2142` at
@@ -91,8 +140,8 @@ execution gated on D-2, D-4, D-5
 - **F3.** Prior art bugs to NOT re-introduce: the `0000:21:00:.0` typo in
   `preDeviceCommands`; the broken `echo "vfio-pci > /sys/..."` redirect (fixed
   in `2e95c4a` as `echo "vfio-pci" > /sys/...`).
-- **F4.** Scream's `br0` reference is stale; VM networking model must be chosen
-  (D-2) before Scream can be fixed.
+- **F4.** Scream's `br0` reference becomes valid again once br0 returns
+  (D-2 ruling = declarative br0 restoration).
 - **F5.** The 2026-06-04 VFIO removal (`3762764`) was clean ("verified 0 devices
   bound") — restoring is a pure re-add, no conflicting state expected. The
   historical recipe is recoverable via `git show 3762764^:machines/LINDA/default.nix`
@@ -100,7 +149,7 @@ execution gated on D-2, D-4, D-5
 - **F6.** GTX 1050 currently has **no kernel driver bound** (nvidia is bound
   only to `21:00.0`) — the cleanest possible pre-state for vfio-pci binding.
 - **F7.** Domain XMLs and `win11-base-gaming.qcow2` are root-600; the `inspect`
-  account (observation channel) cannot read them. `sudo -n` is not passwordless.
+  account (observation channel) cannot read them. `deploy` has passwordless sudo.
 - **F8.** `modifier_imports/virtualisation-vmware.nix` is also active on LINDA
   (VMware Workstation vGPU) and sets `transparent_hugepage=never`. Any
   hugepages plan for the Windows VM must use explicit hugetlb reservation, not
@@ -117,110 +166,168 @@ execution gated on D-2, D-4, D-5
 - **F12.** The guest's Scream sender mode is in-guest state we cannot read;
   host-side Oct-2025 reality was unicast `-i br0 -p 4010` (tmpfile
   `/dev/shm/scream` was removed 2025-07-21). The `<shmem name='scream'>`
-  device in the XML is therefore vestigial as a receiver path — keep it (harmless)
-  but expect unicast.
+  device in the XML is therefore vestigial as a receiver path — keep it
+  (harmless) but expect unicast.
+- **F13.** **Toolkit verdict:** the platonic wrapper cannot host LINDA's VM
+  (its deployment machinery targets hyperhyper; its network model is the
+  100.128/16 routed tenant fabric; its domain templates would not reproduce
+  our full-fidelity domain). The correct move is **NixVirt directly** in
+  NixOS-Configuration — the same engine the toolkit wraps — declaring the
+  domain, networks, and pools in this repo (the fleet's source of truth).
+  The toolkit stays as *pattern prior art* for the future local-subnet-routing
+  phase (R16 route-mode + hypervisor NAT design).
+- **F14.** Declarative-domain acceptance test: the NixVirt-generated domain
+  XML must diff-clean against
+  `machines/LINDA/windows-vm/win-11-gaming-base.xml` (modulo libvirt's
+  canonical formatting). Full-fidelity path: declare the domain with the exact
+  archived XML text (`pkgs.writeText`) via NixVirt's `definition`, not a
+  hand-rolled attrset — zero drift risk.
+- **F15.** Backup economics: rclone copies whole files; `win11-base-gaming.qcow2`
+  file length is 99.8 GiB, so the initial B2 upload is ~100 GiB, and any guest
+  write (mtime change) triggers a full weekly re-upload at the 5M bwlimit
+  (~5.7 h). Acceptable v1; upgrade path is ZFS snapshot + `zfs send`
+  incremental streams via `rclone rcat` (the estate is on ZFS). Flagged D-9.
+- **F16.** rclone on LINDA runs as John88 but the VM image/XML are root-600 —
+  the backup target needs either a per-target `user` extension in
+  `lib/rclone-target.nix`/`genBackup.nix`, or tmpfiles/ACL grants for John88
+  on the scoped paths. Implementation detail of Phase 1.
+- **F17.** Backup must land BEFORE any mutation (VFIO/NixVirt changes) — the
+  known-good state is currently unprotected offsite.
 
-## Register — Open Decisions (human authority — execution is GATED on these)
+## Register — Decisions
 
-- **D-1. Passthrough device set. — RESOLVED by user directive ("use the prior
-  working stack") + R9:** GTX 1050 (`10de:1c81` + `10de:0fb9`) and ASMedia USB
-  3.1 (`1b21:2142`) at `0000:4d:00.0/.1` + `0000:46:00.0`. RTX 3060 stays host.
-- **D-2. VM network model. — REFINED by R10/F10:** the domain XML requires
-  `br0`; Scream requires guest→host comms. The faithful path is **restore `br0`
-  bridge over `enp69s0f0`** (uncomment the ready-made block in
-  `machines/LINDA/default.nix`), move firewall keys to `br0`, keep the domain
-  XML untouched. *This is a reboot-gated network change (F11) — needs explicit
-  user GO.* Alternative (deviation from prior art): rewrite the domain NIC to
-  `virbr0` NAT + Scream to virbr0 — no host network risk, but the VM loses LAN
-  presence (no LAN game streaming/Sunshine-from-guest).
-- **D-3. Audio path. — RESOLVED by prior art (F12):** Scream unicast on br0
-  port 4010 (service exists; becomes functional again once br0 returns).
-  No host change beyond D-2.
-- **D-4. VM RAM budget. — OPEN.** Domain wants 32 GB (prior art) but host runs
-  ~107/125 GB used. Options: (a) trust ballooning (memballoon virtio is in the
-  XML) and start as-is; (b) reduce `currentMemory` to 16 GB; (c) stop/trim AI
-  services while gaming. *Recommendation: (a) first — start the VM, watch
-  `free`, reduce only if the host swaps.*
-- **D-5. Golden regeneration authorization. — OPEN (express user authority
-  required).** VFIO + OVMF + br0 restore changes LINDA's config;
-  `goldens/LINDA.json` must be regenerated after the change lands and before
-  deploy.
-- **D-6. Domain XML custody. — DONE (Phase 0).** Both XML generations archived
-  at `machines/LINDA/windows-vm/` (sha256-verified against host). Domain stays
-  imperative (libvirt-defined, already defined on host) with repo-archived XML
-  as the recorded source of truth.
+- **D-1. Passthrough device set. — RESOLVED** (user directive "prior working
+  stack" + R9): GTX 1050 (`10de:1c81` + `10de:0fb9`) + ASMedia USB 3.1
+  (`1b21:2142`) at `0000:4d:00.0/.1` + `0000:46:00.0`. RTX 3060 stays host.
+- **D-2. VM network model. — RESOLVED by user ruling (2026-10-05):** declarative
+  NixOS-defined networking — restore `br0` bridge over `enp69s0f0` in
+  `machines/LINDA/default.nix` (uncomment ready block), move DHCP + firewall
+  keys to `br0`, keep domain NIC as-is. Libvirt networks also declared
+  (NixVirt). Local subnet routing = future phase (R16 pattern).
+- **D-3. Audio path. — RESOLVED** (prior art, F12): Scream unicast on br0:4010.
+- **D-4. VM RAM budget. — RESOLVED by user ruling:** leave as-is (32 GB known
+  good; ballooning already in XML).
+- **D-5. Golden regeneration. — AUTHORIZED by user ruling** ("see D2") as part
+  of the declarative work.
+- **D-6. Domain XML custody. — DONE (Phase 0)** and superseded by D-7: XMLs
+  archived in-repo become the *template* for the declarative NixVirt definition.
+- **D-7. Declarative toolkit. — RESOLVED by architecture analysis (F13):**
+  NixVirt direct in NixOS-Configuration (`nixvirt.nixosModules.default` +
+  `domain.writeXML`/`network.writeXML`); platonic wrapper NOT imported (wrong
+  host, multi-tenant machinery); toolkit consulted for the future
+  subnet-routing phase.
+- **D-8. Backup scope. — CONFIRM-PENDING (non-blocking for repo work).**
+  Proposed scope per user words "current virtual machine image and xml
+  configuration": `win11-base-gaming.qcow2` + `/var/lib/libvirt/qemu/` (XMLs)
+  + `nvram/win-11-base_VARS.fd` + swtpm state for domain UUID.
+  **Explicitly excluded:** `win11-base-Parent.qcow2` (legacy, not required to
+  run — standalone), `steam-library-win` zvol (788 GB re-downloadable game
+  data). Confirm exclusions or countermand.
+- **D-9. Upload economics. — CONFIRM-PENDING (non-blocking).** v1 proposal:
+  raw qcow2 through the blessed two-hop pipeline (simple, restorable); accept
+  full-file re-uploads while the VM is in flux; revisit ZFS `zfs send`
+  incremental streams to B2 once the VM is in steady-state use.
 
 ## Phased Plan (execution order; each phase gates the next)
 
 ### Phase 0 — Recover prior-art artifacts — COMPLETE (2026-10-05)
-1. ~~As John88 on LINDA: copy domain XMLs~~ DONE — both generations archived
-   in `machines/LINDA/windows-vm/` (sha256 match host originals: base
+1. ~~Copy domain XMLs~~ DONE — both generations archived in
+   `machines/LINDA/windows-vm/` (sha256 match host originals: base
    `a6ad7d4f…`, nvidia/oldconfig `aa22e3ba…`).
-2. ~~Backing-chain check~~ DONE — `win11-base-gaming.qcow2` standalone qcow2,
-   100 GiB virtual / 72.6 GiB used; `win11-base-Parent.qcow2` standalone legacy.
-3. ~~virsh inventory~~ DONE — `win-11-gaming-base` DEFINED (shut off); default
-   NAT network active; pools: default, iso, nvram, pool, result, testing-qcow,
-   Z-images.
-4. ~~swtpm state~~ DONE — `tpm2-00.permall` (9,220 B) present for domain UUID,
-   mtime 2025-10-16. TPM continuity preserved.
-**Acceptance:** MET — XMLs + chain report + TPM inventory in repo/plan.
+2. ~~Backing-chain check~~ DONE — standalone qcow2s, no chain.
+3. ~~virsh inventory~~ DONE — `win-11-gaming-base` DEFINED (shut off).
+4. ~~swtpm state~~ DONE — `tpm2-00.permall` present, mtime 2025-10-16.
+**Acceptance:** MET.
 
-### Phase 1 — Declarative VFIO restoration (Nix changes)
-1. `modifier_imports/virtualisation-libvirtd.nix`: uncomment OVMF block
+### Phase 1 — B2 offsite backup of the known-good state (NEW — before mutation)
+1. `topology/LINDA.json` backup targets (drives genBackup):
+   - `win11-gaming-image`: `/var/lib/libvirt/images/win11-base-gaming.qcow2`
+     → `minio:linda-win11-vm` (mode copy, bwlimit to be set per D-9)
+   - `win11-gaming-qemu`: `/var/lib/libvirt/qemu/` → `minio:linda-win11-vm/qemu`
+   - `win11-gaming-nvram`: `/var/lib/libvirt/qemu/nvram/` → `minio:linda-win11-vm/nvram`
+   - `win11-gaming-tpm`: `/var/lib/libvirt/swtpm/d9377588-28e4-4257-905a-95012babe705/`
+     → `minio:linda-win11-vm/tpm`
+2. `topology/local-nas.json`: add `b2-linda-win11-vm` target
+   (`minio:linda-win11-vm` → `b2:minio-backup-bargman/linda-win11-vm`, copy,
+   Sun 03:00, standard B2 flag set — pattern of `b2-obsidian`).
+3. Solve the read-permission gap (F16): per-target `user` support in
+   `lib/rclone-target.nix` + `lib/topology/genBackup.nix`, or tmpfiles ACL
+   grants for John88 on the four scoped paths. Prefer ACL (no module churn).
+4. Deploy local-nas (backup-only change — low risk) and LINDA (backup-only
+   change first; `switch` is SAFE here — no networking/VFIO in this phase).
+5. Trigger initial sync; VERIFY objects present in the B2 bucket before
+   Phase 2 begins (deploy user: `sudo systemctl start rclone-sync-…`;
+   verify on local-nas / B2 per backup_operations_standard.md).
+**Acceptance:** `win11-base-gaming.qcow2` + XMLs + NVRAM + TPM state visible
+and verified in `b2:minio-backup-bargman/linda-win11-vm`. Confirms D-8 scope.
+
+### Phase 2 — Declarative stack (Nix changes, single coherent change-set)
+1. **NixVirt wiring** (D-7): add `nixvirt` flake input (nixpkgs follows);
+   import `nixvirt.nixosModules.default` on LINDA. New
+   `machines/LINDA/windows-vm/default.nix`:
+   - domain `win-11-gaming-base` via `domain.writeXML` (or `pkgs.writeText`
+     full-fidelity — F14) from the archived XML; `active = false` initially,
+     `restart = false`; UUID `d9377588-28e4-4257-905a-95012babe705`.
+   - libvirt network(s) declared via `network.writeXML` (keep the existing
+     `default` NAT network managed/declared; `br0` remains a *host* bridge per
+     D-2, referenced by the domain as before).
+   - acceptance eval: generated domain XML diff-clean vs
+     `machines/LINDA/windows-vm/win-11-gaming-base.xml` (F14).
+2. `modifier_imports/virtualisation-libvirtd.nix`: uncomment OVMF block
    (`ovmf.enable = true; packages = [ pkgs.OVMFFull.fd ];`).
-2. `machines/LINDA/default.nix`:
+3. `machines/LINDA/default.nix`:
    - initrd `availableKernelModules`: re-add `vfio_pci`, `vfio_iommu_type1`, `vfio`;
      initrd `kernelModules`: `[ "vfio_pci" ]`
    - `kernelModules`: re-add `vfio_pci`, `vfio_iommu_type1`, `vfio`
    - `boot.extraModprobeConfig`: `options vfio-pci ids=10de:1c81,10de:0fb9,1b21:2142`
-     (F2 set; amend per D-1)
    - optional belt-and-braces: `initrd.preDeviceCommands` driver_override for
-     `0000:4d:00.0 0000:4d:00.1 0000:46:00.0` — with the FIXED redirect form
-     (`echo "vfio-pci" > /sys/bus/pci/devices/$DEV/driver_override`) per F3.
-3. Per D-2 (if br0 GO): uncomment the `bridges."br0"` block over `enp69s0f0`,
-   move `enp69s0f0.useDHCP` to `br0`, mirror the `firewall.interfaces`
-   keys onto `br0` (keep `wireg0` as-is).
-4. Regenerate `goldens/LINDA.json` (D-5 authorization), validate:
+     `0000:4d:00.0 0000:4d:00.1 0000:46:00.0` — FIXED redirect form (F3).
+   - **Networking (D-2):** uncomment `bridges."br0"` over `enp69s0f0`;
+     `enp69s0f0.useDHCP = false`; `br0.useDHCP = true`; mirror
+     `firewall.interfaces` keys onto `br0` (keep `wireg0` as-is).
+4. Regenerate `goldens/LINDA.json` (D-5 authorized):
+   `nix run .#dump-config -- LINDA | jq -S . > goldens/LINDA.json`, then
    `nix run .#validate-goldens -- LINDA`.
-5. Deploy with `nixos-rebuild boot` (NOT `switch`) — F11: the br0 move must
-   only take effect at reboot, together with VFIO.
-**Acceptance:** eval clean, golden matches regenerated baseline, boot entry
-staged on LINDA.
+5. Deploy with `nixos-rebuild boot` (NOT `switch`) — F11: br0 + VFIO take
+   effect only at reboot.
+**Acceptance:** eval clean; generated domain XML matches archived XML; golden
+regenerated + validated; boot entry staged on LINDA.
 
-### Phase 2 — Reboot + binding verification (observation)
+### Phase 3 — Reboot + binding verification (observation)
 1. Reboot LINDA. Verify:
    - `lspci -nnk`: `4d:00.0`, `4d:00.1`, `46:00.0` → "Kernel driver in use: vfio-pci"
    - `21:00.0` still nvidia; all 3 monitors correct (KMS names HDMI-A-1/A-2/DP-2)
    - `lsmod | grep vfio` populated; `dmesg | grep -i "AMD-Vi\|vfio"` clean
-2. Host sanity: Sunshine, Ollama, WireGuard unaffected.
-**Acceptance:** vfio-pci owns group 41 + group 37; host display stack intact.
+   - `br0` up with `10.88.128.88/24` (or DHCP lease); SSH/Sunshine reachable
+2. Host sanity: Scream service alive on br0; Ollama/vLLM, WireGuard unaffected.
+**Acceptance:** vfio-pci owns group 41 + group 37; host display + network intact.
 
-### Phase 3 — Domain restore (now: verify, not define)
-1. Domain is ALREADY defined (R8) — no `virsh define` needed. Verify only:
-   `virsh dumpxml win-11-gaming-base` matches `machines/LINDA/windows-vm/win-11-gaming-base.xml`.
-2. Reconcile against Phase 2 reality: hostdev addresses (`0000:4d:00.0/1`,
-   `0000:46:00.0`), ivshmem/looking-glass device, TPM backend (swtpm),
-   network per D-2 (br0 present).
-3. Do NOT snapshot/restore across the GPU swap — cold boot the domain.
-**Acceptance:** `virsh start win-11-gaming-base` succeeds; VM boots to Windows login.
+### Phase 4 — Domain bring-up (now fully declarative)
+1. NixVirt has reconciled the definition (or `virsh define` fallback matches
+   the declarative XML). `virsh start win-11-gaming-base`.
+2. Cold boot only — do NOT snapshot/restore across the GPU swap.
+3. Verify boot to Windows login (OVMF + NVRAM + TPM continuity per R12).
+**Acceptance:** VM boots to Windows login under declarative management.
 
-### Phase 4 — Guest-side bring-up
+### Phase 5 — Guest-side bring-up
 1. Windows: NVIDIA driver (GTX 1050), Looking Glass host app (B7 era matches
-   host client), Scream sender (IP/port per D-2/D-3), virtio drivers if storage
-   was virtio.
-2. Verify: LG client on host renders guest; audio via Scream; USB devices on the
-   ASMedia controller work in guest; Steam/game smoke test.
+   host client), Scream sender (unicast → host br0:4010), virtio drivers if
+   storage was virtio.
+2. Verify: LG client on host renders guest; audio via Scream; USB devices on
+   the ASMedia controller work in guest; Steam/game smoke test.
 **Acceptance:** playable Windows session with GPU, audio, USB, LG display.
 
-### Phase 5 — Hardening / hygiene (after stable)
-1. Decide whether domain stays imperative (virt-manager) with repo-archived XML
-   — or moves to declarative definition (NixOS `virtualisation.libvirtd`
-   hooks/verbatim). Prior art stays imperative; recommend staying unless D-6
-   says otherwise.
-2. Scream/LG systemd polish; memory budget tuning per D-4.
-3. Optional improvements (explicitly NOT prior art — separate decision):
-   `kvmfr` device instead of `/dev/shm/looking-glass` file; hugepages.
-4. Update AGENTS.md fleet status + this LDR with outcome.
+### Phase 6 — Hardening + future (after stable)
+1. Backup hygiene: re-verify B2 after first gaming sessions; revisit D-9
+   (ZFS incremental streams) if re-upload economics hurt.
+2. Scream/LG systemd polish; keep D-4 as-is unless host pressure demands.
+3. Optional (NOT prior art — separate decision): `kvmfr` instead of
+   `/dev/shm/looking-glass` file; hugepages (explicit hugetlb, F8).
+4. **Local subnet routing expansion (D-2 "later"):** adopt the platonic
+   routed-network pattern (R16): libvirt network `forward.mode = "route"` +
+   `networking.nat`/forwarding on LINDA, or routing between br0 subnet and
+   wireg0/LAN planes. Separate plan when the user calls it.
+5. Update AGENTS.md fleet status + close this LDR with outcome.
 
 ## Evidence Appendix (reproduction → observed)
 
@@ -235,21 +342,25 @@ staged on LINDA.
 | E7 | `ls /var/lib/libvirt/qemu/nvram` | `win-11-base_VARS.fd` (2025-10-16), `win-11-gaming_VARS.fd`, `win-11-unity_VARS.fd`, `linux2024_VARS.fd` |
 | E8 | `ls /dev/shm` | `looking-glass` 0660 John88:qemu-libvirtd (alive) |
 | E9 | `systemctl --user status scream-ivshmem` | loaded, **inactive (dead)** — binds nonexistent `br0` |
-| E10 | `git show 3762764^:machines/LINDA/default.nix` | prior VFIO recipe: initrd vfio modules, `extraModprobeConfig ids=1b21:2142,10de:1c81,10de:0fb9`, `DEVS="0000:46:00.0 0000:4d:00.0 0000:4d:00.1"` override loop (commented even then) |
+| E10 | `git show 3762764^:machines/LINDA/default.nix` | prior VFIO recipe: initrd vfio modules, `extraModprobeConfig ids=1b21:2142,10de:1c81,10de:0fb9`, `DEVS="0000:46:00.0 0000:4d:00.0 0000:4d:00.1"` override loop |
 | E11 | `git show 709c553^:machines/LINDACORE.nix.save` | fullest prior stack: vfio + OVMF + swtpm + LG + Scream ivshmem + br0 bridge |
-| E12 | `free -g` | 125 GB total, 107 used, 18 available (D-4 relevance) |
+| E12 | `free -g` | 125 GB total, 107 used, 18 available |
 | E13 | `ssh deploy@LINDA -p 1108 'sudo virsh list --all'` | `win-11-gaming-base` DEFINED, shut off (also linux2024, ubuntu-gpu, ubuntu20.04-*) |
 | E14 | `sudo virsh dumpxml win-11-gaming-base` | hostdevs `0000:46:00.0`, `0000:4d:00.0`, `0000:4d:00.1`; loader `/run/libvirt/nix-ovmf/OVMF_CODE.fd`; 32 GB; 20 vCPU; kvm hidden; TPM tpm-tis; bridge `br0`; shmem looking-glass 128 MB + scream 2 MB; disk sda=`win11-base-gaming.qcow2`, vda=`/dev/zd0` |
-| E15 | `ls /run/libvirt/nix-ovmf/` | only qemu-bundled edk2 files — **no `OVMF_CODE.fd`/`OVMF_VARS.fd` templates** (OVMF module option commented out → VM cannot boot today) |
+| E15 | `ls /run/libvirt/nix-ovmf/` | only qemu-bundled edk2 files — **no `OVMF_CODE.fd`/`OVMF_VARS.fd` templates** |
 | E16 | `sudo zfs list -t volume` | `/dev/zd0` = `speed-storage/steam-library-win` (788 GB referenced) |
 | E17 | `sudo find /var/lib/libvirt/swtpm/d9377588-…` | `tpm2-00.permall` 9,220 B, mtime 2025-10-16 (TPM continuity OK) |
-| E18 | `sudo qemu-img info --backing-chain win11-base-gaming.qcow2` | standalone qcow2, 100 GiB virtual / 72.6 GiB used — no backing file |
+| E18 | `sudo qemu-img info --backing-chain win11-base-gaming.qcow2` | standalone qcow2, 100 GiB virtual / 72.6 GiB used / 99.8 GiB file length — no backing file |
 | E19 | `sudo diff win-11-gaming-base-nvidia.xml win-11-gaming-base.xml` | hostdevs `21:00.0/.1+46:00.0` (old) → `46:00.0+4d:00.0/.1` (final); same loader/nvram paths |
 | E20 | `ip link show br0` | does not exist; `enp69s0f0` = 10.88.128.88/24 |
+| E21 | `ls /speed-storage/repo/platonic.systems/vms/` | NixVirt-based flake: `modules/platonic-libvirt.nix` + `modules/options.nix`; `vms/` per-tenant defs; README documents hyperhyper SSH control endpoints |
+| E22 | `grep b2: topology/local-nas.json` | six `b2:minio-backup-bargman/*` replication targets, Sun 03:00, 5M, `--b2-chunk-size 64M` |
+| E23 | `systemctl cat rclone-sync-obsidian-v3.service` (LINDA) | `rclone … bisync … minio:obsidian-v3` runs as User=John88, config decrypted to `/run/rclone-sync-*-keys/config-file` |
+| E24 | `grep rclone LINDA + local-nas topology` | LINDA: 3 minio targets (user John88); local-nas: B2 replication (user minio, config `secrets/rclone-b2-config-file`) |
 
 ---
 
-**Version 1.1 — 2026-10-05 — Janeway (USS-Voyager).** Phase 0 complete;
-D-1/D-3/D-6 resolved; D-2/D-4/D-5 open.
-**Next action:** user answers D-2 (br0 GO?), D-4 (RAM), D-5 (golden authority)
-→ Phase 1 Nix edits.
+**Version 2.0 — 2026-10-05 — Janeway (USS-Voyager).** Rulings D-2/D-4/D-5
+recorded; D-7 resolved (NixVirt direct); phases restructured (B2 backup first).
+**Next action:** user confirms D-8 (backup scope) → Phase 1 implementation
+(topology targets + ACL fix + deploy local-nas & LINDA backup-only).
