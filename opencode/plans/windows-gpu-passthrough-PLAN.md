@@ -5,10 +5,10 @@
 prior working stack (GTX 1050 + ASMedia USB 3.1 + Looking Glass + Scream),
 fully declarative (NixOS networking + NixVirt libvirt config), with the VM
 estate backed up to Backblaze B2 before any mutation.
-**Version:** 2.0 — 2026-10-05
-**Status:** PHASE 0 COMPLETE. User rulings received (D-2/D-4/D-5). Phases
-restructured: B2 backup first, then declarative stack. Gated on D-8 (backup
-scope confirm) only.
+**Version:** 2.1 — 2026-10-05
+**Status:** PHASE 0 COMPLETE. All rulings in (D-2/D-4/D-5/D-8/D-9). Phases 3–5
+are user-manual actions. Phase 1 (local-nas replication, weekly B2) ready to
+execute.
 
 ---
 
@@ -27,6 +27,46 @@ scope confirm) only.
   backed up to Backblaze (B2) — as part of this plan, before change.
 - **New requirement 2:** Libvirt/VM configuration must be declarative —
   possibly leveraging the platonic.systems VMs toolkit.
+- **Round-2 rulings (later 2026-10-05):**
+  - Phase 1: local-nas replication; **weekly B2 replication is sufficient**
+    (matches the existing Sunday 03:00 pattern).
+  - Doctrine clarification: "The machine is defined by Nix, so we can recreate
+    it anytime anywhere from windows install manually onwards." → the repo IS
+    LINDA; nixos-rebuild is only actuation, not a precious operation. The
+    guest's *contents* (manual Windows install onward) are the only
+    non-reproducible layer — hence the image backup. See "Recreation Model".
+  - Phases 3–5: confirmed — **user-manual** actions (reboot, physical
+    verification, Windows/guest bring-up).
+  - Phase 6: local subnet routing — "ideally yes" (queued).
+  - D-8: scope = per Phase 1 table (confirmed).
+  - D-9: long-term = **ZFS snapshot streams to B2**; question of isolated
+    pool viability + rclone support answered below (R20/F18/F19).
+
+---
+
+## Recreation Model (user doctrine, 2026-10-05)
+
+The machine is defined by Nix. `nixos-rebuild` is merely actuation — the repo
+is LINDA. Recreation path from nothing:
+
+1. **Host layer (fully reproducible):** flake evaluation builds LINDA anywhere —
+   hardware config, libvirtd + OVMF + swtpm, VFIO binding, br0 networking,
+   Scream/Looking Glass plumbing, and the NixVirt-declared domain/networks all
+   derive from this repo. A bare-metal box of the same class + `nixos-rebuild`
+   = the machine.
+2. **Guest definition (fully reproducible):** the Windows domain XML is
+   declared in Nix (Phase 2) and travels with the repo.
+3. **Guest contents (NOT reproducible — the manual layer):** the Windows
+   installation itself is manual, from a Windows install ISO onwards (drivers,
+   Looking Glass host, Scream sender, Steam). This layer is what the
+   `win11-base-gaming.qcow2` backup preserves.
+4. **Portability caveat (recorded honestly):** the domain's hostdev PCI
+   addresses (`0000:46:00.0`, `0000:4d:00.0/.1`) and `vfio-pci ids=` are
+   hardware-bound. `ids=` (vendor:device) is portable across identical
+   hardware; absolute PCI addresses are not. Phase 2 therefore parameterizes
+   hostdev addresses as module options (current values = defaults) so
+   "recreate anywhere" means: same hardware class → drop-in; other hardware →
+   adjust two options.
 
 ---
 
@@ -126,6 +166,18 @@ scope confirm) only.
 - **R18.** LINDA backup targets today (`topology/LINDA.json` → genBackup):
   `obsidian-v3` (bisync 60s), `88-FS-V3` (copy q2h, 10M), `bargman-tech`
   (copy hourly, 10M) — all to `minio:`. rclone services run as **John88**.
+- **R19.** The platonic ZFS backup pipeline exists at
+  `platonic.systems/infrastructure-2/services/backup-pipeline.nix` (used by
+  acropolis/tumulus/springboard): `zfs-snapshot-daily` → `realize-snapshot`
+  (`zfs send <latest daily snapshot> | gzip > /tmp/snbk/<host>.gz`) →
+  `s3backup` (upload to S3 bucket) → optional `enableRclone` (rclone to B2).
+  Pattern shape: **full** `zfs send` per snapshot (stateless one-file restore),
+  gzip, oneshot systemd chain. Not incremental (`-I`) today.
+- **R20.** rclone has **no native ZFS awareness** (no send/receive/snapshot
+  support) — it is transport only. The standard construction is
+  `zfs send [-I base snap] | zstd | rclone rcat b2:bucket/stream.zfs.zst`
+  (restore: `rclone cat | zstd -d | zfs receive`), with rclone's
+  `--b2-chunk-size` handling large objects.
 
 ## Register — Findings (F*)
 
@@ -193,6 +245,22 @@ scope confirm) only.
   on the scoped paths. Implementation detail of Phase 1.
 - **F17.** Backup must land BEFORE any mutation (VFIO/NixVirt changes) — the
   known-good state is currently unprotected offsite.
+- **F18.** **Isolated pool verdict (D-9):** viable and clean, but an isolated
+  *dataset* already provides snapshot scoping — `speed-storage/var-lib-libvirt`
+  IS such a dataset. `zfs send` of that dataset captures exactly the VM estate
+  (image + XML + nvram + swtpm), sparse-aware (~72.6 GiB logical, not the
+  99.8 GiB file length). A dedicated pool adds only I/O isolation and
+  pool-level property control (compression/dedup) — a hardware/layout
+  decision, not a backup-architecture requirement.
+- **F19.** **Long-term backup shape (D-9):** adopt the platonic pipeline shape
+  (R19: snapshot → realize → upload) with one upgrade over it — incremental
+  `zfs send -I` chains instead of weekly full sends. Trade-off: full send =
+  trivial restore (one object) but ~50–60 GiB/week gzip'd; incremental chain =
+  small weekly deltas but needs a manifest + retention of the base. Weekly B2
+  cadence is confirmed sufficient (user ruling); if full-send weekly at the
+  Sunday window is acceptable, the platonic pattern verbatim is the simplest
+  correct answer. Hand-rolled chain management or `zfsbackup-go` (purpose-built
+  full+incremental streams to S3/B2 with manifests) if incrementals are wanted.
 
 ## Register — Decisions
 
@@ -216,17 +284,18 @@ scope confirm) only.
   `domain.writeXML`/`network.writeXML`); platonic wrapper NOT imported (wrong
   host, multi-tenant machinery); toolkit consulted for the future
   subnet-routing phase.
-- **D-8. Backup scope. — CONFIRM-PENDING (non-blocking for repo work).**
-  Proposed scope per user words "current virtual machine image and xml
-  configuration": `win11-base-gaming.qcow2` + `/var/lib/libvirt/qemu/` (XMLs)
-  + `nvram/win-11-base_VARS.fd` + swtpm state for domain UUID.
-  **Explicitly excluded:** `win11-base-Parent.qcow2` (legacy, not required to
-  run — standalone), `steam-library-win` zvol (788 GB re-downloadable game
-  data). Confirm exclusions or countermand.
-- **D-9. Upload economics. — CONFIRM-PENDING (non-blocking).** v1 proposal:
-  raw qcow2 through the blessed two-hop pipeline (simple, restorable); accept
-  full-file re-uploads while the VM is in flux; revisit ZFS `zfs send`
-  incremental streams to B2 once the VM is in steady-state use.
+- **D-8. Backup scope. — RESOLVED** ("see phase 1"): `win11-base-gaming.qcow2`
+  + `/var/lib/libvirt/qemu/` (XMLs) + `nvram/win-11-base_VARS.fd` + swtpm
+  state for domain UUID → `minio:linda-win11-vm` → `b2:…/linda-win11-vm`
+  weekly. Excluded: `win11-base-Parent.qcow2` (legacy), `steam-library-win`
+  zvol (re-downloadable game data).
+- **D-9. Backup transport long-term. — RESOLVED with path:** v1 = Phase 1
+  rclone file-copy (immediate protection). Long-term = ZFS snapshot streams to
+  B2 per F18/F19: dataset-scoped `zfs send | zstd | rclone rcat` to
+  `b2:minio-backup-bargman/linda-win11-vm-streams/`, weekly, adopting the
+  platonic pipeline shape (R19); incremental `-I` chains optional if weekly
+  full sends prove too heavy. Isolated pool NOT required (isolated dataset
+  suffices); revisit if I/O isolation is wanted.
 
 ## Phased Plan (execution order; each phase gates the next)
 
@@ -249,7 +318,8 @@ scope confirm) only.
      → `minio:linda-win11-vm/tpm`
 2. `topology/local-nas.json`: add `b2-linda-win11-vm` target
    (`minio:linda-win11-vm` → `b2:minio-backup-bargman/linda-win11-vm`, copy,
-   Sun 03:00, standard B2 flag set — pattern of `b2-obsidian`).
+   Sun 03:00, standard B2 flag set — pattern of `b2-obsidian`). **Weekly B2
+   replication confirmed sufficient** (user ruling).
 3. Solve the read-permission gap (F16): per-target `user` support in
    `lib/rclone-target.nix` + `lib/topology/genBackup.nix`, or tmpfiles ACL
    grants for John88 on the four scoped paths. Prefer ACL (no module churn).
@@ -268,6 +338,8 @@ and verified in `b2:minio-backup-bargman/linda-win11-vm`. Confirms D-8 scope.
    - domain `win-11-gaming-base` via `domain.writeXML` (or `pkgs.writeText`
      full-fidelity — F14) from the archived XML; `active = false` initially,
      `restart = false`; UUID `d9377588-28e4-4257-905a-95012babe705`.
+   - **hostdev PCI addresses as module options** (defaults = `46:00.0`,
+     `4d:00.0`, `4d:00.1`) per the Recreation Model portability caveat.
    - libvirt network(s) declared via `network.writeXML` (keep the existing
      `default` NAT network managed/declared; `br0` remains a *host* bridge per
      D-2, referenced by the domain as before).
@@ -293,8 +365,9 @@ and verified in `b2:minio-backup-bargman/linda-win11-vm`. Confirms D-8 scope.
 **Acceptance:** eval clean; generated domain XML matches archived XML; golden
 regenerated + validated; boot entry staged on LINDA.
 
-### Phase 3 — Reboot + binding verification (observation)
-1. Reboot LINDA. Verify:
+### Phase 3 — Reboot + binding verification (USER-MANUAL + observation)
+1. **User action:** reboot LINDA (physical presence for the display check).
+   Verify:
    - `lspci -nnk`: `4d:00.0`, `4d:00.1`, `46:00.0` → "Kernel driver in use: vfio-pci"
    - `21:00.0` still nvidia; all 3 monitors correct (KMS names HDMI-A-1/A-2/DP-2)
    - `lsmod | grep vfio` populated; `dmesg | grep -i "AMD-Vi\|vfio"` clean
@@ -302,31 +375,33 @@ regenerated + validated; boot entry staged on LINDA.
 2. Host sanity: Scream service alive on br0; Ollama/vLLM, WireGuard unaffected.
 **Acceptance:** vfio-pci owns group 41 + group 37; host display + network intact.
 
-### Phase 4 — Domain bring-up (now fully declarative)
+### Phase 4 — Domain bring-up (declarative; USER-MANUAL trigger)
 1. NixVirt has reconciled the definition (or `virsh define` fallback matches
-   the declarative XML). `virsh start win-11-gaming-base`.
+   the declarative XML). **User action:** `virsh start win-11-gaming-base`.
 2. Cold boot only — do NOT snapshot/restore across the GPU swap.
 3. Verify boot to Windows login (OVMF + NVRAM + TPM continuity per R12).
 **Acceptance:** VM boots to Windows login under declarative management.
 
-### Phase 5 — Guest-side bring-up
-1. Windows: NVIDIA driver (GTX 1050), Looking Glass host app (B7 era matches
-   host client), Scream sender (unicast → host br0:4010), virtio drivers if
-   storage was virtio.
+### Phase 5 — Guest-side bring-up (USER-MANUAL)
+1. **User action (at the machine):** Windows side — NVIDIA driver (GTX 1050),
+   Looking Glass host app (B7 era matches host client), Scream sender
+   (unicast → host br0:4010), virtio drivers if storage was virtio.
 2. Verify: LG client on host renders guest; audio via Scream; USB devices on
    the ASMedia controller work in guest; Steam/game smoke test.
 **Acceptance:** playable Windows session with GPU, audio, USB, LG display.
 
-### Phase 6 — Hardening + future (after stable)
-1. Backup hygiene: re-verify B2 after first gaming sessions; revisit D-9
-   (ZFS incremental streams) if re-upload economics hurt.
+### Phase 6 — Hardening + future (after stable) — CONFIRMED WANTED
+1. Backup hygiene: after the VM is steady-state, migrate to ZFS snapshot
+   streams to B2 (D-9 long-term shape: platonic pipeline pattern R19 +
+   optional incremental `-I` chains).
 2. Scream/LG systemd polish; keep D-4 as-is unless host pressure demands.
 3. Optional (NOT prior art — separate decision): `kvmfr` instead of
    `/dev/shm/looking-glass` file; hugepages (explicit hugetlb, F8).
-4. **Local subnet routing expansion (D-2 "later"):** adopt the platonic
-   routed-network pattern (R16): libvirt network `forward.mode = "route"` +
-   `networking.nat`/forwarding on LINDA, or routing between br0 subnet and
-   wireg0/LAN planes. Separate plan when the user calls it.
+4. **Local subnet routing expansion (D-2 "later" — user: "ideally yes"):**
+   adopt the platonic routed-network pattern (R16): libvirt network
+   `forward.mode = "route"` + `networking.nat`/forwarding on LINDA, or routing
+   between br0 subnet and wireg0/LAN planes. Separate plan when the user
+   calls it.
 5. Update AGENTS.md fleet status + close this LDR with outcome.
 
 ## Evidence Appendix (reproduction → observed)
@@ -360,7 +435,7 @@ regenerated + validated; boot entry staged on LINDA.
 
 ---
 
-**Version 2.0 — 2026-10-05 — Janeway (USS-Voyager).** Rulings D-2/D-4/D-5
-recorded; D-7 resolved (NixVirt direct); phases restructured (B2 backup first).
-**Next action:** user confirms D-8 (backup scope) → Phase 1 implementation
-(topology targets + ACL fix + deploy local-nas & LINDA backup-only).
+**Version 2.1 — 2026-10-05 — Janeway (USS-Voyager).** All decisions resolved;
+recreation model recorded; ZFS-stream long-term path answered (F18/F19).
+**Next action:** Phase 1 execution — topology backup targets + ACL fix +
+deploy local-nas & LINDA (backup-only) + initial sync verified in B2.
