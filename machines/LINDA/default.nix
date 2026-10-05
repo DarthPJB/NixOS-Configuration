@@ -154,6 +154,12 @@
     "f /dev/shm/looking-glass 0660 John88 qemu-libvirtd -"
     "d /rendercache 0755 John88 users"
     "d /run/ssh-mux 0755 John88 users"
+    # Backup readability for rclone targets (runs as John88) — win11-gaming-*
+    "a+ /var/lib/libvirt/images/win11-base-gaming.qcow2 - - - - u:John88:r--"
+    "a+ /var/lib/libvirt/qemu/win-11-gaming-base.xml - - - - u:John88:r--"
+    "a+ /var/lib/libvirt/qemu/nvram/win-11-base_VARS.fd - - - - u:John88:r--"
+    "a+ /var/lib/libvirt/swtpm/d9377588-28e4-4257-905a-95012babe705/tpm2 - - - - u:John88:r-x"
+    "a+ /var/lib/libvirt/swtpm/d9377588-28e4-4257-905a-95012babe705/tpm2/tpm2-00.permall - - - - u:John88:r--"
   ];
   boot = {
     tmp.useTmpfs = false;

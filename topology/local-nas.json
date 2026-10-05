@@ -172,6 +172,30 @@
           "--timeout",
           "300s"
         ]
+      },
+      "b2-linda-win11-vm": {
+        "filePath": "minio:linda-win11-vm",
+        "remoteName": "b2:minio-backup-bargman/linda-win11-vm",
+        "mode": "copy",
+        "calendar": "Sun *-*-* 03:00:00",
+        "bwlimit": "5M",
+        "extraFlags": [
+          "--fast-list",
+          "--b2-chunk-size",
+          "64M",
+          "--transfers",
+          "1",
+          "--checkers",
+          "1",
+          "--retries",
+          "3",
+          "--low-level-retries",
+          "10",
+          "--contimeout",
+          "30s",
+          "--timeout",
+          "300s"
+        ]
       }
     }
   }
