@@ -92,6 +92,7 @@
     pkgs.virtiofsd
     pkgs.gwe
     pkgs.virt-manager
+    pkgs.librewolf
     #self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.nixd
   ];
   nix = {
@@ -136,6 +137,18 @@
         Restart = "always";
         ExecStart = ''
           ${lib.getExe pkgs.discord}
+        '';
+        PassEnvironment = "DISPLAY XAUTHORITY";
+      };
+    };
+    opencode-web = {
+      description = "opencode-web-autostart";
+      wantedBy = [ "graphical-session.target" ];
+      serviceConfig = {
+        Restart = "always";
+        ExecStart = ''
+          ${lib.getExe pkgs.opencode} web --port 4096 & \
+          ${lib.getExe pkgs.librewolf} http://127.0.0.1:4096
         '';
         PassEnvironment = "DISPLAY XAUTHORITY";
       };
