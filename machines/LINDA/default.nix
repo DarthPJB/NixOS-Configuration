@@ -4,8 +4,22 @@
 , self
 , lib
 , hostname
+, LLM-CORE
 , ...
 }:
+let
+  opencode-v1 = LLM-CORE.inputs.opencode-flake.packages.x86_64-linux.opencode;
+
+  opencode-web-launcher = pkgs.writeShellApplication {
+    name = "opencode-web-launcher";
+    runtimeInputs = [ opencode-v1 pkgs.librewolf pkgs.curl ];
+    text = ''
+      ${lib.getExe opencode-v1} web --port 4096 &
+      ${lib.getExe pkgs.curl} --silent --fail --connect-timeout 2 --retry 30 --retry-connrefused --retry-delay 1 --output /dev/null http://127.0.0.1:4096/
+      exec ${lib.getExe pkgs.librewolf} http://127.0.0.1:4096
+    '';
+  };
+in
 {
   imports = [
     # Include the results of the hardware scan.
@@ -146,9 +160,7 @@
       wantedBy = [ "graphical-session.target" ];
       serviceConfig = {
         Restart = "always";
-        ExecStart = ''
-          ${lib.getExe pkgs.opencode} web --port 4108
-        '';
+        ExecStart = lib.getExe opencode-web-launcher;
         PassEnvironment = "DISPLAY XAUTHORITY";
       };
     };

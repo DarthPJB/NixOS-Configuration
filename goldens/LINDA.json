@@ -274,6 +274,7 @@
     "<derivation:vivaldi-8.1.4087.66>",
     "<derivation:chromium-151.0.7922.173>",
     "<derivation:brave-1.93.138>",
+    "<derivation:librewolf-154.0-2>",
     "<derivation:jq-1.8.2>",
     "<derivation:ffmpeg-full-8.1.2>",
     "<derivation:emacs-30.2>",
