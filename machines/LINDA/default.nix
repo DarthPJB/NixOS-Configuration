@@ -147,8 +147,7 @@
       serviceConfig = {
         Restart = "always";
         ExecStart = ''
-          ${lib.getExe pkgs.opencode} web --port 4096 & \
-          ${lib.getExe pkgs.librewolf} http://127.0.0.1:4096
+          ${lib.getExe pkgs.opencode} web --port 4108
         '';
         PassEnvironment = "DISPLAY XAUTHORITY";
       };
