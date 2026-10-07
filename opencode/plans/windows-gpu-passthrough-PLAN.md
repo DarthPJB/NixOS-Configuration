@@ -2,13 +2,19 @@
 
 **Machine:** LINDA (AMD Threadripper workstation) — NOT gaming-host-1
 **Goal:** Actively run the Windows gaming VM with GPU passthrough using the
-prior working stack (GTX 1050 + ASMedia USB 3.1 + Looking Glass + Scream),
-fully declarative (NixOS networking + NixVirt libvirt config), with the VM
+prior working stack (GTX 1050 + Looking Glass + Scream; ASMedia USB
+passthrough **retired** per D-1 — it carries host input/webcam), fully
+declarative (NixOS networking + NixVirt libvirt config), with the VM
 estate backed up to Backblaze B2 before any mutation.
-**Version:** 2.3 — 2026-10-05
-**Status:** PHASE 0 COMPLETE. Live bind test done. **D-1 AMENDED — USB
-passthrough dropped (user ruling); GPU pair only.** D-10 taken as confirmed
-(Option A NAT interim). Phase 1 (B2 backup) next.
+**Version:** 2.4 — 2026-10-06
+**Status:** PHASE 0 COMPLETE. Phase 1 (B2 backup) timers deployed and green
+(formal B2 bucket listing verification outstanding). **Phase 2.3 (host layer)
+COMPLETE on `feat/linda-vfio-br0`:** VFIO boot-time bindings + `br0`
+restoration in `machines/LINDA/default.nix`, golden regenerated + validated,
+fmt/deadnix/eval gates green — **awaiting user deploy + reboot.** Phase 2
+items 1–2 (NixVirt domain layer) DEFERRED per 2026-10-06 sequencing ruling.
+**D-1 AMENDED — USB passthrough dropped (user ruling); GPU pair only.**
+**D-10 AMENDED — interim NAT superseded; br0 restored now (host side).**
 
 ---
 
@@ -252,6 +258,10 @@ is LINDA. Recreation path from nothing:
   `enp69s0f0` to `br0`. This must go in via `nixos-rebuild boot` + reboot
   (same reboot as VFIO), NEVER `switch` — a live network move would sever the
   deployment session mid-change.
+  **Deploy-form note (2026-10-06):** through nixinate the action is `$1`
+  (`sw=${1:-test}`), so the safe invocation is
+  `nix run .#LINDA --option builders '' -- boot`. A bare `nix run .#LINDA`
+  defaults to `test` (live activation — violates this finding).
 - **F12.** The guest's Scream sender mode is in-guest state we cannot read;
   host-side Oct-2025 reality was unicast `-i br0 -p 4010` (tmpfile
   `/dev/shm/scream` was removed 2025-07-21). The `<shmem name='scream'>`
@@ -317,6 +327,11 @@ is LINDA. Recreation path from nothing:
   out (F10) unless audio moves to ivshmem. br0 remains the D-2 endgame and
   can land later in its own deliberate window, alongside the subnet-routing
   phase.
+  **[SUPERSEDED in part 2026-10-06 — see D-10 AMENDED.]** The interim-NAT
+  framing here was the basis of D-10 option A; the user's later sequencing
+  ruling brought `br0` forward into the Phase 2.3 host change-set. The
+  *trade-off analysis* above remains accurate for the guest `<interface>`
+  question (which still points at NAT — see amended D-10).
 
 ## Register — Decisions
 
@@ -342,6 +357,20 @@ is LINDA. Recreation path from nothing:
   (virbr0) for initial re-activation: zero host network changes, Scream
   rebinds to virbr0/192.168.122.1. br0 endgame lands in its own deliberate
   window with the subnet-routing phase (D-2 endgame unchanged).
+  **AMENDED by user sequencing ruling (2026-10-06):** interim-NAT option A is
+  **superseded as the plan of record** — restore `br0` now, in the same
+  change-set as the VFIO bindings (D-2 endgame shape), rather than parking
+  host networking changes for a later window. Sequence becomes: br0 + VFIO
+  Nix change-set → reboot → confirm imperative VM viability → declarative
+  NixVirt domain. Two clarifications, so the record stays honest:
+  (a) the four user-authorized imperative XML edits (loader / nvram template
+  / NAT iface / `managed='no'`) are **live now** and remain so until NixVirt
+  adopts the domain — the *domain* therefore still boots on interim NAT
+  (virbr0) until its `<interface>` is switched to `br0`, by imperative
+  `virsh edit` in the viability window or by the declarative definition,
+  whichever runs first; (b) host-side `br0` existing does not by itself move
+  the guest. Host `br0` and guest-NAT are independent until that interface
+  switch happens.
 - **D-3. Audio path. — RESOLVED** (prior art, F12): Scream unicast on br0:4010.
 - **D-4. VM RAM budget. — RESOLVED by user ruling:** leave as-is (32 GB known
   good; ballooning already in XML).
@@ -379,6 +408,12 @@ is LINDA. Recreation path from nothing:
 **Acceptance:** MET.
 
 ### Phase 1 — B2 offsite backup of the known-good state (NEW — before mutation)
+
+> **~95% COMPLETE (2026-10-06):** items 1–4 deployed — all four
+> `win11-gaming-*` rclone timers on LINDA report `Result=success`, and
+> `b2-linda-win11-vm` replication is live on local-nas. Outstanding: formal
+> B2 bucket listing recorded against item 5 / the acceptance below.
+
 1. `topology/LINDA.json` backup targets (drives genBackup):
    - `win11-gaming-image`: `/var/lib/libvirt/images/win11-base-gaming.qcow2`
      → `minio:linda-win11-vm` (mode copy, bwlimit to be set per D-9)
@@ -402,7 +437,13 @@ is LINDA. Recreation path from nothing:
 and verified in `b2:minio-backup-bargman/linda-win11-vm`. Confirms D-8 scope.
 
 ### Phase 2 — Declarative stack (Nix changes, single coherent change-set)
-1. **NixVirt wiring** (D-7): add `nixvirt` flake input (nixpkgs follows);
+
+> **Split 2026-10-06 (user sequencing ruling):** items 3–4 (host layer: VFIO
+> bindings + br0 + golden) are executed first on `feat/linda-vfio-br0`; items
+> 1–2 (NixVirt domain layer) are **DEFERRED** until the imperative VM is
+> confirmed viable post-reboot.
+
+1. **[DEFERRED] NixVirt wiring** (D-7): add `nixvirt` flake input (nixpkgs follows);
    import `nixvirt.nixosModules.default` on LINDA. New
    `machines/LINDA/windows-vm/default.nix`:
    - domain `win-11-gaming-base` via `domain.writeXML` (or `pkgs.writeText`
@@ -417,32 +458,65 @@ and verified in `b2:minio-backup-bargman/linda-win11-vm`. Confirms D-8 scope.
      D-2, referenced by the domain as before).
    - acceptance eval: generated domain XML diff-clean vs
      `machines/LINDA/windows-vm/win-11-gaming-base.xml` (F14).
-2. **Firmware (R21/F20):** the domain's `<os>` section moves to the 26.05
+2. **[DEFERRED] Firmware (R21/F20):** the domain's `<os>` section moves to the 26.05
    default — firmware autoselect (`firmware='efi'`) or explicit loader
    `/run/libvirt/nix-ovmf/edk2-x86_64-code.fd` + existing NVRAM
    `win-11-base_VARS.fd` (size-verified compatible). The legacy `qemu.ovmf`
    module block stays retired.
-3. `machines/LINDA/default.nix`:
-   - initrd `availableKernelModules`: re-add `vfio_pci`, `vfio_iommu_type1`, `vfio`;
+3. **[DONE 2026-10-06 — branch `feat/linda-vfio-br0`]** `machines/LINDA/default.nix`:
+   - initrd `availableKernelModules`: re-added `vfio_pci`, `vfio_iommu_type1`, `vfio`;
      initrd `kernelModules`: `[ "vfio_pci" ]`
-   - `kernelModules`: re-add `vfio_pci`, `vfio_iommu_type1`, `vfio`
+   - `kernelModules`: re-added `vfio_pci`, `vfio_iommu_type1`, `vfio`
+     (deliberately **no** `vfio_virqfd` — does not exist in kernel 6.18)
    - `boot.extraModprobeConfig`: `options vfio-pci ids=10de:1c81,10de:0fb9`
      (D-1 amended set — no USB) — **boot-time claim is mandatory** (R24: late
      binding of the audio function hangs on vga_switcheroo/bus-reset; the
      ids= path claims both functions before the host HDA stack, as the prior
-     art did)
-   - optional belt-and-braces: `initrd.preDeviceCommands` driver_override for
-     `0000:4d:00.0 0000:4d:00.1` only — FIXED redirect form (F3).
-   - **Networking:** per D-10 outcome — interim (a): domain NIC → `default`
-     NAT, Scream → virbr0, no host network changes; OR endgame (c): the br0
-     restoration (F11 reboot-gated rules apply).
-4. Regenerate `goldens/LINDA.json` (D-5 authorized):
+     art did). Type is `types.lines`, so it merges with the existing
+     `video_call_streaming.nix` `v4l2loopback` options. Verified reaching
+     initrd: `modprobe.d/nixos.conf` embeds `extraModprobeConfig`
+     (modprobe.nix:83) and systemd initrd copies that file (initrd.nix:530).
+   - **DROPPED — belt-and-braces `initrd.preDeviceCommands`** driver_override
+     block: `boot.initrd.systemd.enable` defaults true at the pinned rev, and
+     `preDeviceCommands` is on the obsolete-option hard-assertion list — the
+     belt-and-braces code would have been a build breaker. The `ids=` path is
+     the sole binding mechanism (matches R24 conclusion; no F3 redirect risk).
+   - **Networking — br0 restoration executed** per amended D-10 (2026-10-06):
+     `networking.bridges."br0"` uncommented (member `enp69s0f0`),
+     `br0.useDHCP = true`, `enp69s0f0.useDHCP = false`
+     (`enp69s0f1.useDHCP` unchanged = true), and all four
+     `firewall.interfaces."enp69s0f0"` keys renamed to `"br0"` (values
+     identical; `wireg0` keys untouched). Topology JSON firewall section only
+     touches `wireg0`, so no generator-side change needed. Scream's
+     `scream -u -i br0` becomes correct again with no service change (F11:
+     reboot-gated — moves LAN identity/DHCP/firewall).
+4. **[DONE 2026-10-06]** Regenerate `goldens/LINDA.json` (D-5 authorized):
    `nix run .#dump-config -- LINDA | jq -S . > goldens/LINDA.json`, then
-   `nix run .#validate-goldens -- LINDA`.
-5. Deploy with `nixos-rebuild boot` (NOT `switch`) — F11: br0 + VFIO take
-   effect only at reboot.
-**Acceptance:** eval clean; generated domain XML matches archived XML; golden
-regenerated + validated; boot entry staged on LINDA.
+   `nix run .#validate-goldens -- LINDA` → **`✓ LINDA matches golden`**.
+   Delta audited: only `br0` additions, `enp69s0f0`→`br0` firewall key
+   renames, `useDHCP` flips, `br0` sysctls. Top-level key set identical.
+   Gates green: `nixpkgs-fmt --check` ✓, `deadnix --no-lambda-pattern-names` ✓,
+   `nix eval .#nixosConfigurations.LINDA.config.system.build.toplevel.drvPath`
+   ✓ (eval exit 0 — no hard assertions).
+5. **Deploy = user action — action MUST be `boot`, NOT the default.**
+   nixinate's deploy script computes `sw=${1:-test}`, so a bare
+   `nix run .#LINDA` runs **`nixos-rebuild test` (live activation)** and
+   `-- switch` runs a live `switch` — both move the LAN identity from
+   `enp69s0f0` to `br0` *mid-deploy*, exactly what F11 forbids ("NEVER
+   `switch` — a live network move would sever the deployment session").
+   Correct command (action is `$1`, passed through to `nixos-rebuild`):
+   `nix run .#LINDA --option builders '' -- boot`
+   → stages the generation only; nothing network-visible happens until
+   reboot. F11: br0 + VFIO take effect at the same reboot.
+   **Also note:** `test` alone is doubly wrong — it both moves the network
+   live *and* leaves no boot entry, so the reboot would fall back to the
+   old generation.
+**Acceptance (Phase 2.3 — host layer):** eval clean ✓; golden regenerated +
+validated ✓; formatting/deadnix ✓; boot entry staged on LINDA after user
+deploy + reboot.
+**Deferred (Phase 2 items 1–2 — NixVirt domain layer):** NixVirt wiring, domain
+declaration, firmware `<os>` move, and the XML acceptance diff wait until the
+imperative VM is confirmed viable post-reboot (2026-10-06 sequencing ruling).
 
 ### Phase 3 — Reboot + binding verification (USER-MANUAL + observation)
 1. **User action:** reboot LINDA (physical presence for the display check).
@@ -451,24 +525,41 @@ regenerated + validated; boot entry staged on LINDA.
    - `46:00.0` stays `xhci_hcd` (D-1: no USB passthrough — host input intact)
    - `21:00.0` still nvidia; all 3 monitors correct (KMS names HDMI-A-1/A-2/DP-2)
    - `lsmod | grep vfio` populated; `dmesg | grep -i "AMD-Vi\|vfio"` clean
-   - host networking untouched (D-10: no br0 yet); SSH/Sunshine reachable as today
-2. Host sanity: Scream service alive on br0; Ollama/vLLM, WireGuard unaffected.
-**Acceptance:** vfio-pci owns group 41 + group 37; host display + network intact.
+   - `br0` exists with member `enp69s0f0`; `br0` holds the LAN address
+     (was `enp69s0f0`); `enp69s0f1` DHCP unaffected; SSH/Sunshine reachable
+     (F11: this is the risky part — network identity moved)
+   - firewall: `nft list ruleset`/iptables shows the moved port set on `br0`
+2. Host sanity: Scream service alive on br0 (its `-i br0` now resolves);
+   Ollama/vLLM, WireGuard unaffected.
+**Acceptance:** vfio-pci owns **group 41 only** (`4d:00.0` + `4d:00.1`);
+group 37 (`46:00.0`) stays `xhci_hcd`; `br0` up with LAN
+identity + firewall ports; host display + network intact.
 
-### Phase 4 — Domain bring-up (declarative; USER-MANUAL trigger)
-1. NixVirt has reconciled the definition (or `virsh define` fallback matches
-   the declarative XML). **User action:** `virsh start win-11-gaming-base`.
+### Phase 4 — Domain bring-up (USER-MANUAL trigger)
+> Per the 2026-10-06 sequencing ruling, the **first** bring-up uses the
+> existing imperative domain definition (already patched: edk2 loader/nvram
+> template/NAT interface) to confirm VM viability. Declarative NixVirt
+> adoption follows (Phase 2 items 1–2) only after viability is proven.
+1. Domain present (`virsh domstate win-11-gaming-base` = shut off).
+   **User action:** `virsh start win-11-gaming-base`.
 2. Cold boot only — do NOT snapshot/restore across the GPU swap.
 3. Verify boot to Windows login (OVMF + NVRAM + TPM continuity per R12).
-**Acceptance:** VM boots to Windows login under declarative management.
+4. Guest NIC: interim NAT (virbr0) is expected at this stage — the domain
+   `<interface>` still points at `default` (see amended D-10). Switching the
+   guest to `br0` is a separate deliberate step (imperative `virsh edit` or
+   NixVirt definition), not part of viability.
+**Acceptance:** VM boots to Windows login (imperative definition; viability
+proven). Declarative adoption = Phase 2 items 1–2 acceptance, later.
 
 ### Phase 5 — Guest-side bring-up (USER-MANUAL)
 1. **User action (at the machine):** Windows side — NVIDIA driver (GTX 1050),
    Looking Glass host app (B7 era matches host client), Scream sender
-   (unicast → host br0:4010), virtio drivers if storage was virtio.
-2. Verify: LG client on host renders guest; audio via Scream; USB devices on
-   the ASMedia controller work in guest; Steam/game smoke test.
-**Acceptance:** playable Windows session with GPU, audio, USB, LG display.
+   (unicast → host `br0`:4010), virtio drivers if storage was virtio.
+2. Verify: LG client on host renders guest; audio via Scream; Steam/game
+   smoke test. **USB note (D-1 amended):** the ASMedia controller stays on
+   the host — guest peripherals are reached host-side (keyboard/mouse/webcam
+   remain host input); no guest USB claim to verify.
+**Acceptance:** playable Windows session with GPU, Scream audio, LG display.
 
 ### Phase 6 — Hardening + future (after stable) — CONFIRMED WANTED
 1. Backup hygiene: after the VM is steady-state, migrate to ZFS snapshot
@@ -523,5 +614,18 @@ regenerated + validated; boot entry staged on LINDA.
 default loader, NVRAM-compatible); live bind test done (GPU ✓, audio function
 teaches the boot-time-ids lesson); USB peripheral set mapped; D-10 interim
 networking open (recommendation: NAT now, br0 later).
-**Next action:** user picks D-10 option → Phase 1 execution (B2 backup) →
-Phase 2 change-set.
+
+**Version 2.4 — 2026-10-06 — Janeway (USS-Voyager).** Phase 1 B2 timers
+deployed green. Launch-fault diagnosis recorded (3 faults: missing `br0`,
+libvirtd `snd_card_free` wedge, stale OVMF paths); libvirtd unwedged; four
+user-authorized imperative XML edits live (loader + nvram template + NAT
+interface + `managed='no'`). **D-10 amended** (br0 restored now, host side);
+Phase 2.3 executed on `feat/linda-vfio-br0` — VFIO `ids=` boot-time bindings
+(`preDeviceCommands` variant dropped: hard-asserts under systemd initrd),
+`br0` bridge/DHCP/firewall restoration, golden regenerated + validated,
+fmt/deadnix/eval gates green; NixVirt domain items deferred.
+
+**Next action:** user deploys `feat/linda-vfio-br0` to LINDA + reboots →
+Phase 3 binding verification (`4d:00.x` → `vfio-pci`, `46:00.0` stays
+`xhci_hcd`, `br0` up with LAN identity) → imperative VM viability →
+Phase 2 items 1–2 (NixVirt domain declaration).

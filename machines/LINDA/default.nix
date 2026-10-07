@@ -202,6 +202,9 @@ in
     };
     initrd = {
       availableKernelModules = [
+        "vfio_pci"
+        "vfio_iommu_type1"
+        "vfio"
         "nvme"
         "xhci_pci"
         "ahci"
@@ -211,12 +214,23 @@ in
         "sd_mod"
         "nvidia-drm"
       ];
-      kernelModules = [ ];
+      kernelModules = [ "vfio_pci" ];
     };
     #kernelPackages= pkgs.linuxPackages_5_18;
     kernelModules = [
+      "vfio_pci"
+      "vfio_iommu_type1"
+      "vfio"
       "kvm-amd"
     ];
+    # R24: claim both functions (GPU 4d:00.0 + HD-audio 4d:00.1) before
+    # snd_hda_intel can bind. Boot-time binding avoids the D-state wedge
+    # caused by runtime rebind while PipeWire holds the codec (quirk #2).
+    # D-1 amended: USB controller 46:00.0 (ASMedia, host keyboard/mouse/
+    # webcam) is intentionally excluded — it must stay host-bound.
+    extraModprobeConfig = ''
+      options vfio-pci ids=10de:1c81,10de:0fb9
+    '';
     kernelParams = [
       "video=HDMI-A-1:1920x1080@60"
       "video=HDMI-A-2:3840x2160@60"
@@ -294,15 +308,19 @@ in
   networking = {
     interfaces = {
       #      "bond0".useDHCP = true;
-      enp69s0f0 = {
+      # F11: LAN identity/DHCP lives on br0; the member NIC is bridged only.
+      br0 = {
         useDHCP = true;
+      };
+      enp69s0f0 = {
+        useDHCP = false;
       };
       enp69s0f1 = {
         useDHCP = true;
       };
     };
     firewall.interfaces = {
-      "enp69s0f0".allowedTCPPorts = [
+      "br0".allowedTCPPorts = [
         2108
         4010
         1108
@@ -311,7 +329,7 @@ in
         4549
         24070
       ];
-      "enp69s0f0".allowedTCPPortRanges = [
+      "br0".allowedTCPPortRanges = [
         {
           from = 17780;
           to = 17785;
@@ -328,7 +346,7 @@ in
         42420
       ];
 
-      "enp69s0f0".allowedUDPPorts = [
+      "br0".allowedUDPPorts = [
         2108
         2107
         1108
@@ -338,7 +356,7 @@ in
         4179
         4171
       ];
-      "enp69s0f0".allowedUDPPortRanges = [
+      "br0".allowedUDPPortRanges = [
         {
           from = 17780;
           to = 17785;
@@ -364,11 +382,15 @@ in
 
     #hostName = "LINDACORE";
     hostId = "b4120de4";
-    #    bridges = {
-    #      "br0" = {
-    #        interfaces = [ "enp69s0f0" ];
-    #      };
-    #    };
+    # F11: br0 restoration — required by the win-11-gaming-base domain
+    # (libvirt bridge network 'br0'; launch failed with "Cannot get
+    # interface MTU on 'br0': No such device"). Also the correct backing
+    # for the Scream service (-i br0) above.
+    bridges = {
+      "br0" = {
+        interfaces = [ "enp69s0f0" ];
+      };
+    };
     useDHCP = false;
     wireless = {
       enable = false; # Enables wireless support via wpa_supplicant.
