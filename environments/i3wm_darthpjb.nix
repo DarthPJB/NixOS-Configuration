@@ -55,8 +55,6 @@
       fading = false;
       blur = false;
       unredir-if-possible = true;
-      glx-no-stencil = true;
-      glx-no-rebind-pixmap = true;
       detect-transient = true;
       detect-client-leader = true;
       use-damage = true;

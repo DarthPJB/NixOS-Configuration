@@ -123,6 +123,34 @@
           "- nixos-*.iso",
           "- .bash_history-*"
         ]
+      },
+      "win11-gaming-image": {
+        "filePath": "/var/lib/libvirt/images/win11-base-gaming.qcow2",
+        "remoteName": "minio:linda-win11-vm",
+        "mode": "copy",
+        "calendar": "*-*-* 04:00:00",
+        "user": "root"
+      },
+      "win11-gaming-xml": {
+        "filePath": "/var/lib/libvirt/qemu/win-11-gaming-base.xml",
+        "remoteName": "minio:linda-win11-vm/xml",
+        "mode": "copy",
+        "calendar": "*-*-* 04:10:00",
+        "user": "root"
+      },
+      "win11-gaming-nvram": {
+        "filePath": "/var/lib/libvirt/qemu/nvram/win-11-base_VARS.fd",
+        "remoteName": "minio:linda-win11-vm/nvram",
+        "mode": "copy",
+        "calendar": "*-*-* 04:10:00",
+        "user": "root"
+      },
+      "win11-gaming-tpm": {
+        "filePath": "/var/lib/libvirt/swtpm/d9377588-28e4-4257-905a-95012babe705/tpm2/tpm2-00.permall",
+        "remoteName": "minio:linda-win11-vm/tpm",
+        "mode": "copy",
+        "calendar": "*-*-* 04:10:00",
+        "user": "root"
       }
     }
   }

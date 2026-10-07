@@ -222,6 +222,7 @@
     "<derivation:shotcut-26.2.26>",
     "<derivation:shutter-0.99.7>",
     "<derivation:gpp-2.25>",
+    "<derivation:git-lfs-3.7.1>",
     "<derivation:entr-5.8>",
     "<derivation:platformio-6.1.19>",
     "<derivation:nix-top-0.4.0>",

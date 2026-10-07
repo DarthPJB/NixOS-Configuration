@@ -1,7 +1,9 @@
-# CI/CD Implementation for NixOS Configuration
+# CI/CD Documentation for NixOS Configuration
 
-This directory contains the CI/CD implementation for the NixOS configuration
-repository, with configuration generated from Nix evaluation.
+This file documents the CI/CD pipeline for the NixOS configuration
+repository. The implementation lives in `ci.nix` (repo root) and
+`ci/generate-workflow.nix`, with workflow configuration generated from
+Nix evaluation.
 
 ## Security Posture
 
@@ -10,14 +12,21 @@ GitHub-hosted runners are inherently insecure — they have no place in
 professional netrunner infrastructure. Bargman-Tech production builds are
 siloed in closed infrastructure; GitHub is used only for public-facing projects.
 
-Third-party build caching and relay services have been **removed from CI**.
-No external cache (DetSys, Cachix, etc.) is configured. Builds complete from
-source within our controlled environment.
+Third-party build caching and relay services (Cachix, DetSys
+magic-nix-cache, etc.) remain **removed from CI**. No external build cache
+is configured.
 
-**Planned: In-House Binary Cache.** We will operate our own Nix binary cache
-server, dogfooding our infrastructure capabilities. This will accelerate builds
-without compromising the closed-system principle. Until operational, all builds
-complete from source — slow but correct.
+**In-House Binary Cache: OPERATIONAL.** We operate our own signed Nix binary
+cache, dogfooding our infrastructure capabilities: `services/nix-cache-serve.nix`
+runs signed `nix-serve` on remote-builder (port 5001), published over TLS via
+nginx at `cache.johnbargman.net`, with the signing key managed by secrix
+(`secrets/cache-priv-key`). Builds substitute from the in-house cache first
+and only build locally on cache misses. Approved substituters are
+`cache.johnbargman.net` and `cache.nixos.org` (fleet `trusted-substituters`)
+plus, at the flake level, `cache.johnbargman.net` and
+`install.determinate.systems` (Determinate Nix artifacts). Flake inputs are
+fetched via FlakeHub. FlakeHub and install.determinate.systems are the only
+approved third-party inputs.
 
 **Correctness is non-negotiable.** If `nix flake check` takes four hours to
 evaluate all machines, that is acceptable — provided it guarantees correctness.
@@ -31,20 +40,19 @@ actual build requirements.
 
 ## Files
 
-- `ci.nix` - Main CI module with job definitions and machine registry
-- `generate-workflow.nix` - Workflow generator (Nix → JSON → YAML via PyYAML)
-- `CORRECTION_PLAN.md` - Historical audit of CI issues (some items are
-  intentionally deferred — see Security Posture above)
-- `README.md` - This file
+- `ci.nix` (repo root) - Main CI module with job definitions; machine lists
+  auto-derived from `nixosConfigurations`
+- `ci/generate-workflow.nix` - Workflow generator (Nix → JSON → YAML via PyYAML)
+- `documentation/ci-readme.md` - This file (documentation)
 
 ## Quick Start
 
 ```bash
 # Generate CI workflow (outputs YAML to stdout)
-nix run .#generate-ci-workflow > .github/workflows/ci.yml
+nix run .#generate-ci-workflow --option builders '' > .github/workflows/ci.yml
 
 # Validate workflow
-nix run .#validate-ci-workflow
+nix run .#validate-ci-workflow --option builders ''
 
 # View generated workflow
 cat .github/workflows/ci.yml
@@ -59,73 +67,73 @@ git commit -m "ci: add GitHub Actions workflow"
 The primary command generates YAML directly to stdout for redirection:
 
 ```bash
-nix run .#generate-ci-workflow > .github/workflows/ci.yml
+nix run .#generate-ci-workflow --option builders '' > .github/workflows/ci.yml
 ```
 
 This will output build warnings to stderr (normal for `nix run`) and the YAML workflow to stdout, which is redirected to the file.
 
 ## CI Jobs
 
-### 1. Validation Job
-- Runs on all pushes and PRs
+Job definitions live in `ci.nix`. Machine matrices are auto-derived from the
+flake's `nixosConfigurations` — there are no hardcoded machine lists.
+
+### 1. Validation & Linting (validation)
+- Runs on self-hosted runners for all pushes and PRs
 - Code formatting check (`nix fmt -- --check .`)
-- Flake validation (`nix flake check`)
-- Dead code detection (`nix run .#deadnix`)
+- Flake validation (`nix flake check` — includes the deadnix check
+  `checks.x86_64-linux.deadnix`)
+- Evaluation profiling (diagnostic, continue-on-error)
+- Dead code detection (`nix shell nixpkgs#deadnix -c deadnix .`,
+  continue-on-error) — there is no `nix run .#deadnix` app
 
-### 2. Build x86 Job
+### 2. Security Scan (security)
+- Runs on `ubuntu-latest` (scan-only job — all builds run on self-hosted runners)
+- Gitleaks secret scanning (full git history, `fetch-depth: 0`)
+- Plaintext-secrets grep over `*.nix` files (warn-only)
+- Hardcoded-IP grep over `*.nix` files (excludes the VPN range and documentation)
+
+### 3. Build x86_64 Configurations (build-x86)
 - **Depends on**: validation, security
-- Builds 12 x86_64 configurations in parallel
-- Machines: terminal-zero, terminal-nx-01, cortex-alpha, local-nas, alpha-one, alpha-two, alpha-three, LINDA, gaming-host-1, remote-worker, storage-array, remote-builder
-- Artifact upload with 7-day retention
-- Uploads build artifacts
+- Matrix over auto-derived x86_64 machines (self-hosted runners)
+- 12h timeout (LINDA cold-cache builds take ~6h)
 
-### 3. Build ARM Job
+### 4. Build ARM (native aarch64) (build-arm-native)
 - **Depends on**: validation, security
-- Builds 5 ARM configurations
-- Machines: display-0, display-1, display-2, print-controller, **beta-one**
-- Generates SD card images for Raspberry Pi
-- Artifact upload with 7-day retention
+- Matrix over auto-derived ARM machines built natively on the aarch64 runner
 
-### 4. Security Job
-- **Gitleaks integration** for comprehensive secret scanning
-- Enhanced pattern matching with exclusions
-- IP address validation (VPN range only)
-- Configuration validation
-- Security best practices check
-- Full git history scanning (`fetch-depth: 0`)
+### 5. Build ARM (cross-compiled from x86_64) (build-arm-cross)
+- **Depends on**: validation, security
+- Matrix over auto-derived ARM machines cross-compiled from the x86_64 runner
 
-### 5. Deploy Job
-- **Depends on**: validation, security, build-x86, build-arm
-- Manual trigger only (workflow_dispatch)
+### 6. Deploy (deploy-prep)
+- **Depends on**: validation, security, build-x86, build-arm-native, build-arm-cross
+- Manual trigger only (`workflow_dispatch`; job name "Deploy - <machine>")
 - Builds **only the selected machine** (not all machines)
 - Action choices: build, test, deploy
-- 30-day log retention
-- Deployment safeguards in place
 
 ## Machine Matrix
 
-### x86_64 Machines (12)
-- terminal-zero, terminal-nx-01, cortex-alpha, local-nas
-- alpha-one, alpha-two (dormant), alpha-three, LINDA
-- gaming-host-1, remote-worker, storage-array (dormant), remote-builder
+Machine matrices are auto-derived from the flake's `nixosConfigurations`;
+`ci.nix` categorizes each machine by host/build platform (x86_64 native,
+aarch64 native, ARM cross-compiled from x86_64). There are no hardcoded
+machine lists in the CI configuration.
 
-### ARM Machines (5)
-- display-0, display-1, display-2
-- print-controller (Raspberry Pi 3)
-- **beta-one** (armv7l-linux)
-
-**Total: 17 machines** (15 active + 2 dormant).
-Dormant machines are preserved in `dormantConfigurations` for golden tests
-but are not included in `nixosConfigurations` to prevent accidental deployment.
+**18 active machines** (21 machine directories minus 3 dormant: alpha-two,
+storage-array, display-0). Dormant machines are preserved in `flake.nix`
+`dormantConfigurations` for golden tests but are not included in
+`nixosConfigurations` to prevent accidental deployment — and therefore are
+never built in CI. `ci.nix` `ciExclusions` additionally skips non-deployment
+configs (the cluster-box passthrough and the bargman-greeter-vm test VM).
+The full fleet list lives in `AGENTS.md`.
 
 ## Workflow Triggers
 
 ### Automatic Triggers
-- Push to `main` or `jb/ai/overlord-8` branches
+- Push to `main` branch
 - Pull requests to `main` branch
 - Changes to `**.nix` files
 - Changes to `flake.lock`
-- Changes to `.github/workflows/**`
+- Changes to `.github/workflows/**` (push trigger only)
 
 ### Manual Triggers
 - `workflow_dispatch` for deployment
@@ -161,15 +169,15 @@ but are not included in `nixosConfigurations` to prevent accidental deployment.
 
 ### Adding New Machines
 1. Add machine to `flake.nix`
-2. Update machine lists in `ci.nix`
-3. Regenerate workflow: `nix run .#generate-ci-workflow`
+2. Machine lists in `ci.nix` are auto-derived — nothing to update there
+3. Regenerate workflow: `nix run .#generate-ci-workflow --option builders ''`
 4. Commit changes
 
 ### Modifying CI Jobs
 1. Edit `ci.nix` module
 2. Update job definitions
-3. Regenerate workflow: `nix run .#generate-ci-workflow`
-4. Test locally: `nix run .#validate-ci-workflow`
+3. Regenerate workflow: `nix run .#generate-ci-workflow --option builders ''`
+4. Test locally: `nix run .#validate-ci-workflow --option builders ''`
 5. Commit changes
 
 ### Changing Triggers
@@ -198,7 +206,7 @@ are primary:
 - Check branch names match
 
 #### Build Failures
-- Run `nix flake check` locally
+- Run `nix flake check --option builders ''` locally
 - Verify machine configuration
 - Check for syntax errors
 - Review build logs
@@ -212,19 +220,25 @@ are primary:
 ### Debugging Commands
 ```bash
 # Check CI configuration
-nix eval --json .#ci.github-actions | jq .
+nix eval --json .#ci.ci.github-actions --option builders '' | jq .
 
-# View machine lists
-nix eval --json .#ci-info
+# View machine lists (auto-derived from nixosConfigurations)
+nix eval --json .#ci.ci.machines --option builders '' | jq .
+
+# Regenerate the CI workflow golden (canonical)
+nix eval --json .#ci.ci.github-actions --option builders '' | jq -S . > goldens/ci.json
+
+# Check CI config against golden
+nix run .#check-ci --option builders ''
 
 # Test workflow generation
-nix run .#generate-ci-workflow
+nix run .#generate-ci-workflow --option builders ''
 
 # Validate workflow
-nix run .#validate-ci-workflow
+nix run .#validate-ci-workflow --option builders ''
 
 # Check flake evaluation
-nix flake show
+nix flake show --option builders ''
 ```
 
 ## Best Practices
@@ -252,4 +266,4 @@ nix flake show
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [Nix Flakes Documentation](https://nixos.org/manual/nix/unstable/command-ref/new-cli/nix3-flake.html)
 - [NixOS Configuration](https://nixos.org/manual/nixos/)
-- [Repository Documentation](../documentation/)
+- [Repository Documentation](./)

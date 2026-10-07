@@ -224,6 +224,7 @@
     "<derivation:lxappearance-0.6.4>",
     "<derivation:arandr-0.1.11>",
     "<derivation:gpp-2.25>",
+    "<derivation:git-lfs-3.7.1>",
     "<derivation:entr-5.8>",
     "<derivation:platformio-6.1.19>",
     "<derivation:nix-top-0.4.0>",

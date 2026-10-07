@@ -1,12 +1,20 @@
 # vLLM-Only Architecture — Historical Implementation Record
 
-**Status**: Superseded as the fleet-wide target; vLLM implementation retained  
-**Target**: Replace Ollama with vLLM for all inference  
-**Last updated**: 2026-08-27
+**Status**: Superseded as the fleet-wide target; historical implementation record  
+**Target**: Replace Ollama with vLLM for all inference (superseded)  
+**Last updated**: 2026-10-05 (status correction; implementation record is 2026-08)
 
+> **Current state (2026-10-05) — supersedes the deployment claims below.**
 > Operational testing did not invalidate vLLM, but it did invalidate the
-> vLLM-only deployment target. vLLM remains the managed service engine and
-> Ollama returns for manual, short-lived GGUF research workloads. See
+> vLLM-only deployment target, and the subsequent hybrid did not stick either.
+> Live inference is **Ollama-primary**: Ollama on LINDA (`services/ollama.nix`)
+> and pillar-of-autum, routed by the LiteLLM gateway on alpha-three. The vLLM
+> module (`modules/vllm.nix`) and the Nix model packages remain in the tree,
+> but **no machine enables vLLM** as of 2026-10-05 — there is no
+> `:8001`/`:8002`/`:8003` service on LINDA. Everything from
+> "Implementation Status" onward is the historical record of the vLLM-only
+> migration (branch `ai/hardening-ii/vllm-authority`), including Phase 5's
+> Ollama decommission, which was later **reversed**. See
 > [`ai-inference-findings.md`](ai-inference-findings.md) for the evidence,
 > corrected token-limit contract, memory budget, and forward architecture.
 
@@ -25,11 +33,13 @@
 | 2 | Module enhancement — device assignment, model paths | ✅ Complete |
 | 3 | Model migration — Ollama models → vLLM CPU | ✅ Complete |
 | 4 | Monitoring — Prometheus scrape targets + dashboard | ✅ Complete |
-| 5 | Cleanup — Ollama decommission, CUDA scoping, goldens | ✅ Complete |
+| 5 | Cleanup — Ollama decommission, CUDA scoping, goldens | ✅ Complete (Ollama decommission later reversed) |
 | 6 | Documentation — ai-stack.md, vllm-architecture.md, ai-upgrades.md | 🔄 In progress (6.1, 6.2 done; 6.3 pending) |
 
 Phases 1–5 were implemented on branch `ai/hardening-ii/vllm-authority`.
-All golden tests for the 19 fleet machines were regenerated and validate.
+All golden tests for the fleet as it stood then (19 machines) were regenerated
+and validate; the fleet is now 21 machines / 22 goldens (as of 2026-10-05).
+Phase 5's Ollama decommission was later **reversed** — see the status note above.
 
 ---
 
@@ -37,7 +47,14 @@ All golden tests for the 19 fleet machines were regenerated and validate.
 
 A single inference engine (vLLM) serving all models, with Nix managing models, configuration, and hardware assignment. One engine, one monitoring path, one configuration pattern.
 
-**Implemented scope**: LINDA now serves all inference through vLLM — one GPU model and two CPU models, each in its own systemd service with weights from the Nix store. Ollama has been decommissioned on LINDA (`services/archive/ollama.nix`). cluster-box remains on Ollama — it is an external Malayalam flake outside the NixOS-Configuration migration boundary (see Deviations).
+**Implemented scope (historical, 2026-08 — superseded):** LINDA then served all
+inference through vLLM — one GPU model and two CPU models, each in its own
+systemd service with weights from the Nix store — and Ollama had been
+decommissioned on LINDA (`services/archive/ollama.nix`, since reversed: Ollama
+is live on LINDA again via `services/ollama.nix`, and no `services/archive/`
+path remains in the tree). cluster-box remains on Ollama — it is an external
+Malayalam flake outside the NixOS-Configuration migration boundary (see
+Deviations).
 
 ---
 
@@ -54,7 +71,7 @@ A single inference engine (vLLM) serving all models, with Nix managing models, c
 
 ---
 
-## Architecture (as implemented)
+## Architecture (as implemented in 2026-08 — historical record)
 
 ```mermaid
 graph TB
@@ -105,7 +122,7 @@ graph TB
     GRAFANA -.->|"query"| PROM
 ```
 
-### Routing (alpha-three LiteLLM)
+### Routing (alpha-three LiteLLM, historical — superseded by the Ollama `:11434` routes)
 
 | Backend | URL | Models |
 |---------|-----|--------|
@@ -127,7 +144,8 @@ Models are stored in the Nix store, not downloaded at runtime. Each package is:
 - **Reproducible**: pinned to a HuggingFace commit SHA (immutable revision)
 - **Validated**: every file pinned to its own SRI sha256 — upstream changes fail the build instead of silently swapping weights
 - **Versioned**: updates tracked in git
-- **Cached**: store paths can be served by the planned in-house binary cache
+- **Cached**: store paths can be served by the in-house binary cache
+  (operational: `cache.johnbargman.net` on remote-builder)
 
 ### Package structure (`pkgs/models/`)
 
@@ -239,7 +257,7 @@ timeouts, and optional fallback groups.
 
 ---
 
-## Monitoring (implemented, Phase 4)
+## Monitoring (implemented, Phase 4 — historical; the `vllm-*` scrape jobs are not present in `services/prometheus.nix` as of 2026-10-05)
 
 ### Prometheus scrape targets (`services/prometheus.nix`)
 
@@ -282,7 +300,7 @@ gateway health. Deferred — see Next Steps.
 
 - **2.1** `device`, `modelPath`, `cpuKvCacheSpace`, `cpuOmpThreadsBind` options added to `modules/vllm.nix` (module grew 392 → 524 lines)
 - **2.2** CPU service generation: env vars (`VLLM_CPU_KVCACHE_SPACE`, `VLLM_CPU_OMP_THREADS_BIND`, blank `CUDA_VISIBLE_DEVICES`), `MemoryMax = "80%"`, `--device cpu` args
-- **2.3** CPU models deployed on LINDA (:8002 qwen3-30b-a3b, :8003 qwen3-coder)
+- **2.3** CPU models deployed on LINDA (:8002 qwen3-30b-a3b, :8003 qwen3-coder) — historical; no `:8002`/`:8003` service is deployed as of 2026-10-05
 
 ### Phase 3: Model Migration ✅
 
@@ -298,10 +316,10 @@ gateway health. Deferred — see Next Steps.
 
 ### Phase 5: Cleanup ✅
 
-- **5.1** `services/ollama.nix` archived to `services/archive/ollama.nix`; no Ollama references remain in LINDA config; `modifier_imports/cuda.nix` drops `unstable.ollama-cuda`
+- **5.1** `services/ollama.nix` archived to `services/archive/ollama.nix`; no Ollama references remain in LINDA config; `modifier_imports/cuda.nix` drops `unstable.ollama-cuda` — **superseded 2026-09:** the decommission was reversed; Ollama is live on LINDA via `services/ollama.nix` (no `services/archive/` path remains)
 - **5.2** CUDA scoping: global `cudaSupport = true` replaced by a second `nixpkgs_llm` import (`pkgsCuda`) with `config.cudaSupport = true`. Not an overlay. `pkgs_llm` stays CPU-only. CPU units use `pkgsCpuVllm` (`pkgs/vllm-cpu`): wraps `pkgs_llm.vllm`, rewrites importlib.metadata Version to `${version}+cpu` so 0.24.0's `cpu_platform_plugin` selects CpuPlatform, and puts zentorch on PYTHONPATH. No vLLM rebuild, no source patch.
 - **5.3** Open-WebUI `pkgsNoCuda` duplicate-import workaround replaced with `pkgs.python3Packages.overrideScope` forcing `torch.cudaSupport = false` in-place (no second nixpkgs import; stable CPU binaries used)
-- **5.4** All 19 fleet goldens regenerated (topology wiring, firewall, module option defaults) and validated
+- **5.4** All 19 fleet goldens regenerated (topology wiring, firewall, module option defaults) and validated — a past action against the fleet as it stood then (19 machines; the fleet is now 21 machines / 22 goldens as of 2026-10-05)
 
 ---
 

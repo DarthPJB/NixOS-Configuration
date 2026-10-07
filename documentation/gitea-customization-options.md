@@ -61,7 +61,8 @@ updated in June 2026; the lock points at July 2026 (stable) and July 2026
 Consequences:
 
 - All settings documented upstream for 1.27.2 apply to the deployed instance.
-- To upgrade Gitea, update the flake input (`nix flake update nixpkgs_stable`);
+- To upgrade Gitea, update the flake input (`nix flake update nixpkgs_stable`
+  — per-input only, fleet policy);
   there is no separate Gitea pin to maintain.
 - The clone at `v1.27.2` is the correct reference for the *running* code.
 
@@ -225,9 +226,10 @@ services.openssh.listenAddresses = [ { addr = wgIp; port = 22; } ];
 networking.firewall.interfaces."wireg0".allowedTCPPorts = [ 22 ];
 ```
 
-`gitolite.nix` previously held this policy for the legacy `git` user; the
-policy moved to `git-ssh.nix` and now also admits `gitea` (the legacy cgit/
-gitolite stack coexists until it is retired).
+`gitolite.nix` (deleted 2026-10-01) previously held this policy for the legacy
+`git` user; the policy now lives in `git-ssh.nix` and admits `git` (Gitea's
+published clone identity) and `gitea`. The legacy cgit/gitolite stack was
+retired 2026-10-01.
 
 OpenSSH first-match semantics were verified with `sshd -T` before writing this:
 the `Match LocalPort 22` `AllowUsers` wins over the global
@@ -270,7 +272,8 @@ default) but it is the wrong tool for SSH: OpenSSH does not speak PROXY
 protocol, so sshd would see nginx as the client and every
 `AllowUsers ...@10.88.127.0/24` / `Match Address` policy would be meaningless.
 SSH also has no SNI, so nginx can only route by port — which `listenAddresses`
-already does. The gitolite prior art (`server_services/gitolite.nix`) binds
+already does. The git-ssh policy (`server_services/git-ssh.nix`, which
+superseded the deleted `server_services/gitolite.nix`) binds
 sshd directly to the WireGuard address; Gitea follows the same pattern.
 
 ---
@@ -381,8 +384,11 @@ are golden-free). Current `validate-goldens` results:
 | cortex-alpha | nginx vhost loses `X-WEBAUTH-*` lines | wguser holdover removed |
 | cortex-alpha | `services.dnsmasq` gains `ldap.johnbargman.net` | LDAP reachability |
 
-**Status: goldens NOT regenerated (user decision 2026-09-29).** Both machines
-stay blocked on golden mismatch until the user authorizes:
+**Status: RESOLVED.** Goldens were regenerated after the gitolite-retirement
+commits (2026-10-01); `goldens/local-nas.json` contains `gitea@10.88.127.0/24`
+and `goldens/cortex-alpha.json` contains `ldap.johnbargman.net`. Historical note:
+the user decision of 2026-09-29 held regeneration until the policy landed.
+Regeneration commands (recorded for reference):
 
 ```bash
 nix run .#dump-config -- local-nas    | jq -S . > goldens/local-nas.json
@@ -432,6 +438,7 @@ nix run .#dump-config -- cortex-alpha | jq -S . > goldens/cortex-alpha.json
 - The directory: `server_services/ldap.nix` (cortex-alpha), DNS:
   `topology/cortex-alpha.json` (`dns.static`)
 - SSHD mechanics: `models/asymkey/ssh_key_authorized_keys.go`, `modules/setting/ssh.go`
-- Fleet SSH prior art: `server_services/gitolite.nix`, `environments/sshd.nix`, `users/build.nix`
+- Fleet SSH prior art: `server_services/git-ssh.nix` (port-22 plane; supersedes
+  deleted `server_services/gitolite.nix`), `environments/sshd.nix`, `users/build.nix`
 - Current deployment: `documentation/gitea-fabrication-forge.md`
 - nginx stream support: nixpkgs `nginx/default.nix` (`streamConfig`), `nginx/generic.nix` (`withStream`)

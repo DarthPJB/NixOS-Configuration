@@ -76,7 +76,7 @@ run_flake_check() {
 
 run_golden_test() {
   echo "4/4 cortex-alpha golden test"
-  if nix --option builders '' run .#check-network -- cortex-alpha; then
+  if nix --option builders '' run .#validate-goldens -- cortex-alpha; then
     echo "   PASS: cortex-alpha matches golden"
   else
     echo "   FAIL: cortex-alpha golden test failed"

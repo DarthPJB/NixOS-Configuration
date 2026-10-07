@@ -1,6 +1,6 @@
 # pillar-of-autum — Planning: Velocity & Track
 
-> **Last updated:** 2026-09-17
+> **Updated:** 2026-10-05
 > **Status:** Phase 1–3 complete. Phase 2 (AI backend) complete — Ollama + LiteLLM live.
 > **Companion runbook:** `pillar-of-autum.md` (workflow record + deployment runbook)
 
@@ -55,7 +55,7 @@ minimal librex11 headed system.
 | 2.2 | Add `services/ollama.nix` to machine config | ✅ done | `machines/pillar-of-autum/ollama.nix`; iGPU drivers in `default.nix` |
 | 2.3 | Pre-load 1–2 models | ✅ done | `qwen2.5:3b` + `qwen2.5:7b` pulled; Modelfile profiles `pillar-qwen3b` / `pillar-qwen7b` created |
 | 2.4 | Register backend in `machines/alpha-three/default.nix` LiteLLM | ✅ done | `pillar-qwen3b` + `pillar-qwen7b` backends on `http://10.88.127.110:11434/v1` |
-| 2.5 | Prometheus scrape target + Grafana dashboard entry | ⏳ pending | Close the "missing monitoring" gap |
+| 2.5 | Prometheus scrape target + Grafana dashboard entry | ⏳ pending (scrape only) | Dashboard entry is DONE automatically — dashboards are generated (`lib/topology/genDashboard.nix` + `lib/monitoring/inventory.nix`), pillar-of-autum auto-present (see `documentation/monitoring-automation.md`). Only the Prometheus scrape target remains (monitoring Phase 2). |
 | 2.6 | Regenerate golden + deploy | ✅ done | Topology firewall (port 11434 on wireg0) + golden + deployed |
 
 **Live validation (2026-09-18):**
@@ -109,7 +109,7 @@ migration to systemd-boot deferred (low priority, GRUB works).
 | 4.1 | Add to `~/.ssh/config` (inspect + deploy) | Port 1108 |
 | 4.2 | CI build job (x86_64 machine list) | `ci.nix` auto-derives from nixosConfigurations |
 | 4.3 | Backup topology key (if applicable) | `topology.backup` |
-| 4.4 | genWireguard migration (overlord-iii) | When the pipeline lands |
+| 4.4 | genWireguard migration (overlord-iii) | Pipeline has landed hub-side (cortex-alpha via `topology.wireguard`); remaining work is client migration off `modules/enable-wg-topology.nix` |
 
 ### Phase 5 — OpenVINO / NPU Exploration (FUTURE)
 
@@ -161,7 +161,9 @@ recommendation on NPU viability for fleet inference.
 ## 3. Expected Velocity
 
 Estimates assume a single operator + agent, builds from source (no third-party cache),
-and the in-house binary cache **not** yet operational (per AGENTS.md Build Philosophy).
+and the in-house binary cache **not** yet operational at estimate time (per AGENTS.md
+Build Philosophy). **Update 2026-10-05:** the in-house binary cache is now operational
+(`services/nix-cache-serve.nix` on remote-builder, TLS at `cache.johnbargman.net`).
 
 | Phase | Scope | Expected velocity | Actual | Dominant cost |
 |-------|-------|-------------------|--------|---------------|
@@ -178,9 +180,10 @@ iGPU inference evaluation.
 
 - **Correctness over speed** (AGENTS.md): a four-hour build is acceptable if it
   guarantees correctness. Estimates are floors, not deadlines.
-- **No third-party cache:** builds complete from source within the closed environment
-  until the in-house binary cache is operational. First on-target builds (Determinate
-  Nix, XLibre, Ollama) are the slowest step.
+- **No third-party cache:** builds complete from source within the closed environment.
+  The in-house binary cache (`cache.johnbargman.net`, remote-builder) is now
+  operational; first on-target builds (Determinate Nix, XLibre, Ollama) were the
+  slowest step.
 - **iGPU inference is the key unknown:** Meteor Lake Arc + oneAPI/Vulkan + Ollama is
   not yet proven in this fleet. If iGPU inference is not viable, Phase 2 falls back to
   **CPU-only Ollama** (still a valid backend, smaller models), which is faster to land.
@@ -199,8 +202,8 @@ iGPU inference evaluation.
 | secrix | ✅ flake input | Phase 1 (WG keys) |
 | LiteLLM gateway (alpha-three) | ✅ active (staging) | Phase 2 |
 | Ollama / vLLM modules | ✅ `services/ollama.nix`, `modules/vllm.nix` | Phase 2 |
-| In-house binary cache | ⏳ planned | All phases (speed) |
-| genWireguard pipeline (overlord-iii) | ⏳ deferred | Phase 4 |
+| In-house binary cache | ✅ operational (`cache.johnbargman.net`, remote-builder) | All phases (speed) |
+| genWireguard pipeline (overlord-iii) | ✅ hub wired (cortex-alpha); client migration pending | Phase 4 |
 
 ---
 

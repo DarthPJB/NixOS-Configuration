@@ -104,11 +104,11 @@ Each device needs unique WireGuard keys.
 
 1. **Create machine config** in `machines/<hostname>/default.nix`
 2. **Register in flake.nix** (add to `nixosConfigurations` and SD image list if needed)
-3. **Add to topology.nix** with WireGuard IP and hub assignment
+3. **Add to `topology/<hostname>.json`** with WireGuard coordinates and hub assignment
 4. **Generate golden test:**
    ```bash
-   nix run .#dump-config -- <hostname> | jq -S . > goldens/<hostname>.json
-   nix run .#check-network -- <hostname>
+   nix run .#dump-config --option builders '' -- <hostname> | jq -S . > goldens/<hostname>.json
+   nix run .#validate-goldens --option builders '' -- <hostname>
    ```
 
 ## Stage 6: Deploy
@@ -134,7 +134,7 @@ Each device needs unique WireGuard keys.
 4. **Commit and push:**
    ```bash
    git add flake.nix && git commit -m "deploy: reset <hostname> to WG IP"
-   git push origin jb/overlord-I
+   git push origin <your-work-branch>
    ```
 
 ## Stage 7: Verify
@@ -151,7 +151,7 @@ Each device needs unique WireGuard keys.
 
 3. **Run golden test:**
    ```bash
-   nix run .#check-network -- <hostname>
+   nix run .#validate-goldens --option builders '' -- <hostname>
    ```
 
 ## Example: Deploying arm-builder

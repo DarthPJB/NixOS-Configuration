@@ -13,11 +13,11 @@
         "pure-nix-mcp": "pure-nix-mcp"
       },
       "locked": {
-        "lastModified": 1790824058,
-        "narHash": "sha256-bFF9S33WoQJLmf/h+C5XDSM0Y0duGrDMMxn7Vnfgs/g=",
+        "lastModified": 1791226911,
+        "narHash": "sha256-rVKB/3NkcsUQZIFpI71xwalT5r+Up7xmY0wT524lTs4=",
         "owner": "mecha-team-zero",
         "repo": "llm-core",
-        "rev": "1d5ffeb231fe7cdbb1db11aeeab10711b0179702",
+        "rev": "4da7e63f6944d8fd45661651995d648cbe4a6e6a",
         "type": "gitlab"
       },
       "original": {
@@ -2110,11 +2110,11 @@
     },
     "nixpkgs_4": {
       "locked": {
-        "lastModified": 1776683584,
-        "narHash": "sha256-NuTLMrr10Tng72hurYG8jYQ4XKK8wnpJmOGcPiis96g=",
+        "lastModified": 1790510107,
+        "narHash": "sha256-EVMNYv7hYDDD9TGVT/hIyTYgpiXA8y3m5xIEIxuGNU0=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "9dd5558b06dbdacbf635a3dd36dce1b1a7ee3a89",
+        "rev": "3181085bfd08663b6b9e60bc7a8395c2aaa741bd",
         "type": "github"
       },
       "original": {
@@ -2328,11 +2328,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1790603473,
-        "narHash": "sha256-DKY9aFGvr9Ohqr5moZvQk2GplBUM9So/fYfj9p40KtQ=",
+        "lastModified": 1790860206,
+        "narHash": "sha256-sWtwvXVrAciS9AeUsoblLSNti4WGyF/S2Z8hd+9SjYI=",
         "owner": "Bargman-tech",
         "repo": "opencode-flake",
-        "rev": "c09e1de263e46db6aed55837fbfffedbc7c03387",
+        "rev": "da1d089df0b1b57c3231454645303a5233fa2b76",
         "type": "github"
       },
       "original": {
@@ -2346,16 +2346,16 @@
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1789791422,
-        "narHash": "sha256-l1eLWQTyBjq95GHDjy5vfJIAeAZRBL8DRd13HdlYYj8=",
+        "lastModified": 1791216778,
+        "narHash": "sha256-+Wy0ffiTJ9uC8DsxJBQBm4WfIjMkpAF1HkBjCJ7a6rk=",
         "owner": "anomalyco",
         "repo": "opencode",
-        "rev": "4e1c49630a5604686273913cafadae081a43c054",
+        "rev": "4aba11e9d54d94cfaca291b5c349f16279166a8e",
         "type": "github"
       },
       "original": {
         "owner": "anomalyco",
-        "ref": "dev",
+        "ref": "v2",
         "repo": "opencode",
         "type": "github"
       }

@@ -136,27 +136,32 @@ services.space-engineers-docker = {
 
 ## Backup Configuration
 
-**Target:** `mc-backups`
-**Source:** `/bulk-storage/minecraft/all-the-mons/backups/`
+**Source of truth:** `topology/gaming-host-1.json` (`backup` keys) — if this
+section and the topology JSON disagree, the JSON wins.
+
+**Target:** `game-backups`
+**Source:** `/bulk-storage/backups/` (consolidated backup directory — the
+per-game paths were consolidated 2026-10-04 when game servers were disabled)
 **Remote:** `minio:minecraft-backups`
+**User:** `deploy`
 **Schedule:** Daily at 6:00 AM
 **Mode:** copy
 **Bandwidth limit:** 10M
-**Retention:** Delete files older than 14 days
+**Retention:** Delete `.tar.gz` and `.tar.zst` files older than 14 days
 
 ```json
 {
   "backup": {
     "configFile": "../secrets/rclone-config-file",
-    "user": "mc-curseforge-all-the-mons",
+    "user": "deploy",
     "targets": {
-      "mc-backups": {
-        "filePath": "/bulk-storage/minecraft/all-the-mons/backups/",
+      "game-backups": {
+        "filePath": "/bulk-storage/backups/",
         "remoteName": "minio:minecraft-backups",
         "calendar": "*-*-* 06:00:00",
         "mode": "copy",
         "bwlimit": "10M",
-        "preExec": "find /bulk-storage/minecraft/all-the-mons/backups/ -name '*.tar.zst' -mtime +14 -delete"
+        "preExec": "find /bulk-storage/backups/ -name '*.tar.gz' -mtime +14 -delete && find /bulk-storage/backups/ -name '*.tar.zst' -mtime +14 -delete"
       }
     }
   }
@@ -173,7 +178,7 @@ services.space-engineers-docker = {
 services.nginx = {
   recommendedProxySettings = true;
   recommendedTlsSettings = true;
-  # enable and virtualHosts come from topology-derive
+  # enable and virtualHosts come from mktopology/genNginx (topology JSON)
 };
 ```
 
