@@ -123,12 +123,12 @@ in
   users.users.John88.extraGroups = [ "adbusers" ];
   systemd.user.services = {
     obsidian = {
-      description = "obsidian-autostart";
+      description = "thunderbird-autostart";
       wantedBy = [ "graphical-session.target" ];
       serviceConfig = {
         Restart = "always";
         ExecStart = ''
-          ${lib.getExe pkgs.obsidian}
+          ${lib.getExe pkgs.thunderbird}
         '';
         PassEnvironment = "DISPLAY XAUTHORITY";
       };
