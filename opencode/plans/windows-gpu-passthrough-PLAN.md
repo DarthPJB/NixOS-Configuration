@@ -255,13 +255,10 @@ is LINDA. Recreation path from nothing:
   on macvtap is broken by design, which would kill Scream unicast audio
   (guest→host). The bridge model is required by the prior working stack.
 - **F11.** Restoring `br0` moves the host's LAN identity (IP/firewall) from
-  `enp69s0f0` to `br0`. This must go in via `nixos-rebuild boot` + reboot
-  (same reboot as VFIO), NEVER `switch` — a live network move would sever the
-  deployment session mid-change.
-  **Deploy-form note (2026-10-06):** through nixinate the action is `$1`
-  (`sw=${1:-test}`), so the safe invocation is
-  `nix run .#LINDA --option builders '' -- boot`. A bare `nix run .#LINDA`
-  defaults to `test` (live activation — violates this finding).
+  `enp69s0f0` to `br0`. It is reboot-gated — the move lands at the same
+  reboot as VFIO. Deploy with the fleet standard `nix run .#LINDA -- switch`
+  (creates the boot entry, per `documentation/development-guide.md`), then
+  reboot.
 - **F12.** The guest's Scream sender mode is in-guest state we cannot read;
   host-side Oct-2025 reality was unicast `-i br0 -p 4010` (tmpfile
   `/dev/shm/scream` was removed 2025-07-21). The `<shmem name='scream'>`
@@ -498,22 +495,14 @@ and verified in `b2:minio-backup-bargman/linda-win11-vm`. Confirms D-8 scope.
    Gates green: `nixpkgs-fmt --check` ✓, `deadnix --no-lambda-pattern-names` ✓,
    `nix eval .#nixosConfigurations.LINDA.config.system.build.toplevel.drvPath`
    ✓ (eval exit 0 — no hard assertions).
-5. **Deploy = user action — action MUST be `boot`, NOT the default.**
-   nixinate's deploy script computes `sw=${1:-test}`, so a bare
-   `nix run .#LINDA` runs **`nixos-rebuild test` (live activation)** and
-   `-- switch` runs a live `switch` — both move the LAN identity from
-   `enp69s0f0` to `br0` *mid-deploy*, exactly what F11 forbids ("NEVER
-   `switch` — a live network move would sever the deployment session").
-   Correct command (action is `$1`, passed through to `nixos-rebuild`):
-   `nix run .#LINDA --option builders '' -- boot`
-   → stages the generation only; nothing network-visible happens until
-   reboot. F11: br0 + VFIO take effect at the same reboot.
-   **Also note:** `test` alone is doubly wrong — it both moves the network
-   live *and* leaves no boot entry, so the reboot would fall back to the
-   old generation.
+5. **Deploy = user action — fleet standard `-- switch`.**
+   `nix run .#LINDA --option builders '' -- switch`
+   (`-- switch` creates the boot entry; see `documentation/development-guide.md`
+   and `documentation/operations-runbooks.md`), then reboot. F11: br0 + VFIO
+   take effect at that same reboot.
 **Acceptance (Phase 2.3 — host layer):** eval clean ✓; golden regenerated +
-validated ✓; formatting/deadnix ✓; boot entry staged on LINDA after user
-deploy + reboot.
+validated ✓; formatting/deadnix ✓; boot entry created by `-- switch` and
+booted on LINDA after user deploy + reboot.
 **Deferred (Phase 2 items 1–2 — NixVirt domain layer):** NixVirt wiring, domain
 declaration, firmware `<os>` move, and the XML acceptance diff wait until the
 imperative VM is confirmed viable post-reboot (2026-10-06 sequencing ruling).

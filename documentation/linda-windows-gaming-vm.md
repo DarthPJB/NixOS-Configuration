@@ -106,9 +106,9 @@ Full-fidelity XML archived in `machines/LINDA/windows-vm/`:
    the LIBVIRT_FWI breakage that NAT suffers under subnet routing).
 2. **Networking = NixOS-defined br0** (user ruling). Bridge over `enp69s0f0`,
    DHCP + firewall keys move to `br0`. macvtap ruled out (guest→host is broken
-   on macvtap by design — kills Scream). Reboot-gated; deploy with
-   `nixos-rebuild boot`, never `switch` (a live network move severs the
-   deployment session).
+   on macvtap by design — kills Scream). Reboot-gated; deploy with the fleet
+   standard `nix run .#LINDA -- switch`, then reboot — the change takes
+   effect at that same reboot.
 3. **Backup before mutation** (user requirement). See Backup Strategy.
 
 ## Backup Strategy
