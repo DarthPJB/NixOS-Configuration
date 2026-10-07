@@ -249,9 +249,10 @@ is LINDA. Recreation path from nothing:
   on macvtap is broken by design, which would kill Scream unicast audio
   (guest→host). The bridge model is required by the prior working stack.
 - **F11.** Restoring `br0` moves the host's LAN identity (IP/firewall) from
-  `enp69s0f0` to `br0`. This must go in via `nixos-rebuild boot` + reboot
-  (same reboot as VFIO), NEVER `switch` — a live network move would sever the
-  deployment session mid-change.
+  `enp69s0f0` to `br0`. It is reboot-gated — the move lands at the same
+  reboot as VFIO. Deploy with the fleet standard `nix run .#LINDA -- switch`
+  (creates the boot entry, per `documentation/development-guide.md`), then
+  reboot.
 - **F12.** The guest's Scream sender mode is in-guest state we cannot read;
   host-side Oct-2025 reality was unicast `-i br0 -p 4010` (tmpfile
   `/dev/shm/scream` was removed 2025-07-21). The `<shmem name='scream'>`
@@ -439,10 +440,11 @@ and verified in `b2:minio-backup-bargman/linda-win11-vm`. Confirms D-8 scope.
 4. Regenerate `goldens/LINDA.json` (D-5 authorized):
    `nix run .#dump-config -- LINDA | jq -S . > goldens/LINDA.json`, then
    `nix run .#validate-goldens -- LINDA`.
-5. Deploy with `nixos-rebuild boot` (NOT `switch`) — F11: br0 + VFIO take
-   effect only at reboot.
+5. Deploy with `nix run .#LINDA -- switch` (fleet standard; `-- switch`
+   creates the boot entry), then reboot — F11: br0 + VFIO take effect at
+   that same reboot.
 **Acceptance:** eval clean; generated domain XML matches archived XML; golden
-regenerated + validated; boot entry staged on LINDA.
+regenerated + validated; boot entry created by `-- switch` and booted.
 
 ### Phase 3 — Reboot + binding verification (USER-MANUAL + observation)
 1. **User action:** reboot LINDA (physical presence for the display check).
