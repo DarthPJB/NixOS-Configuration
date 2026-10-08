@@ -14,9 +14,9 @@ let
     name = "opencode-web-launcher";
     runtimeInputs = [ opencode-v1 pkgs.librewolf pkgs.curl ];
     text = ''
-      ${lib.getExe opencode-v1} web --port 4096 &
-      ${lib.getExe pkgs.curl} --silent --fail --connect-timeout 2 --retry 30 --retry-connrefused --retry-delay 1 --output /dev/null http://127.0.0.1:4096/
-      exec ${lib.getExe pkgs.librewolf} http://127.0.0.1:4096
+      ${lib.getExe opencode-v1} web --port 4108 &
+      ${lib.getExe pkgs.curl} --silent --fail --connect-timeout 2 --retry 30 --retry-connrefused --retry-delay 1 --output /dev/null http://127.0.0.1:4108/
+      exec ${lib.getExe pkgs.librewolf} http://127.0.0.1:4108
     '';
   };
 in
