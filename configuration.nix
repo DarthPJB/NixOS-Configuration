@@ -171,7 +171,7 @@ in
     # (fleet straddles stable 26.05 x86_64 and unstable 26.11 aarch64)
     config = {
       hwaccel = true; # Enable hardware rendering
-      font-name = "Source Code Pro"; # fontconfig family (package in environments/general_fonts.nix)
+      font-name = "Noto Sans Mono CJK SC"; # the fleet monospace (environments/general_fonts.nix)
       font-size = 14; # Balanced size for readability
     };
   }) // (lib.optionalAttrs (lib.versionOlder pkgs.lib.version "26.06") {
@@ -180,8 +180,8 @@ in
     # fonts.packages + enables fontconfig (module side effects).
     fonts = [
       {
-        name = "Source Code Pro";
-        package = pkgs.source-code-pro;
+        name = "Noto Sans Mono CJK SC";
+        package = pkgs.noto-fonts-cjk-sans;
       }
     ];
     extraConfig = ''

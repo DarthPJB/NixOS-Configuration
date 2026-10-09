@@ -511,6 +511,20 @@ in
       enable = true;
       apiKeyFile = config.secrix.system.secrets.litellm-master.decrypted.path;
     };
+    # Goal is configured for both OpenCode generations by separate Nix-built
+    # server configs. Preserve the existing V2 CLI preferences when the goal
+    # plugin is added to cli.json.
+    plugins.goal.enable = true;
+    cli.settings = {
+      theme = { name = "vercel"; };
+      diffs = { wrap = "word"; };
+      session = {
+        sidebar = "auto";
+        scrollbar = false;
+        thinking = "show";
+      };
+      animations = true;
+    };
   };
 
 }
