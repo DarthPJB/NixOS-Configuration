@@ -71,34 +71,8 @@
     };
   };
 
-  # Install Chinese fonts
-  fonts = {
-    packages = with pkgs; [
-      # Noto Sans CJK - comprehensive Chinese/Japanese/Korean font
-      noto-fonts-cjk-sans
-      noto-fonts-cjk-serif
-
-      # WenQuanYi fonts - another popular CJK font
-      wqy_microhei
-      wqy_zenhei
-
-      # Source Han Serif - Adobe's CJK font
-      source-han-serif
-
-      # Source Han Sans - Adobe's sans-serif CJK font
-      source-han-sans
-    ];
-
-    # Enable fontconfig for CJK fonts
-    fontconfig = {
-      enable = true;
-      defaultFonts = {
-        serif = [ "Noto Serif CJK SC" "Noto Serif" ];
-        sansSerif = [ "Noto Sans CJK SC" "Noto Sans" ];
-        monospace = [ "Noto Sans Mono CJK SC" "Noto Sans Mono" ];
-      };
-    };
-  };
+  # CJK fonts and fontconfig defaults live in environments/general_fonts.nix
+  # (single font policy home; keep font packages/defaultFonts together).
 
   # Set environment variables for fcitx5
   environment.sessionVariables = {
@@ -118,33 +92,19 @@
     GLFW_IM_MODULE = "ibus";
   };
 
-  # Ensure fcitx5 starts with the graphical session
+  # Ensure fcitx5 starts with the graphical session.
+  # CRITICAL: launch config.i18n.inputMethod.package (the fcitx5-with-addons
+  # wrapper that sets FCITX_ADDON_DIRS) — NOT pkgs.fcitx5, the bare upstream
+  # binary, which cannot see rime/chinese addons and silently degrades to
+  # keyboard-only. The i18n.inputMethod module provides no unit of its own
+  # (xdg autostart only); this unit is the i3 launcher.
   systemd.user.services.fcitx5 = {
     description = "Fcitx5 Input Method";
     wantedBy = [ "graphical-session.target" ];
     partOf = [ "graphical-session.target" ];
     serviceConfig = {
-      ExecStart = "${lib.getExe pkgs.fcitx5}";
+      ExecStart = lib.getExe config.i18n.inputMethod.package;
       Restart = "on-failure";
     };
   };
-
-  # Install fcitx5 and related packages
-  environment.systemPackages = with pkgs; [
-    # Core fcitx5
-    fcitx5
-
-    # Rime input method
-    fcitx5-rime
-
-    # Chinese addons (renamed in newer nixpkgs)
-    qt6Packages.fcitx5-chinese-addons
-
-    # GTK and Qt integration
-    fcitx5-gtk
-    qt6Packages.fcitx5-qt
-
-    # Configuration tool (renamed in newer nixpkgs)
-    qt6Packages.fcitx5-configtool
-  ];
 }

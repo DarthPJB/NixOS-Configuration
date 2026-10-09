@@ -4,8 +4,22 @@
 , self
 , lib
 , hostname
+, LLM-CORE
 , ...
 }:
+let
+  opencode-v1 = LLM-CORE.inputs.opencode-flake.packages.x86_64-linux.opencode;
+
+  opencode-web-launcher = pkgs.writeShellApplication {
+    name = "opencode-web-launcher";
+    runtimeInputs = [ opencode-v1 pkgs.librewolf pkgs.curl ];
+    text = ''
+      ${lib.getExe opencode-v1} web --port 4108 &
+      ${lib.getExe pkgs.curl} --silent --fail --connect-timeout 2 --retry 30 --retry-connrefused --retry-delay 1 --output /dev/null http://127.0.0.1:4108/
+      exec ${lib.getExe pkgs.librewolf} http://127.0.0.1:4108
+    '';
+  };
+in
 {
   imports = [
     # Include the results of the hardware scan.
@@ -109,12 +123,12 @@
   users.users.John88.extraGroups = [ "adbusers" ];
   systemd.user.services = {
     obsidian = {
-      description = "obsidian-autostart";
+      description = "thunderbird-autostart";
       wantedBy = [ "graphical-session.target" ];
       serviceConfig = {
         Restart = "always";
         ExecStart = ''
-          ${lib.getExe pkgs.obsidian}
+          ${lib.getExe pkgs.thunderbird}
         '';
         PassEnvironment = "DISPLAY XAUTHORITY";
       };
@@ -146,10 +160,7 @@
       wantedBy = [ "graphical-session.target" ];
       serviceConfig = {
         Restart = "always";
-        ExecStart = ''
-          ${lib.getExe pkgs.opencode} web --port 4096 & \
-          ${lib.getExe pkgs.librewolf} http://127.0.0.1:4096
-        '';
+        ExecStart = lib.getExe opencode-web-launcher;
         PassEnvironment = "DISPLAY XAUTHORITY";
       };
     };
@@ -191,6 +202,9 @@
     };
     initrd = {
       availableKernelModules = [
+        "vfio_pci"
+        "vfio_iommu_type1"
+        "vfio"
         "nvme"
         "xhci_pci"
         "ahci"
@@ -200,12 +214,23 @@
         "sd_mod"
         "nvidia-drm"
       ];
-      kernelModules = [ ];
+      kernelModules = [ "vfio_pci" ];
     };
     #kernelPackages= pkgs.linuxPackages_5_18;
     kernelModules = [
+      "vfio_pci"
+      "vfio_iommu_type1"
+      "vfio"
       "kvm-amd"
     ];
+    # R24: claim both functions (GPU 4d:00.0 + HD-audio 4d:00.1) before
+    # snd_hda_intel can bind. Boot-time binding avoids the D-state wedge
+    # caused by runtime rebind while PipeWire holds the codec (quirk #2).
+    # D-1 amended: USB controller 46:00.0 (ASMedia, host keyboard/mouse/
+    # webcam) is intentionally excluded — it must stay host-bound.
+    extraModprobeConfig = ''
+      options vfio-pci ids=10de:1c81,10de:0fb9
+    '';
     kernelParams = [
       "video=HDMI-A-1:1920x1080@60"
       "video=HDMI-A-2:3840x2160@60"
@@ -283,15 +308,19 @@
   networking = {
     interfaces = {
       #      "bond0".useDHCP = true;
-      enp69s0f0 = {
+      # F11: LAN identity/DHCP lives on br0; the member NIC is bridged only.
+      br0 = {
         useDHCP = true;
+      };
+      enp69s0f0 = {
+        useDHCP = false;
       };
       enp69s0f1 = {
         useDHCP = true;
       };
     };
     firewall.interfaces = {
-      "enp69s0f0".allowedTCPPorts = [
+      "br0".allowedTCPPorts = [
         2108
         4010
         1108
@@ -300,7 +329,7 @@
         4549
         24070
       ];
-      "enp69s0f0".allowedTCPPortRanges = [
+      "br0".allowedTCPPortRanges = [
         {
           from = 17780;
           to = 17785;
@@ -317,7 +346,7 @@
         42420
       ];
 
-      "enp69s0f0".allowedUDPPorts = [
+      "br0".allowedUDPPorts = [
         2108
         2107
         1108
@@ -327,7 +356,7 @@
         4179
         4171
       ];
-      "enp69s0f0".allowedUDPPortRanges = [
+      "br0".allowedUDPPortRanges = [
         {
           from = 17780;
           to = 17785;
@@ -353,11 +382,15 @@
 
     #hostName = "LINDACORE";
     hostId = "b4120de4";
-    #    bridges = {
-    #      "br0" = {
-    #        interfaces = [ "enp69s0f0" ];
-    #      };
-    #    };
+    # F11: br0 restoration — required by the win-11-gaming-base domain
+    # (libvirt bridge network 'br0'; launch failed with "Cannot get
+    # interface MTU on 'br0': No such device"). Also the correct backing
+    # for the Scream service (-i br0) above.
+    bridges = {
+      "br0" = {
+        interfaces = [ "enp69s0f0" ];
+      };
+    };
     useDHCP = false;
     wireless = {
       enable = false; # Enables wireless support via wpa_supplicant.
@@ -477,6 +510,20 @@
     providers.litellm = {
       enable = true;
       apiKeyFile = config.secrix.system.secrets.litellm-master.decrypted.path;
+    };
+    # Goal is configured for both OpenCode generations by separate Nix-built
+    # server configs. Preserve the existing V2 CLI preferences when the goal
+    # plugin is added to cli.json.
+    plugins.goal.enable = true;
+    cli.settings = {
+      theme = { name = "vercel"; };
+      diffs = { wrap = "word"; };
+      session = {
+        sidebar = "auto";
+        scrollbar = false;
+        thinking = "show";
+      };
+      animations = true;
     };
   };
 

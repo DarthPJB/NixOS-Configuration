@@ -165,29 +165,30 @@ in
     #      Compared to the 30,000+ hours to brute force some key? Doesn't matter.
     #    P.S. Thx to crash giving me wiregaurd, I look forward to your pinging my IPV4 range :)
     enable = true;
-    # extraConfig = ''
-    # font-size=16
-    #xterm-resolution=1920x1080 # Set desired resolution
-    # font-name=Source Code Pro # Clear, monospaced font
-    # font-size=14 # Balanced size for readability
-    # palette=linux # Standard Linux console colors
-    # #scrollback=1000 # Scrollback buffer size
-    # drm # Use DRM backend for Raspberry Pi
-    # '';
-    #   fonts = [
-    #     {
-    #       name = "Source Code Pro";
-    #       package = pkgs.source-code-pro;
-    #     }
-    #   ];
   } // (lib.optionalAttrs (lib.versionAtLeast pkgs.lib.version "26.06") {
-    # nixpkgs >= 26.11 refactored kmscon: hwRender -> config.hwaccel
+    # nixpkgs >= 26.11 refactored kmscon: hwRender -> config.hwaccel,
+    # fonts/extraConfig -> config.font-name / config.font-size (kmscon.conf(5))
     # (fleet straddles stable 26.05 x86_64 and unstable 26.11 aarch64)
-    config.hwaccel = true; # Enable hardware rendering
+    config = {
+      hwaccel = true; # Enable hardware rendering
+      font-name = "Noto Sans Mono CJK SC"; # the fleet monospace (environments/general_fonts.nix)
+      font-size = 14; # Balanced size for readability
+    };
   }) // (lib.optionalAttrs (lib.versionOlder pkgs.lib.version "26.06") {
     hwRender = true; # Enable hardware rendering
+    # `fonts` writes font-name= into kmscon.conf and pulls the package into
+    # fonts.packages + enables fontconfig (module side effects).
+    fonts = [
+      {
+        name = "Noto Sans Mono CJK SC";
+        package = pkgs.noto-fonts-cjk-sans;
+      }
+    ];
+    extraConfig = ''
+      font-size=14
+    '';
   });
-  # Required for kmscon hwaccel (unstable nixpkgs assertion)
+  # Required for kmscon hwaccel (module assertion)
   hardware.graphics.enable = lib.mkDefault true;
   services.getty.autologinUser = "John88";
 

@@ -65,6 +65,21 @@
       what = "/speed-storage/tmp";
       options = "bind";
     }
+    {
+      where = "/var/lib/cups";
+      what = "/speed-storage/var-lib-cups";
+      options = "bind";
+    }
+    {
+      where = "/var/cache/cups";
+      what = "/speed-storage/var-cache-cups";
+      options = "bind";
+    }
+    {
+      where = "/var/spool/cups";
+      what = "/speed-storage/var-spool-cups";
+      options = "bind";
+    }
 
   ];
   fileSystems."/tmp" = {
