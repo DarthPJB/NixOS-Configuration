@@ -80,7 +80,7 @@
         # Font for window titles. Will also be used by the bar unless a different font
         # is used in the bar {} block below.
         #font pango:monospace 10
-        font pango:DejaVu Sans Mono 10
+        font pango:Noto Sans Mono CJK SC 10
 
         # fire up blumane-applet
         exec --no-startup-id blueman-applet

@@ -11,6 +11,7 @@
     pkgs.vivaldi
     pkgs.chromium
     pkgs.brave
+    pkgs.librewolf
     pkgs.jq
     pkgs.ffmpeg-full
   ];

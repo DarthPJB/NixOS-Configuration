@@ -69,9 +69,15 @@ stdenv.mkDerivation (finalAttrs: {
     # Force software rendering for WebKitGTK to avoid black screen on nvidia GPUs.
     # These are harmless on non-nvidia hardware (Intel, AMD, virtio-gpu) — the
     # Cairo renderer is used for the greeter which is a short-lived process.
+    # WEBKIT_DISABLE_DMABUF_RENDERER is required separately: even with
+    # GSK_RENDERER=cairo + WEBKIT_DISABLE_COMPOSITING_MODE=1, WebKitGTK's
+    # DMABUF renderer still allocates GBM buffers (MemoryMappedGPUBuffer) and
+    # fails on the proprietary nvidia stack at 4K — "Failed to create GBM
+    # buffer of size 3840x2160: Invalid argument" — leaving the greeter black.
     wrapProgram "$out/bin/lightdm-webkit2-greeter" \
       --set GSK_RENDERER cairo \
       --set WEBKIT_DISABLE_COMPOSITING_MODE 1 \
+      --set WEBKIT_DISABLE_DMABUF_RENDERER 1 \
       --set GDK_BACKEND x11
   '';
 
