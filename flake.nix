@@ -180,7 +180,7 @@
           ];
         }
       ];
-      mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108, images ? { }, debug ? false }:
+      mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108, images ? { }, debug ? false, nixpkgs ? nixpkgs_stable }:
         let
           topologyPath = ./topology/${hostname}.json;
           topologyData =
@@ -189,7 +189,7 @@
             else null;
           topologyConfig = topologyConfigs.${hostname} or { };
         in
-        nixpkgs_stable.lib.nixosSystem {
+        nixpkgs.lib.nixosSystem {
           specialArgs = { inherit topologyData; };
           modules = commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${hostname}
@@ -202,7 +202,7 @@
               };
 
               nixpkgs.hostPlatform = "x86_64-linux";
-              nix.registry.nixpkgs.flake = nixpkgs_stable;
+              nix.registry.nixpkgs.flake = nixpkgs;
               networking.hostName = hostname;
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;
               _module.args = globalArgs // {
@@ -754,6 +754,7 @@
         };
 
         LINDA = mkX86_64 "LINDA" {
+          nixpkgs = nixpkgs_unstable;
           host = topoIp "LINDA";
           buildOn = "remote";
           extraModules = [
@@ -772,7 +773,7 @@
               };
               environment.systemPackages = [
                 parsecgaming.packages.x86_64-linux.parsecgaming
-                star-citizen.packages.x86_64-linux.rsi-launcher
+                star-citizen.packages.x86_64-linux.rsi-launcher-git
               ];
             }
           ];
