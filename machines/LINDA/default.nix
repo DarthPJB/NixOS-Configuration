@@ -158,6 +158,14 @@ in
     opencode-web = {
       description = "opencode-web-autostart";
       wantedBy = [ "graphical-session.target" ];
+      # System-level PATH contract: the full system profile, so the opencode
+      # bash tool (and its MCP children) see nix, git and standard tooling.
+      # Without this, NixOS stamps the unit with only the minimal default
+      # service PATH (coreutils/findutils/gnugrep/gnused/systemd) and the
+      # bash tool environment comes up stripped. System-level only
+      # (config.system.path); a per-user/home-manager deployment would need
+      # the user profile path instead — deferred.
+      path = [ config.system.path ];
       serviceConfig = {
         Restart = "always";
         ExecStart = lib.getExe opencode-web-launcher;
