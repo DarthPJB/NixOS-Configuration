@@ -9,7 +9,6 @@
     pkgs.adwaita-qt
     pkgs.adwaita-qt6
     pkgs.papirus-icon-theme
-    pkgs.arc-theme
     pkgs.betterlockscreen
     pkgs.brightnessctl
     pkgs.pavucontrol
