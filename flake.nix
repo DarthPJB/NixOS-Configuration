@@ -773,7 +773,6 @@
               };
               environment.systemPackages = [
                 parsecgaming.packages.x86_64-linux.parsecgaming
-                star-citizen.packages.x86_64-linux.rsi-launcher-git
               ];
             }
           ];
