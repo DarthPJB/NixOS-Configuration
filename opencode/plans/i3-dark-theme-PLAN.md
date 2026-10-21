@@ -1,161 +1,98 @@
-# i3 Dark Theme by Default — PLAN
+# i3 Dark Theme — Colloid Black Darkening — PLAN
 
-**Date:** 2026-10-17
+**Date:** 2026-10-18
 **Status:** Proposed — awaiting approval
-**Target:** `environments/i3wm_darthpjb.nix` stack (theming lives in `environments/i3wm.nix`, imported at `i3wm_darthpjb.nix:9`)
+**Target:** `environments/i3wm.nix` (shared by `i3wm_darthpjb.nix` stack)
 
-## Goal
+## Context
 
-Make the i3 desktop dark by default everywhere: GTK2/3/4 apps, Qt apps,
-libadwaita apps, icon theme, cursors, and i3 window-manager chrome
-(titlebar decorations + i3bar/i3status bar).
+Base dark theming is **already implemented** (commit `bf7641c` "change the theme a bit"):
+`colloid-gtk-theme` override (theme `red`, color `dark`) → `Colloid-Red-Dark`,
+settings at `/etc/xdg/gtk-3.0|4.0`, dconf `color-scheme=prefer-dark`,
+`ADW_DEBUG_COLOR_SCHEME`, gtk-4.0 css/assets links, i3 client+bar palette,
+`i3wm_balances.nix` string-replace fix.
 
-## Decisions (user-confirmed 2026-10-17)
+**Remaining problem (user report 2026-10-18):** the theme is not dark enough.
+Measured backgrounds (built CSS + colloid palette `_colors.scss`):
 
-| Decision | Choice |
-|---|---|
-| Scope | Shared `environments/i3wm.nix` (affects all i3 machines, incl. display-1/2) |
-| GTK theme | **Vimix-dark-ruby** (`pkgs.vimix-gtk-themes` override) — Arc rejected (partially deprecated); Materia-dark replaced after theme survey; Vimix is Materia-derived, actively maintained (2025-06), adds dark+ruby-red accent and GTK4 assets |
-| Icon theme | **Papirus-Dark** |
-| i3 chrome | Explicit dark `client` + `bar { colors }` palette, ruby-red accent |
-| Goldens | Regeneration authorized for affected machines |
+| Surface | Current | Measured |
+|---|---|---|
+| Window bg / base | grey-700 | `#2C2C2C` |
+| Sidebar / surface | grey-650 | `#3C3C3C` |
+| Titlebar / base-alt | grey-750 | `#242424` |
+| OSD / panel | grey-800 | `#212121` |
 
-## Root causes (current "dark" config is broken in 4 places)
+## Decision (user-confirmed 2026-10-18)
 
-1. `GTK_THEME = "Arc-Dark"` set (`i3wm.nix:39`) but `arc-theme` is **not** in
-   `environment.systemPackages` → GTK falls back to stock Adwaita (light).
-2. `GTK_ICON_THEME = "Papirus-Red"` (`i3wm.nix:41`) is wrong twice: `papirus-icon-theme`
-   ships only `Papirus`/`Papirus-Dark`/`Papirus-Light` (verified in store), and GTK never
-   reads `GTK_ICON_THEME` — the real key is `gtk-icon-theme-name` (settings.ini/dconf).
-3. `environment.etc."gtk-3.0/gtk-4.0/settings.ini"` writes `/etc/gtk-3.0/…`, but NixOS sets
-   `XDG_CONFIG_DIRS = "/etc/xdg"` (`nixos/modules/programs/environment.nix:34`), so GTK3/4
-   never read them → `gtk-application-prefer-dark-theme=1` is dead config.
-4. No `org.gnome.desktop.interface color-scheme = prefer-dark` → libadwaita/GTK4 apps and
-   Chromium/Electron (via xdg-desktop-portal-gtk settings portal) stay light.
+**Option A — Colloid `black` ("Blackness") tweak + darkened i3 palette.**
+With `tweaks = [ "black" ]` the same surfaces map to the bottom of Colloid's grey scale
+(`background()` in `_colors.scss` + `_color-palette-default.scss`):
 
-Verified working today: GTK2 `/etc/gtk-2.0/gtkrc` IS read (gtk2 built with
-`sysconfdir=/etc`); Qt stack (`QT_STYLE_OVERRIDE=Adwaita-Dark` + adwaita-qt/qt6);
-greeter (bargman-cinematic); root window (`xsetroot -solid #000000`);
-cursor theme (`bargman-theming.nix`).
+| Surface | With black tweak | Hex |
+|---|---|---|
+| Window bg / base | grey-900 | `#0F0F0F` |
+| Sidebar / surface | grey-850 | `#121212` |
+| Titlebar / base-alt | grey-950 | `#030303` |
+| OSD / panel | `$black` | `#000000` (pure black) |
 
-## Theme selection rationale (survey 2026-10-17)
+Verified from upstream `install.sh`: `black` sets `$blackness` at compile time and is
+**not** part of the theme dir name (`THEME_DIR = name+theme+color+size+scheme`), so
+`GTK_THEME` and all config names stay **`Colloid-Red-Dark`** — zero name churn.
 
-Full GTK theme catalogue of the pinned `nixpkgs_stable` was surveyed (~70 packages).
-Pure-black and dark/red/amber candidates were evaluated against maintenance status:
+Rationale vs alternatives: LINDA's `nixpkgs_unstable` removed `gtk-engine-murrine`, which
+deleted `graphite`/`vimix`/`materia`/`nightfox`/`ant-bloody`/`dracula`/`plata` etc.
+(verified `throw` at eval). Murrine-free survivors on **both** pins with a true-black
+variant: Colloid, Catppuccin (Colloid fork), Orchis. Colloid is already deployed.
 
-- Fausto-Korpsvart family (Nightfox/Gruvbox/Kanagawa/TokyoNight) — **archived Oct 2026**
-  (same deprecation issue as Arc).
-- `amber-theme` — upstream README: "NO LONGER MAINTAINED".
-- `materia-theme` — last release 20210322, no GTK4 assets.
-- vinceliuice family (Graphite/Colloid/Vimix/Orchis) — **actively maintained**; GTK2+3+4.
-- **Vimix-Dark-Ruby chosen**: Materia-derived (familiar look), maintained, dark + ruby
-  accent, ships `gtk-4.0` assets so GTK4/libadwaita can be themed.
-- Exact dir name verified from upstream `install.sh`:
-  `THEME_DIR=${name}${color}${size}${theme}` → `Vimix-dark-ruby` (lowercase suffixes).
-- vimix accent list: `doder(blue default)|beryl|ruby|amethyst|jade|grey`; colour:
-  `standard|light|dark`; tweaks: `flat|grey|mix|translucent` (optional `mix` deepens
-  dark-mode background — consider later if default dark grey is too light).
+## Changes — `environments/i3wm.nix` only
 
-## Changes — all in `environments/i3wm.nix`
-
-1. **systemPackages:** add
+1. **Override gains the black tweak** (theme name unchanged):
 
    ```nix
-   (pkgs.vimix-gtk-themes.override {
-     themeVariants = [ "ruby" ];    # installs Vimix-dark-ruby
+   colloidTheme = pkgs.colloid-gtk-theme.override {
+     themeVariants = [ "red" ];
      colorVariants = [ "dark" ];
-   })
+     tweaks = [ "black" ];   # Blackness: #0F0F0F / #030303 / #000000
+   };
    ```
 
-   Keep `adwaita-qt`, `adwaita-qt6`, `papirus-icon-theme`.
-2. **sessionVariables:**
-   - `GTK_THEME = "Vimix-dark-ruby"` (replaces Arc-Dark)
-   - drop `GTK_ICON_THEME` (no consumer)
-   - keep `QT_STYLE_OVERRIDE = "Adwaita-Dark"`
-   - add `ADW_DEBUG_COLOR_SCHEME = "prefer-dark"` (belt-and-braces for libadwaita apps)
-3. **GTK settings at the paths GTK actually reads:**
-   - `environment.etc."xdg/gtk-3.0/settings.ini"`: `gtk-theme-name=Vimix-dark-ruby`,
-     `gtk-icon-theme-name=Papirus-Dark`, `gtk-application-prefer-dark-theme=1`
-   - `environment.etc."xdg/gtk-4.0/settings.ini"`: same keys
-   - `environment.etc."gtk-2.0/gtkrc"`: keep location (verified read),
-     `gtk-theme-name="Vimix-dark-ruby"`
-4. **dconf user database** (same pattern as `hyperland.nix:24`):
+2. **i3 palette darkened** in `xConfig` (keep ruby accent `#E53950`):
+   - `client.background`, `client.unfocused`, `client.placeholder`, bar `background`
+     and `inactive_workspace`: `#1c1c1c` → `#0F0F0F`
+   - `client.focused` bg, `active_workspace` bg: `#2b2b2b` → `#121212`
+   - `client.focused_inactive` border/indicator/child: `#444444` → `#030303`
+   - bar `separator`: `#444444` → `#121212`; urgent stays `#900000`
+   - **Constraint:** keep the `                status_command i3status` line verbatim
+     (`i3wm_balances.nix:137` string-replaces that exact string).
 
-   ```nix
-   programs.dconf.profiles.user.databases = [{
-     settings."org/gnome/desktop/interface" = {
-       gtk-theme = "Vimix-dark-ruby";
-       icon-theme = "Papirus-Dark";
-       cursor-theme = "BargmanCinematic-Cursors";
-       cursor-size = 24;
-       color-scheme = "prefer-dark";
-     };
-   }];
-   ```
+No other files change. `GTK_THEME`/settings.ini/dconf/gtk-4.0 links already reference
+`Colloid-Red-Dark` and remain valid (name unchanged; the override output is rebuilt with
+blackness baked in).
 
-   This is what flips libadwaita/GTK4 and Chromium/Vivaldi (portal `color-scheme`) dark.
-5. **Libadwaita/GTK4 full Vimix styling** (declarative equivalent of upstream
-   `install.sh -l`): link the theme's gtk-4.0 assets into the system XDG config dir:
+## Known residue (unchanged by this delta)
 
-   ```nix
-   environment.etc."xdg/gtk-4.0/gtk.css".source =
-     "${vimixTheme}/share/themes/Vimix-dark-ruby/gtk-4.0/gtk.css";
-   environment.etc."xdg/gtk-4.0/gtk-dark.css".source = …/gtk-dark.css;
-   environment.etc."xdg/gtk-4.0/assets".source = …/gtk-4.0/assets;
-   ```
-
-   GTK4/libadwaita loads `gtk.css`/`gtk-dark.css` from `XDG_CONFIG_DIRS` (`/etc/xdg`).
-6. **i3 config (`xConfig`):** explicit dark palette — `client.focused` /
-   `focused_inactive` / `unfocused` / `urgent` / `placeholder` + `client.background`,
-   and `bar { colors { background / statusline / separator / *_workspace } }`.
-   Palette: backgrounds `#1c1c1c`/`#2b2b2b`/`#444444`, accent ruby `#E53950`
-   (tune to taste at visual check), text `#d0d0d0`/`#ffffff`, urgent `#900000`.
-   **Constraint:** keep the `status_command i3status` line verbatim —
-   `i3wm_balances.nix:137` string-replaces that exact line with `i3blocks`.
-
-Notes:
-- Out of scope: rofi (default theme is dark), terminology (EFL, default dark),
-  display-1's alacritty `theme.toml` (already `#000000`).
-- Flag only (separate env): `hyperland.nix:28` sets `icon-theme = "Flat-Remix-Red-Dark"`
-  which also looks like a phantom theme name — not touched here.
-
-## Blast radius
-
-Machines importing `i3wm.nix` (directly or via `i3wm_darthpjb.nix`):
-alpha-one, alpha-two, alpha-three, LINDA, terminal-zero, terminal-nx-01,
-pillar-of-autum, display-1, display-2, plus the `bargman-greeter-vm` system
-(`flake.nix:838`) and `bargman-greeter-login-test` check.
-
-## Golden regeneration (user-authorized 2026-10-17)
-
-`environment.systemPackages` IS serialized (`lib/serialize-config.nix` safeSections) —
-adding `vimix-gtk-themes` moves goldens. `sessionVariables`, `programs.dconf`,
-`environment.etc`, and `services.xserver` are NOT serialized — those changes are golden-neutral.
-
-Regenerate and validate these 10 goldens:
-
-```
-alpha-one  alpha-two  alpha-three  LINDA  terminal-zero  terminal-nx-01
-pillar-of-autum  display-1  display-2  bargman-greeter-vm
-```
-
-```bash
-nix run .#dump-config -- <machine> | jq -S . > goldens/<machine>.json
-nix run .#validate-goldens -- <machine>
-```
+- **Goldens still stale from `bf7641c`** (added `colloidTheme` to serialized
+  `environment.systemPackages`) — this delta does not change package names
+  (`colloid-gtk-theme` keeps its versioned name; override flags aren't serialized), but
+  the pending regeneration covers both. User-authorized scope (2026-10-17): regenerate
+  `alpha-one alpha-two alpha-three LINDA terminal-zero terminal-nx-01 pillar-of-autum
+  display-1 display-2 bargman-greeter-vm` (10 goldens).
+- Qt stays `Adwaita-Dark` (`~#2E2E2E`) — darkest remaining surface; Kvantum black theme
+  is a possible follow-up, out of scope.
+- Plan history note: original plan chose Vimix-dark-ruby; replaced at implementation time
+  by Colloid because `vimix-gtk-themes` throws on LINDA's pin (murrine removal).
 
 ## Verification
 
-1. `nix flake check` (formatting via `nixpkgs-fmt --check`, deadnix) — do NOT run
-   `nix fmt` on the whole codebase.
-2. Confirm theme dir name from build output:
-   `ls $(nix build --print-out-paths --no-link .#nixosConfigurations.alpha-one.pkgs.vimix-gtk-themes)/share/themes`
-   (expect `Vimix-dark-ruby`) — do before wiring `gtk-theme-name`.
-3. Per-machine goldens after regeneration (deploy blocked on mismatch).
-4. `nix build .#checks.x86_64-linux.bargman-greeter-login-test -L` — greeter
-   screenshot golden must stay unchanged (greeter untouched).
-5. Deploy one machine and visually confirm dark: pavucontrol (GTK3), a GTK4/libadwaita
-   app, a Qt app, Vivaldi/Chromium, rofi, i3bar + titlebar chrome.
+1. `nix flake check` (formatting `nixpkgs-fmt --check`, deadnix) — no whole-tree `nix fmt`.
+2. Confirm blackness in build output (both pins):
+   `grep -o 'background-color: #[0-9A-Fa-f]*' .../Colloid-Red-Dark/gtk-3.0/gtk.css | sort | uniq -c`
+   expect `#0F0F0F`/`#030303`/`#000000` dominant, no `#2C2C2C`.
+3. Regenerate + `nix run .#validate-goldens -- <machine>` for the 10 goldens.
+4. `nix build .#checks.x86_64-linux.bargman-greeter-login-test -L` — greeter screenshot
+   must stay unchanged.
+5. Visual on one machine: GTK3 (pavucontrol), GTK4/libadwaita, Qt, Vivaldi/Chromium,
+   i3 bar + titlebars — all near-black with red accent.
 
 ## Deployment flow
 

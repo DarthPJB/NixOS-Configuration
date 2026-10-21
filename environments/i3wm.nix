@@ -7,6 +7,7 @@ let
   colloidTheme = pkgs.colloid-gtk-theme.override {
     themeVariants = [ "red" ];
     colorVariants = [ "dark" ];
+    tweaks = [ "black" ]; # Blackness: #0F0F0F / #030303 / #000000
   };
 in
 {
@@ -239,24 +240,24 @@ in
 
         # Dark theme — Colloid-Red-Dark palette
         # class                   border   backgr.  text     indicator child_border
-        client.focused            #E53950  #2b2b2b  #ffffff  #E53950   #E53950
-        client.focused_inactive   #444444  #2b2b2b  #d0d0d0  #444444   #444444
-        client.unfocused          #1c1c1c  #1c1c1c  #d0d0d0  #1c1c1c   #1c1c1c
+        client.focused            #E53950  #121212  #ffffff  #E53950   #E53950
+        client.focused_inactive   #030303  #121212  #d0d0d0  #030303   #030303
+        client.unfocused          #0F0F0F  #0F0F0F  #d0d0d0  #0F0F0F   #0F0F0F
         client.urgent             #900000  #900000  #ffffff  #900000   #900000
-        client.placeholder        #1c1c1c  #1c1c1c  #d0d0d0  #1c1c1c   #1c1c1c
-        client.background         #1c1c1c
+        client.placeholder        #0F0F0F  #0F0F0F  #d0d0d0  #0F0F0F   #0F0F0F
+        client.background         #0F0F0F
 
         # Star to display a workspace bar (plus the system information i3status
         # finds out, if available)
         bar {
                 status_command i3status
                 colors {
-                        background          #1c1c1c
+                        background          #0F0F0F
                         statusline          #d0d0d0
-                        separator           #444444
+                        separator           #121212
                         focused_workspace   #E53950 #E53950 #ffffff
-                        active_workspace    #2b2b2b #2b2b2b #d0d0d0
-                        inactive_workspace  #1c1c1c #1c1c1c #d0d0d0
+                        active_workspace    #121212 #121212 #d0d0d0
+                        inactive_workspace  #0F0F0F #0F0F0F #d0d0d0
                         urgent_workspace    #900000 #900000 #ffffff
                 }
         }

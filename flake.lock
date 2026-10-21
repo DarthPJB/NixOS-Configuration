@@ -13,11 +13,11 @@
         "pure-nix-mcp": "pure-nix-mcp"
       },
       "locked": {
-        "lastModified": 1792072148,
-        "narHash": "sha256-QIbh+0E54AcBGfNlJknIDct29svvA41SLoioDpUHH5w=",
+        "lastModified": 1792626324,
+        "narHash": "sha256-e1w9MZ+MtaA2Ak6n6NhT62un4exPvNWCqG+dM8gxIFw=",
         "owner": "mecha-team-zero",
         "repo": "llm-core",
-        "rev": "94e682e7a474eddcdca46a38bfed5a3a10d9afcb",
+        "rev": "9a9265a18c384d9f3f10dc792480fda75354d20b",
         "type": "gitlab"
       },
       "original": {
@@ -2328,11 +2328,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1790860206,
-        "narHash": "sha256-sWtwvXVrAciS9AeUsoblLSNti4WGyF/S2Z8hd+9SjYI=",
+        "lastModified": 1792233664,
+        "narHash": "sha256-40J1JgxEpxL27xIfDyR/vKWA+OglT3xq84D8rHq1HfQ=",
         "owner": "Bargman-tech",
         "repo": "opencode-flake",
-        "rev": "da1d089df0b1b57c3231454645303a5233fa2b76",
+        "rev": "904a83b4f9e5185ac243453b1851482c57c884b9",
         "type": "github"
       },
       "original": {
@@ -2346,11 +2346,11 @@
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1791216778,
-        "narHash": "sha256-+Wy0ffiTJ9uC8DsxJBQBm4WfIjMkpAF1HkBjCJ7a6rk=",
+        "lastModified": 1791634782,
+        "narHash": "sha256-CIZdrUVk/W5cUYU86Q71XMYIV3Y9+XEZn5eWw3UlNIo=",
         "owner": "anomalyco",
         "repo": "opencode",
-        "rev": "4aba11e9d54d94cfaca291b5c349f16279166a8e",
+        "rev": "4617210822bdbb31e5749751afbfb4584ccedac8",
         "type": "github"
       },
       "original": {
