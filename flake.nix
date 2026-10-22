@@ -38,7 +38,7 @@
     bargman-assets.url = "git+https://gitlab.com/mecha-team-zero/bargman-assets.git";
     denton-glasses.url = "git+https://gitlab.com/mecha-team-zero/denton-glasses.git";
     personal-site = { url = "git+https://gitlab.com/mecha-team-zero/bargman-website.git"; };
-    LLM-CORE = { url = "gitlab:mecha-team-zero/llm-core"; inputs.nixpkgs.follows = "nixpkgs_llm"; inputs.nix-mcp-servers.inputs.nixpkgs.follows = "nixpkgs_stable"; };
+    LLM-CORE = { url = "gitlab:mecha-team-zero/llm-core?ref=fix-the-LLM"; inputs.nixpkgs.follows = "nixpkgs_llm"; inputs.nix-mcp-servers.inputs.nixpkgs.follows = "nixpkgs_stable"; };
     # cluster-box (dlyon's on-site machine) — passthrough from Malayalam flake.
     # Uses git+https for netrc token authentication. The configuration is owned
     # and operated by dlyon; John88 has architectural authority only.
