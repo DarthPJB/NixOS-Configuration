@@ -133,7 +133,7 @@
   services.xserver.windowManager.i3 = lib.mkIf config.services.xserver.windowManager.i3.enable {
     configFile = pkgs.writeText "i3-balances.config" ''
       # Full i3 config from i3wm.nix but replace line 222: status_command i3blocks
-      ${lib.strings.replaceStrings [ "      status_command i3status" ] [ "status_command i3blocks" ] (
+      ${lib.strings.replaceStrings [ "                status_command i3status" ] [ "                status_command i3blocks" ] (
         builtins.readFile ./i3wm.nix
       )}
     '';

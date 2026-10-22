@@ -10,6 +10,10 @@
 let
   opencode-v1 = LLM-CORE.inputs.opencode-flake.packages.x86_64-linux.opencode;
 
+  nvidiaVulkanIcds =
+    "/run/opengl-driver/share/vulkan/icd.d/nvidia_icd.json"
+    + ":/run/opengl-driver-32/share/vulkan/icd.d/nvidia_icd.json";
+
   opencode-web-launcher = pkgs.writeShellApplication {
     name = "opencode-web-launcher";
     runtimeInputs = [ opencode-v1 pkgs.librewolf pkgs.curl ];
@@ -107,8 +111,12 @@ in
     pkgs.gwe
     pkgs.virt-manager
     pkgs.librewolf
+    (self.inputs.star-citizen.packages.x86_64-linux.rsi-launcher-git.override {
+      extraEnvVars.VK_DRIVER_FILES = nvidiaVulkanIcds;
+    })
     #self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.nixd
   ];
+  environment.sessionVariables.VK_DRIVER_FILES = nvidiaVulkanIcds;
   nix = {
     settings = {
       download-buffer-size = 524288000;
@@ -158,6 +166,14 @@ in
     opencode-web = {
       description = "opencode-web-autostart";
       wantedBy = [ "graphical-session.target" ];
+      # System-level PATH contract: the full system profile, so the opencode
+      # bash tool (and its MCP children) see nix, git and standard tooling.
+      # Without this, NixOS stamps the unit with only the minimal default
+      # service PATH (coreutils/findutils/gnugrep/gnused/systemd) and the
+      # bash tool environment comes up stripped. System-level only
+      # (config.system.path); a per-user/home-manager deployment would need
+      # the user profile path instead — deferred.
+      path = [ config.system.path ];
       serviceConfig = {
         Restart = "always";
         ExecStart = lib.getExe opencode-web-launcher;
@@ -197,7 +213,7 @@ in
     ];
     loader = {
       systemd-boot.enable = true;
-      systemd-boot.configurationLimit = 1;
+      systemd-boot.configurationLimit = 2;
       efi.canTouchEfiVariables = true;
     };
     initrd = {
