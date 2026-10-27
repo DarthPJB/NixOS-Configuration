@@ -10,10 +10,6 @@
 let
   opencode-v1 = LLM-CORE.inputs.opencode-flake.packages.x86_64-linux.opencode;
 
-  nvidiaVulkanIcds =
-    "/run/opengl-driver/share/vulkan/icd.d/nvidia_icd.json"
-    + ":/run/opengl-driver-32/share/vulkan/icd.d/nvidia_icd.json";
-
   opencode-web-launcher = pkgs.writeShellApplication {
     name = "opencode-web-launcher";
     runtimeInputs = [ opencode-v1 pkgs.librewolf pkgs.curl ];
@@ -111,12 +107,8 @@ in
     pkgs.gwe
     pkgs.virt-manager
     pkgs.librewolf
-    (self.inputs.star-citizen.packages.x86_64-linux.rsi-launcher-git.override {
-      extraEnvVars.VK_DRIVER_FILES = nvidiaVulkanIcds;
-    })
-    #self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.nixd
+    self.inputs.star-citizen.packages.x86_64-linux.rsi-launcher-git
   ];
-  environment.sessionVariables.VK_DRIVER_FILES = nvidiaVulkanIcds;
   nix = {
     settings = {
       download-buffer-size = 524288000;
@@ -228,7 +220,7 @@ in
         "usbhid"
         "uas"
         "sd_mod"
-        "nvidia-drm"
+        #"nvidia-drm"
       ];
       kernelModules = [ "vfio_pci" ];
     };
@@ -314,10 +306,11 @@ in
     cpu.amd.updateMicrocode = config.hardware.enableRedistributableFirmware;
     graphics.enable32Bit = true;
     nvidia = {
+      package = config.boot.kernelPackages.nvidiaPackages.beta;
       nvidiaSettings = true;
       open = false;
       modesetting.enable = true;
-      powerManagement.enable = false;
+      powerManagement.enable = true;
     };
   };
 
