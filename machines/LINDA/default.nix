@@ -5,6 +5,7 @@
 , lib
 , hostname
 , LLM-CORE
+, pkgs_llm
 , ...
 }:
 let
@@ -102,6 +103,8 @@ in
   #programs.zoom-us.enable = true;
   environment.systemPackages = [
     self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.looking-glass-client
+    pkgs_llm.lutris
+    pkgs_llm.signal-desktop
     self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.scream
     pkgs.virtiofsd
     pkgs.gwe
