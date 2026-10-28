@@ -12,7 +12,7 @@
     ../../modifier_imports/flakes.nix
     ../../environments/sshd.nix
     ../../environments/tools.nix
-    ../../services/dynamic_domain_gandi.nix
+    ../../services/dynamic_domain_porkbun.nix
     ../../services/gitlab-runner.nix
     ../../services/gitlab-credentials.nix
     ../../modifier_imports/remote-builder.nix

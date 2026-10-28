@@ -9,7 +9,7 @@
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
-    ../../services/dynamic_domain_gandi.nix
+    ../../services/dynamic_domain_porkbun.nix
     ../../modules/enable-wg-topology.nix
     # GAME SERVERS DISABLED 2026-10-05 — see documentation/gaming-host-1.md
     # ../../server_services/game_servers/space-engineers.nix

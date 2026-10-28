@@ -14,7 +14,7 @@ in
 
 {
   imports = [
-    ../../services/dynamic_domain_gandi.nix
+    ../../services/dynamic_domain_porkbun.nix
     (import ../../services/acme_server.nix {
       fqdn = "johnbargman.net";
       secretName = "dns01-porkbun";

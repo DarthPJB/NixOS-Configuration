@@ -707,7 +707,7 @@
           host = topoIp "cortex-alpha";
           extraModules = [
             ./environments/neovim.nix
-            ./services/dynamic_domain_gandi.nix
+            ./services/dynamic_domain_porkbun.nix
           ];
         };
         local-nas = mkX86_64 "local-nas" {

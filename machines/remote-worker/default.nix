@@ -42,7 +42,7 @@ in
     # ../../configuration.nix — already in commonModules (flake.nix), do not duplicate
     ../../server_services/nextcloud.nix
     ../../users/build.nix
-    ../../services/dynamic_domain_gandi.nix
+    ../../services/dynamic_domain_porkbun.nix
     ../../modules/enable-wg-topology.nix
     (import ../../services/acme_server.nix {
       fqdn = "johnbargman.net";
