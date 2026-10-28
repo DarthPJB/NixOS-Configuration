@@ -19,7 +19,11 @@
     ../../users/build.nix
     ../../modules/enable-wg-topology.nix
     ../../services/nix-cache-serve.nix
-    (import ../../services/acme_server.nix { fqdn = "cache.johnbargman.net"; })
+    (import ../../services/acme_server.nix {
+      fqdn = "cache.johnbargman.net";
+      secretName = "dns01-porkbun";
+      secretFile = ../../secrets/porkbun-dns01-envfile;
+    })
   ];
   # Nix binary cache — open port 5001 on WAN
   # Ports 80/443 for nginx TLS termination (ACME + HTTPS cache)

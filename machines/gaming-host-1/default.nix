@@ -17,7 +17,11 @@
     # ../../server_services/game_servers/windrose.nix
     # ../../server_services/game_servers/terratech.nix
     # ../../server_services/game_servers/minecraft-curseforge.nix
-    (import ../../services/acme_server.nix { fqdn = "gaming-host-1.johnbargman.net"; })
+    (import ../../services/acme_server.nix {
+      fqdn = "gaming-host-1.johnbargman.net";
+      secretName = "dns01-porkbun";
+      secretFile = ../../secrets/porkbun-dns01-envfile;
+    })
   ];
   security.acme.defaults.email = "commander@johnbargman.net";
   enableWgTopology.enable = true;

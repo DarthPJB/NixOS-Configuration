@@ -44,9 +44,24 @@ in
     ../../users/build.nix
     ../../services/dynamic_domain_gandi.nix
     ../../modules/enable-wg-topology.nix
-    (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
-    (import ../../services/acme_server.nix { fqdn = "johnbargman.com"; })
-    (import ../../services/acme_server.nix { fqdn = "fabrication-forge.com"; })
+    (import ../../services/acme_server.nix {
+      fqdn = "johnbargman.net";
+      secretName = "dns01-porkbun";
+      secretFile = ../../secrets/porkbun-dns01-envfile;
+      extraDomainNames = [ "*.johnbargman.net" ];
+    })
+    (import ../../services/acme_server.nix {
+      fqdn = "johnbargman.com";
+      secretName = "dns01-porkbun";
+      secretFile = ../../secrets/porkbun-dns01-envfile;
+      extraDomainNames = [ "*.johnbargman.com" ];
+    })
+    (import ../../services/acme_server.nix {
+      fqdn = "fabrication-forge.com";
+      dnsProvider = "gandiv5";
+      secretName = "dns01";
+      secretFile = ../../secrets/gandi_dns01_token;
+    })
   ];
 
   # Disable nginx config validation — gixy HTTP-splitting check rejects $uri
@@ -55,13 +70,6 @@ in
   services.nginx.validateConfigFile = false;
 
   security.acme.defaults.email = "commander@johnbargman.net";
-  # trigger the actual certificate generation for your hostname
-  security.acme.certs."johnbargman.net" = {
-    extraDomainNames = [ "*.johnbargman.net" ]; # johnbargman.com"];
-  };
-  security.acme.certs."johnbargman.com" = {
-    extraDomainNames = [ "*.johnbargman.com" ]; # johnbargman.com"];
-  };
 
   # TOPOLOGY-DERIVED: see topology/remote-worker.json vhosts
   # services.nginx = {
