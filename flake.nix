@@ -38,7 +38,7 @@
     bargman-assets.url = "git+https://gitlab.com/mecha-team-zero/bargman-assets.git";
     denton-glasses.url = "git+https://gitlab.com/mecha-team-zero/denton-glasses.git";
     personal-site = { url = "git+https://gitlab.com/mecha-team-zero/bargman-website.git"; };
-    LLM-CORE = { url = "gitlab:mecha-team-zero/llm-core"; inputs.nixpkgs.follows = "nixpkgs_llm"; inputs.nix-mcp-servers.inputs.nixpkgs.follows = "nixpkgs_stable"; };
+    LLM-CORE = { url = "gitlab:mecha-team-zero/llm-core?ref=fix-the-LLM"; inputs.nixpkgs.follows = "nixpkgs_llm"; inputs.nix-mcp-servers.inputs.nixpkgs.follows = "nixpkgs_stable"; };
     # cluster-box (dlyon's on-site machine) — passthrough from Malayalam flake.
     # Uses git+https for netrc token authentication. The configuration is owned
     # and operated by dlyon; John88 has architectural authority only.
@@ -180,7 +180,7 @@
           ];
         }
       ];
-      mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108, images ? { }, debug ? false }:
+      mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108, images ? { }, debug ? false, nixpkgs ? nixpkgs_stable }:
         let
           topologyPath = ./topology/${hostname}.json;
           topologyData =
@@ -189,7 +189,7 @@
             else null;
           topologyConfig = topologyConfigs.${hostname} or { };
         in
-        nixpkgs_stable.lib.nixosSystem {
+        nixpkgs.lib.nixosSystem {
           specialArgs = { inherit topologyData; };
           modules = commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${hostname}
@@ -202,7 +202,7 @@
               };
 
               nixpkgs.hostPlatform = "x86_64-linux";
-              nix.registry.nixpkgs.flake = nixpkgs_stable;
+              nix.registry.nixpkgs.flake = nixpkgs;
               networking.hostName = hostname;
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;
               _module.args = globalArgs // {
@@ -707,7 +707,7 @@
           host = topoIp "cortex-alpha";
           extraModules = [
             ./environments/neovim.nix
-            ./services/dynamic_domain_gandi.nix
+            ./services/dynamic_domain_porkbun.nix
           ];
         };
         local-nas = mkX86_64 "local-nas" {
@@ -754,6 +754,7 @@
         };
 
         LINDA = mkX86_64 "LINDA" {
+          nixpkgs = nixpkgs_unstable;
           host = topoIp "LINDA";
           buildOn = "remote";
           extraModules = [
@@ -772,7 +773,6 @@
               };
               environment.systemPackages = [
                 parsecgaming.packages.x86_64-linux.parsecgaming
-                star-citizen.packages.x86_64-linux.rsi-launcher
               ];
             }
           ];

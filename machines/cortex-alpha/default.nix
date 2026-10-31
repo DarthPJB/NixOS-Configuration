@@ -14,8 +14,13 @@ in
 
 {
   imports = [
-    ../../services/dynamic_domain_gandi.nix
-    (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
+    ../../services/dynamic_domain_porkbun.nix
+    (import ../../services/acme_server.nix {
+      fqdn = "johnbargman.net";
+      secretName = "dns01-porkbun";
+      secretFile = ../../secrets/porkbun-dns01-envfile;
+      extraDomainNames = [ "*.johnbargman.net" ];
+    })
     ../../server_services/ldap.nix
     # NOTE: enable-wg-topology.nix is for WireGuard CLIENTS, not the hub.
     # The hub's WireGuard config comes from topology-derive.nix via commonModules
@@ -34,17 +39,7 @@ in
     loader.systemd-boot.enable = true;
     loader.efi.canTouchEfiVariables = true;
   };
-  security.acme = {
-    defaults.email = "commander@johnbargman.net";
-    certs."johnbargman.net" = {
-      # dnsProvider must be explicit — nginx module's mkOverride 2000 null
-      # overrides the inherited default. See acme_server.nix for rationale.
-      dnsProvider = "gandiv5";
-      environmentFile = config.secrix.system.secrets.dns01.decrypted.path;
-      webroot = null;
-      extraDomainNames = [ "*.johnbargman.net" ]; # johnbargman.com"];
-    };
-  };
+  security.acme.defaults.email = "commander@johnbargman.net";
   # - here is my ideal senario
   # each system will, spread throughout the day, ipferf each other system.
   # just a small burst, so A ->B C->E etc

@@ -4,7 +4,7 @@
     "fs.inotify.max_user_watches": 524288,
     "kernel.kptr_restrict": 1,
     "kernel.pid_max": 4194304,
-    "kernel.poweroff_cmd": "<store>/3qsg0x2py2pysyx7yhcmg2kba6xqx6bx-systemd-aarch64-unknown-linux-gnu-260.2/sbin/poweroff",
+    "kernel.poweroff_cmd": "<store>/cwmz335jca43x7fs8cmry7kw2gmgpz1i-systemd-aarch64-unknown-linux-gnu-260.4/sbin/poweroff",
     "kernel.printk": 7,
     "net.core.rmem_max": null,
     "net.core.wmem_max": null,
@@ -37,7 +37,7 @@
           "path": "/boot"
         }
       ],
-      "populateCmd": "<store>/scqvb3bxi2lnbyh75qzwrsgsm4phpbwy-extlinux-conf-builder.sh -g 20 -t 5",
+      "populateCmd": "<store>/2ciy316sqvnpms35x0h88lgf69qqrjq5-extlinux-conf-builder.sh -g 20 -t 5",
       "useGenerationDeviceTree": true
     },
     "grub": {
@@ -63,7 +63,7 @@
       "extraInstallCommands": "",
       "extraPerEntryConfig": "",
       "extraPrepareConfig": "",
-      "font": "<store>/fd47xx4mj2z63n1c6kxizl0fkca2awqf-grub-aarch64-unknown-linux-gnu-2.12/share/grub/unicode.pf2",
+      "font": "<store>/lvxxdi7ldb5m478cn7mnxnfx8g6qh1cw-grub-aarch64-unknown-linux-gnu-2.12/share/grub/unicode.pf2",
       "fontSize": null,
       "forceInstall": false,
       "forcei686": false,
@@ -78,7 +78,7 @@
         "params": []
       },
       "mirroredBoots": [],
-      "splashImage": "<store>/kvkdy1anzv86nsy7nln74w4viwh7v628-simple-dark-gray-bootloader-aarch64-unknown-linux-gnu-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png",
+      "splashImage": "<store>/simcrkpa7iq99h66216hwx9my1ghh765-simple-dark-gray-bootloader-aarch64-unknown-linux-gnu-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png",
       "splashMode": "normal",
       "storePath": "/nix/store",
       "subEntryOptions": "--class nixos",
@@ -89,7 +89,7 @@
       "useOSProber": false,
       "users": {},
       "version": "<eval-error>",
-      "zfsPackage": "<derivation:zfs-user-2.4.3-aarch64-unknown-linux-gnu>",
+      "zfsPackage": "<derivation:zfs-user-2.4.4-aarch64-unknown-linux-gnu>",
       "zfsSupport": false
     },
     "gummiboot": {
@@ -113,7 +113,7 @@
       "force": false,
       "forceMbr": false,
       "maxGenerations": null,
-      "package": "<derivation:limine-aarch64-unknown-linux-gnu-12.5.1>",
+      "package": "<derivation:limine-aarch64-unknown-linux-gnu-12.5.2>",
       "panicOnChecksumMismatch": false,
       "partitionIndex": null,
       "resolution": null,
@@ -155,7 +155,7 @@
         },
         "wallpaperStyle": "stretched",
         "wallpapers": [
-          "<store>/kvkdy1anzv86nsy7nln74w4viwh7v628-simple-dark-gray-bootloader-aarch64-unknown-linux-gnu-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png"
+          "<store>/simcrkpa7iq99h66216hwx9my1ghh765-simple-dark-gray-bootloader-aarch64-unknown-linux-gnu-2018-08-28/share/backgrounds/nixos/nix-wallpaper-simple-dark-gray_bootloader.png"
         ]
       },
       "validateChecksums": true
@@ -220,7 +220,7 @@
     "<derivation:e2fsprogs-aarch64-unknown-linux-gnu-1.47.4>",
     "<derivation:dosfstools-aarch64-unknown-linux-gnu-4.2>",
     "<derivation:bcache-tools-aarch64-unknown-linux-gnu-1.1>",
-    "<derivation:systemd-aarch64-unknown-linux-gnu-260.2>",
+    "<derivation:systemd-aarch64-unknown-linux-gnu-260.4>",
     "<derivation:kmod-aarch64-unknown-linux-gnu-31>",
     "<derivation:kexec-tools-aarch64-unknown-linux-gnu-2.0.32>",
     "<derivation:determinate-nix-3.21.9>",
@@ -289,7 +289,7 @@
     "<derivation:shadow-aarch64-unknown-linux-gnu-4.19.4>",
     "<derivation:shadow-aarch64-unknown-linux-gnu-4.19.4>",
     "<derivation:shadow-aarch64-unknown-linux-gnu-4.19.4>",
-    "<derivation:bind-aarch64-unknown-linux-gnu-9.20.26>",
+    "<derivation:bind-aarch64-unknown-linux-gnu-9.20.29>",
     "<derivation:hostname-hostname-debian-aarch64-unknown-linux-gnu-3.25>",
     "<derivation:iproute2-aarch64-unknown-linux-gnu-7.0.0>",
     "<derivation:iputils-aarch64-unknown-linux-gnu-20250605>",
@@ -300,18 +300,18 @@
     "<derivation:bzip2-aarch64-unknown-linux-gnu-1.0.8>",
     "<derivation:coreutils-full-aarch64-unknown-linux-gnu-9.11>",
     "<derivation:cpio-aarch64-unknown-linux-gnu-2.15>",
-    "<derivation:curl-aarch64-unknown-linux-gnu-8.21.0>",
+    "<derivation:curl-aarch64-unknown-linux-gnu-8.22.0>",
     "<derivation:diffutils-aarch64-unknown-linux-gnu-3.12>",
     "<derivation:findutils-aarch64-unknown-linux-gnu-4.10.0>",
     "<derivation:gawk-aarch64-unknown-linux-gnu-5.4.1>",
-    "<derivation:getent-glibc-aarch64-unknown-linux-gnu-2.42-67>",
-    "<derivation:getconf-glibc-aarch64-unknown-linux-gnu-2.42-67>",
+    "<derivation:getent-glibc-aarch64-unknown-linux-gnu-2.42-84>",
+    "<derivation:getconf-glibc-aarch64-unknown-linux-gnu-2.42-84>",
     "<derivation:gnugrep-aarch64-unknown-linux-gnu-3.12>",
     "<derivation:patch-aarch64-unknown-linux-gnu-2.8>",
     "<derivation:gnused-aarch64-unknown-linux-gnu-4.10>",
     "<derivation:gnutar-aarch64-unknown-linux-gnu-1.35>",
     "<derivation:gzip-aarch64-unknown-linux-gnu-1.14>",
-    "<derivation:xz-aarch64-unknown-linux-gnu-5.8.3>",
+    "<derivation:xz-aarch64-unknown-linux-gnu-5.8.4>",
     "<derivation:less-aarch64-unknown-linux-gnu-692>",
     "<derivation:libcap-aarch64-unknown-linux-gnu-2.77>",
     "<derivation:ncurses-aarch64-unknown-linux-gnu-6.6>",
@@ -320,12 +320,12 @@
     "<derivation:procps-aarch64-unknown-linux-gnu-4.0.6>",
     "<derivation:shadow-aarch64-unknown-linux-gnu-4.19.4>",
     "<derivation:time-aarch64-unknown-linux-gnu-1.10>",
-    "<derivation:util-linux-aarch64-unknown-linux-gnu-2.42.2>",
+    "<derivation:util-linux-aarch64-unknown-linux-gnu-2.42.3>",
     "<derivation:which-aarch64-unknown-linux-gnu-2.23>",
     "<derivation:zstd-aarch64-unknown-linux-gnu-1.5.7>",
-    "<derivation:glibc-aarch64-unknown-linux-gnu-2.42-67>",
+    "<derivation:glibc-aarch64-unknown-linux-gnu-2.42-84>",
     "<derivation:openresolv-aarch64-unknown-linux-gnu-3.17.4>",
-    "<derivation:glibc-locales-aarch64-unknown-linux-gnu-2.42-67>",
+    "<derivation:glibc-locales-aarch64-unknown-linux-gnu-2.42-84>",
     "<derivation:fontconfig-aarch64-unknown-linux-gnu-2.17.1>",
     "<derivation:kbd-aarch64-unknown-linux-gnu-2.9.0>"
   ],
@@ -462,8 +462,8 @@
     "checkRuleset": true,
     "checkRulesetRedirects": {
       "/etc/hosts": "<derivation:hosts>",
-      "/etc/protocols": "<store>/q4hb0920wjmzkbkap264raaal3gl4q75-iana-etc-20251215/etc/protocols",
-      "/etc/services": "<store>/q4hb0920wjmzkbkap264raaal3gl4q75-iana-etc-20251215/etc/services"
+      "/etc/protocols": "<store>/vpq6biz9588j8vyhjd6j4i40qqyr8054-iana-etc-20251215/etc/protocols",
+      "/etc/services": "<store>/vpq6biz9588j8vyhjd6j4i40qqyr8054-iana-etc-20251215/etc/services"
     },
     "enable": false,
     "extraDeletions": "",
@@ -584,7 +584,7 @@
       "0.0.0.0",
       "[::0]"
     ],
-    "defaultMimeTypes": "<store>/s3rs4fmh4j7jgddqm43bpbh5dkradijg-mailcap-aarch64-unknown-linux-gnu-2.1.54/etc/nginx/mime.types",
+    "defaultMimeTypes": "<store>/jcn1v121mn61rmi55y7i0hdbnhg8q7pf-mailcap-aarch64-unknown-linux-gnu-2.1.54/etc/nginx/mime.types",
     "defaultSSLListenPort": 443,
     "enable": false,
     "enableQuicBPF": false,
@@ -603,7 +603,7 @@
     "logError": "stderr",
     "mapHashBucketSize": null,
     "mapHashMaxSize": null,
-    "package": "<derivation:nginx-aarch64-unknown-linux-gnu-1.30.4>",
+    "package": "<derivation:nginx-aarch64-unknown-linux-gnu-1.30.5>",
     "preStart": "",
     "prependConfig": "",
     "proxyResolveWhileRunning": false,
@@ -731,7 +731,7 @@
     ],
     "enable": true,
     "enableRecommendedAlgorithms": true,
-    "extraConfig": "AddressFamily any\nPort 1108\nListenAddress 10.88.127.43:1108\nListenAddress 10.88.127.43:22\nSubsystem sftp /nix/store/85fnysnby0rv4wfxl810pyzx4z87njm0-openssh-aarch64-unknown-linux-gnu-10.5p1/libexec/sftp-server \nAuthorizedKeysFile %h/.ssh/authorized_keys /etc/ssh/authorized_keys.d/%u\nHostKey /etc/ssh/ssh_host_ed25519_key\nMatch LocalPort 1108 User inspect Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication no\n\nMatch LocalPort 22 User build Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n\nMatch LocalPort 22\n  AllowUsers build\n\nMatch LocalPort 1108 User deploy Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n",
+    "extraConfig": "AddressFamily any\nPort 1108\nListenAddress 10.88.127.43:1108\nListenAddress 10.88.127.43:22\nSubsystem sftp /nix/store/3hwyhxq71b3y2lhqvjgycd9fpq8njw9g-openssh-aarch64-unknown-linux-gnu-10.5p1/libexec/sftp-server \nAuthorizedKeysFile %h/.ssh/authorized_keys /etc/ssh/authorized_keys.d/%u\nHostKey /etc/ssh/ssh_host_ed25519_key\nMatch LocalPort 1108 User inspect Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication no\n\nMatch LocalPort 22 User build Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n\nMatch LocalPort 22\n  AllowUsers build\n\nMatch LocalPort 1108 User deploy Address 10.88.127.0/24\n  PermitRootLogin no\n  PasswordAuthentication = no\n",
     "forwardX11": false,
     "gatewayPorts": "no",
     "generateHostKeys": true,
@@ -988,7 +988,7 @@
       "hmac-sha2-256-etm@openssh.com",
       "umac-128-etm@openssh.com"
     ],
-    "moduliFile": "<store>/85fnysnby0rv4wfxl810pyzx4z87njm0-openssh-aarch64-unknown-linux-gnu-10.5p1/etc/ssh/moduli",
+    "moduliFile": "<store>/3hwyhxq71b3y2lhqvjgycd9fpq8njw9g-openssh-aarch64-unknown-linux-gnu-10.5p1/etc/ssh/moduli",
     "openFirewall": true,
     "package": "<derivation:openssh-aarch64-unknown-linux-gnu-10.5p1>",
     "passwordAuthentication": false,
@@ -1048,7 +1048,7 @@
       "X11Forwarding": false
     },
     "sftpFlags": [],
-    "sftpServerExecutable": "<store>/85fnysnby0rv4wfxl810pyzx4z87njm0-openssh-aarch64-unknown-linux-gnu-10.5p1/libexec/sftp-server",
+    "sftpServerExecutable": "<store>/3hwyhxq71b3y2lhqvjgycd9fpq8njw9g-openssh-aarch64-unknown-linux-gnu-10.5p1/libexec/sftp-server",
     "startWhenNeeded": true,
     "useDns": false
   },
@@ -2578,7 +2578,7 @@
         },
         "loki": {
           "interval": "2m",
-          "pass": "file:///nix/store/m1g7azbn4ksckl62g8wj5n31qzphflxi-unpoller-loki-default.password",
+          "pass": "file:///nix/store/0r2pi87bdphn0jkw819ba2nbyih3dwxm-unpoller-loki-default.password",
           "tenant_id": "",
           "timeout": "10s",
           "url": "",
@@ -2604,7 +2604,7 @@
         },
         "loki": {
           "interval": "2m",
-          "pass": "file:///nix/store/m1g7azbn4ksckl62g8wj5n31qzphflxi-unpoller-loki-default.password",
+          "pass": "file:///nix/store/0r2pi87bdphn0jkw819ba2nbyih3dwxm-unpoller-loki-default.password",
           "tenant_id": "",
           "timeout": "10s",
           "url": "",

@@ -164,6 +164,14 @@
     })
     config.services.litellm.backends;
 
+  # prisma 0.15 calls Path.home() at import time; the upstream unit runs with
+  # DynamicUser (no passwd entry, no HOME) and litellm dies at startup with
+  # "Could not determine home directory". HOME points at the StateDirectory the
+  # dynamic user owns. Merged at the systemd level because a partial override
+  # of services.litellm.environment would replace its option defaults
+  # (SCARF_NO_ANALYTICS etc.) instead of merging with them.
+  config.systemd.services.litellm.environment.HOME = "${config.services.litellm.stateDir}";
+
   config.services.litellm =
     let
       # Count how many backends advertise each Ollama tag.
