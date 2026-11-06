@@ -68,6 +68,33 @@ config remains unchanged.  The combined output MUST match the golden.
 **Any agent that claims a generator is "missing features" that originate
 from user configuration has fundamentally misunderstood the architecture.**
 
+### Staging/Production Doctrine — READ THIS TOO (LDR-001 D-08)
+
+**This is a second hard boundary: the secret/settings actualisation boundary.**
+
+- **Machine flake = staging source of truth (development).** Secret
+  declarations are *bindings only* (name, service attachment, owner/mode)
+  pointing at repo-local paths whose files are **absent**. NO ciphertext, NO
+  placeholder encryption, NO secret file copies, NO decryption — anywhere.
+  Standalone eval failure from missing secrets is **accepted and expected**.
+- **Master-control flake (this repo) = single source of truth for
+  production.** Parent `extendModules` overrides (secrix `encrypted.file` →
+  parent ciphertext paths, `hostPubKey`, `defaultEncryptKeys`, nixinate
+  deploy metadata) are what a real deployment IS.
+- **Master keyset confinement:** the master keyset (John88 key, host pubkeys,
+  all production ciphertext including WG private keys) exists **only** in
+  this repository, via secrix. This is structurally enforced: secrix's app
+  resolves encryption keymaps from its flake's own `nixosConfigurations` —
+  a machine repo without `hostPubKey`/ciphertext cannot seal production
+  secrets, tool-side.
+- Virtualised/testing vs real configurations are separated by **which flake
+  actualises them**, not by forked configs.
+- Golden policy during extraction: parent-side goldens retained; **regeneration
+  forbidden** — a golden diff is an extraction bug, never a golden problem.
+
+Active extraction: `opencode/plans/gaming-host-1-extraction-PLAN.md`
+(gaming-host-1 → `mecha-team-zero/gaming-host-1`, GitLab only).
+
 ### Phase B — Core Tasks (blocks completion)
 
 **B4. Wire the two-layer topology architecture into machine configs.**

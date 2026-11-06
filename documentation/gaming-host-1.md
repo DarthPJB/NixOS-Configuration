@@ -1,8 +1,17 @@
 # Gaming Host 1 — Machine Documentation
 
 **Hostname:** gaming-host-1
-**Role:** Game server host
-**Last updated:** 2026-10-05
+**Role:** Game server host → remote-development machine + free-agent game server (co-developed)
+**Last updated:** 2026-11-04
+
+> **EXTRACTION IN PROGRESS (2026-11-04)** — gaming-host-1 is the first machine
+> being unlatched into its own repository (`mecha-team-zero/gaming-host-1`,
+> GitLab only). Primary boundary track: the ketchup/mayo/llm-fleet split is
+> proven by this extraction. Secrets follow the staging/production doctrine
+> (LDR-001 D-08): this repo holds production ciphertext; the machine repo
+> declares bindings only. **Working plan: `opencode/plans/gaming-host-1-extraction-PLAN.md`**
+> — until that plan reaches Phase 4, everything below remains the authoritative
+> operational reference.
 
 ## Current Status
 

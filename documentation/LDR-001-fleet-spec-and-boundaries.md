@@ -1,12 +1,15 @@
 # LDR-001 — Fleet Spec, Tracks & Architecture Boundaries
 
 **Type:** Living Decision Record (one living document — corrections in place, never forked)
-**Version:** 1.3
-**Date:** 2026-10-05
+**Version:** 1.4
+**Date:** 2026-11-04
 **Author:** USS-Voyager (Captain), for user QA review
-**Status:** **D-01 … D-07 ALL RESOLVED** (user rulings 2026-10-05). Target
-architecture captured (§4 — enterprise orchestration design). Non-blocking
-design questions remain (Q-01…Q-04).
+**Status:** **D-01 … D-08 ALL RESOLVED** (D-01…D-07 user rulings 2026-10-05; D-08
+staging/production doctrine 2026-11-04). Target architecture captured (§4 —
+enterprise orchestration design). Primary track: gaming-host-1 extraction
+(`opencode/plans/gaming-host-1-extraction-PLAN.md`) — extraction proves the
+ketchup/mayo/llm-fleet split as it advances. Non-blocking design questions
+remain (Q-01, Q-02, Q-04; Q-03 answered by D-08).
 
 Registers: **R\*** = resolved fact · **F\*** = finding/fault · **D-\*** = decision · **R-F\*** = remediation action
 
@@ -69,8 +72,8 @@ boundary for parent-side validation. Implementation follows in the `lib` toolkit
 | Track | State | Next gate |
 |---|---|---|
 | **PR #24 `web-updates`** | CI in flight (Gitea branding, PostgreSQL migration, gitolite retirement, B2 backup targets); assumed complete for docs purposes | Green CI → merge decision (secrets confirmed age/secrix — see F-15) |
-| **Enterprise orchestration split (P1–P5)** | **MASTER TRACK (user spec, 2026-10-05):** mono-repo → enterprise machine-orchestration design. Toolkit repos (`lib`, `LLM-CORE`, `github-ci`) + clean machine repos (own goldens/topology/llm-fleet via custom flake schema) + parent as standard deployment. §4.4 | P1: `lib` schema contract |
-| **gaming-host-1 pivot → machine repo** | **NEW MISSION (user, 2026-10-05):** becomes a **remote-development machine** hosting the **free-agent game server** (co-developed). **First extraction (D-02)** into `bargman-tech/gaming-host-1` — clean minimal NixOS config, own truth files, separately maintained / freezable. | P2 of the master track |
+| **Enterprise orchestration split (P1–P5)** | **MASTER TRACK (user spec, 2026-10-05):** mono-repo → enterprise machine-orchestration design. Toolkit repos (`lib`, `LLM-CORE`, `github-ci`) + clean machine repos (own goldens/topology/llm-fleet via custom flake schema) + parent as standard deployment. §4.4. **Sequencing amended (D-08, 2026-11-04):** P2 (gaming-host-1 extraction) is the **primary aim** and *proves* the P1 split as it advances — extraction-driven, not design-first. | P2: gaming-host-1 extraction (plan phases 0–3); P1 schema contract emerges from it |
+| **gaming-host-1 pivot → machine repo** | **PRIMARY TRACK (user, 2026-11-04):** boundary work of gaming-host-1 is the primary aim — the ketchup/mayo/llm-fleet demarkation is **proven by extraction**, not designed first. First extraction (D-02) into `mecha-team-zero/gaming-host-1` (GitLab only, user decision 2026-11-04); staging/production actualisation per D-08. Working plan: `opencode/plans/gaming-host-1-extraction-PLAN.md` | Plan Phase 3: parent `extendModules` registration + golden parity |
 | **Documentation QA review** | This document + archive | D-01/D-05/D-06 remain open |
 | **Backup/offsite formalisation** | Replication live but no restore-test procedure fleet-wide (F-08) | User decision D-05 |
 
@@ -136,6 +139,7 @@ Severity: **critical / major / minor**. Status: **open** (needs user call or wor
 | F-30 | ARM workflow stale branch reference (`jb/overlord-I`); pillar-of-autum.md double "## 6." numbering | minor | resolved this revision where touched; ARM branch ref remains |
 | F-31 | `gitea-customization-options.md` §7.1 "goldens blocked" claim; gaming-host-1 stale backup JSON; `topology/cortex-alpha.nix` ref; ai-inference-findings hybrid-layout target | minor | **resolved this revision** |
 | F-32 | Game-server module duplication (SteamCMD/user/firewall/tmpfiles ×5) | minor | decided-deferred (future base-module project) |
+| F-33 | `topology/gaming-host-1.json` embeds `backup.configFile = "../secrets/rclone-config-file"` — a secret **path** inside the schema payload; wrong boundary for P1 schema contract | minor | **open — transitional** (D-08): parent's topology JSON remains the eval feed; path must become overrideable in schema-contract design (P1) |
 
 **Superseded/moot:** vLLM-era pending items (Qwen3.8 CPU testing, Phase 6.3) — see `archive/`.
 
@@ -276,6 +280,7 @@ Phased, deliberate (Phase Discipline). Service definitions port out slowly.
 | **D-05** | **Backup posture is by design.** Upload costs minimal; unlimited retention intentional; deletion is **manual**. No restore-test mandate at this time. |
 | **D-06** | **Routed to Malayalam documentation.** MAX_QUEUE analysis + recommendation recorded in Malayalam `documents/known-issues.md` §7; to be actioned independently on a short-term horizon. |
 | **D-07** | **`b2_master_sync_token` is held in reserve with intent** — not an orphan. Do not delete. Recorded in operations-runbooks. |
+| **D-08** | **Staging/Production doctrine (2026-11-04).** (1) **Machine flake = staging source of truth (development):** secrets/settings declared within the machine flake are the verbatim staging environment. Secret declarations are **bindings only** (name, service attachment, owner/mode) pointing at repo-local paths whose files are **absent** — no ciphertext, no placeholder encryption, no secret copies, no decryption anywhere in extraction work. Standalone eval failure from missing secrets is **accepted**. (2) **Master-control flake (NixOS-Configuration) = single source of truth for production:** parent `extendModules` overrides (secrix `encrypted.file` → parent ciphertext, `hostPubKey`, `defaultEncryptKeys`, nixinate metadata) are what a real deployment is. (3) **Master keyset confinement:** the master keyset (John88 key, host pubkeys, all production ciphertext incl. WG private keys) exists **only** in this repository, via secrix. (4) Virtualised/testing vs real configurations are separated by *which flake actualises them*. (5) **Structural guarantee:** secrix's app resolves `-u`/`-s` keymaps from its flake's own `nixosConfigurations`; the machine flake declares no `hostPubKey`/ciphertext → production sealing is impossible from the machine repo — tool-enforced, not discipline. Boundary work of gaming-host-1 is the primary aim; the ketchup/mayo/llm-fleet split is proven by extraction. See `opencode/plans/gaming-host-1-extraction-PLAN.md`. |
 
 ### Open questions (non-blocking, design detail for P1/P2)
 
@@ -283,5 +288,5 @@ Phased, deliberate (Phase Discipline). Service definitions port out slowly.
 |---|---|
 | Q-01 | Machine repo naming: `bargman-tech/gaming-host-1` (matches the spec list) vs `game-server-1` (the pivot name)? Rename of the machine itself is a separate, later decision. |
 | Q-02 | Schema contract scope in `lib`: goldens + topology + llm-fleet only, or also monitoring/backup declarations? |
-| Q-03 | During migration, does gaming-host-1 keep parent-side golden coverage until P2 completes (recommended — continuous validation), or drop it at extraction? |
+| Q-03 | ~~During migration, does gaming-host-1 keep parent-side golden coverage until P2 completes (recommended — continuous validation), or drop it at extraction?~~ **ANSWERED (D-08, 2026-11-04):** parent-side golden coverage retained until extraction is proven; **regeneration forbidden** — any golden diff is an extraction bug. |
 | Q-04 | `github-ci` toolkit: extract `ci.nix` as-is first, or redesign the workflow shape while extracting? |
