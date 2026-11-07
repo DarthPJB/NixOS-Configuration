@@ -6,9 +6,8 @@
 **Author:** USS-Voyager (Captain), for user QA review
 **Status:** **D-01 … D-08 ALL RESOLVED** (D-01…D-07 user rulings 2026-10-05; D-08
 staging/production doctrine 2026-11-04). Target architecture captured (§4 —
-enterprise orchestration design). Primary track: gaming-host-1 extraction
-(`opencode/plans/gaming-host-1-extraction-PLAN.md`) — extraction proves the
-ketchup/mayo/llm-fleet split as it advances. Non-blocking design questions
+enterprise orchestration design). Primary track: the mayo split (`opencode/plans/mayo-split-PLAN.md`) — the
+Ketchup/Mayo/Secret-Sauce boundary, proven by extracting gaming-host-1 first. Non-blocking design questions
 remain (Q-01, Q-02, Q-04; Q-03 answered by D-08).
 
 Registers: **R\*** = resolved fact · **F\*** = finding/fault · **D-\*** = decision · **R-F\*** = remediation action
@@ -73,7 +72,7 @@ boundary for parent-side validation. Implementation follows in the `lib` toolkit
 |---|---|---|
 | **PR #24 `web-updates`** | CI in flight (Gitea branding, PostgreSQL migration, gitolite retirement, B2 backup targets); assumed complete for docs purposes | Green CI → merge decision (secrets confirmed age/secrix — see F-15) |
 | **Enterprise orchestration split (P1–P5)** | **MASTER TRACK (user spec, 2026-10-05):** mono-repo → enterprise machine-orchestration design. Toolkit repos (`lib`, `LLM-CORE`, `github-ci`) + clean machine repos (own goldens/topology/llm-fleet via custom flake schema) + parent as standard deployment. §4.4. **Sequencing amended (D-08, 2026-11-04):** P2 (gaming-host-1 extraction) is the **primary aim** and *proves* the P1 split as it advances — extraction-driven, not design-first. | P2: gaming-host-1 extraction (plan phases 0–3); P1 schema contract emerges from it |
-| **gaming-host-1 pivot → machine repo** | **PRIMARY TRACK (user, 2026-11-04):** boundary work of gaming-host-1 is the primary aim — the ketchup/mayo/llm-fleet demarkation is **proven by extraction**, not designed first. First extraction (D-02) into `mecha-team-zero/gaming-host-1` (GitLab only, user decision 2026-11-04); staging/production actualisation per D-08. Working plan: `opencode/plans/gaming-host-1-extraction-PLAN.md` | Plan Phase 3: parent `extendModules` registration + golden parity |
+| **gaming-host-1 pivot → machine repo** | **PRIMARY TRACK (user, 2026-11-04):** boundary work of gaming-host-1 is the primary aim — the ketchup/mayo/llm-fleet demarkation is **proven by extraction**, not designed first. First extraction (D-02) into `mecha-team-zero/gaming-host-1` (GitLab only, user decision 2026-11-04); staging/production actualisation per D-08. Working document: `opencode/plans/mayo-split-PLAN.md` | Plan Step 1 gate: extracted config deploys (parent `extendModules` + golden parity) |
 | **Documentation QA review** | This document + archive | D-01/D-05/D-06 remain open |
 | **Backup/offsite formalisation** | Replication live but no restore-test procedure fleet-wide (F-08) | User decision D-05 |
 
@@ -156,10 +155,10 @@ options discussion is closed — this design supersedes it.
 
 | Repo | Role |
 |---|---|
-| `bargman-tech/lib` | **Supporting toolkit** — shared utilities; **defines the custom flake schema contract** (golden/topology/llm-fleet JSON export shape) used by machine repos and the parent alike |
+| `bargman-tech/mayo` | **Supporting toolkit (the mayo library)** — shared utilities + shared config surface; **defines the custom flake schema contract** (golden/topology/llm-fleet JSON export shape) used by machine repos and the parent alike |
 | `bargman-tech/LLM-CORE` | Supporting toolkit — agent fleet generation (already extracted) |
 | `bargman-tech/github-ci` | Supporting toolkit — CI generation (today's `ci.nix` + `ci/generate-workflow.nix` shape) |
-| `bargman-tech/gaming-host-1` | **Machine repo** — very clean minimal NixOS configuration. Carries **its own** golden tests, `topology.json`, and llm-fleet JSONs, exported as a **custom flake schema** |
+| `mecha-team-zero/gaming-host-1` (GitLab) | **Machine repo** — very clean minimal NixOS configuration. Carries **its own** golden tests, `topology.json`, and llm-fleet JSONs, exported as a **custom flake schema** |
 | `bargman-tech/nixos-configuration` | **Parent project** — the standard deployment. Registers every machine's flake input, **validates its own evaluation** against the consumed machine's schema-exported JSON, deploys all systems |
 
 ### 4.2 The invariant and the variable
@@ -183,7 +182,7 @@ schemas.truth = {                                  │
   goldens/gaming-host-1.json,                      │   compare eval
   topology.json,                            ─────► │   ⇄ schema-exported goldens
   llm-fleet.json                                   │
-}  (defined by bargman-tech/lib)                    ▼
+}  (defined by bargman-tech/mayo)                    ▼
                                             match  → state defined → deploy
                                             mismatch → BLOCK switch
 ```
@@ -202,7 +201,7 @@ Phased, deliberate (Phase Discipline). Service definitions port out slowly.
 
 | Phase | Work | Gate |
 |---|---|---|
-| **P1** | `bargman-tech/lib` toolkit: custom schema definition + golden/topology validation utilities extracted from today's `lib/` (serialize-config, golden tooling, topology generators as needed) | schema contract approved; goldens still pass in-place |
+| **P1** | `bargman-tech/mayo` toolkit: custom schema definition + golden/topology validation utilities extracted from today's `lib/` (serialize-config, golden tooling, topology generators as needed) | schema contract approved; goldens still pass in-place |
 | **P2** | **gaming-host-1 machine repo** (first extraction, D-02): minimal NixOS config + own `topology.json` + own goldens + llm-fleet JSON → schema export; parent registers input and validates | parent eval matches machine goldens; deploy path proven (Malayalam passthrough mechanics as prior art) |
 | **P3** | `bargman-tech/github-ci` toolkit: CI generation ported out; per-machine repos get lean own CI where they maintain source | fleet CI still green; matrices still auto-derived from registration |
 | **P4** | Subsequent machine repos follow (candidate order below) + **services slowly port out** to owning machine repos / `lib` | each machine: same validation gate |
@@ -210,7 +209,7 @@ Phased, deliberate (Phase Discipline). Service definitions port out slowly.
 
 | Candidate | Target | Status |
 |---|---|---|
-| **gaming-host-1 → machine repo** (remote-dev + free-agent game server) | `bargman-tech/gaming-host-1` | **SELECTED — first extraction (D-02)** |
+| **gaming-host-1 → machine repo** (remote-dev + free-agent game server) | `mecha-team-zero/gaming-host-1` (GitLab) | **SELECTED — first extraction (D-02)** |
 | cluster-box | Malayalam (external) | already outside; remains the external-ownership variant of this pattern |
 | Gitea / Fabrication Forge stack | service port-out (own repo or `lib`) | gradual (P4) |
 | AI stack (ollama/LiteLLM schema) | toolkit or machine-local | gradual (P4) |
@@ -274,19 +273,20 @@ Phased, deliberate (Phase Discipline). Service definitions port out slowly.
 | ID | Ruling |
 |---|---|
 | **D-01** | **RESOLVED by the enterprise orchestration spec (§4).** Mono-repo → toolkit repos (`lib`, `LLM-CORE`, `github-ci`) + clean machine repos (own goldens/topology/llm-fleet exported via custom flake schema defined in `lib`) + this repo as parent/standard deployment. Parent validates its own evaluation against the consumed machine's schema JSON without violating the flake boundary. Services port out slowly. The A/B/C discussion is closed. |
-| **D-02** | **gaming-host-1 is the first machine repo** (`bargman-tech/gaming-host-1`) — remote-dev + free-agent game server, separately maintained, freezable. P2 of the master track. |
+| **D-02** | **gaming-host-1 is the first machine repo** (`mecha-team-zero/gaming-host-1`, GitLab) — remote-dev + free-agent game server, separately maintained, freezable. P2 of the master track. |
 | **D-03** | **`nix flake update` per input only.** Wholesale update prohibited. Documented in AGENTS.md + runbooks. |
 | **D-04** | **No re-keying now.** pillar-of-autum works; host-key doctrine (F-02/F-03) deferred to the **next hardening phase**. |
 | **D-05** | **Backup posture is by design.** Upload costs minimal; unlimited retention intentional; deletion is **manual**. No restore-test mandate at this time. |
 | **D-06** | **Routed to Malayalam documentation.** MAX_QUEUE analysis + recommendation recorded in Malayalam `documents/known-issues.md` §7; to be actioned independently on a short-term horizon. |
 | **D-07** | **`b2_master_sync_token` is held in reserve with intent** — not an orphan. Do not delete. Recorded in operations-runbooks. |
-| **D-08** | **Staging/Production doctrine (2026-11-04).** (1) **Machine flake = staging source of truth (development):** secrets/settings declared within the machine flake are the verbatim staging environment. Secret declarations are **bindings only** (name, service attachment, owner/mode) pointing at repo-local paths whose files are **absent** — no ciphertext, no placeholder encryption, no secret copies, no decryption anywhere in extraction work. Standalone eval failure from missing secrets is **accepted**. (2) **Master-control flake (NixOS-Configuration) = single source of truth for production:** parent `extendModules` overrides (secrix `encrypted.file` → parent ciphertext, `hostPubKey`, `defaultEncryptKeys`, nixinate metadata) are what a real deployment is. (3) **Master keyset confinement:** the master keyset (John88 key, host pubkeys, all production ciphertext incl. WG private keys) exists **only** in this repository, via secrix. (4) Virtualised/testing vs real configurations are separated by *which flake actualises them*. (5) **Structural guarantee:** secrix's app resolves `-u`/`-s` keymaps from its flake's own `nixosConfigurations`; the machine flake declares no `hostPubKey`/ciphertext → production sealing is impossible from the machine repo — tool-enforced, not discipline. Boundary work of gaming-host-1 is the primary aim; the ketchup/mayo/llm-fleet split is proven by extraction. See `opencode/plans/gaming-host-1-extraction-PLAN.md`. |
+| **D-08** | **Staging/Production doctrine (2026-11-04).** (1) **Machine flake = staging source of truth (development):** secrets/settings declared within the machine flake are the verbatim staging environment. Secret declarations are **bindings only** (name, service attachment, owner/mode) pointing at repo-local paths whose files are **absent** — no ciphertext, no placeholder encryption, no secret copies, no decryption anywhere in extraction work. Standalone eval failure from missing secrets is **accepted**. (2) **Master-control flake (NixOS-Configuration) = single source of truth for production:** parent `extendModules` overrides (secrix `encrypted.file` → parent ciphertext, `hostPubKey`, `defaultEncryptKeys`, nixinate metadata) are what a real deployment is. (3) **Master keyset confinement:** the master keyset (John88 key, host pubkeys, all production ciphertext incl. WG private keys) exists **only** in this repository, via secrix. (4) Virtualised/testing vs real configurations are separated by *which flake actualises them*. (5) **Structural guarantee:** secrix's app resolves `-u`/`-s` keymaps from its flake's own `nixosConfigurations`; the machine flake declares no `hostPubKey`/ciphertext → production sealing is impossible from the machine repo — tool-enforced, not discipline. Boundary work of gaming-host-1 is the primary aim; the ketchup/mayo/llm-fleet split is proven by extraction. See `opencode/plans/mayo-split-PLAN.md`. |
+| **D-09** | **Repository locations (2026-11-07).** gaming-host-1 child repo = `gitlab.com/mecha-team-zero/gaming-host-1` (private). Mayo lib (schema + shared config) = `github.com/Bargman-Tech/mayo` (private). Both created with initial README commits on `main`; local checkouts under `/speed-storage/bargman-tech/`. See `opencode/plans/mayo-split-PLAN.md` Repository Map. |
 
 ### Open questions (non-blocking, design detail for P1/P2)
 
 | ID | Question |
 |---|---|
-| Q-01 | Machine repo naming: `bargman-tech/gaming-host-1` (matches the spec list) vs `game-server-1` (the pivot name)? Rename of the machine itself is a separate, later decision. |
+| Q-01 | ~~Machine repo naming: `bargman-tech/gaming-host-1` (matches the spec list) vs `game-server-1` (the pivot name)?~~ **ANSWERED (D-09, 2026-11-07):** `mecha-team-zero/gaming-host-1` (GitLab); mayo lib = `bargman-tech/mayo` (GitHub). Machine rename itself remains a separate, later decision. |
 | Q-02 | Schema contract scope in `lib`: goldens + topology + llm-fleet only, or also monitoring/backup declarations? |
 | Q-03 | ~~During migration, does gaming-host-1 keep parent-side golden coverage until P2 completes (recommended — continuous validation), or drop it at extraction?~~ **ANSWERED (D-08, 2026-11-04):** parent-side golden coverage retained until extraction is proven; **regeneration forbidden** — any golden diff is an extraction bug. |
 | Q-04 | `github-ci` toolkit: extract `ci.nix` as-is first, or redesign the workflow shape while extracting? |

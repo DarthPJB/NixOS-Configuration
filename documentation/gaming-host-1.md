@@ -5,12 +5,12 @@
 **Last updated:** 2026-11-04
 
 > **EXTRACTION IN PROGRESS (2026-11-04)** — gaming-host-1 is the first machine
-> being unlatched into its own repository (`mecha-team-zero/gaming-host-1`,
-> GitLab only). Primary boundary track: the ketchup/mayo/llm-fleet split is
+> being unlatched into its own repository (`gitlab.com/mecha-team-zero/gaming-host-1`,
+> private — created). Primary boundary track: the ketchup/mayo/llm-fleet split is
 > proven by this extraction. Secrets follow the staging/production doctrine
 > (LDR-001 D-08): this repo holds production ciphertext; the machine repo
-> declares bindings only. **Working plan: `opencode/plans/gaming-host-1-extraction-PLAN.md`**
-> — until that plan reaches Phase 4, everything below remains the authoritative
+> declares bindings only. **Working document: `opencode/plans/mayo-split-PLAN.md`**
+> — until that plan clears Gate C, everything below remains the authoritative
 > operational reference.
 
 ## Current Status

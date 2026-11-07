@@ -92,8 +92,11 @@ from user configuration has fundamentally misunderstood the architecture.**
 - Golden policy during extraction: parent-side goldens retained; **regeneration
   forbidden** — a golden diff is an extraction bug, never a golden problem.
 
-Active extraction: `opencode/plans/gaming-host-1-extraction-PLAN.md`
-(gaming-host-1 → `mecha-team-zero/gaming-host-1`, GitLab only).
+Active phase: `opencode/plans/mayo-split-PLAN.md` — the Ketchup/Mayo/
+Secret-Sauce boundary, proven by extraction. Repositories: gaming-host-1 →
+`gitlab.com/mecha-team-zero/gaming-host-1` (child); mayo →
+`github.com/Bargman-Tech/mayo` (schema/lib). Flake inputs are the contract
+points; the parent consumes the child flake and overrides production secrets.
 
 ### Phase B — Core Tasks (blocks completion)
 
