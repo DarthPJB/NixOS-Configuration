@@ -163,6 +163,45 @@ cluster-box is consumed today. No schema export yet.
 the golden **byte-identical**, AND the parent's `nix build` of gaming-host-1
 succeeds, AND the nixinate deploy path resolves. → "extracted configuration deploys."
 
+**Step 1 status — GATE A ✅ PASS (2026-11-09).**
+- Child repo `gitlab.com/mecha-team-zero/gaming-host-1` @ `61a535b` (HEAD
+  includes the `nixpkgs-fmt` pass); parent `gamingHost1` input locked to
+  `61a535b` (per-input lock only — no other input drift).
+- Gate A evidence (re-confirmed at `61a535b`):
+  - `nix run .#validate-goldens -- gaming-host-1` → **matches golden**
+    (byte-identical; `goldens/gaming-host-1.json` unchanged).
+  - `nix build .#nixosConfigurations.gaming-host-1.config.system.build.toplevel`
+    → BUILD_EXIT=0
+    (`/nix/store/i0979lmnmii2cpqzhs73k99cxf50kzqy-nixos-system-gaming-host-1-26.05.20261006.b253099`).
+  - Deploy app resolves → `apps.x86_64-linux.gaming-host-1` →
+    `/nix/store/ivzqblmi8vaa3yaw1spvl4wd72cvhpfp-deploy-gaming-host-1.sh/bin/deploy-gaming-host-1.sh`.
+  - Note: toplevel/deploy store paths shift with the parent's dirty tree
+    (`nixos-deployment-exporter` + nixinate embed `self.rev`/`self.outPath`).
+    The Gate-A invariant is golden parity + build exit 0, not a fixed store hash.
+- As-built deviations (recorded, not silent):
+  1. **Public identity keys** live in the child under `identity/` (not
+     `secrets/public_keys/`): `JOHN_BARGMAN_ED_25519.pub`,
+     `INSPECT_ED_25519.pub`, `host_keys/gaming-host-1.pub`,
+     `wireguard/wg_cortex-alpha_pub`. No file under `secrets/` was copied (Hard
+     Rule #3); these are public identity data carried as Step-1 transitional
+     material pending the Step-2 schema export.
+  2. **F-33 tolerant backup paths**: the child's vendored
+     `lib/topology/mktopology.nix` `resolveBackupPaths` returns a string when the
+     path is absent (`if builtins.pathExists p then builtins.path { path = p; } else toString p`).
+     Reconciliation candidate for the parent (F-33).
+  3. **Fleet identity aggregation override** (new ruling, 2026-11-09): the
+     Step-1 `productionOverride` also sets
+     `programs.ssh.knownHosts = lib.mkForce (mkKnownHosts self.nixosConfigurations)`.
+     This is **public identity aggregation, not D-08 secret actualisation**: the
+     child owns only its own identity; the parent is the fleet registry
+     aggregator. Approved under Hard Rule #5.
+  4. **Input-pinning gotcha**: pin child inputs from the parent's
+     `nodes.root.inputs.<name>` → node (`nixpkgs_stable` = `b253099`, secrix =
+     `4d0e6a9`, determinate = 3.22.4), **not** the top-level
+     `nodes.nixpkgs_stable` orphan node (`4382ed2`), which is stale and unused.
+     The golden captures derivation versions (openssh-10.5p1, tailscale-1.98.10),
+     so the package tree must match exactly.
+
 ### Step 2 — Schema export (deploy via consumed topology)
 
 Evolve gaming-host-1 to **export** the `bargman-tech` schema (§5): its own peer
@@ -284,3 +323,6 @@ Post-Step-3 work, entered only once gates A, B, C are all true:
 | 2026-11-04 | Child may eventually carry staging keys for native virtualisation — separate later task (user) |
 | 2026-11-04 | `bargman-tech` schema/lib repo is the mayo library's first application (user) |
 | 2026-11-04 | Schema export attribute = `bargman-tech`; all public keys are **identity** fields (`topology.json`, `identity.wireguard`, `identity.ssh-host`, …) (user) |
+| 2026-11-09 | Step 1 complete — GATE A PASS: golden byte-identical, toplevel builds, deploy app resolves |
+| 2026-11-09 | Step-1 override may include `programs.ssh.knownHosts = lib.mkForce (mkKnownHosts self.nixosConfigurations)` — fleet identity aggregation, not D-08 secret actualisation (user) |
+| 2026-11-09 | Child public identity keys carried under `identity/` (no `secrets/` copy) as transitional Step-1 material |

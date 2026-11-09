@@ -45,8 +45,13 @@
     # See: https://gitlab.com/mecha-team-zero/Malayalam/blob/main/documents/architecture-passthrough.md
     malayalam.url = "git+https://gitlab.com/mecha-team-zero/Malayalam.git";
     assimilator-probe.url = "git+https://gitlab.com/mecha-team-zero/assimilator-probe.git";
+    # gaming-host-1 — FIRST child machine flake (mayo-split Step 1). The child is
+    # the staging source of truth (bindings only, absent secrets). Production
+    # secrets are fulfilled via `extendModules` below (LDR-001 D-08).
+    # See opencode/plans/mayo-split-PLAN.md.
+    gamingHost1.url = "git+https://gitlab.com/mecha-team-zero/gaming-host-1.git";
   };
-  outputs = { self, deadnix, determinate, disko, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE, malayalam, nix-src, assimilator-probe }:
+  outputs = { self, deadnix, determinate, disko, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE, malayalam, nix-src, assimilator-probe, gamingHost1 }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
@@ -777,11 +782,46 @@
             }
           ];
         };
-        gaming-host-1 = mkX86_64 "gaming-host-1" {
-          host = topoIp "gaming-host-1";
-          #sshUser = "John88";
-          #sshPort = 22;
-          extraModules = [ ];
+        # ---- gaming-host-1 (mayo-split Step 1: passthrough extraction) ----
+        # The child flake (gitlab.com/mecha-team-zero/gaming-host-1) is the
+        # standalone STAGING config. The parent fulfils production secrets here
+        # via extendModules (LDR-001 D-08): host public key, default encrypt
+        # keys, and every secrix ciphertext path → the parent's real files.
+        # Service values remain child-declared. goldens/gaming-host-1.json is
+        # unchanged (regeneration forbidden; a diff is an extraction bug).
+        gaming-host-1 = gamingHost1.nixosConfigurations.gaming-host-1.extendModules {
+          modules = [
+            {
+              # Fleet identity aggregation (public keys, NOT a secret). The child
+              # carries only its own identity; the parent is the registry
+              # aggregator (LDR-001 D-08 ruling: fleet identity is parent-side).
+              programs.ssh.knownHosts = lib.mkForce (mkKnownHosts self.nixosConfigurations);
+              secrix.hostPubKey = lib.mkForce (builtins.readFile ./secrets/public_keys/host_keys/gaming-host-1.pub);
+              secrix.defaultEncryptKeys.John88 = lib.mkForce [
+                (builtins.readFile ./secrets/public_keys/JOHN_BARGMAN_ED_25519.pub)
+              ];
+              secrix.services.determinate-flakehub-login.secrets.flakehub-token.encrypted.file =
+                lib.mkForce ./secrets/flakehub_token;
+              secrix.services."dynamic-johnbargman.net".secrets.porkbun_api_key.encrypted.file =
+                lib.mkForce ./secrets/porkbun-api-bargman;
+              secrix.services."dynamic-johnbargman.net".secrets.porkbun_secret_api_key.encrypted.file =
+                lib.mkForce ./secrets/porkbun-api-bargman-secret-key;
+              secrix.services.rclone-sync-game-backups.secrets.config-file.encrypted.file =
+                lib.mkForce ./secrets/rclone-config-file;
+              secrix.services.wireguard-wireg0.secrets.gaming-host-1.encrypted.file =
+                lib.mkForce ./secrets/private_keys/wireguard/wg_gaming-host-1;
+              secrix.system.secrets.dns01-porkbun.encrypted.file =
+                lib.mkForce ./secrets/porkbun-dns01-envfile;
+              _module.args.nixinate = lib.mkForce {
+                host = topoIp "gaming-host-1";
+                sshUser = "deploy";
+                buildOn = "local";
+                port = 1108;
+                images = { };
+                debug = false;
+              };
+            }
+          ];
         };
         remote-worker = mkX86_64 "remote-worker" {
           host = topoIp "remote-worker";
