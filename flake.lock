@@ -1144,11 +1144,11 @@
         "secrix": "secrix_2"
       },
       "locked": {
-        "lastModified": 1794252282,
-        "narHash": "sha256-+IY4HyQBAzy0MTAcTCXDBsLzjt6mN2T19cng453afWQ=",
+        "lastModified": 1794256224,
+        "narHash": "sha256-MKL9NTQMHAgiFyR2NR85cVx4qly6L9Y7dRxtDiSCHO8=",
         "ref": "refs/heads/main",
-        "rev": "61a535b70f610d2f2a7473757e05d8e162c3179d",
-        "revCount": 5,
+        "rev": "5efb9a0de5fd56139a4f51f271f6f1a68d982a08",
+        "revCount": 6,
         "type": "git",
         "url": "https://gitlab.com/mecha-team-zero/gaming-host-1.git"
       },

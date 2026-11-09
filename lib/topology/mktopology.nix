@@ -15,11 +15,13 @@
 #
 # See documentation/topology-principle.md for the full repeated statement of this law.
 { lib }:
-# mktopology: path -> { hostname = config attrset; ... }
+# mktopology: path | { topologyDir, registry, wireguardPubKeys } -> { hostname = config; ... }
 #
-# Flake-level topology-to-config function. Takes a directory path containing
-# topology JSON files and returns an attrset mapping hostnames to NixOS config
-# attrsets derived from those files.
+# Flake-level topology-to-config function. In the legacy form it takes a
+# directory path containing topology JSON files; in the injected form it takes
+# an already-built registry (which may aggregate child-flake topology exports)
+# plus optional public-key overrides. Either way it returns an attrset mapping
+# hostnames to NixOS config attrsets derived from topology data.
 #
 # The output is pure data — an attrset of config attrsets — that gets merged
 # into nixosConfigurations via the NixOS module system. This is NOT a module;
@@ -28,6 +30,7 @@
 # Callable in total isolation:
 #   mktopology = (import ./lib/topology/mktopology.nix { inherit lib; }).mktopology;
 #   topologyConfigs = mktopology ./topology/;
+#   topologyConfigs = mktopology { topologyDir = ./topology; registry = reg; wireguardPubKeys = keys; };
 #
 # Architecture:
 #   topology/<machine>.json  ──→  pure generators  ──→  config attrset
@@ -40,8 +43,14 @@
 #                                                           ↓
 #                                                     final config
 {
-  mktopology = topologyDir:
+  # Accepts either a topology directory (backward-compatible) or an attrset:
+  #   { topologyDir = <path>; registry ? <mkRegistry result>; wireguardPubKeys ? { <name> = <pub>; }; }
+  # The injected registry lets the flake aggregate external (child-flake) topology
+  # exports with the parent's own topology/*.json (mayo-split Step 2).
+  mktopology = arg:
     let
+      isDirArg = builtins.isPath arg || builtins.isString arg;
+      topologyDir = if isDirArg then arg else arg.topologyDir;
       # ── Pure generator imports ────────────────────────────────
       # These are pure functions: JSON -> config attrset.
       # No function in this entire topology toolset reads anything
@@ -63,7 +72,13 @@
       # This is the ONE exception to the "generators only read JSON"
       # principle: the registry reads all topology JSON files to build
       # a validated cross-machine view.
-      registry = import ./mkRegistry.nix { inherit lib; };
+      registry =
+        if isDirArg || !(arg ? registry)
+        then import ./mkRegistry.nix { inherit lib; }
+        else arg.registry;
+
+      # Optional public-key overrides, e.g. { "gaming-host-1" = <child identity.wireguard>; }
+      wireguardPubKeys = if isDirArg then { } else (arg.wireguardPubKeys or { });
 
       # ── WireGuard settings builder ─────────────────────────────
       # Builds the settings object that genWireguard consumes.
@@ -79,12 +94,15 @@
         "${prefix}.${toString coord.peer_id}";
 
       readPubKey = hostnameKey:
-        let
-          path = ../../secrets/public_keys/wireguard/wg_${hostnameKey}_pub;
-        in
-        if builtins.pathExists path
-        then builtins.readFile path
-        else null;
+        if wireguardPubKeys ? ${hostnameKey} && wireguardPubKeys.${hostnameKey} != null
+        then wireguardPubKeys.${hostnameKey}
+        else
+          let
+            path = ../../secrets/public_keys/wireguard/wg_${hostnameKey}_pub;
+          in
+          if builtins.pathExists path
+          then builtins.readFile path
+          else null;
 
       hubHostname = "cortex-alpha";
 
@@ -316,12 +334,20 @@
       # ── Accumulate all machine configs ────────────────────────
       # Fold over all filtered topology files, building up the
       # hostname -> config attrset mapping.
-      allConfigs = lib.foldl'
+      # Path mode: discover per-machine files on disk (unchanged behaviour).
+      allConfigsFromDir = lib.foldl'
         (acc: filename:
           acc // (processFile filename topologyFiles.${filename})
         )
         { }
         (builtins.attrNames topologyFiles);
+
+      # Registry mode: build configs from the (possibly aggregated) registry,
+      # which may include machines supplied by child-flake schema exports.
+      allConfigsFromRegistry = lib.mapAttrs mkMachineConfig registry.hosts;
+
+      allConfigs =
+        if isDirArg then allConfigsFromDir else allConfigsFromRegistry;
 
     in
     allConfigs;

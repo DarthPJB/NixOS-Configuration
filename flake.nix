@@ -56,9 +56,23 @@
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
       topoRegistry = import ./lib/topology/mkRegistry.nix { inherit lib; };
+      # ── mayo-split Step 2: consume the child's `bargman-tech` schema ──
+      # gaming-host-1's own topology + public identity come from the child
+      # flake; the parent aggregates them with its own topology/*.json.
+      gamingSchema = gamingHost1.bargman-tech;
+      gamingTopology = gamingSchema.topology.json;
+      gamingWgPub = gamingSchema.identity.wireguard;
+      aggregatedHosts = topoRegistry.hosts // {
+        ${gamingTopology.hostname} = gamingTopology;
+      };
+      aggregatedRegistry = topoRegistry // { hosts = aggregatedHosts; };
       # Topology-to-config: pure JSON → config attrsets
       mktopology = (import ./lib/topology/mktopology.nix { inherit lib; }).mktopology;
-      topologyConfigs = mktopology ./topology;
+      topologyConfigs = mktopology {
+        topologyDir = ./topology;
+        registry = aggregatedRegistry;
+        wireguardPubKeys = { ${gamingTopology.hostname} = gamingWgPub; };
+      };
       # Helper: derive IP from coordinate (subnet + peer_id)
       coordToIp = coord:
         let
@@ -92,11 +106,11 @@
           (if wgCoord != null then { wireguard = coordToIp wgCoord; } else { })
           // (if lan != { } then { inherit lan; } else { })
         )
-        topoRegistry.hosts;
+        aggregatedHosts;
       # Get wireguard IP for a machine from topology registry
       topoIp = machineName:
         let
-          host = topoRegistry.hosts.${machineName} or null;
+          host = aggregatedHosts.${machineName} or null;
           wgCoords =
             if host != null then
               builtins.filter (c: c.plane_name == "wg") (host.coordinate or [ ])
