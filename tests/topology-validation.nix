@@ -1,11 +1,11 @@
 # tests/topology-validation.nix
 # Test suite for topology validation functions
 
-{ lib }:
+{ self, lib }:
 
 let
   inherit (builtins) filter map;
-  validate = import ../lib/topology/validate.nix { inherit lib; };
+  validate = import "${self.inputs.mayo.lib}/topology/validate.nix" { inherit lib; };
   inherit (validate) validateCrossReferences;
 
   # Valid topology example

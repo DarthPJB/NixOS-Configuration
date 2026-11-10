@@ -13,7 +13,8 @@ let
   graphana-dn = "grafana.${fqdn}";
 
   # Import topology registry to generate scrape targets
-  registry = import ../lib/topology/mkRegistry.nix { inherit lib; };
+  # — shared mayo library (mayo-split Step 3); topologyDir is this repo's own.
+  registry = import "${self.inputs.mayo.lib}/topology/mkRegistry.nix" { inherit lib; topologyDir = ../topology; };
   topology = registry.hosts;
 
   # Derive IP from a coordinate entry (subnet + peer_id)

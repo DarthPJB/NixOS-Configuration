@@ -1,11 +1,13 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, self, ... }:
 let
   # Import JSON topology registry (single source of truth for all machine IPs)
-  registry = import ../lib/topology/mkRegistry.nix { inherit lib; };
+  # — from the shared mayo library (mayo-split Step 3); topologyDir is this
+  # repo's own topology/.
+  registry = import "${self.inputs.mayo.lib}/topology/mkRegistry.nix" { inherit lib; topologyDir = ../topology; };
   topology = registry.hosts;
 
   # Import hosts generation function
-  hostsLib = import ../lib/topology/mkHostsEntries.nix { inherit lib; };
+  hostsLib = import "${self.inputs.mayo.lib}/topology/mkHostsEntries.nix" { inherit lib; };
 
   # Generate hosts entries from topology
   topologyHosts = hostsLib.mkHostsEntries topology;

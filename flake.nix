@@ -50,12 +50,19 @@
     # secrets are fulfilled via `extendModules` below (LDR-001 D-08).
     # See opencode/plans/mayo-split-PLAN.md.
     gamingHost1.url = "git+https://gitlab.com/mecha-team-zero/gaming-host-1.git";
+    # Shared configuration surface — topology engine (mktopology, mkRegistry,
+    # generators), mkKnownHosts, rclone-target (mayo-split Step 3). Both this
+    # flake and the child consume it; neither vendors the library any more.
+    mayo.url = "git+https://github.com/Bargman-Tech/mayo.git";
   };
-  outputs = { self, deadnix, determinate, disko, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE, malayalam, nix-src, assimilator-probe, gamingHost1 }:
+  outputs = { self, deadnix, determinate, disko, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE, malayalam, nix-src, assimilator-probe, gamingHost1, mayo }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
-      topoRegistry = import ./lib/topology/mkRegistry.nix { inherit lib; };
+      topoRegistry = import "${mayo.lib}/topology/mkRegistry.nix" {
+        inherit lib;
+        topologyDir = ./topology;
+      };
       # ── mayo-split Step 2: consume the child's `bargman-tech` schema ──
       # gaming-host-1's own topology + public identity come from the child
       # flake; the parent aggregates them with its own topology/*.json.
@@ -66,47 +73,22 @@
         ${gamingTopology.hostname} = gamingTopology;
       };
       aggregatedRegistry = topoRegistry // { hosts = aggregatedHosts; };
-      # Topology-to-config: pure JSON → config attrsets
-      mktopology = (import ./lib/topology/mktopology.nix { inherit lib; }).mktopology;
+      # Topology-to-config: pure JSON → config attrsets (shared mayo library,
+      # mayo-split Step 3 — this repo vendors no library files).
+      mktopology = (import "${mayo.lib}/topology/mktopology.nix" { inherit lib; }).mktopology;
       topologyConfigs = mktopology {
         topologyDir = ./topology;
         registry = aggregatedRegistry;
         wireguardPubKeys = { ${gamingTopology.hostname} = gamingWgPub; };
+        pubKeyDir = ./secrets/public_keys/wireguard;
       };
-      # Helper: derive IP from coordinate (subnet + peer_id)
-      coordToIp = coord:
-        let
-          parts = lib.splitString "/" coord.subnet;
-          ip = builtins.head parts;
-          octets = lib.splitString "." ip;
-          prefix = lib.concatStringsSep "." (lib.init octets);
-        in
-        "${prefix}.${toString coord.peer_id}";
+      # Known-hosts helpers (coordToIp + the topo derivation) — moved verbatim
+      # into mayo in Step 3 (ruling (c): mkKnownHosts unified). topo feeds
+      # mkKnownHosts; coordToIp feeds topoIp below.
+      knownHostsLib = import "${mayo.lib}/mkKnownHosts.nix" { inherit lib; };
+      coordToIp = knownHostsLib.coordToIp;
       # Backward-compatible topo attrset derived from JSON registry
-      topo = lib.mapAttrs
-        (_name: host:
-          let
-            coords = host.coordinate or [ ];
-            wgCoords = builtins.filter (c: c.plane_name == "wg") coords;
-            wgCoord = if wgCoords != [ ] then builtins.head wgCoords else null;
-            # Filter to only include standard network interfaces (skip MAC-based aliases)
-            otherCoords = builtins.filter
-              (c:
-                c.plane_name != "wg" && c.plane_name != "tailscale-platonic"
-                && !lib.hasPrefix "mac:" c.interface
-              )
-              coords;
-            lan = lib.listToAttrs (map
-              (c: {
-                name = coordToIp c;
-                value = c.interface;
-              })
-              otherCoords);
-          in
-          (if wgCoord != null then { wireguard = coordToIp wgCoord; } else { })
-          // (if lan != { } then { inherit lan; } else { })
-        )
-        aggregatedHosts;
+      topo = knownHostsLib.deriveTopo aggregatedHosts;
       # Get wireguard IP for a machine from topology registry
       topoIp = machineName:
         let
@@ -171,7 +153,7 @@
       commonModules = [
         secrix.nixosModules.default
         ratty.nixosModules.default
-        ./lib/rclone-target.nix
+        (mayo.lib + "/rclone-target.nix")
         ./configuration.nix
         ./modules/ssh-multiplex.nix
         # Skip nix test suite — OOMs on remote builders during source build.
@@ -290,6 +272,10 @@
           (map (cfg: cfg.config.system.name) configs)
           (name: mkUncompressedSdImage (builtins.getAttr name self.nixosConfigurations));
 
+      # Unified known-hosts (mayo library — Step 3 ruling (c)). The entry loop
+      # and the hostNames derivation moved verbatim into mayo; this call site
+      # keeps the parent's inputs: machine set (topo ∪ active ∪ dormant) and key
+      # source (secrix config first, secrets/ file fallback).
       mkKnownHosts = nixosConfigs:
         let
           # Combine active and dormant configs for key lookup
@@ -305,45 +291,18 @@
             in
             if fromConfig != null then fromConfig else fromFile;
 
-          # Build hostNames from topology: hostname + domain + all known IP routes
-          getHostNames = name:
-            let
-              entry = topo.${name} or null;
-              names = [ name "${name}.johnbargman.net" ];
-            in
-            if entry != null then
-              lib.unique
-                (names
-                  ++ lib.optionals (entry ? wireguard) [ entry.wireguard ]
-                  ++ lib.optionals (entry ? lan) (builtins.attrNames entry.lan)
-                  ++ lib.optionals (entry ? uplink) (builtins.attrNames entry.uplink)
-                )
-            else
-              names;
-
           # Union of all known machines: topology + active configs + dormant configs
           allMachines = lib.unique (
             builtins.attrNames topo
             ++ builtins.attrNames nixosConfigs
             ++ builtins.attrNames (self.dormantConfigurations or { })
           );
-
-          # Build entries, skipping machines without a known key
-          entries = builtins.listToAttrs (map
-            (name:
-              let
-                pubKey = getPubKey name;
-              in
-              lib.nameValuePair name (
-                if pubKey != null then {
-                  hostNames = getHostNames name;
-                  publicKey = pubKey;
-                } else null
-              )
-            )
-            allMachines);
         in
-        lib.filterAttrs (_name: value: value != null) entries;
+        knownHostsLib.mkKnownHosts {
+          machines = allMachines;
+          pubKeyOf = getPubKey;
+          inherit topo;
+        };
 
       # Parallelism control for CI build jobs
       # Only GitHub Actions-level max-parallel — machines use their own nix.conf

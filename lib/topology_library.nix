@@ -27,25 +27,30 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 #
 # Usage:
-#   ketchup = import ./lib/topology_library.nix { inherit lib; };
+#   ketchup = import ./lib/topology_library.nix { inherit lib mayo; topologyDir = ./topology; };
 #   ketchup.generators.genFirewall topology.firewall
 #   ketchup.generators.genDns { inherit (topology) dns lan_dhcp; }
 #   ketchup.generators.genNginx topology
 #   ketchup.generators.genBackup topology.backup
-{ lib }:
+#
+# Mayo-split Step 3: the generator implementations now live in the shared mayo
+# library (github.com/Bargman-Tech/mayo); this file is the C1 façade over them
+# and is retained as the seed for the Step-3b wrapped API. It is not imported
+# by any active code path yet.
+{ lib, mayo, topologyDir }:
 {
   # --- Pure generators (JSON → config attrset) ---
   generators = {
-    genFirewall = import ./topology/genFirewall.nix { inherit lib; };
-    genDns = import ./topology/genDns.nix { inherit lib; };
-    genNginx = import ./topology/genNginx.nix { inherit lib; };
-    genBackup = import ./topology/genBackup.nix { inherit lib; };
-    genWireguard = import ./topology/genWireguard.nix { inherit lib; };
+    genFirewall = import "${mayo.lib}/topology/genFirewall.nix" { inherit lib; };
+    genDns = import "${mayo.lib}/topology/genDns.nix" { inherit lib; };
+    genNginx = import "${mayo.lib}/topology/genNginx.nix" { inherit lib; };
+    genBackup = import "${mayo.lib}/topology/genBackup.nix" { inherit lib; };
+    genWireguard = import "${mayo.lib}/topology/genWireguard.nix" { inherit lib; };
   };
 
   # --- Cross-machine topology registry (reads all JSON, builds validation) ---
-  registry = import ./topology/mkRegistry.nix { inherit lib; };
+  registry = import "${mayo.lib}/topology/mkRegistry.nix" { inherit lib topologyDir; };
 
-  # --- Config serializer (for golden tests) ---
+  # --- Config serializer (for golden tests; stays parent-side) ---
   serializeConfig = import ./serialize-config.nix { inherit lib; };
 }

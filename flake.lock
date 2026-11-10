@@ -1138,17 +1138,18 @@
     "gamingHost1": {
       "inputs": {
         "determinate": "determinate_3",
+        "mayo": "mayo",
         "nix-src": "nix-src",
         "nixpkgs_stable": "nixpkgs_stable_3",
         "ratty": "ratty",
         "secrix": "secrix_2"
       },
       "locked": {
-        "lastModified": 1794256224,
-        "narHash": "sha256-MKL9NTQMHAgiFyR2NR85cVx4qly6L9Y7dRxtDiSCHO8=",
+        "lastModified": 1794353143,
+        "narHash": "sha256-QqvVCeRYPTim1IeBBeiSBkwk7cxCFIc0ZGFlrLXe+ZI=",
         "ref": "refs/heads/main",
-        "rev": "5efb9a0de5fd56139a4f51f271f6f1a68d982a08",
-        "revCount": 6,
+        "rev": "339c5934afb7cf9ca6b699a3183f6792881e3871",
+        "revCount": 7,
         "type": "git",
         "url": "https://gitlab.com/mecha-team-zero/gaming-host-1.git"
       },
@@ -1670,6 +1671,36 @@
       "original": {
         "type": "git",
         "url": "https://gitlab.com/mecha-team-zero/Malayalam.git"
+      }
+    },
+    "mayo": {
+      "locked": {
+        "lastModified": 1794352711,
+        "narHash": "sha256-XpV1K7rDhQCOBVIpNEvzDx56Cj7/XRLQ+htaqYTHJtw=",
+        "ref": "refs/heads/main",
+        "rev": "1129b926d703a20c21553d456fd4bbca3efd6b0d",
+        "revCount": 2,
+        "type": "git",
+        "url": "https://github.com/Bargman-Tech/mayo.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/Bargman-Tech/mayo.git"
+      }
+    },
+    "mayo_2": {
+      "locked": {
+        "lastModified": 1794352711,
+        "narHash": "sha256-XpV1K7rDhQCOBVIpNEvzDx56Cj7/XRLQ+htaqYTHJtw=",
+        "ref": "refs/heads/main",
+        "rev": "1129b926d703a20c21553d456fd4bbca3efd6b0d",
+        "revCount": 2,
+        "type": "git",
+        "url": "https://github.com/Bargman-Tech/mayo.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/Bargman-Tech/mayo.git"
       }
     },
     "media-pipeline": {
@@ -3012,6 +3043,7 @@
         "hype-train-outlaw": "hype-train-outlaw",
         "ikbaeb-th": "ikbaeb-th",
         "malayalam": "malayalam",
+        "mayo": "mayo_2",
         "nix-src": "nix-src_2",
         "nixinate": "nixinate_3",
         "nixos-hardware": "nixos-hardware_2",

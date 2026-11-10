@@ -289,6 +289,120 @@ the child's schema export, golden still byte-identical. → "deploys via consume
 the shared lib; gates A and B still hold. → then proceed to higher complexities
 (§7).
 
+**Step 3 status — GATE C ✅ PASS (2026-11-10).**
+
+*What moved / what was pruned:*
+- **Into mayo (15 moved + 1 new, published `1129b92`):** the 9 generators,
+  `mktopology.nix`, `mkRegistry.nix`, `mkHostsEntries.nix`, `validate.nix`,
+  `utils.nix`, `rclone-target.nix`, plus the **new** unified `lib/mkKnownHosts.nix`
+  (ruling c) — 12 of the 13 moved files are byte-identical to their pre-move
+  sources; only `mkRegistry` and `mktopology` carry the three seams.
+- **Child prune (ruling B):** all 16 vendored files left `gaming-host-1` — 13
+  relocated, 3 dropped as dead (`lib/mkKnownHosts.nix` superseded,
+  `lib/topology/{validate,utils}.nix` unreferenced there).
+- **Parent prune (ruling d, all proven dead by repo-wide grep, code AND docs):**
+  `lib/mkKnownHosts.nix`, `lib/network-interfaces.nix`,
+  `lib/make-storeless-image.nix`. `lib/topology_library.nix` **retained** and
+  rewired (`{ lib, mayo, topologyDir }`) as the Step-3b wrapper seed.
+
+*Consumption wiring (no consumer still imports a moved parent path):*
+- Parent: `flake.nix` (topoRegistry, mktopology+`pubKeyDir`, rclone module,
+  `knownHostsLib` for coordToIp/deriveTopo/mkKnownHosts),
+  `modifier_imports/hosts.nix` (+`self`), `modules/enable-wg-topology.nix`
+  (registry + genWireguard), `services/prometheus.nix` (registry),
+  `lib/golden_coverage.nix`, `lib/topology_library.nix`, and the three orphaned
+  but intact tests (`tests/topology/{mkRegistry,genNginx}.nix`,
+  `tests/topology-validation.nix`).
+- Child: `flake.nix` (mktopology with `topologyDir` + `pubKeyDir`,
+  mkRegistry, mkKnownHosts, rclone module), `modifier_imports/hosts.nix`,
+  `modules/enable-wg-topology.nix`.
+- Access pattern: outputs are attrsets, so paths are `"${mayo.lib}/…"`;
+  module-list entries need a path (`(mayo.lib + "/rclone-target.nix")` — bare
+  `+` in a list element is a parse error).
+
+*Equivalence proofs (run BEFORE consumers were touched):*
+- mayo `mktopology` output `==` parent's live `topologyConfigs` —
+  `identicalToParent = true`, 32 hosts, registry errors `[]`.
+- mayo `mkKnownHosts` over the parent's inputs → 19 entries, matching the golden.
+
+*Gate C evidence:*
+- Child vendors no library files: `lib/` deleted; `nix flake lock` shows
+  `mayo` → `1129b92` and `gamingHost1` → `339c593`, **zero drift** on every
+  other root input (diff against the Step-2 baseline).
+- Gates A+B still hold: `validate-goldens gaming-host-1` ✓ and `cortex-alpha` ✓.
+- Fleet sweep (serial, all 20 goldens): **13 pass / 7 fail — the 7 are exactly
+  the pre-existing `glab`/`gh` drift set** (`alpha-one`, `alpha-two`,
+  `alpha-three`, `LINDA`, `storage-array`, `terminal-nx-01`, `terminal-zero`),
+  and their diffs contain **only** the two lines
+  `<derivation:gh-2.102.0>` / `<derivation:glab-1.99.0>` — zero mayo delta.
+- `nix build .#nixosConfigurations.gaming-host-1.config.system.build.toplevel`
+  → BUILD_EXIT=0; deploy app resolves
+  (`…-deploy-gaming-host-1.sh/bin/deploy-gaming-host-1.sh`).
+- `nixpkgs-fmt --check` and `deadnix` clean on all touched files.
+- Child standalone (no secrets): hostName, extraHosts
+  (`10.88.127.1 cortex-alpha` / `10.88.127.52 gaming-host-1`), knownHosts
+  (`["gaming-host-1"]`), rclone-target F-33 (configFile is a **string** — file
+  absent, deferred to the parent override), wg peers
+  (`lMo4Rf3nlXqd8rIX7rNMedygdsHTZqh+NLxre+vwYH8=`), `bargman-tech` export.
+  Still no `secrets/` content in the child (absent from tree, index, history).
+
+*As-built notes / findings:*
+- **Dead code left untouched (all already non-functional before this move):**
+  `modules/core-router{,-topology}.nix` (never imported; reference six
+  nonexistent `mk*Settings`/`mkWireguardPeers` files),
+  `lib/topology/archive/topology-derive.nix` (its `../lib/topology/…` paths
+  resolve to a directory that never existed; only comments in
+  `machines/cortex-alpha/default.nix` mention it),
+  `tests/topology/{mkHorizons,genNftablesMatrix,genDnsmasqHorizons,
+  topology-derive,ponr-subset-equality}.nix` (refer to files that do not
+  exist). Pruning modules/tests was not in scope for ruling (d) (lib/ only).
+- **F-33 reconciliation landed:** mayo carries the tolerant `resolveBackupPaths`;
+  deep-equality proved it is inert for the parent (all secret files exist there).
+- **Open flags:** (1) fetching the private mayo input needs local git
+  credentials or an nix `access-tokens` entry — CI runners must be provisioned
+  before the first CI run after this commit; (2) the 7-machine `gh`/`glab` golden
+  drift still awaits your authorisation to regenerate (Golden Rule).
+- Step 3b (wrapped API over the moved engine) is sequenced after this extraction.
+
+**Step 3 scope rulings (user, 2026-11-09):**
+
+| # | Ruling |
+|---|---|
+| (a) | **Content = engine as-is.** Files move in place — no restructuring, no wrapper at extraction time. The wrapped API (option C) is **sequenced after extraction** as Step 3b. The child's dead vendored files are pruned as part of the move (option B). |
+| (b) | **`validate.nix` + `utils.nix` go into mayo.** The parent's tests and `core-router*` modules import them from the mayo input. |
+| (c) | **`mkKnownHosts` unified now** — one implementation in mayo; each side supplies its machine set, key source, and topology view. Output must stay byte-identical (parent golden carries 19 `services.openssh.knownHosts` entries). |
+| (d) | **Parent dead files pruned only where provably dead.** `lib/topology_library.nix` is import-dead but plan-live (C1 API + the Step-3b wrapper seed) → retained unless ruled otherwise. |
+
+**Step 3b (after extraction lands):** add the wrapped API on top of the moved
+engine (former option C — the C1 `topology_library.nix` façade), sequenced as
+its own change with its own golden gate.
+
+**Unavoidable seams — the only edits allowed inside otherwise-verbatim moves
+(verified by inspection, 2026-11-09):**
+
+1. `mkRegistry.nix:64` `topologyDir = ../../topology` → injected argument
+   (mayo has no `topology/`).
+2. `mkRegistry.nix:363` backup `configFile` resolution `../../${pkf}` →
+   injected repo-root argument.
+3. `mktopology.nix` `readPubKey` (`../../secrets/public_keys/wireguard/…` in the
+   parent, `../../identity/wireguard/…` in the child) → injected `pubKeyDir`
+   argument, alongside the existing `wireguardPubKeys` override — this is the
+   seam the Step-1 child patch was already working around.
+
+All other files move byte-for-byte: `mktopology` imports its generators
+relatively (`import ./genFirewall.nix`), so the generator directory travels as
+a unit. Consumers import as
+`import "${mayo}/lib/topology/<f>.nix" { inherit lib; … }`.
+
+**F-33 reconciliation (rides along):** the child's tolerant `resolveBackupPaths`
+(`if builtins.pathExists p then builtins.path … else toString p`) becomes the
+single mayo version, replacing the parent's strict form. Behaviour-neutral where
+the secret file exists (the parent's case); both sides re-validate goldens.
+
+**Child prune (option B):** `lib/mkKnownHosts.nix` (superseded by the inline
+implementation), `lib/topology/validate.nix`, `lib/topology/utils.nix` (both
+unreferenced) leave the child — config-neutral, proven by re-running goldens.
+
 ---
 
 ## 5. The `bargman-tech` Schema
@@ -388,3 +502,8 @@ Post-Step-3 work, entered only once gates A, B, C are all true:
 | 2026-11-09 | Parent keeps `topology/gaming-host-1.json`; registry aggregation is precedence-based (`//`) because `mkRegistry` has direct consumers — single-source deletion deferred to Step 3 |
 | 2026-11-09 | `mktopology` gained an optional injected-registry arg; path form remains the default signature (no caller churn) |
 | 2026-11-09 | Found pre-existing golden drift (`glab`/`gh` from `213e030` × 7 machines) reproduced at `ce41010`; NOT fixed here (golden regeneration needs user authorisation) |
+| 2026-11-09 | Step-3 scope rulings: content = engine as-is; `validate`+`utils` into mayo; `mkKnownHosts` unified now; parent dead files pruned only when provably dead (user) |
+| 2026-11-09 | Wrapped API (former option C) sequenced AFTER extraction as Step 3b (user) |
+| 2026-11-10 | Step 3 complete — GATE C PASS: child vendors no library files, both sides consume mayo, 13/7 sweep (7 = pre-existing gh/glab, 2-line delta), build exit 0 |
+| 2026-11-10 | mayo consumed via `git+https` (private repo — local git credentials; CI needs `access-tokens`/netrc before its first run) |
+| 2026-11-10 | Dead modules/tests (core-router*, archive/topology-derive, 5 broken tests) left in place — already non-functional pre-move; ruling (d) covers lib/ only |

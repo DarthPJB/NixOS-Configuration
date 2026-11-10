@@ -223,24 +223,38 @@ topologyConfigs (attrset of hostname → config attrset, merged into modules lis
 ```
 
 **Active Files:**
+
+> **Mayo shared library (mayo-split Step 3, 2026-11-10).** The topology *engine*
+> files below now live in the `mayo` flake input (`github.com/Bargman-Tech/mayo`,
+> locked in `flake.lock`) and are imported as `"${mayo.lib}/…"` from flake-level
+> code and `"${self.inputs.mayo.lib}/…"` from modules, with the repo-relative
+> seams (`topologyDir`, `pubKeyDir`, `repoRoot`) supplied by each consumer.
+> This repo's `lib/topology/` retains only `genDashboard.nix`,
+> `dashboard_templates/`, `archive/`, and the `topology_library.nix` façade
+> (Step-3b wrapper seed). Entries below prefixed `mayo:` are in that input.
+> **Never re-vendor the engine** — LDR-001 D-10 (GATE C proved both flakes
+> consume it without vendoring).
+
 - `topology/<machine>.json` — Per-machine topology data (coordinates, planes, DNS, nginx, firewall, WireGuard)
 - `goldens/<machine>.json` — Golden test references (sacrosanct)
-- `lib/topology/mktopology.nix` — Flake-level topology-to-config function (called at flake.nix:44)
-- `lib/topology/genFirewall.nix` — Firewall generator (conditional on topology.firewall)
-- `lib/topology/genDns.nix` — DNS/DHCP generator (conditional on topology.dns / lan_dhcp)
-- `lib/topology/genNginx.nix` — Nginx proxy generator
-- `lib/topology/genBackup.nix` — Backup generator (conditional on topology.backup)
-- `lib/topology/genWireguard.nix` — WireGuard generator (wired for hub via topology.wireguard; client migration pending in overlord-iii)
-- `lib/topology/mkRegistry.nix` — Registry pipeline for topology validation
+- `mayo:lib/topology/mktopology.nix` — Topology-to-config function (flake-level; called with `topologyDir`/`registry`/`wireguardPubKeys`/`pubKeyDir`)
+- `mayo:lib/topology/genFirewall.nix` — Firewall generator (conditional on topology.firewall)
+- `mayo:lib/topology/genDns.nix` — DNS/DHCP generator (conditional on topology.dns / lan_dhcp)
+- `mayo:lib/topology/genNginx.nix` — Nginx proxy generator
+- `mayo:lib/topology/genBackup.nix` — Backup generator (conditional on topology.backup; F-33 tolerant `resolveBackupPaths`)
+- `mayo:lib/topology/genWireguard.nix` — WireGuard generator (wired for hub via topology.wireguard; client migration pending in overlord-iii)
+- `mayo:lib/topology/mkRegistry.nix` — Registry pipeline for topology validation (`topologyDir` + `repoRoot` injected by the consumer)
+- `mayo:lib/mkKnownHosts.nix` — Unified known-hosts construction (`machines`/`pubKeyOf`/`topo` supplied by each side)
+- `mayo:lib/rclone-target.nix` — rclone-target options module (the options `genBackup` writes into)
 - `lib/monitoring/inventory.nix` — Monitoring inventory (union of blessed scrape baseline + config-derived discovery; feeds dashboards)
 - `documentation/monitoring-automation.md` — Dashboard/inventory automation (Phase 1 done; Phase 2 scrape generation is future work)
 - `lib/topology/genDashboard.nix` — Grafana dashboard generator (inventory → dashboard attrsets; pure data transform)
 - `lib/topology/dashboard_templates/` — Dashboard templates (fleet, network, per-machine CPU fan-out, service health, storage, AI, deployment). All dashboards are generated — no static dashboard JSON remains.
-- `lib/topology/validate.nix` — Topology validation
-- `lib/topology/utils.nix` — Shared utilities
+- `mayo:lib/topology/validate.nix` — Topology validation (parent tests/core-router reference it via the mayo input)
+- `mayo:lib/topology/utils.nix` — Shared utilities
 - `documentation/topology-principle.md` — Canonical architecture principle
 - `lib/serialize-config.nix` — The one config serializer (used by `dump-config` and `checks.network-config-*`)
-- `lib/golden_coverage.nix` — Coverage tracking (audit tool)
+- `lib/golden_coverage.nix` — Coverage tracking (audit tool; registry via `self.inputs.mayo.lib`)
 - `modules/enable-wg-topology.nix` — WireGuard client module (deployed on 16 machines; pending migration to genWireguard in overlord-iii)
 - `topologyConfigs` — Attrset merged into each `nixosConfiguration` via `modules` list (flake.nix:147, 187)
 
@@ -273,12 +287,13 @@ final configuration
 - WireGuard hub config is generated (conditional on `topology.wireguard`); clients remain on `enable-wg-topology.nix` until overlord-iii
 - `specialArgs = { inherit topologyData; }` still passes raw JSON to machines for backward compat
 
-**Generator Files:**
-- `lib/topology/genFirewall.nix` — Firewall generator (conditional)
-- `lib/topology/genDns.nix` — DNS/DHCP generator (conditional)
-- `lib/topology/genNginx.nix` — Nginx proxy generator (always active)
-- `lib/topology/genBackup.nix` — Backup generator (conditional)
-- `lib/topology/genWireguard.nix` — WireGuard generator (hub-only; client migration deferred to overlord-iii)
+**Generator Files:** (mayo-split Step 3: all five live in the `mayo` input —
+`mayo:lib/topology/…` — see the Active Files note)
+- `mayo:lib/topology/genFirewall.nix` — Firewall generator (conditional)
+- `mayo:lib/topology/genDns.nix` — DNS/DHCP generator (conditional)
+- `mayo:lib/topology/genNginx.nix` — Nginx proxy generator (always active)
+- `mayo:lib/topology/genBackup.nix` — Backup generator (conditional)
+- `mayo:lib/topology/genWireguard.nix` — WireGuard generator (hub-only; client migration deferred to overlord-iii)
 
 **Status:** `mktopology` is live for all machines with topology JSON files.
 `enable-wg-topology.nix` remains deployed for WireGuard clients (pending migration in overlord-iii).

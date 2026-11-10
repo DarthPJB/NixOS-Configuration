@@ -25,7 +25,9 @@
 
 let
   # ── Phase M-1: JSON Registry ─────────────────────────────────
-  registry = import ../lib/topology/mkRegistry.nix { inherit lib; };
+  # Shared mayo library (mayo-split Step 3); topologyDir is this repo's own
+  # topology/ — the registry view this module reads for peer discovery.
+  registry = import "${self.inputs.mayo.lib}/topology/mkRegistry.nix" { inherit lib; topologyDir = ../topology; };
 
   hostname = config.networking.hostName;
   domain = "johnbargman.net";
@@ -135,7 +137,7 @@ let
   # Generate WireGuard config via the standard generator
   wireguardConfig =
     if machineSettings != null then
-      (import ../lib/topology/genWireguard.nix { inherit lib; })
+      (import "${self.inputs.mayo.lib}/topology/genWireguard.nix" { inherit lib; })
         { machines = { ${hostname} = machineSettings; }; warnings = [ ]; errors = [ ]; }
         hostname
     else null;
