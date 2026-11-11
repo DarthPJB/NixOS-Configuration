@@ -132,9 +132,14 @@ Carmelsite vhosts remain in `extraModules` because they reference a flake input 
 ### Phase C — Deferred
 
 **C1. Ketchup/Secret-Sauce/Mayo library split.**
-`lib/topology_library.nix` (53 lines) exists as clean API. `lib/mayo_library.nix`
-(24 lines) is a minimal stub. Full split deferred until Phase B generators are
-wired and validated.
+**RESOLVED (2026-11-11, mayo-split Step 3b).** The shared library
+(`github.com/Bargman-Tech/mayo`) is split into layers per the demarkation
+ruling: **Ketchup** = topology + host management (`lib/ketchup/` with the
+`topology_library.nix` clean API), **Mayo** = system configuration helpers +
+other library assets (`lib/mayo/` with `mayo_library.nix`, including the golden
+tooling). Secret-Sauce stays parent-side. The layers never import each other,
+so the eventual repo separation is a directory move — deferred per user ruling
+("it can wait").
 
 **C2. GitHub runner custom module.**
 Phase 2 goal from overlord-II plan. Not started. Deferred.
@@ -224,39 +229,38 @@ topologyConfigs (attrset of hostname → config attrset, merged into modules lis
 
 **Active Files:**
 
-> **Mayo shared library (mayo-split Step 3, 2026-11-10).** The topology *engine*
-> files below now live in the `mayo` flake input (`github.com/Bargman-Tech/mayo`,
-> locked in `flake.lock`) and are imported as `"${mayo.lib}/…"` from flake-level
-> code and `"${self.inputs.mayo.lib}/…"` from modules, with the repo-relative
-> seams (`topologyDir`, `pubKeyDir`, `repoRoot`) supplied by each consumer.
-> This repo's `lib/topology/` retains only `genDashboard.nix`,
-> `dashboard_templates/`, and the `topology_library.nix` façade
-> (Step-3b wrapper seed). Entries below prefixed `mayo:` are in that input.
-> **Never re-vendor the engine** — LDR-001 D-10 (GATE C proved both flakes
-> consume it without vendoring).
+> **Shared library layers (mayo-split Step 3b, 2026-11-11).** The library lives
+> in the `mayo` flake input (`github.com/Bargman-Tech/mayo`, locked in
+> `flake.lock`), split into two layers per the demarkation ruling — **Ketchup**
+> (`lib/ketchup/`, topology + host management) and **Mayo** (`lib/mayo/`,
+> system configuration helpers + other library assets, incl. golden tooling).
+> Consumers import the **layer APIs** (`mayo:lib/ketchup/topology_library.nix`,
+> `mayo:lib/mayo/mayo_library.nix`) — flake-level as `"${mayo.lib}/…"`, modules
+> as `"${self.inputs.mayo.lib}/…"` — and supply the repo-relative seams
+> (`topologyDir`, `pubKeyDir`, `repoRoot`). Secret-Sauce (machine configs,
+> secrets, real topology data) stays parent-side. The layers never import each
+> other, so the eventual Ketchup/Mayo repo separation is a directory move
+> (deferred per user ruling). Entries below prefixed `mayo:` are in that input.
+> **Never re-vendor the engine** — LDR-001 D-10.
 
 - `topology/<machine>.json` — Per-machine topology data (coordinates, planes, DNS, nginx, firewall, WireGuard)
 - `goldens/<machine>.json` — Golden test references (sacrosanct)
-- `mayo:lib/topology/mktopology.nix` — Topology-to-config function (flake-level; called with `topologyDir`/`registry`/`wireguardPubKeys`/`pubKeyDir`)
-- `mayo:lib/topology/genFirewall.nix` — Firewall generator (conditional on topology.firewall)
-- `mayo:lib/topology/genDns.nix` — DNS/DHCP generator (conditional on topology.dns / lan_dhcp)
-- `mayo:lib/topology/genNginx.nix` — Nginx proxy generator
-- `mayo:lib/topology/genBackup.nix` — Backup generator (conditional on topology.backup; F-33 tolerant `resolveBackupPaths`)
-- `mayo:lib/topology/genWireguard.nix` — WireGuard generator (wired for hub via topology.wireguard; client migration pending in overlord-iii)
-- `mayo:lib/topology/mkRegistry.nix` — Registry pipeline for topology validation (`topologyDir` + `repoRoot` injected by the consumer)
-- `mayo:lib/mkKnownHosts.nix` — Unified known-hosts construction (`machines`/`pubKeyOf`/`topo` supplied by each side)
-- `mayo:lib/rclone-target.nix` — rclone-target options module (the options `genBackup` writes into)
+- `mayo:lib/ketchup/topology_library.nix` — **Ketchup API**: `ketchup.mktopology` (seams pre-bound, overrideable), `ketchup.registry`, `ketchup.generators.*` (nine), `ketchup.mkHostsEntries`, `ketchup.mkKnownHosts`, `ketchup.deriveTopo`/`coordToIp`, `ketchup.validate`
+- `mayo:lib/ketchup/mktopology.nix` — Topology-to-config orchestrator (F-33 tolerant `resolveBackupPaths`)
+- `mayo:lib/ketchup/mkRegistry.nix` — Cross-machine topology registry (10 validators; `topologyDir` + `repoRoot` injected)
+- `mayo:lib/ketchup/mkHostsEntries.nix`, `mayo:lib/ketchup/mkKnownHosts.nix` — Host management (`/etc/hosts` entries, known-hosts construction)
+- `mayo:lib/ketchup/gen*.nix` — Nine pure generators: firewall, dns, nginx, backup, wireguard, network, forwarding, tailscale, monitoring
+- `mayo:lib/ketchup/{validate,utils}.nix` — Topology validation helpers
+- `mayo:lib/mayo/mayo_library.nix` — **Mayo API**: `mayoLib.rcloneTarget`, `mayoLib.golden.*` (serializeConfig, coverage, apps, compareConfigs)
+- `mayo:lib/mayo/rclone-target.nix` — rclone-target options module (the options `genBackup` writes into)
+- `mayo:lib/mayo/golden/` — Golden tooling (library surface — ruling 2026-11-11): `serialize-config.nix`, `coverage.nix` (data-injected audit), `apps.nix` (`mkDumpConfigApp`/`mkValidateGoldensApp`), `compare-configs.sh`
 - `lib/monitoring/inventory.nix` — Monitoring inventory (union of blessed scrape baseline + config-derived discovery; feeds dashboards)
 - `documentation/monitoring-automation.md` — Dashboard/inventory automation (Phase 1 done; Phase 2 scrape generation is future work)
 - `lib/topology/genDashboard.nix` — Grafana dashboard generator (inventory → dashboard attrsets; pure data transform)
 - `lib/topology/dashboard_templates/` — Dashboard templates (fleet, network, per-machine CPU fan-out, service health, storage, AI, deployment). All dashboards are generated — no static dashboard JSON remains.
-- `mayo:lib/topology/validate.nix` — Topology validation (parent tests/core-router reference it via the mayo input)
-- `mayo:lib/topology/utils.nix` — Shared utilities
 - `documentation/topology-principle.md` — Canonical architecture principle
-- `lib/serialize-config.nix` — The one config serializer (used by `dump-config` and `checks.network-config-*`)
-- `lib/golden_coverage.nix` — Coverage tracking (audit tool; registry via `self.inputs.mayo.lib`)
 - `modules/enable-wg-topology.nix` — WireGuard client module (deployed on 16 machines; pending migration to genWireguard in overlord-iii)
-- `topologyConfigs` — Attrset merged into each `nixosConfiguration` via `modules` list (flake.nix:147, 187)
+- `topologyConfigs` — Attrset merged into each `nixosConfiguration` via `modules` list (flake.nix)
 
 ### Two-Layer Topology Architecture (Active)
 
@@ -287,13 +291,13 @@ final configuration
 - WireGuard hub config is generated (conditional on `topology.wireguard`); clients remain on `enable-wg-topology.nix` until overlord-iii
 - `specialArgs = { inherit topologyData; }` still passes raw JSON to machines for backward compat
 
-**Generator Files:** (mayo-split Step 3: all five live in the `mayo` input —
-`mayo:lib/topology/…` — see the Active Files note)
-- `mayo:lib/topology/genFirewall.nix` — Firewall generator (conditional)
-- `mayo:lib/topology/genDns.nix` — DNS/DHCP generator (conditional)
-- `mayo:lib/topology/genNginx.nix` — Nginx proxy generator (always active)
-- `mayo:lib/topology/genBackup.nix` — Backup generator (conditional)
-- `mayo:lib/topology/genWireguard.nix` — WireGuard generator (hub-only; client migration deferred to overlord-iii)
+**Generator Files:** (mayo-split Step 3b: all live in the `mayo` input's
+Ketchup layer — `mayo:lib/ketchup/…` — see the Active Files note)
+- `mayo:lib/ketchup/genFirewall.nix` — Firewall generator (conditional)
+- `mayo:lib/ketchup/genDns.nix` — DNS/DHCP generator (conditional)
+- `mayo:lib/ketchup/genNginx.nix` — Nginx proxy generator (always active)
+- `mayo:lib/ketchup/genBackup.nix` — Backup generator (conditional)
+- `mayo:lib/ketchup/genWireguard.nix` — WireGuard generator (hub-only; client migration deferred to overlord-iii)
 
 **Status:** `mktopology` is live for all machines with topology JSON files.
 `enable-wg-topology.nix` remains deployed for WireGuard clients (pending migration in overlord-iii).

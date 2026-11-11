@@ -20,17 +20,22 @@ Consolidated reference for codebase structure, coding conventions, and developme
 - `goldens/` - Golden test files (sacrosanct)
   - `<machine>.json` - Golden test references for each machine (x86-bootstrap has none)
   - `ci.json`, `bargman-greeter-vm.json` - Non-machine golden references
-- `lib/topology/` - Local topology-adjacent code. The **engine itself lives in
-  the mayo library** (flake input `mayo`, `github.com/Bargman-Tech/mayo`,
-  imported as `"${mayo.lib}/topology/…"` — LDR-001 D-10)
+- `lib/topology/` - Local topology-adjacent code. The **library itself lives in
+  the mayo library** (flake input `mayo`, `github.com/Bargman-Tech/mayo`) split
+  into layers per the demarkation ruling — **Ketchup** (`lib/ketchup/`,
+  topology + host management) and **Mayo** (`lib/mayo/`, system configuration
+  helpers + other library assets incl. golden tooling) — LDR-001 D-10
   - `genDashboard.nix` - Grafana dashboard generator (inventory → dashboard attrsets)
   - `dashboard_templates/` - Dashboard templates consumed by `genDashboard`
-  - Moved to mayo (mayo-split Step 3): `mktopology`, `mkRegistry`,
-    `mkHostsEntries`, all `gen*` generators, `validate`, `utils`
-  - `lib/topology_library.nix` - C1 façade over the mayo engine (Step-3b seed)
+  - In the mayo library: `mayo:lib/ketchup/` (mktopology, mkRegistry,
+    mkHostsEntries, mkKnownHosts, all `gen*`, validate, utils + the
+    `topology_library.nix` API) and `mayo:lib/mayo/` (rclone-target +
+    `mayo_library.nix` API + `golden/` tooling: serialize-config, coverage,
+    dump-config/validate-goldens app builders, compare-configs)
+  - Consumers import the layer APIs (`ketchup/topology_library.nix`,
+    `mayo/mayo_library.nix`) and supply `topologyDir`/`pubKeyDir`
 - `lib/monitoring/inventory.nix` - Monitoring inventory (blessed scrape baseline + config-derived discovery)
-- `lib/serialize-config.nix` - The config serializer (used by `dump-config` and `checks.network-config-*`)
-- `lib/golden_coverage.nix` - Coverage audit (checks if every machine has a golden)
+- `lib/golden_coverage.nix` - ~~Coverage audit~~ (moved to `mayo:lib/mayo/golden/coverage.nix`, data-injected)
 - `modules/` - NixOS modules
   - `enable-wg-topology.nix` - WireGuard client module (deployed on 16 machines)
   - Also `lightdm-webkit2-greeter.nix`, `nixos-deployment-exporter.nix`, `smart-monitoring.nix`, `ssh-multiplex.nix`, `sysdiag.nix`, `vllm.nix`

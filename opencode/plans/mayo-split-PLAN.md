@@ -41,8 +41,8 @@ local development** (so a child can evaluate standalone).
 
 | Layer | What it is | Where it lives (target) |
 |---|---|---|
-| **Ketchup** | Open-source topology engine: pure JSON→attrset generators, validation, serialization, generic NixOS modules. No machine data, no secrets. | shared lib (portable) |
-| **Mayo** | Shared configuration surface: reusable NixOS modules + helpers shared across machines (ssh-multiplex, rclone-target, mkKnownHosts, network-interfaces, config baseline). Generic, non-proprietary. | shared lib (the "mayo library") |
+| **Ketchup** | **Topology + host management** (ruling 2026-11-11): pure JSON→attrset generators, validation, serialization, generic NixOS modules, and registry/hosts/known-hosts construction (`mkRegistry`, `mkHostsEntries`, `mkKnownHosts`). No machine data, no secrets. | shared lib (portable) |
+| **Mayo** | **System configuration helpers + other library assets** (ruling 2026-11-11): reusable NixOS modules + helpers shared across machines (`rclone-target`; `ssh-multiplex` only after its embedded fleet IP patterns are parameterised — as it stands it names real IPs and is Secret-Sauce by the demarkation rule; `network-interfaces`/`config-baseline` names retired — never materialised). Generic, non-proprietary. | shared lib (the "mayo library") |
 | **Secret-Sauce** | Proprietary: machine-specific configs, real topology data, secrets, proprietary service definitions and overlays, the parent flake itself. | parent (and each owning machine repo for its own config) |
 
 The **mayo library** is the home of Mayo (+ Ketchup) code. Its **first
@@ -385,6 +385,36 @@ the shared lib; gates A and B still hold. → then proceed to higher complexitie
 engine (former option C — the C1 `topology_library.nix` façade), sequenced as
 its own change with its own golden gate.
 
+**Step 3b status — ✅ COMPLETE (2026-11-11).** The wrapped API landed as the
+**layer split + layer APIs** per the demarkation ruling (not a flat wrapper):
+
+- **mayo `bbd8192`:** `lib/ketchup/` (engine + host management +
+  `topology_library.nix` Ketchup API — seams pre-bound, `mktopology` accepts
+  overrides) and `lib/mayo/` (`rclone-target` + `mayo_library.nix` Mayo API +
+  `golden/` tooling: `serialize-config.nix`, data-injected `coverage.nix`,
+  `apps.nix` dump-config/validate-goldens builders, `compare-configs.sh`).
+- **Golden tooling extracted (ruling):** the parent now builds its golden apps
+  from the Mayo layer, runs coverage via `mayoLib.golden.coverage`, and
+  `scripts/compare-configs.sh` is a thin wrapper (the tool lives in the lib;
+  a `compare-configs` app execs it). Deleted from the parent:
+  `lib/serialize-config.nix`, `lib/golden_coverage.nix`, `lib/topology_library.nix`
+  (C1 resolved inside the mayo library).
+- **Consumers call layer APIs only** — grep-proven: zero raw
+  `mayo.lib}/topology/…` references remain in either flake. Child `66df4b4`
+  rewired identically (ketchup/mayoLib instances).
+- **Split-readiness:** `lib/ketchup/` and `lib/mayo/` never import each other;
+  golden coverage takes topology data injected. The deferred Ketchup/Mayo repo
+  separation is a directory move.
+- **Gate:** fleet sweep **20/20** byte-identical (gaming-host-1 + cortex-alpha
+  validated first), fmt + deadnix clean, locks `gamingHost1=66df4b4`
+  `mayo=bbd8192` (only those two inputs moved).
+- **As-built notes:** the golden-coverage machine-exclusion list stays
+  parent-side (fleet data — now injected, Secret-Sauce by the demarkation
+  rule); `ssh-multiplex` NOT moved (contains real fleet IPs → Secret-Sauce as
+  it stands; Mayo candidate after parameterisation); `network-interfaces` /
+  `config-baseline` names retired; `ci_library` + the `check-ci` app stay
+  parent-side (CI domain → P3 github-ci toolkit).
+
 **Unavoidable seams — the only edits allowed inside otherwise-verbatim moves
 (verified by inspection, 2026-11-09):**
 
@@ -520,3 +550,6 @@ Post-Step-3 work, entered only once gates A, B, C are all true:
 | 2026-11-11 | Locks re-locked to `gamingHost1` bf596c3 + `mayo` c6e3c0f (licence commit); only those two inputs moved in this session — `carmelsite` 6942741f is from your own commit `a5ad92e` "tight coupling in practice" |
 | 2026-11-11 | F-34 resolved — golden regeneration authorised: 7 machines' goldens updated only after verifying each delta was exactly the two gh/glab addition lines (LINDA carries gh-2.97.0/glab-1.111.0 from its own nixpkgs); sweep 20/20 |
 | 2026-11-11 | Dead code pruned (user authorisation): core-router×2 modules, lib/topology/archive/topology-derive.nix, and 5 broken orphan tests — all proven unreferenced repo-wide except docs/comments, which were updated; the 3 intact orphan tests kept (offer to prune) |
+| 2026-11-11 | **Delineation ruling (user):** Ketchup = topology + host management; Mayo = system configuration helpers + other library assets. `mkKnownHosts`/`mkHostsEntries` → **Ketchup** (host management), superseding the old Mayo exemplar row. Single shared lib for now; eventual Ketchup/Mayo repo separation deferred ("it can wait") but the layout must keep it a directory move: **no cross-layer imports** (Ketchup ↮ Mayo) |
+| 2026-11-11 | **Ruling (user): golden tooling is library surface** — `serialize-config`, golden coverage, and the golden app tooling extract into the Mayo layer (`lib/mayo/golden/`). Golden coverage takes its topology/registry data **injected** (never imports Ketchup). `check-ci` stays parent-side (CI domain → P3 github-ci toolkit). `check-ci`'s own golden stays fleet tooling |
+| 2026-11-11 | **Step 3b complete** — layer split + layer APIs landed in mayo (bbd8192): Ketchup API (topology + host management) + Mayo API (helpers + golden tooling extracted per ruling); consumers call layer APIs only; C1 resolved; fleet sweep 20/20 |

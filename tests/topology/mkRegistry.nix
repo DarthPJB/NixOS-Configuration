@@ -12,7 +12,8 @@
 
 { self, lib }:
 let
-  registry = import "${self.inputs.mayo.lib}/topology/mkRegistry.nix" { inherit lib; topologyDir = ../../topology; };
+  ketchup = import "${self.inputs.mayo.lib}/ketchup/topology_library.nix" { inherit lib; topologyDir = ../../topology; };
+  registry = ketchup.registry;
 
   inherit (builtins) elem all length attrNames attrValues filter;
 

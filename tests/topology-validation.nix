@@ -5,7 +5,7 @@
 
 let
   inherit (builtins) filter map;
-  validate = import "${self.inputs.mayo.lib}/topology/validate.nix" { inherit lib; };
+  validate = (import "${self.inputs.mayo.lib}/ketchup/topology_library.nix" { inherit lib; topologyDir = ../topology; }).validate;
   inherit (validate) validateCrossReferences;
 
   # Valid topology example

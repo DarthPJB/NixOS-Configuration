@@ -59,10 +59,17 @@
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
-      topoRegistry = import "${mayo.lib}/topology/mkRegistry.nix" {
+      # Mayo library layers (Step 3b): Ketchup = topology + host management,
+      # Mayo = system configuration helpers + other library assets. This repo
+      # vendors no library files (LDR-001 D-10).
+      ketchup = import "${mayo.lib}/ketchup/topology_library.nix" {
         inherit lib;
         topologyDir = ./topology;
+        pubKeyDir = ./secrets/public_keys/wireguard;
       };
+      mayoLib = import "${mayo.lib}/mayo/mayo_library.nix";
+      goldenApps = import mayoLib.golden.apps { inherit lib; pkgs = nixpkgs; };
+      topoRegistry = ketchup.registry;
       # ── mayo-split Step 2: consume the child's `bargman-tech` schema ──
       # gaming-host-1's own topology + public identity come from the child
       # flake; the parent aggregates them with its own topology/*.json.
@@ -73,22 +80,17 @@
         ${gamingTopology.hostname} = gamingTopology;
       };
       aggregatedRegistry = topoRegistry // { hosts = aggregatedHosts; };
-      # Topology-to-config: pure JSON → config attrsets (shared mayo library,
-      # mayo-split Step 3 — this repo vendors no library files).
-      mktopology = (import "${mayo.lib}/topology/mktopology.nix" { inherit lib; }).mktopology;
-      topologyConfigs = mktopology {
-        topologyDir = ./topology;
+      # Topology-to-config: pure JSON → config attrsets (Ketchup API; the
+      # registry override preserves the Step-2 fleet-aggregation form).
+      topologyConfigs = ketchup.mktopology {
         registry = aggregatedRegistry;
         wireguardPubKeys = { ${gamingTopology.hostname} = gamingWgPub; };
-        pubKeyDir = ./secrets/public_keys/wireguard;
       };
-      # Known-hosts helpers (coordToIp + the topo derivation) — moved verbatim
-      # into mayo in Step 3 (ruling (c): mkKnownHosts unified). topo feeds
-      # mkKnownHosts; coordToIp feeds topoIp below.
-      knownHostsLib = import "${mayo.lib}/mkKnownHosts.nix" { inherit lib; };
-      coordToIp = knownHostsLib.coordToIp;
+      # Host management (Ketchup): coordToIp feeds topoIp; deriveTopo feeds
+      # mkKnownHosts below.
+      coordToIp = ketchup.coordToIp;
       # Backward-compatible topo attrset derived from JSON registry
-      topo = knownHostsLib.deriveTopo aggregatedHosts;
+      topo = ketchup.deriveTopo aggregatedHosts;
       # Get wireguard IP for a machine from topology registry
       topoIp = machineName:
         let
@@ -153,7 +155,7 @@
       commonModules = [
         secrix.nixosModules.default
         ratty.nixosModules.default
-        (mayo.lib + "/rclone-target.nix")
+        (mayoLib.rcloneTarget)
         ./configuration.nix
         ./modules/ssh-multiplex.nix
         # Skip nix test suite — OOMs on remote builders during source build.
@@ -298,7 +300,7 @@
             ++ builtins.attrNames (self.dormantConfigurations or { })
           );
         in
-        knownHostsLib.mkKnownHosts {
+        ketchup.mkKnownHosts {
           machines = allMachines;
           pubKeyOf = getPubKey;
           inherit topo;
@@ -331,26 +333,12 @@
         # NOTE: Golden tests validate that config hasn't changed from prior state.
         # This is regression testing — completely separate from topology generation.
         # Topology generates config; goldens validate config. Related but unrelated.
+        # (Builder extracted to the Mayo golden tooling — ruling 2026-11-11.)
         validate-goldens = {
           type = "app";
           meta.description = "Validate machine config against golden files";
-          program = lib.getExe (nixpkgs.writeShellApplication {
-            name = "validate-goldens";
-            runtimeInputs = [ nixpkgs.jq ];
-            text = ''
-              MACHINE="''${1:-cortex-alpha}"
-              echo "Validating $MACHINE against golden..."
-              nix run .#dump-config -- "$MACHINE" | jq -S . > /tmp/current-config.json
-                
-              if diff -u "${self}/goldens/$MACHINE.json" /tmp/current-config.json; then
-                echo "✓ $MACHINE matches golden"
-              else
-                echo "✗ $MACHINE differs from golden!"
-                echo "If intentional, update with:"
-                echo "  nix run .#dump-config -- $MACHINE > goldens/$MACHINE.json"
-                exit 1
-              fi
-            '';
+          program = lib.getExe (goldenApps.mkValidateGoldensApp {
+            goldenDir = "${self}/goldens";
           });
         };
 
@@ -377,36 +365,20 @@
         };
 
         # Full config serialization for comparing between revisions
+        # (Builder extracted to the Mayo golden tooling — ruling 2026-11-11.)
         dump-config = {
           type = "app";
           meta.description = "Dump full NixOS config to JSON (for comparing between git revisions)";
-          program = lib.getExe (nixpkgs.writeShellApplication {
-            name = "dump-config";
-            runtimeInputs = [ nixpkgs.jq ];
-            text = ''
-              if [ -z "$1" ]; then
-                echo "Usage: nix run .#dump-config <machine-name>"
-                echo "Example: nix run .#dump-config cortex-alpha > /tmp/config.json"
-                echo ""
-                echo "To compare between revisions:"
-                echo "  git checkout old-rev && nix run .#dump-config cortex-alpha > /tmp/old.json"
-                echo "  git checkout new-rev && nix run .#dump-config cortex-alpha > /tmp/new.json"
-                echo "  diff /tmp/old.json /tmp/new.json"
-                exit 1
-              fi
-              MACHINE="$1"
-              nix eval --json --impure \
-                --expr '
-                  let
-                    flake = builtins.getFlake (builtins.toString ./.);
-                    lib = (import <nixpkgs> {}).lib;
-                    serializer = import ./lib/serialize-config.nix { inherit lib; };
-                    config = (flake.nixosConfigurations."'"$MACHINE"'" or flake.dormantConfigurations."'"$MACHINE"'").config;
-                  in
-                  serializer.serializeConfig config
-                ' | jq -S .
-            '';
-          });
+          program = lib.getExe (goldenApps.mkDumpConfigApp { });
+        };
+
+        # Revision comparison — the script lives in the Mayo golden tooling;
+        # scripts/compare-configs.sh is a thin wrapper preserving the documented
+        # interface.
+        compare-configs = {
+          type = "app";
+          meta.description = "Compare NixOS configuration between git revisions";
+          program = "${mayoLib.golden.compareConfigs}";
         };
 
         deploy-all = {
@@ -968,7 +940,23 @@
 
         topology-coverage =
           let
-            coverage = import ./lib/golden_coverage.nix { inherit self lib; };
+            # Mayo golden tooling (ruling 2026-11-11) — data-injected: the
+            # exclusion list is fleet data (Secret-Sauce) and stays here.
+            coverage = import mayoLib.golden.coverage {
+              goldenDir = ./goldens;
+              topologyMachines = builtins.attrNames topoRegistry.hosts;
+              machineNames = builtins.attrNames (builtins.removeAttrs self.nixosConfigurations [
+                "beta-one"
+                "display-0"
+                "display-1"
+                "display-2"
+                "print-controller"
+                "bargman-greeter-vm"
+                "arm-bootstrap"
+                "x86-bootstrap"
+                "cluster-box"
+              ]);
+            };
           in
           if !coverage.isComplete then
             throw "Topology coverage incomplete. Missing: ${builtins.toJSON coverage.missing}"

@@ -12,9 +12,14 @@ let
   prometheus-dn = "prometheus.${fqdn}";
   graphana-dn = "grafana.${fqdn}";
 
-  # Import topology registry to generate scrape targets
-  # — shared mayo library (mayo-split Step 3); topologyDir is this repo's own.
-  registry = import "${self.inputs.mayo.lib}/topology/mkRegistry.nix" { inherit lib; topologyDir = ../topology; };
+  # Topology registry to generate scrape targets — Ketchup API
+  # (topology + host management — mayo-split Step 3b); topologyDir is this
+  # repo's own.
+  ketchup = import "${self.inputs.mayo.lib}/ketchup/topology_library.nix" {
+    inherit lib;
+    topologyDir = ../topology;
+  };
+  registry = ketchup.registry;
   topology = registry.hosts;
 
   # Derive IP from a coordinate entry (subnet + peer_id)

@@ -25,9 +25,14 @@
 
 let
   # ── Phase M-1: JSON Registry ─────────────────────────────────
-  # Shared mayo library (mayo-split Step 3); topologyDir is this repo's own
-  # topology/ — the registry view this module reads for peer discovery.
-  registry = import "${self.inputs.mayo.lib}/topology/mkRegistry.nix" { inherit lib; topologyDir = ../topology; };
+  # Ketchup API (topology + host management — mayo-split Step 3b);
+  # topologyDir is this repo's own topology/ — the registry view this module
+  # reads for peer discovery.
+  ketchup = import "${self.inputs.mayo.lib}/ketchup/topology_library.nix" {
+    inherit lib;
+    topologyDir = ../topology;
+  };
+  registry = ketchup.registry;
 
   hostname = config.networking.hostName;
   domain = "johnbargman.net";
@@ -137,7 +142,7 @@ let
   # Generate WireGuard config via the standard generator
   wireguardConfig =
     if machineSettings != null then
-      (import "${self.inputs.mayo.lib}/topology/genWireguard.nix" { inherit lib; })
+      (ketchup.generators.genWireguard)
         { machines = { ${hostname} = machineSettings; }; warnings = [ ]; errors = [ ]; }
         hostname
     else null;

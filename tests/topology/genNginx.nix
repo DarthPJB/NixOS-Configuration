@@ -25,7 +25,7 @@ let
   };
 
   # Call with two args: settings + hostname (hostname ignored for new schema path)
-  result = (import "${self.inputs.mayo.lib}/topology/genNginx.nix" { inherit lib; }) horizon "test";
+  result = (import "${self.inputs.mayo.lib}/ketchup/topology_library.nix" { inherit lib; topologyDir = ../../topology; }).generators.genNginx horizon "test";
 
   # Result should be a NixOS config attrset with services.nginx.virtualHosts
   isConfig = builtins.isAttrs result && result ? services.nginx.virtualHosts;
