@@ -165,11 +165,11 @@
         "nixpkgs": "nixpkgs_10"
       },
       "locked": {
-        "lastModified": 1790864205,
-        "narHash": "sha256-i4QgLyS+CWWXcTi6UZBWnhrSIdC4L0rER/onm1JbsZ0=",
+        "lastModified": 1794399442,
+        "narHash": "sha256-XK1F3VTX2/j3V/S5bNmvTIqO6ejrYmJTgWC7W6AyL0k=",
         "ref": "refs/heads/main",
-        "rev": "cc22600f5b873df413620dae82930d2b6152124a",
-        "revCount": 44,
+        "rev": "6942741f2918e12918cfa92fdc4efa38ddf643fa",
+        "revCount": 45,
         "type": "git",
         "url": "https://gitlab.com/mecha-team-zero/carmelsite.git"
       },
