@@ -230,7 +230,7 @@ topologyConfigs (attrset of hostname → config attrset, merged into modules lis
 > code and `"${self.inputs.mayo.lib}/…"` from modules, with the repo-relative
 > seams (`topologyDir`, `pubKeyDir`, `repoRoot`) supplied by each consumer.
 > This repo's `lib/topology/` retains only `genDashboard.nix`,
-> `dashboard_templates/`, `archive/`, and the `topology_library.nix` façade
+> `dashboard_templates/`, and the `topology_library.nix` façade
 > (Step-3b wrapper seed). Entries below prefixed `mayo:` are in that input.
 > **Never re-vendor the engine** — LDR-001 D-10 (GATE C proved both flakes
 > consume it without vendoring).
@@ -297,7 +297,10 @@ final configuration
 
 **Status:** `mktopology` is live for all machines with topology JSON files.
 `enable-wg-topology.nix` remains deployed for WireGuard clients (pending migration in overlord-iii).
-`topology-derive.nix` is archived at `lib/topology/archive/topology-derive.nix`.
+`topology-derive.nix` was archived, then **removed** in the mayo-split Step-3
+dead-code prune (2026-11-11), together with the retired `core-router*.nix`
+modules — all pre-dead (never imported; already referenced files that never
+existed).
 
 ### Topology-Gen Branch (Merged)
 

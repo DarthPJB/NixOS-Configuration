@@ -348,23 +348,28 @@ the shared lib; gates A and B still hold. → then proceed to higher complexitie
   Still no `secrets/` content in the child (absent from tree, index, history).
 
 *As-built notes / findings:*
-- **Dead code left untouched (all already non-functional before this move):**
-  `modules/core-router{,-topology}.nix` (never imported; reference six
+- **Dead code PRUNED 2026-11-11 (user authorisation; was left untouched at
+  Step 3 because ruling (d) covered lib/ only):**
+  `modules/core-router{,-topology}.nix` (never imported; referenced six
   nonexistent `mk*Settings`/`mkWireguardPeers` files),
   `lib/topology/archive/topology-derive.nix` (its `../lib/topology/…` paths
-  resolve to a directory that never existed; only comments in
-  `machines/cortex-alpha/default.nix` mention it),
+  resolved to a directory that never existed), and
   `tests/topology/{mkHorizons,genNftablesMatrix,genDnsmasqHorizons,
-  topology-derive,ponr-subset-equality}.nix` (refer to files that do not
-  exist). Pruning modules/tests was not in scope for ruling (d) (lib/ only).
+  topology-derive,ponr-subset-equality}.nix` (referenced files that do not
+  exist). Proven dead by repo-wide audit across all file types: only doc lines
+  and stale comments referenced them (both updated). **Kept** (orphaned but
+  intact and now mayo-wired): `tests/topology/{mkRegistry,genNginx}.nix` and
+  `tests/topology-validation.nix` — say the word and they go too.
 - **F-33 reconciliation landed:** mayo carries the tolerant `resolveBackupPaths`;
   deep-equality proved it is inert for the parent (all secret files exist there).
 - **Open flags:** (1) ~~fetching the private mayo input needs local git
   credentials or an nix `access-tokens` entry — CI runners must be provisioned
   before the first CI run after this commit~~ **RESOLVED 2026-11-11: mayo made
   public (F-35 closed) — it fetches anonymously like any other github input,
-  no CI provisioning needed**; (2) the 7-machine `gh`/`glab` golden
-  drift still awaits your authorisation to regenerate (Golden Rule).
+  no CI provisioning needed**; (2) ~~the 7-machine `gh`/`glab` golden
+  drift still awaits your authorisation to regenerate (Golden Rule)~~
+  **RESOLVED 2026-11-11: goldens regenerated under authorisation, deltas
+  verified as gh/glab-only, sweep 20/20 (F-34 closed)**.
 - Step 3b (wrapped API over the moved engine) is sequenced after this extraction.
 
 **Step 3 scope rulings (user, 2026-11-09):**
@@ -513,3 +518,5 @@ Post-Step-3 work, entered only once gates A, B, C are all true:
 | 2026-11-11 | Mayo repository made **public** (the original intention) — F-35 closed; the `mayo` input fetches anonymously, no CI credential provisioning needed (user) |
 | 2026-11-11 | Mayo licensed **AGPL-3.0-or-later** (user choice) — `LICENSE` (full AGPL v3 text), README grant covering all files with SPDX identifier, SPDX header in `flake.nix`; unmodified consumers (parent, child) keep their own licensing, modified versions must ship AGPL-3.0-or-later (user) |
 | 2026-11-11 | Locks re-locked to `gamingHost1` bf596c3 + `mayo` c6e3c0f (licence commit); only those two inputs moved in this session — `carmelsite` 6942741f is from your own commit `a5ad92e` "tight coupling in practice" |
+| 2026-11-11 | F-34 resolved — golden regeneration authorised: 7 machines' goldens updated only after verifying each delta was exactly the two gh/glab addition lines (LINDA carries gh-2.97.0/glab-1.111.0 from its own nixpkgs); sweep 20/20 |
+| 2026-11-11 | Dead code pruned (user authorisation): core-router×2 modules, lib/topology/archive/topology-derive.nix, and 5 broken orphan tests — all proven unreferenced repo-wide except docs/comments, which were updated; the 3 intact orphan tests kept (offer to prune) |

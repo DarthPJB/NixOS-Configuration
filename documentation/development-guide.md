@@ -20,20 +20,23 @@ Consolidated reference for codebase structure, coding conventions, and developme
 - `goldens/` - Golden test files (sacrosanct)
   - `<machine>.json` - Golden test references for each machine (x86-bootstrap has none)
   - `ci.json`, `bargman-greeter-vm.json` - Non-machine golden references
-- `lib/topology/` - Topology transformation functions
-  - `mktopology.nix` - Orchestrator (reads JSON, calls generators)
-  - `mkRegistry.nix` - Cross-machine validation; `mkHostsEntries.nix` - hosts entries
-  - `gen*.nix` - Generators (JSON → NixOS config): `genFirewall`, `genDns`, `genNginx`, `genBackup`, `genWireguard`, `genNetwork`, `genTailscale`, `genForwarding`, `genMonitoring`, `genDashboard`
+- `lib/topology/` - Local topology-adjacent code. The **engine itself lives in
+  the mayo library** (flake input `mayo`, `github.com/Bargman-Tech/mayo`,
+  imported as `"${mayo.lib}/topology/…"` — LDR-001 D-10)
+  - `genDashboard.nix` - Grafana dashboard generator (inventory → dashboard attrsets)
   - `dashboard_templates/` - Dashboard templates consumed by `genDashboard`
-  - `validate.nix` - Topology validation
-  - `utils.nix` - Shared utilities
-  - `archive/` - Retired code (incl. `topology-derive.nix`)
+  - Moved to mayo (mayo-split Step 3): `mktopology`, `mkRegistry`,
+    `mkHostsEntries`, all `gen*` generators, `validate`, `utils`
+  - `lib/topology_library.nix` - C1 façade over the mayo engine (Step-3b seed)
 - `lib/monitoring/inventory.nix` - Monitoring inventory (blessed scrape baseline + config-derived discovery)
 - `lib/serialize-config.nix` - The config serializer (used by `dump-config` and `checks.network-config-*`)
 - `lib/golden_coverage.nix` - Coverage audit (checks if every machine has a golden)
 - `modules/` - NixOS modules
   - `enable-wg-topology.nix` - WireGuard client module (deployed on 16 machines)
-  - Also `core-router.nix`, `core-router-topology.nix`, `lightdm-webkit2-greeter.nix`, `nixos-deployment-exporter.nix`, `smart-monitoring.nix`, `ssh-multiplex.nix`, `sysdiag.nix`, `vllm.nix` (former `topology-derive.nix` is archived at `lib/topology/archive/`)
+  - Also `lightdm-webkit2-greeter.nix`, `nixos-deployment-exporter.nix`, `smart-monitoring.nix`, `ssh-multiplex.nix`, `sysdiag.nix`, `vllm.nix`
+  - Removed as dead code (2026-11-11 mayo-split prune): `core-router.nix`,
+    `core-router-topology.nix`, and the archived `topology-derive.nix` — never
+    imported, and already referencing files that never existed
 - `environments/` - Environment modules for software collections (e.g., `code.nix`, `browsers.nix`)
 - `users/` - User account configurations (one file per user)
 
