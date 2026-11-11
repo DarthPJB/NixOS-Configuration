@@ -68,7 +68,10 @@ executable `checks."x86_64-linux"` in the consuming repos.
 ## Verification (2026-11-11)
 
 - Positive: all checks build green in the parent worktree + gaming-host-1;
-  `nix flake check --no-build` exit 0 (both repos).
+  NOTE: the child's standalone `nix flake check` fails on absent secret files by
+  design (D-08) — its checks are verified via `nix build .#checks.x86_64-linux.*`
+  `nix flake check --no-build` exit 0 on the parent (which actualises the child via
+  extendModules).
 - Negative: each lint fails on injected-violation fixtures (cross-layer
   import, raw-API reference, vendored file, ciphertext/decrypt/escape); the
   eval asserts threw during development exactly as designed
