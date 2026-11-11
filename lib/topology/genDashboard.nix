@@ -20,7 +20,7 @@
 { inventory }:
 let
   inherit (builtins) replaceStrings isString isList isAttrs map removeAttrs;
-  inherit (lib) concatStringsSep concatMap foldl' mapAttrs;
+  inherit (lib) concatStringsSep foldl' mapAttrs;
 
   # The datasource provisioned by services/prometheus.nix.
   datasource = { type = "prometheus"; uid = "prometheus01"; };

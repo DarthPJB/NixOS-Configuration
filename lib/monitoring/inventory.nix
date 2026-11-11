@@ -27,7 +27,7 @@
 { lib }:
 { self, registry }:
 let
-  inherit (builtins) head filter map attrNames listToAttrs;
+  inherit (builtins) head filter map attrNames;
   inherit (lib) filterAttrs genAttrs;
 
   # ── Topology IPs ────────────────────────────────────────────
