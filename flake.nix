@@ -891,100 +891,203 @@
         };
       };
 
-      checks."x86_64-linux" = {
-        formatting = nixpkgs.runCommand "check-formatting"
-          { buildInputs = [ nixpkgs.nixpkgs-fmt ]; }
-          "nixpkgs-fmt --check ${self} && touch $out";
+      # Structure checks (mayo:lib/mayo/lints — ruling 2026-11-11: the
+      # structure-assurance methods are nix flake checks). A flake check must
+      # EXECUTE its lint at build time: `nix flake check` only builds check
+      # derivations, so a bare writeShellApplication would compile the script
+      # and never run it. mkLintCheck wraps the runnable app in runCommand
+      # (the formatting-check semantics) so violations fail the build.
+      checks."x86_64-linux" =
+        let
+          mkLintCheck = name: runtimeInputs: text:
+            let
+              runner = nixpkgs.writeShellApplication {
+                name = "run-${name}";
+                meta.description = "Executed structure check: ${name}";
+                runtimeInputs = [
+                  nixpkgs.bash
+                  nixpkgs.coreutils
+                  nixpkgs.findutils
+                  nixpkgs.gnugrep
+                  nixpkgs.gnused
+                ] ++ runtimeInputs;
+                inherit text;
+              };
+            in
+            nixpkgs.runCommand "check-${name}" { nativeBuildInputs = [ runner ]; } ''
+              ${lib.getExe runner} && touch $out
+            '';
+        in
+        {
+          formatting = nixpkgs.runCommand "check-formatting"
+            { buildInputs = [ nixpkgs.nixpkgs-fmt ]; }
+            "nixpkgs-fmt --check ${self} && touch $out";
 
-        deadnix = nixpkgs.writeShellApplication {
-          name = "run-deadnix";
-          meta.description = "Detect dead Nix code";
-          runtimeInputs = [ deadnix.packages.x86_64-linux.default ];
           # NOTE: --no-lambda-arg suppresses ALL unused lambda-arg warnings.
           # Intentional: handles idiomatic (final: super: {...}) overlay patterns.
           # Any new dead lambda args will be silently suppressed — audit annually.
-          text = ''exec deadnix --fail --no-lambda-arg --no-lambda-pattern-names "${self}"'';
-        };
+          deadnix = mkLintCheck "deadnix" [ deadnix.packages.x86_64-linux.default ]
+            ''exec ${lib.getExe' deadnix.packages.x86_64-linux.default "deadnix"} --fail --no-lambda-arg --no-lambda-pattern-names ${self}'';
 
-        golden-validation = nixpkgs.writeShellApplication {
-          name = "run-golden-validation";
-          meta.description = "Validate all machine configs against golden files";
-          runtimeInputs = [ nixpkgs.jq nixpkgs.diffutils ];
-          text = ''
-            PASS=true
-            for machine in ${lib.concatStringsSep " " (builtins.attrNames self.nixosConfigurations)}; do
-              golden="${self}/goldens/$machine.json"
-              if [ ! -f "$golden" ]; then
-                echo "Skipping $machine (no golden file)"
-                continue
+          # ── structure lints (scripts from the Mayo layer, one per rule) ──
+          structure-layer-boundary = mkLintCheck "layer-boundary" [ ]
+            ''exec ${lib.getExe' nixpkgs.bash "bash"} ${mayoLib.lints.layerBoundary} ${mayo.lib}'';
+
+          structure-api-freeze = mkLintCheck "api-freeze" [ ]
+            ''exec ${lib.getExe' nixpkgs.bash "bash"} ${mayoLib.lints.apiFreeze} ${self}'';
+
+          structure-anti-vendor = mkLintCheck "anti-vendor" [ ]
+            ''exec ${lib.getExe' nixpkgs.bash "bash"} ${mayoLib.lints.antiVendor} ${self}'';
+
+          # Eval-time invariant: the layer APIs resolve from consumer seams
+          # alone (split-readiness — repo separation stays a directory move).
+          split-ready =
+            let
+              minimalKetchup = import "${mayo.lib}/ketchup/topology_library.nix" {
+                inherit lib;
+                topologyDir = ./topology;
+                pubKeyDir = ./secrets/public_keys/wireguard;
+              };
+              kRequired = [
+                "registry"
+                "mktopology"
+                "generators"
+                "validate"
+                "utils"
+                "mkHostsEntries"
+                "mkKnownHosts"
+                "hostNamesFromTopo"
+                "deriveTopo"
+                "coordToIp"
+              ];
+              mRequired = [ "rcloneTarget" "golden" "lints" ];
+              missing =
+                builtins.filter (a: !(minimalKetchup ? ${a})) kRequired
+                ++ builtins.filter (a: !(mayoLib ? ${a})) mRequired;
+            in
+            if missing != [ ] then
+              throw "split-ready: missing layer API attributes: ${toString missing}"
+            else if builtins.length (builtins.attrNames minimalKetchup.generators) != 9 then
+              throw "split-ready: ketchup.generators must expose exactly the nine generators"
+            else
+              nixpkgs.runCommand "check-split-ready" { } ''
+                echo "split-ready: Ketchup and Mayo APIs resolve from consumer seams alone"
+                touch $out
+              '';
+
+          # Eval-time invariant (D-08 clause 6): every machine carrying the
+          # fleet-identity wiring must hold the full canonical mkKnownHosts
+          # set. Extra entries (builder host keys: LINDA/remote-builder 21,
+          # terminal-zero 20) are allowed; missing or altered canonical
+          # entries are not. The excluded machines carry no wiring by design:
+          # bootstrap images (arm-/x86-bootstrap), minimal profile (beta-one),
+          # the QEMU test harness (bargman-greeter-vm), and the external
+          # Malayalam passthrough (cluster-box).
+          known-hosts-identity =
+            let
+              expected = mkKnownHosts self.nixosConfigurations;
+              excluded = [ "arm-bootstrap" "bargman-greeter-vm" "beta-one" "cluster-box" "x86-bootstrap" ];
+              machines = builtins.filter (n: !(builtins.elem n excluded)) (builtins.attrNames self.nixosConfigurations);
+              entryOk = kh: n:
+                let
+                  e = kh.${n} or { };
+                  x = expected.${n};
+                in
+                (e.publicKey or null) == (x.publicKey or null)
+                && lib.sort builtins.lessThan (e.hostNames or [ ]) == lib.sort builtins.lessThan (x.hostNames or [ ]);
+              badOf = name:
+                let kh = self.nixosConfigurations.${name}.config.programs.ssh.knownHosts;
+                in builtins.filter (n: !(kh ? ${n} && entryOk kh n)) (builtins.attrNames expected);
+              bad = lib.concatMap (m: map (n: "${m}/${n}") (badOf m)) machines;
+              nEntries = builtins.length (builtins.attrNames expected);
+            in
+            if bad != [ ] then
+              throw "known-hosts-identity violated (machine/entry): ${lib.concatStringsSep ", " (lib.take 8 bad)}"
+            else
+              nixpkgs.runCommand "check-known-hosts-identity" { } ''
+                echo "known-hosts-identity: ${toString (builtins.length machines)} machines carry all ${toString nEntries} canonical entries"
+                touch $out
+              '';
+
+          golden-validation = nixpkgs.writeShellApplication {
+            name = "run-golden-validation";
+            meta.description = "Validate all machine configs against golden files";
+            runtimeInputs = [ nixpkgs.jq nixpkgs.diffutils ];
+            text = ''
+              PASS=true
+              for machine in ${lib.concatStringsSep " " (builtins.attrNames self.nixosConfigurations)}; do
+                golden="${self}/goldens/$machine.json"
+                if [ ! -f "$golden" ]; then
+                  echo "Skipping $machine (no golden file)"
+                  continue
+                fi
+                echo "Validating $machine..."
+                current=$(nix run .#dump-config -- "$machine" | ${lib.getExe nixpkgs.jq} -S .)
+                if echo "$current" | ${lib.getExe' nixpkgs.diffutils "diff"} -u "$golden" -; then
+                  echo "  ✓ $machine matches golden"
+                else
+                  echo "  ✗ $machine differs from golden!"
+                  PASS=false
+                fi
+              done
+              if [ "$PASS" != "true" ]; then
+                echo ""
+                echo "Golden validation failed. If intentional, update with:"
+                echo "  nix run .#dump-config -- <machine> > goldens/<machine>.json"
+                exit 1
               fi
-              echo "Validating $machine..."
-              current=$(nix run .#dump-config -- "$machine" | ${lib.getExe nixpkgs.jq} -S .)
-              if echo "$current" | ${lib.getExe' nixpkgs.diffutils "diff"} -u "$golden" -; then
-                echo "  ✓ $machine matches golden"
-              else
-                echo "  ✗ $machine differs from golden!"
-                PASS=false
-              fi
-            done
-            if [ "$PASS" != "true" ]; then
               echo ""
-              echo "Golden validation failed. If intentional, update with:"
-              echo "  nix run .#dump-config -- <machine> > goldens/<machine>.json"
-              exit 1
-            fi
-            echo ""
-            echo "All golden validations passed"
-          '';
-        };
-
-        topology-coverage =
-          let
-            # Mayo golden tooling (ruling 2026-11-11) — data-injected: the
-            # exclusion list is fleet data (Secret-Sauce) and stays here.
-            coverage = import mayoLib.golden.coverage {
-              goldenDir = ./goldens;
-              topologyMachines = builtins.attrNames topoRegistry.hosts;
-              machineNames = builtins.attrNames (builtins.removeAttrs self.nixosConfigurations [
-                "beta-one"
-                "display-0"
-                "display-1"
-                "display-2"
-                "print-controller"
-                "bargman-greeter-vm"
-                "arm-bootstrap"
-                "x86-bootstrap"
-                "cluster-box"
-              ]);
-            };
-          in
-          if !coverage.isComplete then
-            throw "Topology coverage incomplete. Missing: ${builtins.toJSON coverage.missing}"
-          else
-            nixpkgs.runCommand "topology-coverage-check" { } ''
-              echo "Topology coverage: ${toString coverage.coveragePercent}%"
-              echo "Machines: ${toString coverage.coveredCount}/${toString coverage.totalMachines}"
-              touch $out
+              echo "All golden validations passed"
             '';
-
-        bargman-greeter-login-test = nixpkgs.callPackage ./tests/bargman-greeter-login/default.nix {
-          nixosModule = {
-            imports = [ ./environments/i3wm_darthpjb.nix ./environments/bargman-greeter-vm.nix ];
-            _module.args = {
-              inherit self;
-              inherit bargman-assets;
-            };
           };
-          resourceDir = ./tests/bargman-greeter-login/resources;
-        };
 
-        # Minecraft server lifecycle test:
-        # Boots VM, waits for "Done", verifies RCON, sends stop, checks clean exit
-        minecraft-server-test = nixpkgs.callPackage ./tests/minecraft-server/default.nix {
-          minecraft-curseforge-all-the-mons = self.packages.x86_64-linux.minecraft-curseforge-all-the-mons;
-          minecraft-curseforge-module = ./server_services/game_servers/minecraft-curseforge.nix;
+          topology-coverage =
+            let
+              # Mayo golden tooling (ruling 2026-11-11) — data-injected: the
+              # exclusion list is fleet data (Secret-Sauce) and stays here.
+              coverage = import mayoLib.golden.coverage {
+                goldenDir = ./goldens;
+                topologyMachines = builtins.attrNames topoRegistry.hosts;
+                machineNames = builtins.attrNames (builtins.removeAttrs self.nixosConfigurations [
+                  "beta-one"
+                  "display-0"
+                  "display-1"
+                  "display-2"
+                  "print-controller"
+                  "bargman-greeter-vm"
+                  "arm-bootstrap"
+                  "x86-bootstrap"
+                  "cluster-box"
+                ]);
+              };
+            in
+            if !coverage.isComplete then
+              throw "Topology coverage incomplete. Missing: ${builtins.toJSON coverage.missing}"
+            else
+              nixpkgs.runCommand "topology-coverage-check" { } ''
+                echo "Topology coverage: ${toString coverage.coveragePercent}%"
+                echo "Machines: ${toString coverage.coveredCount}/${toString coverage.totalMachines}"
+                touch $out
+              '';
+
+          bargman-greeter-login-test = nixpkgs.callPackage ./tests/bargman-greeter-login/default.nix {
+            nixosModule = {
+              imports = [ ./environments/i3wm_darthpjb.nix ./environments/bargman-greeter-vm.nix ];
+              _module.args = {
+                inherit self;
+                inherit bargman-assets;
+              };
+            };
+            resourceDir = ./tests/bargman-greeter-login/resources;
+          };
+
+          # Minecraft server lifecycle test:
+          # Boots VM, waits for "Done", verifies RCON, sends stop, checks clean exit
+          minecraft-server-test = nixpkgs.callPackage ./tests/minecraft-server/default.nix {
+            minecraft-curseforge-all-the-mons = self.packages.x86_64-linux.minecraft-curseforge-all-the-mons;
+            minecraft-curseforge-module = ./server_services/game_servers/minecraft-curseforge.nix;
+          };
         };
-      };
 
       # CI data exposed under legacyPackages (not a standard flake output type)
       legacyPackages."x86_64-linux" = {

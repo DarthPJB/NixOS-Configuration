@@ -383,6 +383,28 @@ nix run .#validate-goldens -- cortex-alpha
 - If `validate-goldens` fails after refactoring, the refactoring introduced a side effect
 - The user explicitly authorizes all golden updates
 
+### Structure Checks (Enforced Boundaries, LDR-001 D-11)
+
+The architecture boundaries are enforced as `nix flake checks`, not just
+documented. Lint scripts live in `mayo:lib/mayo/lints/` (reach them via
+`mayoLib.lints.*`); the consuming repos wire them as checks:
+
+- `structure-layer-boundary` — Ketchup ↔ Mayo never import each other
+- `structure-api-freeze` — consumers touch only `topology_library.nix` /
+  `mayo_library.nix` (bare `${mayo.lib}` directory refs are fine)
+- `structure-anti-vendor` — mayo-owned files never reappear under `lib/`
+- `structure-d08` (machine repos) — no ciphertext, no `age -d`, `secrets/`
+  fileless, no repo-root escapes
+- `split-ready` / `known-hosts-identity` / `schema-contract` — eval-time
+  asserts (layer APIs resolve from seams alone; every wired machine carries
+  the full canonical `mkKnownHosts` set; the `bargman-tech` export keeps its
+  shape)
+
+**Execution rule:** `nix flake check` only *builds* its checks — executable
+checks must be `runCommand`-wrapped (`mkLintCheck` in both flakes) or the
+lint never runs. Violating any of these checks is a build failure. Details:
+`opencode/plans/structure-checks-PLAN.md`.
+
 ### WireGuard Public Keys
 Public keys are read from `secrets/public_keys/wireguard/wg_${name}_pub` files
 using `builtins.readFile`. The transformation function requires `self` (the flake)

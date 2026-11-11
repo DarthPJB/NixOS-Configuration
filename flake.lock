@@ -1690,11 +1690,11 @@
     },
     "mayo_2": {
       "locked": {
-        "lastModified": 1794412250,
-        "narHash": "sha256-gfERJMgwLIpwXng1OG1jlYCwGFQMJ5VdrVIg/PEo9M4=",
+        "lastModified": 1794430756,
+        "narHash": "sha256-sJrysdPnnokkNkMRsSFcitFwIfuuDdK1vcZ74x1SBI8=",
         "ref": "refs/heads/main",
-        "rev": "bbd81922d35a4e849a674a4af2388347f8f50b18",
-        "revCount": 4,
+        "rev": "d2939a272e4e438a7690b16d4d99a63c91822e47",
+        "revCount": 6,
         "type": "git",
         "url": "https://github.com/Bargman-Tech/mayo.git"
       },
