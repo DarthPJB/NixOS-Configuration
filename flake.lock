@@ -1145,11 +1145,11 @@
         "secrix": "secrix_2"
       },
       "locked": {
-        "lastModified": 1794353143,
-        "narHash": "sha256-QqvVCeRYPTim1IeBBeiSBkwk7cxCFIc0ZGFlrLXe+ZI=",
+        "lastModified": 1794400050,
+        "narHash": "sha256-R3/FaUST6daAQtwa3T0KvjURA1wsqNKm5wCEqPnZOag=",
         "ref": "refs/heads/main",
-        "rev": "339c5934afb7cf9ca6b699a3183f6792881e3871",
-        "revCount": 7,
+        "rev": "bf596c3a8c74592cd5b3808e5344c5762a2b564f",
+        "revCount": 8,
         "type": "git",
         "url": "https://gitlab.com/mecha-team-zero/gaming-host-1.git"
       },
@@ -1675,11 +1675,11 @@
     },
     "mayo": {
       "locked": {
-        "lastModified": 1794352711,
-        "narHash": "sha256-XpV1K7rDhQCOBVIpNEvzDx56Cj7/XRLQ+htaqYTHJtw=",
+        "lastModified": 1794400010,
+        "narHash": "sha256-8KvICF5e6RK6WSRL6Y06lEDxe5KrKeJLQaS9fpC0gkU=",
         "ref": "refs/heads/main",
-        "rev": "1129b926d703a20c21553d456fd4bbca3efd6b0d",
-        "revCount": 2,
+        "rev": "c6e3c0f01d98d4eed6fe7467eb089a9dfa9e8e1c",
+        "revCount": 3,
         "type": "git",
         "url": "https://github.com/Bargman-Tech/mayo.git"
       },
@@ -1690,11 +1690,11 @@
     },
     "mayo_2": {
       "locked": {
-        "lastModified": 1794352711,
-        "narHash": "sha256-XpV1K7rDhQCOBVIpNEvzDx56Cj7/XRLQ+htaqYTHJtw=",
+        "lastModified": 1794400010,
+        "narHash": "sha256-8KvICF5e6RK6WSRL6Y06lEDxe5KrKeJLQaS9fpC0gkU=",
         "ref": "refs/heads/main",
-        "rev": "1129b926d703a20c21553d456fd4bbca3efd6b0d",
-        "revCount": 2,
+        "rev": "c6e3c0f01d98d4eed6fe7467eb089a9dfa9e8e1c",
+        "revCount": 3,
         "type": "git",
         "url": "https://github.com/Bargman-Tech/mayo.git"
       },

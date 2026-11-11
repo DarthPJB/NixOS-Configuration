@@ -16,7 +16,7 @@
 | Repo | Location | Local checkout | Visibility |
 |---|---|---|---|
 | **gaming-host-1** (child machine flake) | `gitlab.com/mecha-team-zero/gaming-host-1` | `/speed-storage/bargman-tech/gaming-host-1` | private |
-| **mayo** (schema + shared config surface) | `github.com/Bargman-Tech/mayo` | `/speed-storage/bargman-tech/mayo` | private |
+| **mayo** (schema + shared config surface) | `github.com/Bargman-Tech/mayo` | `/speed-storage/bargman-tech/mayo` | **public** · AGPL-3.0-or-later (2026-11-11) |
 
 Both repositories are **created** (2026-11-07) with an initial README commit on `main`.
 
@@ -278,8 +278,9 @@ the child's schema export, golden still byte-identical. → "deploys via consume
 
 ### Step 3 — `bargman-tech` schema/lib repo (mayo library's first application)
 
-- The `bargman-tech` schema/lib repo is `github.com/Bargman-Tech/mayo` (private,
-  **created**). It will hold (a) the schema definition (§5) and (b) the mayo
+- The `bargman-tech` schema/lib repo is `github.com/Bargman-Tech/mayo`
+  (**public**, licensed **AGPL-3.0-or-later** as of 2026-11-11; created 2026-11-07).
+  It holds (a) the schema definition (§5) and (b) the mayo
   library (the shared config surface).
 - Move the Step-1 vendored files out of the child into the mayo library; both
   parent and child consume it via flake input (no cycle).
@@ -358,9 +359,11 @@ the shared lib; gates A and B still hold. → then proceed to higher complexitie
   exist). Pruning modules/tests was not in scope for ruling (d) (lib/ only).
 - **F-33 reconciliation landed:** mayo carries the tolerant `resolveBackupPaths`;
   deep-equality proved it is inert for the parent (all secret files exist there).
-- **Open flags:** (1) fetching the private mayo input needs local git
+- **Open flags:** (1) ~~fetching the private mayo input needs local git
   credentials or an nix `access-tokens` entry — CI runners must be provisioned
-  before the first CI run after this commit; (2) the 7-machine `gh`/`glab` golden
+  before the first CI run after this commit~~ **RESOLVED 2026-11-11: mayo made
+  public (F-35 closed) — it fetches anonymously like any other github input,
+  no CI provisioning needed**; (2) the 7-machine `gh`/`glab` golden
   drift still awaits your authorisation to regenerate (Golden Rule).
 - Step 3b (wrapped API over the moved engine) is sequenced after this extraction.
 
@@ -507,3 +510,6 @@ Post-Step-3 work, entered only once gates A, B, C are all true:
 | 2026-11-10 | Step 3 complete — GATE C PASS: child vendors no library files, both sides consume mayo, 13/7 sweep (7 = pre-existing gh/glab, 2-line delta), build exit 0 |
 | 2026-11-10 | mayo consumed via `git+https` (private repo — local git credentials; CI needs `access-tokens`/netrc before its first run) |
 | 2026-11-10 | Dead modules/tests (core-router*, archive/topology-derive, 5 broken tests) left in place — already non-functional pre-move; ruling (d) covers lib/ only |
+| 2026-11-11 | Mayo repository made **public** (the original intention) — F-35 closed; the `mayo` input fetches anonymously, no CI credential provisioning needed (user) |
+| 2026-11-11 | Mayo licensed **AGPL-3.0-or-later** (user choice) — `LICENSE` (full AGPL v3 text), README grant covering all files with SPDX identifier, SPDX header in `flake.nix`; unmodified consumers (parent, child) keep their own licensing, modified versions must ship AGPL-3.0-or-later (user) |
+| 2026-11-11 | Locks re-locked to `gamingHost1` bf596c3 + `mayo` c6e3c0f (licence commit); only those two inputs moved in this session — `carmelsite` 6942741f is from your own commit `a5ad92e` "tight coupling in practice" |
