@@ -1,9 +1,14 @@
 # CI/CD Documentation for NixOS Configuration
 
 This file documents the CI/CD pipeline for the NixOS configuration
-repository. The implementation lives in `ci.nix` (repo root) and
-`ci/generate-workflow.nix`, with workflow configuration generated from
-Nix evaluation.
+repository. The engine lives in **`nix-github-ci`**
+(`github.com/Bargman-Tech/nix-github-ci`, public — secret-sauce plan R1,
+2026-11-12): `lib.mkCi` assembles the workflow and the
+`generate/validate-ci-workflow` apps are re-exported from its flake, exactly
+like the fleet-standard `platonic/gitlab-ci.nix` pattern. This repository
+supplies the **fleet data** (`fleet = { … }` in `flake.nix`: exclusions,
+eval-profiler target, x86 timeout, IP-scan excludes) and keeps the CI golden
+(`goldens/ci.json`) + `check-ci` app.
 
 ## Security Posture
 
@@ -40,9 +45,14 @@ actual build requirements.
 
 ## Files
 
-- `ci.nix` (repo root) - Main CI module with job definitions; machine lists
-  auto-derived from `nixosConfigurations`
-- `ci/generate-workflow.nix` - Workflow generator (Nix → JSON → YAML via PyYAML)
+- `nix-github-ci` (flake input) - CI engine: `lib.mkCi` (workflow assembly,
+  machine lists auto-derived from `nixosConfigurations`) + `lib.ciLibrary`
+  (job builders, settings helpers, workflow scripts)
+- `flake.nix` (`ci` binding) - calls `mkCi` with this fleet's data
+  (`ciParallelism` + `fleet = { exclusions, profileTarget, … }`); re-exports
+  the `generate-ci-workflow` / `validate-ci-workflow` apps
+- `goldens/ci.json` + `check-ci` app - CI golden (sorted workflow JSON),
+  validated on every change
 - `documentation/ci-readme.md` - This file (documentation)
 
 ## Quick Start
@@ -74,8 +84,9 @@ This will output build warnings to stderr (normal for `nix run`) and the YAML wo
 
 ## CI Jobs
 
-Job definitions live in `ci.nix`. Machine matrices are auto-derived from the
-flake's `nixosConfigurations` — there are no hardcoded machine lists.
+Job definitions live in `nix-github-ci`'s `lib/mk-ci.nix`. Machine matrices
+are auto-derived from the flake's `nixosConfigurations` — there are no
+hardcoded machine lists.
 
 ### 1. Validation & Linting (validation)
 - Runs on self-hosted runners for all pushes and PRs
@@ -114,7 +125,7 @@ flake's `nixosConfigurations` — there are no hardcoded machine lists.
 ## Machine Matrix
 
 Machine matrices are auto-derived from the flake's `nixosConfigurations`;
-`ci.nix` categorizes each machine by host/build platform (x86_64 native,
+`mkCi` categorizes each machine by host/build platform (x86_64 native,
 aarch64 native, ARM cross-compiled from x86_64). There are no hardcoded
 machine lists in the CI configuration.
 
@@ -122,7 +133,8 @@ machine lists in the CI configuration.
 storage-array, display-0). Dormant machines are preserved in `flake.nix`
 `dormantConfigurations` for golden tests but are not included in
 `nixosConfigurations` to prevent accidental deployment — and therefore are
-never built in CI. `ci.nix` `ciExclusions` additionally skips non-deployment
+never built in CI. The `fleet.exclusions` argument (in `flake.nix`) additionally
+skips non-deployment
 configs (the cluster-box passthrough and the bargman-greeter-vm test VM).
 The full fleet list lives in `AGENTS.md`.
 
@@ -169,19 +181,21 @@ The full fleet list lives in `AGENTS.md`.
 
 ### Adding New Machines
 1. Add machine to `flake.nix`
-2. Machine lists in `ci.nix` are auto-derived — nothing to update there
+2. Machine lists are auto-derived by `mkCi` — nothing to update there
 3. Regenerate workflow: `nix run .#generate-ci-workflow --option builders ''`
 4. Commit changes
 
 ### Modifying CI Jobs
-1. Edit `ci.nix` module
-2. Update job definitions
+1. Engine behaviour: edit `nix-github-ci` (`lib/mk-ci.nix` / `lib/ci_library.nix`)
+2. Fleet data (exclusions, profiler target, timeouts, scan excludes): edit the
+   `fleet = { … }` argument of the `ci` binding in `flake.nix`
 3. Regenerate workflow: `nix run .#generate-ci-workflow --option builders ''`
 4. Test locally: `nix run .#validate-ci-workflow --option builders ''`
-5. Commit changes
+5. Commit changes (the CI golden changes only if the workflow changed —
+   update `goldens/ci.json` deliberately via the documented command)
 
 ### Changing Triggers
-1. Modify `on` section in `ci.nix`
+1. Modify `on` section in `nix-github-ci`'s `lib/mk-ci.nix`
 2. Regenerate workflow
 3. Test trigger conditions
 4. Commit changes

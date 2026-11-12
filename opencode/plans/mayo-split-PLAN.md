@@ -359,7 +359,7 @@ the shared lib; gates A and B still hold. → then proceed to higher complexitie
   exist). Proven dead by repo-wide audit across all file types: only doc lines
   and stale comments referenced them (both updated). **Kept** (orphaned but
   intact and now mayo-wired): `tests/topology/{mkRegistry,genNginx}.nix` and
-  `tests/topology-validation.nix` — say the word and they go too.
+  `tests/topology-validation.nix` — **pruned 2026-11-12** (secret-sauce plan R3, with `tests/test-hub-of-hubs.nix` and the broken `scripts/validate-topology.sh`).
 - **F-33 reconciliation landed:** mayo carries the tolerant `resolveBackupPaths`;
   deep-equality proved it is inert for the parent (all secret files exist there).
 - **Open flags:** (1) ~~fetching the private mayo input needs local git

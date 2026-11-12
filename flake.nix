@@ -54,8 +54,14 @@
     # generators), mkKnownHosts, rclone-target (mayo-split Step 3). Both this
     # flake and the child consume it; neither vendors the library any more.
     mayo.url = "git+https://github.com/Bargman-Tech/mayo.git";
+    # GitHub Actions CI engine (secret-sauce plan R1) — mkCi + workflow apps,
+    # consumed gitlab-ci-style. Fleet data stays here (fleet arg below).
+    nix-github-ci = {
+      url = "github:Bargman-Tech/nix-github-ci";
+      inputs.nixpkgs.follows = "nixpkgs_stable";
+    };
   };
-  outputs = { self, deadnix, determinate, disko, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE, malayalam, nix-src, assimilator-probe, gamingHost1, mayo }:
+  outputs = { self, deadnix, determinate, disko, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE, malayalam, nix-src, assimilator-probe, gamingHost1, mayo, nix-github-ci }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
@@ -319,11 +325,23 @@
         };
       };
 
-      # CI/CD Configuration — ci.nix accepts self and auto-derives machines from nixosConfigurations
-      ci = import ./ci.nix { inherit self lib; pkgs = nixpkgs; parallelism = ciParallelism; };
-
-      # CI Generator Scripts
-      ci-generator = import ./ci/generate-workflow.nix { inherit self lib; pkgs = nixpkgs; parallelism = ciParallelism; };
+      # CI/CD Configuration — nix-github-ci's mkCi derives machine lists from
+      # self at eval time; all fleet data (exclusions, profiler target,
+      # x86 timeout, IP-scan excludes) is passed here — Secret-Sauce (R1).
+      ci = nix-github-ci.lib.mkCi {
+        inherit self lib;
+        pkgs = nixpkgs;
+        parallelism = ciParallelism;
+        fleet = {
+          exclusions = [
+            "cluster-box" # Malayalam passthrough — DO NOT build in CI (see flake.nix comment)
+            "bargman-greeter-vm" # Test VM — not a deployment target
+          ];
+          profileTarget = "remote-builder"; # eval-profiler diagnostic step
+          x86TimeoutMinutes = 720; # 12h — LINDA cold-cache builds take ~6h
+          ipScanExcludes = [ "10.88.127" ]; # fleet VPN range (scan allowlist)
+        };
+      };
     in
     {
       inherit topologyConfigs;
@@ -435,16 +453,10 @@
             '';
           });
         };
-        generate-ci-workflow = {
-          type = "app";
-          meta.description = "Generate GitHub Actions workflow from Nix evaluation";
-          program = "${ci-generator.scripts.generate-ci-workflow}/bin/generate-ci-workflow";
-        };
-        validate-ci-workflow = {
-          type = "app";
-          meta.description = "Validate GitHub Actions workflow";
-          program = "${ci-generator.scripts.validate-ci-workflow}/bin/validate-ci-workflow";
-        };
+        # Re-exported from nix-github-ci (gitlab-ci consumption pattern) —
+        # the scripts eval .#ci.ci.github-actions of THIS flake at runtime.
+        generate-ci-workflow = nix-github-ci.apps.x86_64-linux.generate-ci-workflow;
+        validate-ci-workflow = nix-github-ci.apps.x86_64-linux.validate-ci-workflow;
         ci = {
           type = "app";
           meta.description = "Show CI configuration info (machines, jobs, workflow status)";
@@ -1091,7 +1103,12 @@
 
       # CI data exposed under legacyPackages (not a standard flake output type)
       legacyPackages."x86_64-linux" = {
-        ci-info = ci-generator.ci-info;
+        ci-info = {
+          x86-machines = ci.ci.machines.x86;
+          arm-machines = ci.ci.machines.arm;
+          all-machines = ci.ci.machines.all;
+          job-count = builtins.length ci.ci.machines.all;
+        };
         ci = ci;
       };
     };

@@ -211,11 +211,18 @@ let
   nvidia = unionFor "nvidia-gpu";
 in
 {
-  # Consumed by lib/topology/genDashboard.nix
+  # Consumed by mayo's genDashboard (lib/mayo/monitoring/)
   inherit node zfs nvidia;
 
   # PromQL union of every job that exposes node_* metrics.
   nodeJobs = lib.unique (map (e: e.job) node);
+
+  # ── Dashboard presentation data (fleet — injected into mayo templates) ──
+  # cpu-frequency: hosts rendered in the full-width workstation section.
+  workstationHosts = [ "LINDA" ];
+  # cpu-frequency: friendly panel titles where the metrics label differs
+  # from the hostname.
+  labelOverrides = { cluster-box = "cluster-box (Malayalam)"; };
 
   # Full inventory — Phase 2 (scrape generation) consumes these.
   smartctl = unionFor "smartctl";

@@ -1690,11 +1690,11 @@
     },
     "mayo_2": {
       "locked": {
-        "lastModified": 1794430756,
-        "narHash": "sha256-sJrysdPnnokkNkMRsSFcitFwIfuuDdK1vcZ74x1SBI8=",
+        "lastModified": 1794490765,
+        "narHash": "sha256-UzvATrzn28jc7D1QoFjuoG7GOaJCy8dBECgugWDM+M0=",
         "ref": "refs/heads/main",
-        "rev": "d2939a272e4e438a7690b16d4d99a63c91822e47",
-        "revCount": 6,
+        "rev": "ec28ae343b411db0723e2e6cf6dd3ebbb3d6b4cb",
+        "revCount": 7,
         "type": "git",
         "url": "https://github.com/Bargman-Tech/mayo.git"
       },
@@ -1766,6 +1766,26 @@
       "original": {
         "owner": "fufexan",
         "repo": "nix-gaming",
+        "type": "github"
+      }
+    },
+    "nix-github-ci": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs_stable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794492045,
+        "narHash": "sha256-BrSifAQYbeoACjOlQ/0lqyNFR3FCukq/QzUr9ysmkTQ=",
+        "owner": "Bargman-Tech",
+        "repo": "nix-github-ci",
+        "rev": "d7641a2b3da5900ff23a2473ac693595a1e044f9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Bargman-Tech",
+        "repo": "nix-github-ci",
         "type": "github"
       }
     },
@@ -3044,6 +3064,7 @@
         "ikbaeb-th": "ikbaeb-th",
         "malayalam": "malayalam",
         "mayo": "mayo_2",
+        "nix-github-ci": "nix-github-ci",
         "nix-src": "nix-src_2",
         "nixinate": "nixinate_3",
         "nixos-hardware": "nixos-hardware_2",

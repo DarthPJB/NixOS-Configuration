@@ -1,11 +1,13 @@
 # Secret-Sauce Boundary — Working Plan
 
-> **Status:** ACTIVE — living working document. Updates in place as gates clear.
+> **Status:** Phases C, B1, B2, A1, A2 COMPLETE (2026-11-12) — gates green
+> (evidence below). Docs + final sweep in progress at time of writing; plan
+> kept as the phase record.
 > **Owner:** John88 / USS-Voyager (Janeway)
 > **Date:** 2026-11-12
 > **Predecessor:** `mayo-split-PLAN.md` (Gates A/B/C/3b all ✅ — extraction complete).
 > **Companion docs:** `documentation/LDR-001-fleet-spec-and-boundaries.md`
-> (D-08…D-11), `AGENTS.md` (Architecture Boundary), demarkation rule §6 of
+> (D-08…D-12), `AGENTS.md` (Architecture Boundary), demarkation rule §6 of
 > the mayo-split plan.
 
 ---
@@ -177,15 +179,19 @@ generatedDashboards = import mayoLib.monitoring.dashboards { dash = genDashboard
 ## 6. Execution order & gates
 
 ```
-Phase C  orphan prune                ──▶  GATE C: fmt + deadnix + flake check green; sweep unaffected
-Phase B1 mayo: dashboards in         ──▶  (push mayo — parent locks only pushed revs)
-Phase B2 parent: rewire + relock     ──▶  GATE B: dashboard JSON deep-equal (before/after);
-                                          sweep 20/20; structure checks green
-Phase A1 create + push nix-github-ci ──▶  (repo public on GitHub)
-Phase A2 parent: consume + delete    ──▶  GATE A: `check-ci` byte-identical (goldens/ci.json unchanged);
-                                          generated ci.yml unchanged; sweep 20/20; structure checks
-Docs                                ──▶  AGENTS / development-guide / monitoring-automation / LDR-001 D-12
-Final                               ──▶  full sweep + nix flake check + report
+Phase C  orphan prune                ──▶  GATE C ✅ (2026-11-12): fmt + deadnix + structure green
+Phase B1 mayo: dashboards in         ──▶  ✅ mayo ec28ae3 pushed (monitoring + API + anti-vendor)
+Phase B2 parent: rewire + relock     ──▶  GATE B ✅: dashboard JSON deep-equal 9/9 (identical
+                                          store path 07r8m8z…); sweep 20/20; fmt/deadnix green
+Phase A1 create + push nix-github-ci ──▶  ✅ github.com/Bargman-Tech/nix-github-ci PUBLIC
+                                          (60cb0f3 → d7641a2); checks green; topics set via gh
+Phase A2 parent: consume + delete    ──▶  GATE A ✅: check-ci byte-identical; regenerated ci.yml
+                                          byte-identical; structure checks all green; actionlint passed
+                                          (one extraction bug found & fixed: ''-string stripped
+                                          ipFilters leading space — proven by the golden)
+Docs                                ──▶  ✅ AGENTS / development-guide / monitoring-automation /
+                                          ai-stack / ci-readme / LDR-001 D-12 / mayo-split note
+Final                               ──▶  full sweep + report (this revision)
 ```
 
 **Order rationale:** C is independent and shrinks the tree first; B reuses the

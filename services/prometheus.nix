@@ -47,13 +47,19 @@ let
     (attrNames wgHosts);
 
   # ── Generated dashboards ──────────────────────────────────
-  # Templates + monitoring inventory -> Grafana dashboard attrsets.
-  # Host membership (rename transforms, job unions, per-machine fan-out) is
-  # derived from topology, so adding/removing a machine updates every generated
-  # dashboard. Static domain dashboards remain under ./graphana_dashboards.
+  # Templates + monitoring inventory -> Grafana dashboard attrsets (Mayo
+  # layer — secret-sauce plan R2). Host membership (rename transforms, job
+  # unions, per-machine fan-out) is derived from the injected inventory, so
+  # adding/removing a machine updates every generated dashboard. The
+  # inventory (reads `self`) and the datasource uid stay fleet-side here.
+  mayoLib = import "${self.inputs.mayo.lib}/mayo/mayo_library.nix";
   inventory = (import ../lib/monitoring/inventory.nix { inherit lib; }) { inherit self registry; };
-  genDashboard = (import ../lib/topology/genDashboard.nix { inherit lib; }) { inherit inventory; };
-  generatedDashboards = import ../lib/topology/dashboard_templates { dash = genDashboard; };
+  genDashboard = (import mayoLib.monitoring.genDashboard { inherit lib; })
+    {
+      inherit inventory;
+      datasource = { type = "prometheus"; uid = "prometheus01"; };
+    };
+  generatedDashboards = import mayoLib.monitoring.dashboards { dash = genDashboard; };
   generatedDashboardDir = pkgs.linkFarm "grafana-dashboards-generated"
     (lib.mapAttrsToList
       (name: dashboard: {

@@ -254,10 +254,10 @@ topologyConfigs (attrset of hostname → config attrset, merged into modules lis
 - `mayo:lib/mayo/mayo_library.nix` — **Mayo API**: `mayoLib.rcloneTarget`, `mayoLib.golden.*` (serializeConfig, coverage, apps, compareConfigs)
 - `mayo:lib/mayo/rclone-target.nix` — rclone-target options module (the options `genBackup` writes into)
 - `mayo:lib/mayo/golden/` — Golden tooling (library surface — ruling 2026-11-11): `serialize-config.nix`, `coverage.nix` (data-injected audit), `apps.nix` (`mkDumpConfigApp`/`mkValidateGoldensApp`), `compare-configs.sh`
-- `lib/monitoring/inventory.nix` — Monitoring inventory (union of blessed scrape baseline + config-derived discovery; feeds dashboards)
+- `mayo:lib/mayo/monitoring/` — Grafana dashboard tooling (secret-sauce plan R2, 2026-11-12): `genDashboard.nix` (inventory → dashboard attrsets; `datasource` injected) + `dashboard_templates/` (all 9 dashboards generated — no static dashboard JSON). Fleet data (workstation split, label overrides) arrives via the parent's inventory.
+- `nix-github-ci` — GitHub Actions CI engine (secret-sauce plan R1, 2026-11-12; `github.com/Bargman-Tech/nix-github-ci`, public): `lib.mkCi` (workflow assembly; `fleet = { exclusions, profileTarget, x86TimeoutMinutes, ipScanExcludes }` injected) + `lib.ciLibrary` + the `generate/validate-ci-workflow` apps. Consumed gitlab-ci-style; `goldens/ci.json` + `check-ci` stay parent-side.
+- `lib/monitoring/inventory.nix` — Monitoring inventory (union of blessed scrape baseline + config-derived discovery; feeds dashboards; carries the fleet presentation data injected into mayo templates)
 - `documentation/monitoring-automation.md` — Dashboard/inventory automation (Phase 1 done; Phase 2 scrape generation is future work)
-- `lib/topology/genDashboard.nix` — Grafana dashboard generator (inventory → dashboard attrsets; pure data transform)
-- `lib/topology/dashboard_templates/` — Dashboard templates (fleet, network, per-machine CPU fan-out, service health, storage, AI, deployment). All dashboards are generated — no static dashboard JSON remains.
 - `documentation/topology-principle.md` — Canonical architecture principle
 - `modules/enable-wg-topology.nix` — WireGuard client module (deployed on 16 machines; pending migration to genWireguard in overlord-iii)
 - `topologyConfigs` — Attrset merged into each `nixosConfiguration` via `modules` list (flake.nix)
