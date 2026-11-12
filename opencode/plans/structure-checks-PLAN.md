@@ -85,7 +85,7 @@ executable `checks."x86_64-linux"` in the consuming repos.
 |---|---|---|---|
 | P1 | mayo lints + parent checks + deadnix fix + tests | all checks green, negatives fail as expected | **DONE 2026-11-11** |
 | P2 | gaming-host-1 checks + schema assert + tests | same | **DONE 2026-11-11** |
-| P3 | CI single-input lock lint; generator unit-test fixtures as checks | — | deferred |
+| P3 | CI single-input lock lint; generator unit-test fixtures as checks | — | deferred — natural home is now `nix-github-ci`'s own CI (2026-11-12) |
 
 ## Repos / revisions
 

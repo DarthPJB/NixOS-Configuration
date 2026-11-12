@@ -44,8 +44,8 @@ zero trust | read-only zero-trust | high trust | absolute trust
 - SSH: absolute trust (full SSH access when trusted)
 
 **Implementation Needed:**
-- Implement security model validation logic in validate.nix
-- Add firewall rules in genFirewall.nix based on the matrix
+- Implement security model validation logic in `mayo:lib/ketchup/validate.nix` (engine now lives in mayo — coordinate changes there)
+- Add firewall rules in `mayo:lib/ketchup/genFirewall.nix` based on the matrix
 - Configure SSH access restrictions
 - Wire the model into topology generation and validation
 
@@ -66,7 +66,7 @@ zero trust | read-only zero-trust | high trust | absolute trust
 - Prevent all SSH over WAN except authorized exceptions
 
 **Implementation Needed:**
-- Add global SSH WAN deny rules in genFirewall.nix
+- Add global SSH WAN deny rules in `mayo:lib/ketchup/genFirewall.nix`
 - Create exception list for maintenance back-doors
 - Implement monitoring/alerting for SSH over WAN access attempts
 - Ensure SSH config blocks WAN access by default

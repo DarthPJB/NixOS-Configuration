@@ -283,9 +283,9 @@ nix run .#validate-goldens --option builders '' -- my-server
 | File | Purpose |
 |------|---------|
 | `topology/*.json` | Source of truth for each machine |
-| `lib/topology/gen*.nix` | Pure generators |
-| `lib/topology/mktopology.nix` | Orchestrator |
-| `lib/topology/mkRegistry.nix` | Cross-machine validation |
+| `mayo:lib/ketchup/gen*.nix` | Pure generators |
+| `mayo:lib/ketchup/mktopology.nix` | Orchestrator |
+| `mayo:lib/ketchup/mkRegistry.nix` | Cross-machine validation |
 | `flake.nix` | Wiring and integration |
 | `machines/*/default.nix` | Machine-specific overlays |
 | `goldens/*.json` | Validation reference |

@@ -1,14 +1,16 @@
 # LDR-001 — Fleet Spec, Tracks & Architecture Boundaries
 
 **Type:** Living Decision Record (one living document — corrections in place, never forked)
-**Version:** 1.4
-**Date:** 2026-11-04
+**Version:** 1.5
+**Date:** 2026-11-12
 **Author:** USS-Voyager (Captain), for user QA review
-**Status:** **D-01 … D-08 ALL RESOLVED** (D-01…D-07 user rulings 2026-10-05; D-08
-staging/production doctrine 2026-11-04). Target architecture captured (§4 —
-enterprise orchestration design). Primary track: the mayo split (`opencode/plans/mayo-split-PLAN.md`) — the
-Ketchup/Mayo/Secret-Sauce boundary, proven by extracting gaming-host-1 first. Non-blocking design questions
-remain (Q-01, Q-02, Q-04; Q-03 answered by D-08).
+**Status:** **D-01 … D-12 ALL RESOLVED** (D-01…D-07 user rulings 2026-10-05; D-08
+staging/production doctrine 2026-11-04; D-09…D-11 mayo-split/structure 2026-11-11;
+D-12 secret-sauce 2026-11-12). Target architecture captured (§4 —
+enterprise orchestration design). **P1–P3 of the migration programme complete**
+(mayo toolkit, gaming-host-1 extraction, nix-github-ci); **current phase: P4**
+(`opencode/plans/phase4-portout-PLAN.md` — open rulings R-4a…R-4e). Non-blocking
+design questions remain (Q-01, Q-02; Q-03 answered by D-08, Q-04 by D-12).
 
 Registers: **R\*** = resolved fact · **F\*** = finding/fault · **D-\*** = decision · **R-F\*** = remediation action
 
@@ -56,10 +58,10 @@ boundary for parent-side validation. Implementation follows in the `lib` toolkit
 
 | Track | Outcome | Evidence |
 |---|---|---|
-| **overlord-II planar topology** | Two-layer JSON→generator architecture live fleetwide; `topology-derive.nix` archived (archive removed 2026-11-11, mayo-split dead-code prune); B1–B5 closed (B5 backup validated on 4 machines) | AGENTS.md Current Issues 2026-10-05; `lib/topology/mktopology.nix` |
+| **overlord-II planar topology** | Two-layer JSON→generator architecture live fleetwide; `topology-derive.nix` archived (archive removed 2026-11-11, mayo-split dead-code prune); B1–B5 closed (B5 backup validated on 4 machines) | AGENTS.md Current Issues 2026-11-12; `mayo:lib/ketchup/mktopology.nix` |
 | **Fabrication Forge / Gitea unification** | Gitea canonical forge: multi-domain + reverse-proxy auth → LDAP/form auth; fleet PostgreSQL; `fabrication-forge` branding; **gitolite retired** (`git-ssh.nix` owns `git@` on WG :22) | documentation/gitea-fabrication-forge.md; git log 2026-10-01 |
 | **In-house binary cache** | Signed nix-serve on remote-builder:5001, TLS `cache.johnbargman.net`, wired into flake + fleet substituters | services/nix-cache-serve.nix; flake.nix:5-12 |
-| **Backup / offsite replication** | `genBackup` + `topology.backup` on gaming-host-1, LINDA, local-nas, terminal-zero; B2/rclone offsite on local-nas | topology/*.json `backup` keys; lib/rclone-target.nix |
+| **Backup / offsite replication** | `genBackup` + `topology.backup` on gaming-host-1, LINDA, local-nas, terminal-zero; B2/rclone offsite on local-nas | topology/*.json `backup` keys; `mayo:lib/mayo/rclone-target.nix` |
 | **Monitoring Phase 1** | All dashboards generative (genDashboard + inventory); no static dashboard JSON | documentation/monitoring-automation.md |
 | **AI stack (live)** | Ollama on LINDA + pillar-of-autum, LiteLLM gateway on alpha-three; vLLM **undeployed** (migration executed then reversed) | machines/alpha-three/default.nix backends |
 | **Assimilator-probe proven** | pillar-of-autum Phases 1–3 complete (probe → verified install → NVMe); first proven assimilation | documentation/planning-pillar-of-autum.md |
@@ -211,13 +213,13 @@ Phased, deliberate (Phase Discipline). Service definitions port out slowly.
 
 | Candidate | Target | Status |
 |---|---|---|
-| **gaming-host-1 → machine repo** (remote-dev + free-agent game server) | `mecha-team-zero/gaming-host-1` (GitLab) | **SELECTED — first extraction (D-02)** |
+| **gaming-host-1 → machine repo** (remote-dev + free-agent game server) | `mecha-team-zero/gaming-host-1` (GitLab) | **SELECTED — first extraction (D-02)** ✅ complete (mayo-split Gates A/B) |
 | cluster-box | Malayalam (external) | already outside; remains the external-ownership variant of this pattern |
-| Gitea / Fabrication Forge stack | service port-out (own repo or `lib`) | gradual (P4) |
-| AI stack (ollama/LiteLLM schema) | toolkit or machine-local | gradual (P4) |
-| Monitoring (inventory + dashboards) | `lib` toolkit | gradual (P4) |
-| Backup/rclone-target | `lib` toolkit | gradual (P4) |
-| Topology generators (`gen*`) | `lib` toolkit | gradual (P4) |
+| Gitea / Fabrication Forge stack | service port-out (own repo or `lib`) | **P4 open — R-4b** (`phase4-portout-PLAN.md`) |
+| AI stack (ollama/LiteLLM schema) | toolkit or machine-local | **P4 open — R-4c** |
+| Monitoring (inventory + dashboards) | `lib` toolkit | **dashboards ✅ done 2026-11-12** (`mayo:lib/mayo/monitoring/`); inventory Phase 2 (scrape generation) remains |
+| Backup/rclone-target | `lib` toolkit | **✅ done** (`mayo:lib/mayo/rclone-target.nix`) |
+| Topology generators (`gen*`) | `lib` toolkit | **✅ done** (`mayo:lib/ketchup/`) |
 
 ### 4.5 Prior art and boundary hygiene
 
@@ -258,7 +260,7 @@ Phased, deliberate (Phase Discipline). Service definitions port out slowly.
 | Cache operational | `grep substituters flake.nix configuration.nix`; `machines/remote-builder/default.nix` | cache.johnbargman.net wired, port 5001, TLS nginx |
 | gitolite retired | `ls server_services/` | `git-ssh.nix` present, `gitolite.nix` absent (deleted 2026-10-01) |
 | vLLM undeployed | `grep -rln vllm machines/` | (no matches) |
-| genWireguard hub-only | `sed -n '290,297p' lib/topology/mktopology.nix` | conditional on `topology.wireguard` |
+| genWireguard hub-only | `grep -n wireguard <mayo>/lib/ketchup/mktopology.nix` | conditional on `topology.wireguard` |
 | enable-wg on 16 machines | `grep -rln enable-wg-topology machines/ \| wc -l` | 16 |
 | B2 secrets age/secrix | `head -1 secrets/b2_master_sync_token secrets/rclone-b2-config-file` | `age-encryption.org/v1`, ssh-ed25519 recipients |
 | b2_master_sync_token orphan | `grep -rn b2_master_sync_token .` | secrets/ file only |
@@ -294,4 +296,4 @@ Phased, deliberate (Phase Discipline). Service definitions port out slowly.
 | Q-01 | ~~Machine repo naming: `bargman-tech/gaming-host-1` (matches the spec list) vs `game-server-1` (the pivot name)?~~ **ANSWERED (D-09, 2026-11-07):** `mecha-team-zero/gaming-host-1` (GitLab); mayo lib = `bargman-tech/mayo` (GitHub). Machine rename itself remains a separate, later decision. |
 | Q-02 | Schema contract scope in `lib`: goldens + topology + llm-fleet only, or also monitoring/backup declarations? |
 | Q-03 | ~~During migration, does gaming-host-1 keep parent-side golden coverage until P2 completes (recommended — continuous validation), or drop it at extraction?~~ **ANSWERED (D-08, 2026-11-04):** parent-side golden coverage retained until extraction is proven; **regeneration forbidden** — any golden diff is an extraction bug. |
-| Q-04 | `github-ci` toolkit: extract `ci.nix` as-is first, or redesign the workflow shape while extracting? |
+| Q-04 | ~~`github-ci` toolkit: extract `ci.nix` as-is first, or redesign the workflow shape while extracting?~~ **ANSWERED (D-12, 2026-11-12):** third path taken — generic engine extracted verbatim (`ci_library`) with `ci.nix` parameterized at the fleet seams only (`fleet = { exclusions, profileTarget, x86TimeoutMinutes, ipScanExcludes }`); workflow shape unchanged, `goldens/ci.json` byte-identical. |

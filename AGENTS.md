@@ -11,21 +11,31 @@ project planning (see opencode/plans/), deployments (see documentation/operation
 (architecture, recreation doctrine, backup strategy) and the living plan at
 opencode/plans/windows-gpu-passthrough-PLAN.md.
 
-## Current Issues — 2026-10-05
+## Current Issues — 2026-11-12
 
-The `overlord-ii-planar-topology` work is **complete and merged**. Phase B
-core tasks are implemented and validated against goldens. The current frontier
-is the Fabrication Forge / Gitea track (see `documentation/gitea-fabrication-forge.md`),
-the backup/offsite track (topology `backup` keys + B2 replication), and the
+**Boundary program COMPLETE.** The mayo split (`opencode/plans/mayo-split-PLAN.md`,
+Gates A/B/C/3b) and the secret-sauce phase (`opencode/plans/secret-sauce-PLAN.md`,
+R1–R3) are done and merged: the shared engines live in public library repos —
+**mayo** (Ketchup/Mayo layers) and **nix-github-ci** (CI engine) — the parent
+holds only Secret-Sauce, and the D-10/D-11/D-12 structure checks enforce it.
+LDR-001 D-01…D-12 all resolved.
+
+**Current frontier: Phase 4** — machine-repo roll-out + service port-outs
+(LDR-001 §4.4 P4→P5). Run document: `opencode/plans/phase4-portout-PLAN.md`
+(**open rulings R-4a…R-4e — next machine, Gitea/AI targets, child CI shape**).
+Standing tracks alongside it: Fabrication Forge / Gitea
+(`documentation/gitea-fabrication-forge.md` — now also a P4 port-out
+candidate), backup/offsite (topology `backup` keys + B2 replication), and the
 deferred overlord-iii client-side WireGuard migration.
 
-**LINDA Windows GPU passthrough restoration (active, 2026-10-05):** the
+**LINDA Windows GPU passthrough restoration (active, awaiting user):** the
 `win-11-gaming-base` VM (GTX 1050 + ASMedia USB passthrough, Looking Glass,
 Scream) is being restored using the prior working stack — fully declarative
 (NixOS br0 networking + NixVirt domain/networks, NOT the platonic VMs
-wrapper), with the VM estate backed up to B2 before any mutation. Phases 3–5
-(reboot, physical checks, Windows bring-up) are user-manual. All findings,
-rulings, and evidence: `opencode/plans/windows-gpu-passthrough-PLAN.md`.
+wrapper), with the VM estate backed up to B2 before any mutation. Host layer
+complete on `feat/linda-vfio-br0`; Phases 3–5 (reboot, physical checks,
+Windows bring-up) are user-manual. All findings, rulings, and evidence:
+`opencode/plans/windows-gpu-passthrough-PLAN.md`.
 
 ### Architecture Boundary — READ THIS FIRST
 
@@ -92,16 +102,20 @@ from user configuration has fundamentally misunderstood the architecture.**
 - Golden policy during extraction: parent-side goldens retained; **regeneration
   forbidden** — a golden diff is an extraction bug, never a golden problem.
 
-Active phase: `opencode/plans/mayo-split-PLAN.md` — the Ketchup/Mayo/
-Secret-Sauce boundary, proven by extraction. Repositories: gaming-host-1 →
+Active phase: `opencode/plans/phase4-portout-PLAN.md` — P4 machine-repo
+roll-out + service port-outs (LDR-001 §4.4), with open rulings R-4a…R-4e.
+The boundary work it builds on is **complete**: gaming-host-1 →
 `gitlab.com/mecha-team-zero/gaming-host-1` (child); mayo →
-`github.com/Bargman-Tech/mayo` (schema/lib). Flake inputs are the contract
-points; the parent consumes the child flake and overrides production secrets.
+`github.com/Bargman-Tech/mayo` (Ketchup/Mayo layers); nix-github-ci →
+`github.com/Bargman-Tech/nix-github-ci` (CI engine). Flake inputs are the
+contract points; the parent consumes each child flake and overrides
+production secrets. Prior phases: `mayo-split-PLAN.md` (A/B/C/3b ✅),
+`secret-sauce-PLAN.md` (R1–R3 ✅).
 
 ### Phase B — Core Tasks (blocks completion)
 
 **B4. Wire the two-layer topology architecture into machine configs.**
-**COMPLETED.** The `mktopology` function (`lib/topology/mktopology.nix`) wires
+**COMPLETED.** The `mktopology` function (`mayo:lib/ketchup/mktopology.nix`) wires
 `genFirewall`, `genDns`, `genNginx`, `genBackup`, and `genWireguard` (hub-only,
 conditional on `topology.wireguard`) into machine configs at the flake level.
 Client-side WireGuard still comes from `modules/enable-wg-topology.nix`;
@@ -111,7 +125,7 @@ migration of clients is the deferred overlord-iii work.
 **COMPLETED.** `genBackup.nix` is wired into `mktopology.nix` and activates
 conditionally on `topology.backup` keys. The pipeline is **validated in
 production**: `topology.backup` keys exist on gaming-host-1, LINDA, local-nas,
-and terminal-zero (B2/rclone offsite replication via `lib/rclone-target.nix`).
+and terminal-zero (B2/rclone offsite replication via `mayo:lib/mayo/rclone-target.nix`).
 
 ### Phase B — Actionable Pending Review
 
@@ -222,7 +236,7 @@ processed through the `mktopology` pure function at the flake level:
 ```
 topology/<machine>.json (per-machine topology data — single source of truth)
 ↓
-lib/topology/mktopology.nix (flake-level pure function: JSON → config attrset)
+mayo:lib/ketchup/mktopology.nix (flake-level pure function: JSON → config attrset)
 ↓
 topologyConfigs (attrset of hostname → config attrset, merged into modules list)
 ```
@@ -310,10 +324,10 @@ existed).
 
 The `planar-topology` / `overlord-ii-planar-topology` branches overhauled the topology system:
 - JSON topology files (`topology/<machine>.json`) replacing `.nix` per-machine data
-- `lib/topology/mktopology.nix` — flake-level pure function replaces topology-derive.nix module
-- `lib/topology/gen*.nix` — pure generators (firewall, DNS, nginx, backup, wireguard)
+- `lib/topology/mktopology.nix` — flake-level pure function replaces topology-derive.nix module *(since moved: `mayo:lib/ketchup/mktopology.nix`)*
+- `lib/topology/gen*.nix` — pure generators (firewall, DNS, nginx, backup, wireguard) *(since moved: `mayo:lib/ketchup/`)*
 - Generators wired via `topologyConfigs` in flake.nix, not via commonModules
-- `topology-derive.nix` archived to `lib/topology/archive/`
+- `topology-derive.nix` archived to `lib/topology/archive/` *(archive removed 2026-11-11)*
 - WireGuard hub integration live; client migration deferred to overlord-iii
 - Goldens regenerated for all machines
 - `genNginx.nix` ACME propagation bug fixed

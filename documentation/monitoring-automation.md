@@ -112,7 +112,7 @@ Auto-generate the monitoring inventory and all Grafana dashboards.
   ZFS/storage/disk-health, `ai-systems`, `ai-inference`, `fleet-deployment`) or
   folded into existing ones (`remote-builder`'s unique panels → `fleet-cpu-disk`
   "Node Detail"). No static dashboard JSON remains.
-- **Golden impact: none.** Grafana is not serialized in `lib/serialize-config.nix`,
+- **Golden impact: none.** Grafana is not serialized in `mayo:lib/mayo/golden/serialize-config.nix`,
   so the inventory and dashboards can shift freely.
 
 Verified: adding a machine with exporters enabled (e.g. `pillar-of-autum`) now
