@@ -31,7 +31,7 @@
 | display-1 | ⬜ pending | | |
 | display-2 | ⬜ pending | | |
 | gaming-host-1 | ⬜ pending | | child-flake consumption (extendModules + schema) — second-most sensitive after LINDA |
-| local-nas | ⬜ pending | | monitoring host — first live re-provision of the mayo-generated dashboards |
+| local-nas | ✅ **SUCCESS** | 2026-11-13 | user-deployed — monitoring host; first live re-provision of the mayo-generated dashboards (secret-sauce plan R2 validated in production) |
 | pillar-of-autum | ⬜ pending | | |
 | print-controller | ✅ **SUCCESS** | 2026-11-13 | user-deployed |
 | remote-builder | ⬜ pending | | in-house binary cache host |
