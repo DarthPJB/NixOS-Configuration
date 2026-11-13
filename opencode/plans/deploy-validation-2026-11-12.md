@@ -33,7 +33,7 @@
 | gaming-host-1 | ⬜ pending | | child-flake consumption (extendModules + schema) — second-most sensitive after LINDA |
 | local-nas | ⬜ pending | | monitoring host — first live re-provision of the mayo-generated dashboards |
 | pillar-of-autum | ⬜ pending | | |
-| print-controller | ⬜ pending | | |
+| print-controller | ✅ **SUCCESS** | 2026-11-13 | user-deployed |
 | remote-builder | ⬜ pending | | in-house binary cache host |
 | remote-worker | ⬜ pending | | ad-hoc nginx surface |
 | terminal-nx-01 | ✅ **SUCCESS** | 2026-11-12 | user-deployed |
