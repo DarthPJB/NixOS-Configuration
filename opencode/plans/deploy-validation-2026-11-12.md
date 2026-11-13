@@ -32,7 +32,7 @@
 | print-controller | ⬜ pending | | |
 | remote-builder | ⬜ pending | | in-house binary cache host |
 | remote-worker | ⬜ pending | | ad-hoc nginx surface |
-| terminal-nx-01 | ⬜ pending | | |
+| terminal-nx-01 | ✅ **SUCCESS** | 2026-11-12 | user-deployed |
 | terminal-zero | ⬜ pending | | |
 
 ## Not deployment targets (excluded from the manual sweep)
