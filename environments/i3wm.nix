@@ -1,15 +1,25 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
+let
+  # vimix-gtk-themes was removed from nixpkgs (depended on gtk-engine-murrine, dropped
+  # as unmaintained GTK2-only); Colloid is vinceliuice's murrine-free successor with the
+  # same themeVariants/colorVariants override API. Installs as "Colloid-Red-Dark".
+  colloidTheme = pkgs.colloid-gtk-theme.override {
+    themeVariants = [ "red" ];
+    colorVariants = [ "dark" ];
+    tweaks = [ "black" ]; # Blackness: #0F0F0F / #030303 / #000000
+  };
+in
 {
   # Use librsvg's gdk-pixbuf loader cache file as it enables gdk-pixbuf to load SVG files (important for icons)
   environment.sessionVariables = {
     GDK_PIXBUF_MODULE_FILE = "${pkgs.librsvg.out}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache";
   };
   environment.systemPackages = [
+    colloidTheme
     pkgs.adwaita-qt
     pkgs.adwaita-qt6
     pkgs.papirus-icon-theme
-    pkgs.arc-theme
     pkgs.betterlockscreen
     pkgs.brightnessctl
     pkgs.pavucontrol
@@ -37,30 +47,48 @@
   };
 
   environment.sessionVariables = {
-    GTK_THEME = "Arc-Dark";
+    GTK_THEME = "Colloid-Red-Dark";
     QT_STYLE_OVERRIDE = "Adwaita-Dark";
-    GTK_ICON_THEME = "Papirus-Red";
+    ADW_DEBUG_COLOR_SCHEME = "prefer-dark";
   };
 
-  # System-wide GTK3 settings
-  environment.etc."gtk-3.0/settings.ini".text = ''
+  # GTK3/4 read settings.ini from XDG_CONFIG_DIRS (/etc/xdg), not /etc/gtk-3.0 or /etc/gtk-4.0
+  environment.etc."xdg/gtk-3.0/settings.ini".text = ''
     [Settings]
     gtk-application-prefer-dark-theme=1
-    gtk-theme-name=Arc-Dark
+    gtk-theme-name=Colloid-Red-Dark
+    gtk-icon-theme-name=Papirus-Dark
   '';
 
-  # System-wide GTK4 settings
-  environment.etc."gtk-4.0/settings.ini".text = ''
+  environment.etc."xdg/gtk-4.0/settings.ini".text = ''
     [Settings]
     gtk-application-prefer-dark-theme=1
-    gtk-theme-name=Arc-Dark
+    gtk-theme-name=Colloid-Red-Dark
+    gtk-icon-theme-name=Papirus-Dark
   '';
 
-  # System-wide GTK2 settings
+  # GTK4/libadwaita loads gtk.css/gtk-dark.css from XDG_CONFIG_DIRS (/etc/xdg)
+  environment.etc."xdg/gtk-4.0/gtk.css".source = "${colloidTheme}/share/themes/Colloid-Red-Dark/gtk-4.0/gtk.css";
+  environment.etc."xdg/gtk-4.0/gtk-dark.css".source = "${colloidTheme}/share/themes/Colloid-Red-Dark/gtk-4.0/gtk-dark.css";
+  environment.etc."xdg/gtk-4.0/assets".source = "${colloidTheme}/share/themes/Colloid-Red-Dark/gtk-4.0/assets";
+
+  # GTK2 is built with --sysconfdir=/etc, so this path (unlike gtk-3.0/gtk-4.0 above) is actually read
   environment.etc."gtk-2.0/gtkrc".text = ''
-    gtk-theme-name="Arc-Dark"
+    gtk-theme-name="Colloid-Red-Dark"
     gtk-application-prefer-dark-theme=1
   '';
+
+  programs.dconf.profiles.user.databases = [
+    {
+      settings."org/gnome/desktop/interface" = {
+        gtk-theme = "Colloid-Red-Dark";
+        icon-theme = "Papirus-Dark";
+        cursor-theme = "BargmanCinematic-Cursors";
+        cursor-size = lib.gvariant.mkInt32 24;
+        color-scheme = "prefer-dark";
+      };
+    }
+  ];
   services.xserver =
     let
       xConfig = pkgs.writeText "i3.config" ''
@@ -210,10 +238,28 @@
 
         bindsym $mod+r mode "resize"
 
+        # Dark theme — Colloid-Red-Dark palette
+        # class                   border   backgr.  text     indicator child_border
+        client.focused            #E53950  #121212  #ffffff  #E53950   #E53950
+        client.focused_inactive   #030303  #121212  #d0d0d0  #030303   #030303
+        client.unfocused          #0F0F0F  #0F0F0F  #d0d0d0  #0F0F0F   #0F0F0F
+        client.urgent             #900000  #900000  #ffffff  #900000   #900000
+        client.placeholder        #0F0F0F  #0F0F0F  #d0d0d0  #0F0F0F   #0F0F0F
+        client.background         #0F0F0F
+
         # Star to display a workspace bar (plus the system information i3status
         # finds out, if available)
         bar {
                 status_command i3status
+                colors {
+                        background          #0F0F0F
+                        statusline          #d0d0d0
+                        separator           #121212
+                        focused_workspace   #E53950 #E53950 #ffffff
+                        active_workspace    #121212 #121212 #d0d0d0
+                        inactive_workspace  #0F0F0F #0F0F0F #d0d0d0
+                        urgent_workspace    #900000 #900000 #ffffff
+                }
         }
 
         	'';

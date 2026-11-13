@@ -38,60 +38,69 @@
     bargman-assets.url = "git+https://gitlab.com/mecha-team-zero/bargman-assets.git";
     denton-glasses.url = "git+https://gitlab.com/mecha-team-zero/denton-glasses.git";
     personal-site = { url = "git+https://gitlab.com/mecha-team-zero/bargman-website.git"; };
-    LLM-CORE = { url = "gitlab:mecha-team-zero/llm-core"; inputs.nixpkgs.follows = "nixpkgs_llm"; inputs.nix-mcp-servers.inputs.nixpkgs.follows = "nixpkgs_stable"; };
+    LLM-CORE = { url = "gitlab:mecha-team-zero/llm-core?ref=fix-the-LLM"; inputs.nixpkgs.follows = "nixpkgs_llm"; inputs.nix-mcp-servers.inputs.nixpkgs.follows = "nixpkgs_stable"; };
     # cluster-box (dlyon's on-site machine) — passthrough from Malayalam flake.
     # Uses git+https for netrc token authentication. The configuration is owned
     # and operated by dlyon; John88 has architectural authority only.
     # See: https://gitlab.com/mecha-team-zero/Malayalam/blob/main/documents/architecture-passthrough.md
     malayalam.url = "git+https://gitlab.com/mecha-team-zero/Malayalam.git";
     assimilator-probe.url = "git+https://gitlab.com/mecha-team-zero/assimilator-probe.git";
+    # gaming-host-1 — FIRST child machine flake (mayo-split Step 1). The child is
+    # the staging source of truth (bindings only, absent secrets). Production
+    # secrets are fulfilled via `extendModules` below (LDR-001 D-08).
+    # See opencode/plans/mayo-split-PLAN.md.
+    gamingHost1.url = "git+https://gitlab.com/mecha-team-zero/gaming-host-1.git";
+    # Shared configuration surface — topology engine (mktopology, mkRegistry,
+    # generators), mkKnownHosts, rclone-target (mayo-split Step 3). Both this
+    # flake and the child consume it; neither vendors the library any more.
+    mayo.url = "git+https://github.com/Bargman-Tech/mayo.git";
+    # GitHub Actions CI engine (secret-sauce plan R1) — mkCi + workflow apps,
+    # consumed gitlab-ci-style. Fleet data stays here (fleet arg below).
+    nix-github-ci = {
+      url = "github:Bargman-Tech/nix-github-ci";
+      inputs.nixpkgs.follows = "nixpkgs_stable";
+    };
   };
-  outputs = { self, deadnix, determinate, disko, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE, malayalam, nix-src, assimilator-probe }:
+  outputs = { self, deadnix, determinate, disko, nixinate, nixos-hardware, nixpkgs_stable, nixpkgs_unstable, nixpkgs_llm, hype-train-outlaw, star-citizen, parsecgaming, secrix, hype-train-claw, carmelsite, xlibre-overlay, ratty, ikbaeb-th, bargman-assets, denton-glasses, personal-site, LLM-CORE, malayalam, nix-src, assimilator-probe, gamingHost1, mayo, nix-github-ci }:
     let
       nixpkgs = nixpkgs_stable.legacyPackages.x86_64-linux;
       lib = nixpkgs_stable.lib;
-      topoRegistry = import ./lib/topology/mkRegistry.nix { inherit lib; };
-      # Topology-to-config: pure JSON → config attrsets
-      mktopology = (import ./lib/topology/mktopology.nix { inherit lib; }).mktopology;
-      topologyConfigs = mktopology ./topology;
-      # Helper: derive IP from coordinate (subnet + peer_id)
-      coordToIp = coord:
-        let
-          parts = lib.splitString "/" coord.subnet;
-          ip = builtins.head parts;
-          octets = lib.splitString "." ip;
-          prefix = lib.concatStringsSep "." (lib.init octets);
-        in
-        "${prefix}.${toString coord.peer_id}";
+      # Mayo library layers (Step 3b): Ketchup = topology + host management,
+      # Mayo = system configuration helpers + other library assets. This repo
+      # vendors no library files (LDR-001 D-10).
+      ketchup = import "${mayo.lib}/ketchup/topology_library.nix" {
+        inherit lib;
+        topologyDir = ./topology;
+        pubKeyDir = ./secrets/public_keys/wireguard;
+      };
+      mayoLib = import "${mayo.lib}/mayo/mayo_library.nix";
+      goldenApps = import mayoLib.golden.apps { inherit lib; pkgs = nixpkgs; };
+      topoRegistry = ketchup.registry;
+      # ── mayo-split Step 2: consume the child's `bargman-tech` schema ──
+      # gaming-host-1's own topology + public identity come from the child
+      # flake; the parent aggregates them with its own topology/*.json.
+      gamingSchema = gamingHost1.bargman-tech;
+      gamingTopology = gamingSchema.topology.json;
+      gamingWgPub = gamingSchema.identity.wireguard;
+      aggregatedHosts = topoRegistry.hosts // {
+        ${gamingTopology.hostname} = gamingTopology;
+      };
+      aggregatedRegistry = topoRegistry // { hosts = aggregatedHosts; };
+      # Topology-to-config: pure JSON → config attrsets (Ketchup API; the
+      # registry override preserves the Step-2 fleet-aggregation form).
+      topologyConfigs = ketchup.mktopology {
+        registry = aggregatedRegistry;
+        wireguardPubKeys = { ${gamingTopology.hostname} = gamingWgPub; };
+      };
+      # Host management (Ketchup): coordToIp feeds topoIp; deriveTopo feeds
+      # mkKnownHosts below.
+      coordToIp = ketchup.coordToIp;
       # Backward-compatible topo attrset derived from JSON registry
-      topo = lib.mapAttrs
-        (_name: host:
-          let
-            coords = host.coordinate or [ ];
-            wgCoords = builtins.filter (c: c.plane_name == "wg") coords;
-            wgCoord = if wgCoords != [ ] then builtins.head wgCoords else null;
-            # Filter to only include standard network interfaces (skip MAC-based aliases)
-            otherCoords = builtins.filter
-              (c:
-                c.plane_name != "wg" && c.plane_name != "tailscale-platonic"
-                && !lib.hasPrefix "mac:" c.interface
-              )
-              coords;
-            lan = lib.listToAttrs (map
-              (c: {
-                name = coordToIp c;
-                value = c.interface;
-              })
-              otherCoords);
-          in
-          (if wgCoord != null then { wireguard = coordToIp wgCoord; } else { })
-          // (if lan != { } then { inherit lan; } else { })
-        )
-        topoRegistry.hosts;
+      topo = ketchup.deriveTopo aggregatedHosts;
       # Get wireguard IP for a machine from topology registry
       topoIp = machineName:
         let
-          host = topoRegistry.hosts.${machineName} or null;
+          host = aggregatedHosts.${machineName} or null;
           wgCoords =
             if host != null then
               builtins.filter (c: c.plane_name == "wg") (host.coordinate or [ ])
@@ -152,7 +161,7 @@
       commonModules = [
         secrix.nixosModules.default
         ratty.nixosModules.default
-        ./lib/rclone-target.nix
+        (mayoLib.rcloneTarget)
         ./configuration.nix
         ./modules/ssh-multiplex.nix
         # Skip nix test suite — OOMs on remote builders during source build.
@@ -180,7 +189,7 @@
           ];
         }
       ];
-      mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108, images ? { }, debug ? false }:
+      mkX86_64 = hostname: { extraModules ? [ ], hostPubKey ? builtins.readFile ./secrets/public_keys/host_keys/${hostname}.pub, host ? null, sshUser ? "deploy", buildOn ? "local", dt ? true, sshPort ? 1108, images ? { }, debug ? false, nixpkgs ? nixpkgs_stable }:
         let
           topologyPath = ./topology/${hostname}.json;
           topologyData =
@@ -189,7 +198,7 @@
             else null;
           topologyConfig = topologyConfigs.${hostname} or { };
         in
-        nixpkgs_stable.lib.nixosSystem {
+        nixpkgs.lib.nixosSystem {
           specialArgs = { inherit topologyData; };
           modules = commonModules ++ extraModules ++ (if dt then [ determinate.nixosModules.default ] else [ ]) ++ [
             ./machines/${hostname}
@@ -202,7 +211,7 @@
               };
 
               nixpkgs.hostPlatform = "x86_64-linux";
-              nix.registry.nixpkgs.flake = nixpkgs_stable;
+              nix.registry.nixpkgs.flake = nixpkgs;
               networking.hostName = hostname;
               secrix.hostPubKey = if hostPubKey != null then hostPubKey else null;
               _module.args = globalArgs // {
@@ -271,6 +280,10 @@
           (map (cfg: cfg.config.system.name) configs)
           (name: mkUncompressedSdImage (builtins.getAttr name self.nixosConfigurations));
 
+      # Unified known-hosts (mayo library — Step 3 ruling (c)). The entry loop
+      # and the hostNames derivation moved verbatim into mayo; this call site
+      # keeps the parent's inputs: machine set (topo ∪ active ∪ dormant) and key
+      # source (secrix config first, secrets/ file fallback).
       mkKnownHosts = nixosConfigs:
         let
           # Combine active and dormant configs for key lookup
@@ -286,45 +299,18 @@
             in
             if fromConfig != null then fromConfig else fromFile;
 
-          # Build hostNames from topology: hostname + domain + all known IP routes
-          getHostNames = name:
-            let
-              entry = topo.${name} or null;
-              names = [ name "${name}.johnbargman.net" ];
-            in
-            if entry != null then
-              lib.unique
-                (names
-                  ++ lib.optionals (entry ? wireguard) [ entry.wireguard ]
-                  ++ lib.optionals (entry ? lan) (builtins.attrNames entry.lan)
-                  ++ lib.optionals (entry ? uplink) (builtins.attrNames entry.uplink)
-                )
-            else
-              names;
-
           # Union of all known machines: topology + active configs + dormant configs
           allMachines = lib.unique (
             builtins.attrNames topo
             ++ builtins.attrNames nixosConfigs
             ++ builtins.attrNames (self.dormantConfigurations or { })
           );
-
-          # Build entries, skipping machines without a known key
-          entries = builtins.listToAttrs (map
-            (name:
-              let
-                pubKey = getPubKey name;
-              in
-              lib.nameValuePair name (
-                if pubKey != null then {
-                  hostNames = getHostNames name;
-                  publicKey = pubKey;
-                } else null
-              )
-            )
-            allMachines);
         in
-        lib.filterAttrs (_name: value: value != null) entries;
+        ketchup.mkKnownHosts {
+          machines = allMachines;
+          pubKeyOf = getPubKey;
+          inherit topo;
+        };
 
       # Parallelism control for CI build jobs
       # Only GitHub Actions-level max-parallel — machines use their own nix.conf
@@ -339,11 +325,23 @@
         };
       };
 
-      # CI/CD Configuration — ci.nix accepts self and auto-derives machines from nixosConfigurations
-      ci = import ./ci.nix { inherit self lib; pkgs = nixpkgs; parallelism = ciParallelism; };
-
-      # CI Generator Scripts
-      ci-generator = import ./ci/generate-workflow.nix { inherit self lib; pkgs = nixpkgs; parallelism = ciParallelism; };
+      # CI/CD Configuration — nix-github-ci's mkCi derives machine lists from
+      # self at eval time; all fleet data (exclusions, profiler target,
+      # x86 timeout, IP-scan excludes) is passed here — Secret-Sauce (R1).
+      ci = nix-github-ci.lib.mkCi {
+        inherit self lib;
+        pkgs = nixpkgs;
+        parallelism = ciParallelism;
+        fleet = {
+          exclusions = [
+            "cluster-box" # Malayalam passthrough — DO NOT build in CI (see flake.nix comment)
+            "bargman-greeter-vm" # Test VM — not a deployment target
+          ];
+          profileTarget = "remote-builder"; # eval-profiler diagnostic step
+          x86TimeoutMinutes = 720; # 12h — LINDA cold-cache builds take ~6h
+          ipScanExcludes = [ "10.88.127" ]; # fleet VPN range (scan allowlist)
+        };
+      };
     in
     {
       inherit topologyConfigs;
@@ -353,26 +351,12 @@
         # NOTE: Golden tests validate that config hasn't changed from prior state.
         # This is regression testing — completely separate from topology generation.
         # Topology generates config; goldens validate config. Related but unrelated.
+        # (Builder extracted to the Mayo golden tooling — ruling 2026-11-11.)
         validate-goldens = {
           type = "app";
           meta.description = "Validate machine config against golden files";
-          program = lib.getExe (nixpkgs.writeShellApplication {
-            name = "validate-goldens";
-            runtimeInputs = [ nixpkgs.jq ];
-            text = ''
-              MACHINE="''${1:-cortex-alpha}"
-              echo "Validating $MACHINE against golden..."
-              nix run .#dump-config -- "$MACHINE" | jq -S . > /tmp/current-config.json
-                
-              if diff -u "${self}/goldens/$MACHINE.json" /tmp/current-config.json; then
-                echo "✓ $MACHINE matches golden"
-              else
-                echo "✗ $MACHINE differs from golden!"
-                echo "If intentional, update with:"
-                echo "  nix run .#dump-config -- $MACHINE > goldens/$MACHINE.json"
-                exit 1
-              fi
-            '';
+          program = lib.getExe (goldenApps.mkValidateGoldensApp {
+            goldenDir = "${self}/goldens";
           });
         };
 
@@ -399,36 +383,20 @@
         };
 
         # Full config serialization for comparing between revisions
+        # (Builder extracted to the Mayo golden tooling — ruling 2026-11-11.)
         dump-config = {
           type = "app";
           meta.description = "Dump full NixOS config to JSON (for comparing between git revisions)";
-          program = lib.getExe (nixpkgs.writeShellApplication {
-            name = "dump-config";
-            runtimeInputs = [ nixpkgs.jq ];
-            text = ''
-              if [ -z "$1" ]; then
-                echo "Usage: nix run .#dump-config <machine-name>"
-                echo "Example: nix run .#dump-config cortex-alpha > /tmp/config.json"
-                echo ""
-                echo "To compare between revisions:"
-                echo "  git checkout old-rev && nix run .#dump-config cortex-alpha > /tmp/old.json"
-                echo "  git checkout new-rev && nix run .#dump-config cortex-alpha > /tmp/new.json"
-                echo "  diff /tmp/old.json /tmp/new.json"
-                exit 1
-              fi
-              MACHINE="$1"
-              nix eval --json --impure \
-                --expr '
-                  let
-                    flake = builtins.getFlake (builtins.toString ./.);
-                    lib = (import <nixpkgs> {}).lib;
-                    serializer = import ./lib/serialize-config.nix { inherit lib; };
-                    config = (flake.nixosConfigurations."'"$MACHINE"'" or flake.dormantConfigurations."'"$MACHINE"'").config;
-                  in
-                  serializer.serializeConfig config
-                ' | jq -S .
-            '';
-          });
+          program = lib.getExe (goldenApps.mkDumpConfigApp { });
+        };
+
+        # Revision comparison — the script lives in the Mayo golden tooling;
+        # scripts/compare-configs.sh is a thin wrapper preserving the documented
+        # interface.
+        compare-configs = {
+          type = "app";
+          meta.description = "Compare NixOS configuration between git revisions";
+          program = "${mayoLib.golden.compareConfigs}";
         };
 
         deploy-all = {
@@ -485,16 +453,10 @@
             '';
           });
         };
-        generate-ci-workflow = {
-          type = "app";
-          meta.description = "Generate GitHub Actions workflow from Nix evaluation";
-          program = "${ci-generator.scripts.generate-ci-workflow}/bin/generate-ci-workflow";
-        };
-        validate-ci-workflow = {
-          type = "app";
-          meta.description = "Validate GitHub Actions workflow";
-          program = "${ci-generator.scripts.validate-ci-workflow}/bin/validate-ci-workflow";
-        };
+        # Re-exported from nix-github-ci (gitlab-ci consumption pattern) —
+        # the scripts eval .#ci.ci.github-actions of THIS flake at runtime.
+        generate-ci-workflow = nix-github-ci.apps.x86_64-linux.generate-ci-workflow;
+        validate-ci-workflow = nix-github-ci.apps.x86_64-linux.validate-ci-workflow;
         ci = {
           type = "app";
           meta.description = "Show CI configuration info (machines, jobs, workflow status)";
@@ -707,7 +669,7 @@
           host = topoIp "cortex-alpha";
           extraModules = [
             ./environments/neovim.nix
-            ./services/dynamic_domain_gandi.nix
+            ./services/dynamic_domain_porkbun.nix
           ];
         };
         local-nas = mkX86_64 "local-nas" {
@@ -754,6 +716,7 @@
         };
 
         LINDA = mkX86_64 "LINDA" {
+          nixpkgs = nixpkgs_unstable;
           host = topoIp "LINDA";
           buildOn = "remote";
           extraModules = [
@@ -772,16 +735,50 @@
               };
               environment.systemPackages = [
                 parsecgaming.packages.x86_64-linux.parsecgaming
-                star-citizen.packages.x86_64-linux.rsi-launcher
               ];
             }
           ];
         };
-        gaming-host-1 = mkX86_64 "gaming-host-1" {
-          host = topoIp "gaming-host-1";
-          #sshUser = "John88";
-          #sshPort = 22;
-          extraModules = [ ];
+        # ---- gaming-host-1 (mayo-split Step 1: passthrough extraction) ----
+        # The child flake (gitlab.com/mecha-team-zero/gaming-host-1) is the
+        # standalone STAGING config. The parent fulfils production secrets here
+        # via extendModules (LDR-001 D-08): host public key, default encrypt
+        # keys, and every secrix ciphertext path → the parent's real files.
+        # Service values remain child-declared. goldens/gaming-host-1.json is
+        # unchanged (regeneration forbidden; a diff is an extraction bug).
+        gaming-host-1 = gamingHost1.nixosConfigurations.gaming-host-1.extendModules {
+          modules = [
+            {
+              # Fleet identity aggregation (public keys, NOT a secret). The child
+              # carries only its own identity; the parent is the registry
+              # aggregator (LDR-001 D-08 ruling: fleet identity is parent-side).
+              programs.ssh.knownHosts = lib.mkForce (mkKnownHosts self.nixosConfigurations);
+              secrix.hostPubKey = lib.mkForce (builtins.readFile ./secrets/public_keys/host_keys/gaming-host-1.pub);
+              secrix.defaultEncryptKeys.John88 = lib.mkForce [
+                (builtins.readFile ./secrets/public_keys/JOHN_BARGMAN_ED_25519.pub)
+              ];
+              secrix.services.determinate-flakehub-login.secrets.flakehub-token.encrypted.file =
+                lib.mkForce ./secrets/flakehub_token;
+              secrix.services."dynamic-johnbargman.net".secrets.porkbun_api_key.encrypted.file =
+                lib.mkForce ./secrets/porkbun-api-bargman;
+              secrix.services."dynamic-johnbargman.net".secrets.porkbun_secret_api_key.encrypted.file =
+                lib.mkForce ./secrets/porkbun-api-bargman-secret-key;
+              secrix.services.rclone-sync-game-backups.secrets.config-file.encrypted.file =
+                lib.mkForce ./secrets/rclone-config-file;
+              secrix.services.wireguard-wireg0.secrets.gaming-host-1.encrypted.file =
+                lib.mkForce ./secrets/private_keys/wireguard/wg_gaming-host-1;
+              secrix.system.secrets.dns01-porkbun.encrypted.file =
+                lib.mkForce ./secrets/porkbun-dns01-envfile;
+              _module.args.nixinate = lib.mkForce {
+                host = topoIp "gaming-host-1";
+                sshUser = "deploy";
+                buildOn = "local";
+                port = 1108;
+                images = { };
+                debug = false;
+              };
+            }
+          ];
         };
         remote-worker = mkX86_64 "remote-worker" {
           host = topoIp "remote-worker";
@@ -906,88 +903,212 @@
         };
       };
 
-      checks."x86_64-linux" = {
-        formatting = nixpkgs.runCommand "check-formatting"
-          { buildInputs = [ nixpkgs.nixpkgs-fmt ]; }
-          "nixpkgs-fmt --check ${self} && touch $out";
+      # Structure checks (mayo:lib/mayo/lints — ruling 2026-11-11: the
+      # structure-assurance methods are nix flake checks). A flake check must
+      # EXECUTE its lint at build time: `nix flake check` only builds check
+      # derivations, so a bare writeShellApplication would compile the script
+      # and never run it. mkLintCheck wraps the runnable app in runCommand
+      # (the formatting-check semantics) so violations fail the build.
+      checks."x86_64-linux" =
+        let
+          mkLintCheck = name: runtimeInputs: text:
+            let
+              runner = nixpkgs.writeShellApplication {
+                name = "run-${name}";
+                meta.description = "Executed structure check: ${name}";
+                runtimeInputs = [
+                  nixpkgs.bash
+                  nixpkgs.coreutils
+                  nixpkgs.findutils
+                  nixpkgs.gnugrep
+                  nixpkgs.gnused
+                ] ++ runtimeInputs;
+                inherit text;
+              };
+            in
+            nixpkgs.runCommand "check-${name}" { nativeBuildInputs = [ runner ]; } ''
+              ${lib.getExe runner} && touch $out
+            '';
+        in
+        {
+          formatting = nixpkgs.runCommand "check-formatting"
+            { buildInputs = [ nixpkgs.nixpkgs-fmt ]; }
+            "nixpkgs-fmt --check ${self} && touch $out";
 
-        deadnix = nixpkgs.writeShellApplication {
-          name = "run-deadnix";
-          meta.description = "Detect dead Nix code";
-          runtimeInputs = [ deadnix.packages.x86_64-linux.default ];
           # NOTE: --no-lambda-arg suppresses ALL unused lambda-arg warnings.
           # Intentional: handles idiomatic (final: super: {...}) overlay patterns.
           # Any new dead lambda args will be silently suppressed — audit annually.
-          text = ''exec deadnix --fail --no-lambda-arg --no-lambda-pattern-names "${self}"'';
-        };
+          deadnix = mkLintCheck "deadnix" [ deadnix.packages.x86_64-linux.default ]
+            ''exec ${lib.getExe' deadnix.packages.x86_64-linux.default "deadnix"} --fail --no-lambda-arg --no-lambda-pattern-names ${self}'';
 
-        golden-validation = nixpkgs.writeShellApplication {
-          name = "run-golden-validation";
-          meta.description = "Validate all machine configs against golden files";
-          runtimeInputs = [ nixpkgs.jq nixpkgs.diffutils ];
-          text = ''
-            PASS=true
-            for machine in ${lib.concatStringsSep " " (builtins.attrNames self.nixosConfigurations)}; do
-              golden="${self}/goldens/$machine.json"
-              if [ ! -f "$golden" ]; then
-                echo "Skipping $machine (no golden file)"
-                continue
+          # ── structure lints (scripts from the Mayo layer, one per rule) ──
+          structure-layer-boundary = mkLintCheck "layer-boundary" [ ]
+            ''exec ${lib.getExe' nixpkgs.bash "bash"} ${mayoLib.lints.layerBoundary} ${mayo.lib}'';
+
+          structure-api-freeze = mkLintCheck "api-freeze" [ ]
+            ''exec ${lib.getExe' nixpkgs.bash "bash"} ${mayoLib.lints.apiFreeze} ${self}'';
+
+          structure-anti-vendor = mkLintCheck "anti-vendor" [ ]
+            ''exec ${lib.getExe' nixpkgs.bash "bash"} ${mayoLib.lints.antiVendor} ${self}'';
+
+          # Eval-time invariant: the layer APIs resolve from consumer seams
+          # alone (split-readiness — repo separation stays a directory move).
+          split-ready =
+            let
+              minimalKetchup = import "${mayo.lib}/ketchup/topology_library.nix" {
+                inherit lib;
+                topologyDir = ./topology;
+                pubKeyDir = ./secrets/public_keys/wireguard;
+              };
+              kRequired = [
+                "registry"
+                "mktopology"
+                "generators"
+                "validate"
+                "utils"
+                "mkHostsEntries"
+                "mkKnownHosts"
+                "hostNamesFromTopo"
+                "deriveTopo"
+                "coordToIp"
+              ];
+              mRequired = [ "rcloneTarget" "golden" "lints" ];
+              missing =
+                builtins.filter (a: !(minimalKetchup ? ${a})) kRequired
+                ++ builtins.filter (a: !(mayoLib ? ${a})) mRequired;
+            in
+            if missing != [ ] then
+              throw "split-ready: missing layer API attributes: ${toString missing}"
+            else if builtins.length (builtins.attrNames minimalKetchup.generators) != 9 then
+              throw "split-ready: ketchup.generators must expose exactly the nine generators"
+            else
+              nixpkgs.runCommand "check-split-ready" { } ''
+                echo "split-ready: Ketchup and Mayo APIs resolve from consumer seams alone"
+                touch $out
+              '';
+
+          # Eval-time invariant (D-08 clause 6): every machine carrying the
+          # fleet-identity wiring must hold the full canonical mkKnownHosts
+          # set. Extra entries (builder host keys: LINDA/remote-builder 21,
+          # terminal-zero 20) are allowed; missing or altered canonical
+          # entries are not. The excluded machines carry no wiring by design:
+          # bootstrap images (arm-/x86-bootstrap), minimal profile (beta-one),
+          # the QEMU test harness (bargman-greeter-vm), and the external
+          # Malayalam passthrough (cluster-box).
+          known-hosts-identity =
+            let
+              expected = mkKnownHosts self.nixosConfigurations;
+              excluded = [ "arm-bootstrap" "bargman-greeter-vm" "beta-one" "cluster-box" "x86-bootstrap" ];
+              machines = builtins.filter (n: !(builtins.elem n excluded)) (builtins.attrNames self.nixosConfigurations);
+              entryOk = kh: n:
+                let
+                  e = kh.${n} or { };
+                  x = expected.${n};
+                in
+                (e.publicKey or null) == (x.publicKey or null)
+                && lib.sort builtins.lessThan (e.hostNames or [ ]) == lib.sort builtins.lessThan (x.hostNames or [ ]);
+              badOf = name:
+                let kh = self.nixosConfigurations.${name}.config.programs.ssh.knownHosts;
+                in builtins.filter (n: !(kh ? ${n} && entryOk kh n)) (builtins.attrNames expected);
+              bad = lib.concatMap (m: map (n: "${m}/${n}") (badOf m)) machines;
+              nEntries = builtins.length (builtins.attrNames expected);
+            in
+            if bad != [ ] then
+              throw "known-hosts-identity violated (machine/entry): ${lib.concatStringsSep ", " (lib.take 8 bad)}"
+            else
+              nixpkgs.runCommand "check-known-hosts-identity" { } ''
+                echo "known-hosts-identity: ${toString (builtins.length machines)} machines carry all ${toString nEntries} canonical entries"
+                touch $out
+              '';
+
+          golden-validation = nixpkgs.writeShellApplication {
+            name = "run-golden-validation";
+            meta.description = "Validate all machine configs against golden files";
+            runtimeInputs = [ nixpkgs.jq nixpkgs.diffutils ];
+            text = ''
+              PASS=true
+              for machine in ${lib.concatStringsSep " " (builtins.attrNames self.nixosConfigurations)}; do
+                golden="${self}/goldens/$machine.json"
+                if [ ! -f "$golden" ]; then
+                  echo "Skipping $machine (no golden file)"
+                  continue
+                fi
+                echo "Validating $machine..."
+                current=$(nix run .#dump-config -- "$machine" | ${lib.getExe nixpkgs.jq} -S .)
+                if echo "$current" | ${lib.getExe' nixpkgs.diffutils "diff"} -u "$golden" -; then
+                  echo "  ✓ $machine matches golden"
+                else
+                  echo "  ✗ $machine differs from golden!"
+                  PASS=false
+                fi
+              done
+              if [ "$PASS" != "true" ]; then
+                echo ""
+                echo "Golden validation failed. If intentional, update with:"
+                echo "  nix run .#dump-config -- <machine> > goldens/<machine>.json"
+                exit 1
               fi
-              echo "Validating $machine..."
-              current=$(nix run .#dump-config -- "$machine" | ${lib.getExe nixpkgs.jq} -S .)
-              if echo "$current" | ${lib.getExe' nixpkgs.diffutils "diff"} -u "$golden" -; then
-                echo "  ✓ $machine matches golden"
-              else
-                echo "  ✗ $machine differs from golden!"
-                PASS=false
-              fi
-            done
-            if [ "$PASS" != "true" ]; then
               echo ""
-              echo "Golden validation failed. If intentional, update with:"
-              echo "  nix run .#dump-config -- <machine> > goldens/<machine>.json"
-              exit 1
-            fi
-            echo ""
-            echo "All golden validations passed"
-          '';
-        };
-
-        topology-coverage =
-          let
-            coverage = import ./lib/golden_coverage.nix { inherit self lib; };
-          in
-          if !coverage.isComplete then
-            throw "Topology coverage incomplete. Missing: ${builtins.toJSON coverage.missing}"
-          else
-            nixpkgs.runCommand "topology-coverage-check" { } ''
-              echo "Topology coverage: ${toString coverage.coveragePercent}%"
-              echo "Machines: ${toString coverage.coveredCount}/${toString coverage.totalMachines}"
-              touch $out
+              echo "All golden validations passed"
             '';
-
-        bargman-greeter-login-test = nixpkgs.callPackage ./tests/bargman-greeter-login/default.nix {
-          nixosModule = {
-            imports = [ ./environments/i3wm_darthpjb.nix ./environments/bargman-greeter-vm.nix ];
-            _module.args = {
-              inherit self;
-              inherit bargman-assets;
-            };
           };
-          resourceDir = ./tests/bargman-greeter-login/resources;
-        };
 
-        # Minecraft server lifecycle test:
-        # Boots VM, waits for "Done", verifies RCON, sends stop, checks clean exit
-        minecraft-server-test = nixpkgs.callPackage ./tests/minecraft-server/default.nix {
-          minecraft-curseforge-all-the-mons = self.packages.x86_64-linux.minecraft-curseforge-all-the-mons;
-          minecraft-curseforge-module = ./server_services/game_servers/minecraft-curseforge.nix;
+          topology-coverage =
+            let
+              # Mayo golden tooling (ruling 2026-11-11) — data-injected: the
+              # exclusion list is fleet data (Secret-Sauce) and stays here.
+              coverage = import mayoLib.golden.coverage {
+                goldenDir = ./goldens;
+                topologyMachines = builtins.attrNames topoRegistry.hosts;
+                machineNames = builtins.attrNames (builtins.removeAttrs self.nixosConfigurations [
+                  "beta-one"
+                  "display-0"
+                  "display-1"
+                  "display-2"
+                  "print-controller"
+                  "bargman-greeter-vm"
+                  "arm-bootstrap"
+                  "x86-bootstrap"
+                  "cluster-box"
+                ]);
+              };
+            in
+            if !coverage.isComplete then
+              throw "Topology coverage incomplete. Missing: ${builtins.toJSON coverage.missing}"
+            else
+              nixpkgs.runCommand "topology-coverage-check" { } ''
+                echo "Topology coverage: ${toString coverage.coveragePercent}%"
+                echo "Machines: ${toString coverage.coveredCount}/${toString coverage.totalMachines}"
+                touch $out
+              '';
+
+          bargman-greeter-login-test = nixpkgs.callPackage ./tests/bargman-greeter-login/default.nix {
+            nixosModule = {
+              imports = [ ./environments/i3wm_darthpjb.nix ./environments/bargman-greeter-vm.nix ];
+              _module.args = {
+                inherit self;
+                inherit bargman-assets;
+              };
+            };
+            resourceDir = ./tests/bargman-greeter-login/resources;
+          };
+
+          # Minecraft server lifecycle test:
+          # Boots VM, waits for "Done", verifies RCON, sends stop, checks clean exit
+          minecraft-server-test = nixpkgs.callPackage ./tests/minecraft-server/default.nix {
+            minecraft-curseforge-all-the-mons = self.packages.x86_64-linux.minecraft-curseforge-all-the-mons;
+            minecraft-curseforge-module = ./server_services/game_servers/minecraft-curseforge.nix;
+          };
         };
-      };
 
       # CI data exposed under legacyPackages (not a standard flake output type)
       legacyPackages."x86_64-linux" = {
-        ci-info = ci-generator.ci-info;
+        ci-info = {
+          x86-machines = ci.ci.machines.x86;
+          arm-machines = ci.ci.machines.arm;
+          all-machines = ci.ci.machines.all;
+          job-count = builtins.length ci.ci.machines.all;
+        };
         ci = ci;
       };
     };

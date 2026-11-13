@@ -20,20 +20,24 @@ Consolidated reference for codebase structure, coding conventions, and developme
 - `goldens/` - Golden test files (sacrosanct)
   - `<machine>.json` - Golden test references for each machine (x86-bootstrap has none)
   - `ci.json`, `bargman-greeter-vm.json` - Non-machine golden references
-- `lib/topology/` - Topology transformation functions
-  - `mktopology.nix` - Orchestrator (reads JSON, calls generators)
-  - `mkRegistry.nix` - Cross-machine validation; `mkHostsEntries.nix` - hosts entries
-  - `gen*.nix` - Generators (JSON → NixOS config): `genFirewall`, `genDns`, `genNginx`, `genBackup`, `genWireguard`, `genNetwork`, `genTailscale`, `genForwarding`, `genMonitoring`, `genDashboard`
-  - `dashboard_templates/` - Dashboard templates consumed by `genDashboard`
-  - `validate.nix` - Topology validation
-  - `utils.nix` - Shared utilities
-  - `archive/` - Retired code (incl. `topology-derive.nix`)
-- `lib/monitoring/inventory.nix` - Monitoring inventory (blessed scrape baseline + config-derived discovery)
-- `lib/serialize-config.nix` - The config serializer (used by `dump-config` and `checks.network-config-*`)
-- `lib/golden_coverage.nix` - Coverage audit (checks if every machine has a golden)
+- `lib/monitoring/` - Monitoring inventory (reads `self`; fleet data source for dashboards — deliberately **not** in the pure topology toolset)
+  - `inventory.nix` - scrape inventory (baseline ∪ config-derived discovery) + fleet presentation data (workstation split, label overrides) injected into mayo's templates
+- `lib/` holds no other library code — the shared engines live in flake inputs:
+  - `mayo:lib/ketchup/` (mktopology, mkRegistry,
+    mkHostsEntries, mkKnownHosts, all `gen*`, validate, utils + the
+    `topology_library.nix` API) and `mayo:lib/mayo/` (rclone-target +
+    `mayo_library.nix` API + `golden/` tooling: serialize-config, coverage,
+    dump-config/validate-goldens app builders, compare-configs)
+  - Consumers import the layer APIs (`ketchup/topology_library.nix`,
+    `mayo/mayo_library.nix`) and supply `topologyDir`/`pubKeyDir`
+  - `nix-github-ci:lib/` — GitHub Actions CI engine (`mkCi` + `ciLibrary`;
+    fleet data injected, secret-sauce plan R1)
 - `modules/` - NixOS modules
   - `enable-wg-topology.nix` - WireGuard client module (deployed on 16 machines)
-  - Also `core-router.nix`, `core-router-topology.nix`, `lightdm-webkit2-greeter.nix`, `nixos-deployment-exporter.nix`, `smart-monitoring.nix`, `ssh-multiplex.nix`, `sysdiag.nix`, `vllm.nix` (former `topology-derive.nix` is archived at `lib/topology/archive/`)
+  - Also `lightdm-webkit2-greeter.nix`, `nixos-deployment-exporter.nix`, `smart-monitoring.nix`, `ssh-multiplex.nix`, `sysdiag.nix`, `vllm.nix`
+  - Removed as dead code (2026-11-11 mayo-split prune): `core-router.nix`,
+    `core-router-topology.nix`, and the archived `topology-derive.nix` — never
+    imported, and already referencing files that never existed
 - `environments/` - Environment modules for software collections (e.g., `code.nix`, `browsers.nix`)
 - `users/` - User account configurations (one file per user)
 
@@ -59,13 +63,13 @@ Consolidated reference for codebase structure, coding conventions, and developme
 
 ### Architecture Overview
 
-The repository uses a **topology-driven architecture** for network configuration. Planar JSON topology data lives in `topology/<machine>.json`, transformation functions in `lib/topology/` convert topology data to NixOS config, and golden tests in `goldens/` validate output.
+The repository uses a **topology-driven architecture** for network configuration. Planar JSON topology data lives in `topology/<machine>.json`, transformation functions in the mayo Ketchup layer (`mayo:lib/ketchup/`) convert topology data to NixOS config, and golden tests in `goldens/` validate output.
 
 ### Module Organization
 - **Flake-based**: All configurations use Nix flakes for reproducibility
 - **Modular imports**: Configurations import from `environments/`, `services/`, and `lib/`
 - **Machine-specific**: Each machine in `machines/` has its own config importing shared modules
-- **Topology-driven**: Network config derived from `topology/*.json` via `lib/topology/` transformers
+- **Topology-driven**: Network config derived from `topology/*.json` via the mayo Ketchup layer (`mayo:lib/ketchup/`) transformers
 
 ### File Patterns
 - **Options first**: Each module starts with `options` block defining configurable settings

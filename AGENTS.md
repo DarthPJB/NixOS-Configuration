@@ -11,21 +11,31 @@ project planning (see opencode/plans/), deployments (see documentation/operation
 (architecture, recreation doctrine, backup strategy) and the living plan at
 opencode/plans/windows-gpu-passthrough-PLAN.md.
 
-## Current Issues — 2026-10-05
+## Current Issues — 2026-11-12
 
-The `overlord-ii-planar-topology` work is **complete and merged**. Phase B
-core tasks are implemented and validated against goldens. The current frontier
-is the Fabrication Forge / Gitea track (see `documentation/gitea-fabrication-forge.md`),
-the backup/offsite track (topology `backup` keys + B2 replication), and the
+**Boundary program COMPLETE.** The mayo split (`opencode/plans/mayo-split-PLAN.md`,
+Gates A/B/C/3b) and the secret-sauce phase (`opencode/plans/secret-sauce-PLAN.md`,
+R1–R3) are done and merged: the shared engines live in public library repos —
+**mayo** (Ketchup/Mayo layers) and **nix-github-ci** (CI engine) — the parent
+holds only Secret-Sauce, and the D-10/D-11/D-12 structure checks enforce it.
+LDR-001 D-01…D-12 all resolved.
+
+**Current frontier: Phase 4** — machine-repo roll-out + service port-outs
+(LDR-001 §4.4 P4→P5). Run document: `opencode/plans/phase4-portout-PLAN.md`
+(**open rulings R-4a…R-4e — next machine, Gitea/AI targets, child CI shape**).
+Standing tracks alongside it: Fabrication Forge / Gitea
+(`documentation/gitea-fabrication-forge.md` — now also a P4 port-out
+candidate), backup/offsite (topology `backup` keys + B2 replication), and the
 deferred overlord-iii client-side WireGuard migration.
 
-**LINDA Windows GPU passthrough restoration (active, 2026-10-05):** the
+**LINDA Windows GPU passthrough restoration (active, awaiting user):** the
 `win-11-gaming-base` VM (GTX 1050 + ASMedia USB passthrough, Looking Glass,
 Scream) is being restored using the prior working stack — fully declarative
 (NixOS br0 networking + NixVirt domain/networks, NOT the platonic VMs
-wrapper), with the VM estate backed up to B2 before any mutation. Phases 3–5
-(reboot, physical checks, Windows bring-up) are user-manual. All findings,
-rulings, and evidence: `opencode/plans/windows-gpu-passthrough-PLAN.md`.
+wrapper), with the VM estate backed up to B2 before any mutation. Host layer
+complete on `feat/linda-vfio-br0`; Phases 3–5 (reboot, physical checks,
+Windows bring-up) are user-manual. All findings, rulings, and evidence:
+`opencode/plans/windows-gpu-passthrough-PLAN.md`.
 
 ### Architecture Boundary — READ THIS FIRST
 
@@ -68,10 +78,44 @@ config remains unchanged.  The combined output MUST match the golden.
 **Any agent that claims a generator is "missing features" that originate
 from user configuration has fundamentally misunderstood the architecture.**
 
+### Staging/Production Doctrine — READ THIS TOO (LDR-001 D-08)
+
+**This is a second hard boundary: the secret/settings actualisation boundary.**
+
+- **Machine flake = staging source of truth (development).** Secret
+  declarations are *bindings only* (name, service attachment, owner/mode)
+  pointing at repo-local paths whose files are **absent**. NO ciphertext, NO
+  placeholder encryption, NO secret file copies, NO decryption — anywhere.
+  Standalone eval failure from missing secrets is **accepted and expected**.
+- **Master-control flake (this repo) = single source of truth for
+  production.** Parent `extendModules` overrides (secrix `encrypted.file` →
+  parent ciphertext paths, `hostPubKey`, `defaultEncryptKeys`, nixinate
+  deploy metadata) are what a real deployment IS.
+- **Master keyset confinement:** the master keyset (John88 key, host pubkeys,
+  all production ciphertext including WG private keys) exists **only** in
+  this repository, via secrix. This is structurally enforced: secrix's app
+  resolves encryption keymaps from its flake's own `nixosConfigurations` —
+  a machine repo without `hostPubKey`/ciphertext cannot seal production
+  secrets, tool-side.
+- Virtualised/testing vs real configurations are separated by **which flake
+  actualises them**, not by forked configs.
+- Golden policy during extraction: parent-side goldens retained; **regeneration
+  forbidden** — a golden diff is an extraction bug, never a golden problem.
+
+Active phase: `opencode/plans/phase4-portout-PLAN.md` — P4 machine-repo
+roll-out + service port-outs (LDR-001 §4.4), with open rulings R-4a…R-4e.
+The boundary work it builds on is **complete**: gaming-host-1 →
+`gitlab.com/mecha-team-zero/gaming-host-1` (child); mayo →
+`github.com/Bargman-Tech/mayo` (Ketchup/Mayo layers); nix-github-ci →
+`github.com/Bargman-Tech/nix-github-ci` (CI engine). Flake inputs are the
+contract points; the parent consumes each child flake and overrides
+production secrets. Prior phases: `mayo-split-PLAN.md` (A/B/C/3b ✅),
+`secret-sauce-PLAN.md` (R1–R3 ✅).
+
 ### Phase B — Core Tasks (blocks completion)
 
 **B4. Wire the two-layer topology architecture into machine configs.**
-**COMPLETED.** The `mktopology` function (`lib/topology/mktopology.nix`) wires
+**COMPLETED.** The `mktopology` function (`mayo:lib/ketchup/mktopology.nix`) wires
 `genFirewall`, `genDns`, `genNginx`, `genBackup`, and `genWireguard` (hub-only,
 conditional on `topology.wireguard`) into machine configs at the flake level.
 Client-side WireGuard still comes from `modules/enable-wg-topology.nix`;
@@ -81,7 +125,7 @@ migration of clients is the deferred overlord-iii work.
 **COMPLETED.** `genBackup.nix` is wired into `mktopology.nix` and activates
 conditionally on `topology.backup` keys. The pipeline is **validated in
 production**: `topology.backup` keys exist on gaming-host-1, LINDA, local-nas,
-and terminal-zero (B2/rclone offsite replication via `lib/rclone-target.nix`).
+and terminal-zero (B2/rclone offsite replication via `mayo:lib/mayo/rclone-target.nix`).
 
 ### Phase B — Actionable Pending Review
 
@@ -102,9 +146,14 @@ Carmelsite vhosts remain in `extraModules` because they reference a flake input 
 ### Phase C — Deferred
 
 **C1. Ketchup/Secret-Sauce/Mayo library split.**
-`lib/topology_library.nix` (53 lines) exists as clean API. `lib/mayo_library.nix`
-(24 lines) is a minimal stub. Full split deferred until Phase B generators are
-wired and validated.
+**RESOLVED (2026-11-11, mayo-split Step 3b).** The shared library
+(`github.com/Bargman-Tech/mayo`) is split into layers per the demarkation
+ruling: **Ketchup** = topology + host management (`lib/ketchup/` with the
+`topology_library.nix` clean API), **Mayo** = system configuration helpers +
+other library assets (`lib/mayo/` with `mayo_library.nix`, including the golden
+tooling). Secret-Sauce stays parent-side. The layers never import each other,
+so the eventual repo separation is a directory move — deferred per user ruling
+("it can wait").
 
 **C2. GitHub runner custom module.**
 Phase 2 goal from overlord-II plan. Not started. Deferred.
@@ -187,32 +236,45 @@ processed through the `mktopology` pure function at the flake level:
 ```
 topology/<machine>.json (per-machine topology data — single source of truth)
 ↓
-lib/topology/mktopology.nix (flake-level pure function: JSON → config attrset)
+mayo:lib/ketchup/mktopology.nix (flake-level pure function: JSON → config attrset)
 ↓
 topologyConfigs (attrset of hostname → config attrset, merged into modules list)
 ```
 
 **Active Files:**
+
+> **Shared library layers (mayo-split Step 3b, 2026-11-11).** The library lives
+> in the `mayo` flake input (`github.com/Bargman-Tech/mayo`, locked in
+> `flake.lock`), split into two layers per the demarkation ruling — **Ketchup**
+> (`lib/ketchup/`, topology + host management) and **Mayo** (`lib/mayo/`,
+> system configuration helpers + other library assets, incl. golden tooling).
+> Consumers import the **layer APIs** (`mayo:lib/ketchup/topology_library.nix`,
+> `mayo:lib/mayo/mayo_library.nix`) — flake-level as `"${mayo.lib}/…"`, modules
+> as `"${self.inputs.mayo.lib}/…"` — and supply the repo-relative seams
+> (`topologyDir`, `pubKeyDir`, `repoRoot`). Secret-Sauce (machine configs,
+> secrets, real topology data) stays parent-side. The layers never import each
+> other, so the eventual Ketchup/Mayo repo separation is a directory move
+> (deferred per user ruling). Entries below prefixed `mayo:` are in that input.
+> **Never re-vendor the engine** — LDR-001 D-10.
+
 - `topology/<machine>.json` — Per-machine topology data (coordinates, planes, DNS, nginx, firewall, WireGuard)
 - `goldens/<machine>.json` — Golden test references (sacrosanct)
-- `lib/topology/mktopology.nix` — Flake-level topology-to-config function (called at flake.nix:44)
-- `lib/topology/genFirewall.nix` — Firewall generator (conditional on topology.firewall)
-- `lib/topology/genDns.nix` — DNS/DHCP generator (conditional on topology.dns / lan_dhcp)
-- `lib/topology/genNginx.nix` — Nginx proxy generator
-- `lib/topology/genBackup.nix` — Backup generator (conditional on topology.backup)
-- `lib/topology/genWireguard.nix` — WireGuard generator (wired for hub via topology.wireguard; client migration pending in overlord-iii)
-- `lib/topology/mkRegistry.nix` — Registry pipeline for topology validation
-- `lib/monitoring/inventory.nix` — Monitoring inventory (union of blessed scrape baseline + config-derived discovery; feeds dashboards)
+- `mayo:lib/ketchup/topology_library.nix` — **Ketchup API**: `ketchup.mktopology` (seams pre-bound, overrideable), `ketchup.registry`, `ketchup.generators.*` (nine), `ketchup.mkHostsEntries`, `ketchup.mkKnownHosts`, `ketchup.deriveTopo`/`coordToIp`, `ketchup.validate`
+- `mayo:lib/ketchup/mktopology.nix` — Topology-to-config orchestrator (F-33 tolerant `resolveBackupPaths`)
+- `mayo:lib/ketchup/mkRegistry.nix` — Cross-machine topology registry (10 validators; `topologyDir` + `repoRoot` injected)
+- `mayo:lib/ketchup/mkHostsEntries.nix`, `mayo:lib/ketchup/mkKnownHosts.nix` — Host management (`/etc/hosts` entries, known-hosts construction)
+- `mayo:lib/ketchup/gen*.nix` — Nine pure generators: firewall, dns, nginx, backup, wireguard, network, forwarding, tailscale, monitoring
+- `mayo:lib/ketchup/{validate,utils}.nix` — Topology validation helpers
+- `mayo:lib/mayo/mayo_library.nix` — **Mayo API**: `mayoLib.rcloneTarget`, `mayoLib.golden.*` (serializeConfig, coverage, apps, compareConfigs)
+- `mayo:lib/mayo/rclone-target.nix` — rclone-target options module (the options `genBackup` writes into)
+- `mayo:lib/mayo/golden/` — Golden tooling (library surface — ruling 2026-11-11): `serialize-config.nix`, `coverage.nix` (data-injected audit), `apps.nix` (`mkDumpConfigApp`/`mkValidateGoldensApp`), `compare-configs.sh`
+- `mayo:lib/mayo/monitoring/` — Grafana dashboard tooling (secret-sauce plan R2, 2026-11-12): `genDashboard.nix` (inventory → dashboard attrsets; `datasource` injected) + `dashboard_templates/` (all 9 dashboards generated — no static dashboard JSON). Fleet data (workstation split, label overrides) arrives via the parent's inventory.
+- `nix-github-ci` — GitHub Actions CI engine (secret-sauce plan R1, 2026-11-12; `github.com/Bargman-Tech/nix-github-ci`, public): `lib.mkCi` (workflow assembly; `fleet = { exclusions, profileTarget, x86TimeoutMinutes, ipScanExcludes }` injected) + `lib.ciLibrary` + the `generate/validate-ci-workflow` apps. Consumed gitlab-ci-style; `goldens/ci.json` + `check-ci` stay parent-side.
+- `lib/monitoring/inventory.nix` — Monitoring inventory (union of blessed scrape baseline + config-derived discovery; feeds dashboards; carries the fleet presentation data injected into mayo templates)
 - `documentation/monitoring-automation.md` — Dashboard/inventory automation (Phase 1 done; Phase 2 scrape generation is future work)
-- `lib/topology/genDashboard.nix` — Grafana dashboard generator (inventory → dashboard attrsets; pure data transform)
-- `lib/topology/dashboard_templates/` — Dashboard templates (fleet, network, per-machine CPU fan-out, service health, storage, AI, deployment). All dashboards are generated — no static dashboard JSON remains.
-- `lib/topology/validate.nix` — Topology validation
-- `lib/topology/utils.nix` — Shared utilities
 - `documentation/topology-principle.md` — Canonical architecture principle
-- `lib/serialize-config.nix` — The one config serializer (used by `dump-config` and `checks.network-config-*`)
-- `lib/golden_coverage.nix` — Coverage tracking (audit tool)
 - `modules/enable-wg-topology.nix` — WireGuard client module (deployed on 16 machines; pending migration to genWireguard in overlord-iii)
-- `topologyConfigs` — Attrset merged into each `nixosConfiguration` via `modules` list (flake.nix:147, 187)
+- `topologyConfigs` — Attrset merged into each `nixosConfiguration` via `modules` list (flake.nix)
 
 ### Two-Layer Topology Architecture (Active)
 
@@ -243,25 +305,29 @@ final configuration
 - WireGuard hub config is generated (conditional on `topology.wireguard`); clients remain on `enable-wg-topology.nix` until overlord-iii
 - `specialArgs = { inherit topologyData; }` still passes raw JSON to machines for backward compat
 
-**Generator Files:**
-- `lib/topology/genFirewall.nix` — Firewall generator (conditional)
-- `lib/topology/genDns.nix` — DNS/DHCP generator (conditional)
-- `lib/topology/genNginx.nix` — Nginx proxy generator (always active)
-- `lib/topology/genBackup.nix` — Backup generator (conditional)
-- `lib/topology/genWireguard.nix` — WireGuard generator (hub-only; client migration deferred to overlord-iii)
+**Generator Files:** (mayo-split Step 3b: all live in the `mayo` input's
+Ketchup layer — `mayo:lib/ketchup/…` — see the Active Files note)
+- `mayo:lib/ketchup/genFirewall.nix` — Firewall generator (conditional)
+- `mayo:lib/ketchup/genDns.nix` — DNS/DHCP generator (conditional)
+- `mayo:lib/ketchup/genNginx.nix` — Nginx proxy generator (always active)
+- `mayo:lib/ketchup/genBackup.nix` — Backup generator (conditional)
+- `mayo:lib/ketchup/genWireguard.nix` — WireGuard generator (hub-only; client migration deferred to overlord-iii)
 
 **Status:** `mktopology` is live for all machines with topology JSON files.
 `enable-wg-topology.nix` remains deployed for WireGuard clients (pending migration in overlord-iii).
-`topology-derive.nix` is archived at `lib/topology/archive/topology-derive.nix`.
+`topology-derive.nix` was archived, then **removed** in the mayo-split Step-3
+dead-code prune (2026-11-11), together with the retired `core-router*.nix`
+modules — all pre-dead (never imported; already referenced files that never
+existed).
 
 ### Topology-Gen Branch (Merged)
 
 The `planar-topology` / `overlord-ii-planar-topology` branches overhauled the topology system:
 - JSON topology files (`topology/<machine>.json`) replacing `.nix` per-machine data
-- `lib/topology/mktopology.nix` — flake-level pure function replaces topology-derive.nix module
-- `lib/topology/gen*.nix` — pure generators (firewall, DNS, nginx, backup, wireguard)
+- `lib/topology/mktopology.nix` — flake-level pure function replaces topology-derive.nix module *(since moved: `mayo:lib/ketchup/mktopology.nix`)*
+- `lib/topology/gen*.nix` — pure generators (firewall, DNS, nginx, backup, wireguard) *(since moved: `mayo:lib/ketchup/`)*
 - Generators wired via `topologyConfigs` in flake.nix, not via commonModules
-- `topology-derive.nix` archived to `lib/topology/archive/`
+- `topology-derive.nix` archived to `lib/topology/archive/` *(archive removed 2026-11-11)*
 - WireGuard hub integration live; client migration deferred to overlord-iii
 - Goldens regenerated for all machines
 - `genNginx.nix` ACME propagation bug fixed
@@ -330,6 +396,28 @@ nix run .#validate-goldens -- cortex-alpha
 - Code restructuring must NEVER require golden regeneration
 - If `validate-goldens` fails after refactoring, the refactoring introduced a side effect
 - The user explicitly authorizes all golden updates
+
+### Structure Checks (Enforced Boundaries, LDR-001 D-11)
+
+The architecture boundaries are enforced as `nix flake checks`, not just
+documented. Lint scripts live in `mayo:lib/mayo/lints/` (reach them via
+`mayoLib.lints.*`); the consuming repos wire them as checks:
+
+- `structure-layer-boundary` — Ketchup ↔ Mayo never import each other
+- `structure-api-freeze` — consumers touch only `topology_library.nix` /
+  `mayo_library.nix` (bare `${mayo.lib}` directory refs are fine)
+- `structure-anti-vendor` — mayo-owned files never reappear under `lib/`
+- `structure-d08` (machine repos) — no ciphertext, no `age -d`, `secrets/`
+  fileless, no repo-root escapes
+- `split-ready` / `known-hosts-identity` / `schema-contract` — eval-time
+  asserts (layer APIs resolve from seams alone; every wired machine carries
+  the full canonical `mkKnownHosts` set; the `bargman-tech` export keeps its
+  shape)
+
+**Execution rule:** `nix flake check` only *builds* its checks — executable
+checks must be `runCommand`-wrapped (`mkLintCheck` in both flakes) or the
+lint never runs. Violating any of these checks is a build failure. Details:
+`opencode/plans/structure-checks-PLAN.md`.
 
 ### WireGuard Public Keys
 Public keys are read from `secrets/public_keys/wireguard/wg_${name}_pub` files

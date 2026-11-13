@@ -16,7 +16,7 @@
     ../../environments/code.nix
     ../../environments/sshd.nix
     ../../environments/audio_visual_editing.nix
-    ../../services/dynamic_domain_gandi.nix
+    ../../services/dynamic_domain_porkbun.nix
     ./hardware-configuration.nix
     ../../modules/enable-wg-topology.nix
   ];

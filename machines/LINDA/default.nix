@@ -5,6 +5,7 @@
 , lib
 , hostname
 , LLM-CORE
+, pkgs_llm
 , ...
 }:
 let
@@ -102,12 +103,14 @@ in
   #programs.zoom-us.enable = true;
   environment.systemPackages = [
     self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.looking-glass-client
+    pkgs_llm.lutris
+    pkgs_llm.signal-desktop
     self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.scream
     pkgs.virtiofsd
     pkgs.gwe
     pkgs.virt-manager
     pkgs.librewolf
-    #self.inputs.nixpkgs_unstable.legacyPackages.x86_64-linux.nixd
+    self.inputs.star-citizen.packages.x86_64-linux.rsi-launcher-git
   ];
   nix = {
     settings = {
@@ -158,6 +161,14 @@ in
     opencode-web = {
       description = "opencode-web-autostart";
       wantedBy = [ "graphical-session.target" ];
+      # System-level PATH contract: the full system profile, so the opencode
+      # bash tool (and its MCP children) see nix, git and standard tooling.
+      # Without this, NixOS stamps the unit with only the minimal default
+      # service PATH (coreutils/findutils/gnugrep/gnused/systemd) and the
+      # bash tool environment comes up stripped. System-level only
+      # (config.system.path); a per-user/home-manager deployment would need
+      # the user profile path instead — deferred.
+      path = [ config.system.path ];
       serviceConfig = {
         Restart = "always";
         ExecStart = lib.getExe opencode-web-launcher;
@@ -197,7 +208,7 @@ in
     ];
     loader = {
       systemd-boot.enable = true;
-      systemd-boot.configurationLimit = 1;
+      systemd-boot.configurationLimit = 2;
       efi.canTouchEfiVariables = true;
     };
     initrd = {
@@ -212,7 +223,7 @@ in
         "usbhid"
         "uas"
         "sd_mod"
-        "nvidia-drm"
+        #"nvidia-drm"
       ];
       kernelModules = [ "vfio_pci" ];
     };
@@ -298,10 +309,11 @@ in
     cpu.amd.updateMicrocode = config.hardware.enableRedistributableFirmware;
     graphics.enable32Bit = true;
     nvidia = {
+      package = config.boot.kernelPackages.nvidiaPackages.beta;
       nvidiaSettings = true;
       open = false;
       modesetting.enable = true;
-      powerManagement.enable = false;
+      powerManagement.enable = true;
     };
   };
 

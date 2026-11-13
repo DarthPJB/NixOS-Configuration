@@ -1,8 +1,22 @@
 # Gaming Host 1 — Machine Documentation
 
 **Hostname:** gaming-host-1
-**Role:** Game server host
-**Last updated:** 2026-10-05
+**Role:** Game server host → remote-development machine + free-agent game server (co-developed)
+**Last updated:** 2026-11-12
+
+> **EXTRACTION COMPLETE** — gaming-host-1 is the fleet's first machine repo
+> (`gitlab.com/mecha-team-zero/gaming-host-1`, private). Mayo-split Gates A/B/C
+> + 3b all passed (2026-11-09 → 11-11): parent consumes the child flake via
+> `extendModules` with D-08 production overrides, topology/identity flow from
+> the child's `bargman-tech` schema export, both sides consume the mayo
+> library (the child vendors nothing), and the child now carries its own
+> structure checks (LDR-001 D-11 — `structure-d08`, `schema-contract`, …).
+> Golden byte-identical throughout; golden regeneration authority moves to
+> the machine repo (LDR §4.5). Record: `opencode/plans/mayo-split-PLAN.md`.
+> Next phase (more machines + service port-outs):
+> `opencode/plans/phase4-portout-PLAN.md`.
+> Secrets follow the staging/production doctrine (LDR-001 D-08): the parent
+> repo holds production ciphertext; the machine repo declares bindings only.
 
 ## Current Status
 

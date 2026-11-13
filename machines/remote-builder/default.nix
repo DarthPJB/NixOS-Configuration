@@ -12,14 +12,18 @@
     ../../modifier_imports/flakes.nix
     ../../environments/sshd.nix
     ../../environments/tools.nix
-    ../../services/dynamic_domain_gandi.nix
+    ../../services/dynamic_domain_porkbun.nix
     ../../services/gitlab-runner.nix
     ../../services/gitlab-credentials.nix
     ../../modifier_imports/remote-builder.nix
     ../../users/build.nix
     ../../modules/enable-wg-topology.nix
     ../../services/nix-cache-serve.nix
-    (import ../../services/acme_server.nix { fqdn = "cache.johnbargman.net"; })
+    (import ../../services/acme_server.nix {
+      fqdn = "cache.johnbargman.net";
+      secretName = "dns01-porkbun";
+      secretFile = ../../secrets/porkbun-dns01-envfile;
+    })
   ];
   # Nix binary cache — open port 5001 on WAN
   # Ports 80/443 for nginx TLS termination (ACME + HTTPS cache)

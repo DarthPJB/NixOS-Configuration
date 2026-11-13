@@ -1,14 +1,16 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, self, ... }:
 let
-  # Import JSON topology registry (single source of truth for all machine IPs)
-  registry = import ../lib/topology/mkRegistry.nix { inherit lib; };
+  # Ketchup API (topology + host management — mayo-split Step 3b); topologyDir
+  # is this repo's own topology/.
+  ketchup = import "${self.inputs.mayo.lib}/ketchup/topology_library.nix" {
+    inherit lib;
+    topologyDir = ../topology;
+  };
+  registry = ketchup.registry;
   topology = registry.hosts;
 
-  # Import hosts generation function
-  hostsLib = import ../lib/topology/mkHostsEntries.nix { inherit lib; };
-
-  # Generate hosts entries from topology
-  topologyHosts = hostsLib.mkHostsEntries topology;
+  # Generate hosts entries from topology (Ketchup host management)
+  topologyHosts = ketchup.mkHostsEntries topology;
 in
 {
   networking.extraHosts = ''

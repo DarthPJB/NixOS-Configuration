@@ -12,6 +12,8 @@
     pkgs.gpp
     pkgs.git-lfs
     pkgs.entr
+    glab
+    gh
     #pkgs.emscripten
     #pkgs.pulsar
     #pkgs.upterm
