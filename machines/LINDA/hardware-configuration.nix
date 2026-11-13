@@ -31,7 +31,7 @@
     fsType = "tmpfs";
     options = [
       "defaults"
-      "size=2G"
+      "size=32G"
       "mode=755"
     ];
   };
@@ -60,7 +60,18 @@
     #      after = [ "systemd-tmpfiles-setup.service" ];
     #      wantedBy = [ "multi-user.target" ];
     #    }
+
     {
+      where = "/etc/opencode";
+      what = "/speed-storage/opencode1";
+      options = "bind";
+    }
+    {
+      where = "/etc/opencode2";
+      what = "/speed-storage/opencode2";
+      options = "bind";
+    }
+{
       where = "/var/tmp";
       what = "/speed-storage/tmp";
       options = "bind";
