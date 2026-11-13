@@ -7,8 +7,12 @@
 
 ## Deployment state
 
-- **Tree:** `jb/phase-C` @ `6c02f87` (working tree clean; config content =
-  `6bd3863`, the docs commit changes no `.nix`)
+- **Tree:** `jb/phase-C` @ `732db00` (working tree clean). Config content =
+  `6bd3863` for every machine except LINDA: `732db00` landed 2026-11-13 after
+  the initial records — LINDA hardware-config only (root-fill mitigation:
+  `/` tmpfs 2G→32G, `/etc/opencode` + `/etc/opencode2` bind mounts to
+  speed-storage). All other machine configs are byte-identical to `6c02f87`.
+  Pre-deploy evidence below was verified at `6c02f87`.
 - **Pre-deploy evidence (agent-verified, read-only):** golden sweep **20/20**,
   structure checks green, `check-ci` green, fmt/deadnix clean, `ci.yml`
   byte-identical
@@ -33,7 +37,7 @@
 | remote-builder | ⬜ pending | | in-house binary cache host |
 | remote-worker | ⬜ pending | | ad-hoc nginx surface |
 | terminal-nx-01 | ✅ **SUCCESS** | 2026-11-12 | user-deployed |
-| terminal-zero | ⬜ pending | | |
+| terminal-zero | ✅ **SUCCESS** | 2026-11-13 | user-deployed (config unaffected by `732db00` — LINDA-only change) |
 
 ## Not deployment targets (excluded from the manual sweep)
 
