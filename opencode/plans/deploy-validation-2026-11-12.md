@@ -24,8 +24,8 @@
 | Machine | Status | Date | Notes |
 |---|---|---|---|
 | **LINDA** | ✅ **SUCCESS** | 2026-11-12 | user-deployed (first validation of the full secret-sauce state) |
-| alpha-one | ⬜ pending | | |
-| alpha-three | ⬜ pending | | |
+| alpha-one | ✅ **SUCCESS** | 2026-11-16 | user-deployed |
+| alpha-three | ✅ **SUCCESS** | 2026-11-16 | user-deployed |
 | arm-builder | ⬜ pending | | aarch64 (native runner deploy path) |
 | cortex-alpha | ⬜ pending | | hub — exercises genFirewall/genDns/genNginx/genWireguard heavily |
 | display-1 | ⬜ pending | | |
@@ -50,6 +50,11 @@
 | dormant: `alpha-two`, `storage-array`, `display-0` | in `dormantConfigurations` only — excluded from `nixosConfigurations` by design (not deployable) |
 
 ## Diagnosis — cache serve failures (remote-builder) 2026-11-14
+
+> **STATUS: KNOWN ISSUE (user ruling 2026-11-16).** No remediation ruled —
+> recorded and cross-posted to AGENTS.md Current Issues. The R1–R5 option
+> table below stays OPEN for a future ruling. Deploy of remote-builder is
+> gated on the dual-TLS-termination flag regardless.
 
 **Scope: DIAGNOSED, NOT RECTIFIED** (user directive). Evidence gathered
 read-only over `ssh deploy@remote-builder -p 1108` + local topology/config
