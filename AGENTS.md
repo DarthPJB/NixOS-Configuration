@@ -37,6 +37,17 @@ complete on `feat/linda-vfio-br0`; Phases 3–5 (reboot, physical checks,
 Windows bring-up) are user-manual. All findings, rulings, and evidence:
 `opencode/plans/windows-gpu-passthrough-PLAN.md`.
 
+**KNOWN ISSUE — cache-serve 504s (remote-builder, 2026-11-16, no ruling):**
+`nix-serve` NAR downloads via `cache.johnbargman.net` regularly stall/fail with
+**HTTP 504** (cortex-alpha nginx `proxy_read_timeout` 60 s) while requests
+queue behind 5 saturated Starman workers over a bandwidth-limited WG uplink.
+Queued serving is by design; the timeout misreads queue depth as upstream
+death. **Diagnosed, NOT rectified** — user ruling: mark known issue only;
+remediation options (workers / timeouts / keepalive / X-Accel) are open in the
+diagnosis record: `opencode/plans/deploy-validation-2026-11-12.md`
+("Diagnosis — cache serve failures"). No deploy of remote-builder until the
+dual-TLS-termination flag in that record is ruled on.
+
 ### Architecture Boundary — READ THIS FIRST
 
 The two-layer topology architecture enforces a strict boundary.
