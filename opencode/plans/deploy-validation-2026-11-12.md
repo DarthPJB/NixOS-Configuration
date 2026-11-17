@@ -30,9 +30,9 @@
 | cortex-alpha | ⬜ pending | | hub — exercises genFirewall/genDns/genNginx/genWireguard heavily |
 | display-1 | ⬜ pending | | |
 | display-2 | ⬜ pending | | |
-| gaming-host-1 | ⬜ pending | | child-flake consumption (extendModules + schema) — second-most sensitive after LINDA |
+| gaming-host-1 | ✅ **SUCCESS** | 2026-11-16 | user-deployed — child-flake consumption (extendModules + schema) validated in production |
 | local-nas | ✅ **SUCCESS** | 2026-11-13 | user-deployed — monitoring host; first live re-provision of the mayo-generated dashboards (secret-sauce plan R2 validated in production) |
-| pillar-of-autum | ⬜ pending | | |
+| pillar-of-autum | ✅ **SUCCESS** | 2026-11-16 | user-deployed |
 | print-controller | ✅ **SUCCESS** | 2026-11-13 | user-deployed |
 | remote-builder | ⬜ pending | | in-house binary cache host — ⚠️ cache-serve 504s diagnosed 2026-11-14 (see Diagnosis section); deploy-gate flag on dual TLS terminations |
 | remote-worker | ⬜ pending | | ad-hoc nginx surface |
