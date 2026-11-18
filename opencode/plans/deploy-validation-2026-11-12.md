@@ -26,7 +26,7 @@
 | **LINDA** | ✅ **SUCCESS** | 2026-11-12 | user-deployed (first validation of the full secret-sauce state) |
 | alpha-one | ✅ **SUCCESS** | 2026-11-16 | user-deployed |
 | alpha-three | ✅ **SUCCESS** | 2026-11-16 | user-deployed |
-| arm-builder | ⬜ pending | | aarch64 (native runner deploy path) |
+| arm-builder | ✅ **SUCCESS** | 2026-11-16 | user-deployed — aarch64 native runner deploy path validated |
 | cortex-alpha | ⬜ pending | | hub — exercises genFirewall/genDns/genNginx/genWireguard heavily |
 | display-1 | ⬜ pending | | |
 | display-2 | ⬜ pending | | |
