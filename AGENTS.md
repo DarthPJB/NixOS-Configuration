@@ -46,9 +46,9 @@ death. **Diagnosed, NOT rectified** — user ruling: mark known issue only;
 remediation options (workers / timeouts / keepalive / X-Accel) are open in the
 diagnosis record: `opencode/plans/deploy-validation-2026-11-12.md`
 ("Diagnosis — cache serve failures"). remote-builder was **deployed
-2026-11-16** (user authority) — the dual-TLS-termination flag is now LIVE:
-the machine-local nginx/ACME `cache.johnbargman.net` vhost coexists with
-topology DNS pointing the name at cortex-alpha. Ruling still open.
+2026-11-16** (user authority) — split-horizon DNS is by design: external
+clients terminate TLS on remote-builder's nginx/ACME, internal clients on
+cortex-alpha. The 504s known issue remains open.
 
 ### Architecture Boundary — READ THIS FIRST
 

@@ -34,7 +34,7 @@
 | local-nas | ✅ **SUCCESS** | 2026-11-13 | user-deployed — monitoring host; first live re-provision of the mayo-generated dashboards (secret-sauce plan R2 validated in production) |
 | pillar-of-autum | ✅ **SUCCESS** | 2026-11-16 | user-deployed |
 | print-controller | ✅ **SUCCESS** | 2026-11-13 | user-deployed |
-| remote-builder | ✅ **SUCCESS** | 2026-11-16 | user-deployed (user authority passed the deploy-gate flag). ⚠️ Dual-TLS-termination flag now **live**: machine-local nginx/ACME `cache.johnbargman.net` vhost is deployed while topology DNS resolves the name to cortex-alpha (10.88.128.1) — two potential terminations for one name. Cache-serve 504s known issue remains open (nothing rectified; new generation restarts nix-serve but fixes no behavior) |
+| remote-builder | ✅ **SUCCESS** | 2026-11-16 | user-deployed. Split-horizon by design: WAN clients terminate TLS on remote-builder's nginx/ACME, internal clients on cortex-alpha. Cache-serve 504s known issue remains open (deploy changed no behavior) |
 | remote-worker | ⬜ pending | | ad-hoc nginx surface |
 | terminal-nx-01 | ✅ **SUCCESS** | 2026-11-12 | user-deployed |
 | terminal-zero | ✅ **SUCCESS** | 2026-11-13 | user-deployed (config unaffected by `732db00` — LINDA-only change) |
@@ -112,13 +112,12 @@ pure queue wait); three follow-up probes exceeded 60 s and timed out.
 - Resources are healthy: `/nix` 55 % (306G/590G), RAM 16 G (nix-serve cgroup
   peak 4.3 G, mostly stream page cache), no OOM ever.
 - Store GC disabled by design (cache retains closures) — not a factor.
-- **remote-builder's own nginx has NO cache vhost live** (only the default
-  localhost server) — the machine's `services.nginx` + ACME block is
-  undeployed (machine is ⬜ pending). The topology path via cortex-alpha is
-  what actually serves. ⚠️ **Deploy-gate flag:** when remote-builder IS
-  deployed, DNS (topology → 10.88.128.1 cortex-alpha) and the machine-local
-  vhost would be two competing terminations for the same name — ruling needed
-  before that deploy.
+- **Split-horizon DNS — by design, no conflict.** `cache.johnbargman.net`
+  resolves per audience: internal/topology resolvers → `10.88.128.1`
+  (cortex-alpha, proxying to `10.88.127.51:5001` over WG); public resolvers →
+  remote-builder's WAN address (80/443/5001 open by design), where its own
+  nginx/ACME terminates TLS and proxies to localhost:5001. Two terminations,
+  two client pools, one name — intentional split-horizon, not a defect.
 
 ### Remediation options (NOT executed — for user ruling)
 
