@@ -34,7 +34,7 @@
 | local-nas | ✅ **SUCCESS** | 2026-11-13 | user-deployed — monitoring host; first live re-provision of the mayo-generated dashboards (secret-sauce plan R2 validated in production) |
 | pillar-of-autum | ✅ **SUCCESS** | 2026-11-16 | user-deployed |
 | print-controller | ✅ **SUCCESS** | 2026-11-13 | user-deployed |
-| remote-builder | ⬜ pending | | in-house binary cache host — ⚠️ cache-serve 504s diagnosed 2026-11-14 (see Diagnosis section); deploy-gate flag on dual TLS terminations |
+| remote-builder | ✅ **SUCCESS** | 2026-11-16 | user-deployed (user authority passed the deploy-gate flag). ⚠️ Dual-TLS-termination flag now **live**: machine-local nginx/ACME `cache.johnbargman.net` vhost is deployed while topology DNS resolves the name to cortex-alpha (10.88.128.1) — two potential terminations for one name. Cache-serve 504s known issue remains open (nothing rectified; new generation restarts nix-serve but fixes no behavior) |
 | remote-worker | ⬜ pending | | ad-hoc nginx surface |
 | terminal-nx-01 | ✅ **SUCCESS** | 2026-11-12 | user-deployed |
 | terminal-zero | ✅ **SUCCESS** | 2026-11-13 | user-deployed (config unaffected by `732db00` — LINDA-only change) |

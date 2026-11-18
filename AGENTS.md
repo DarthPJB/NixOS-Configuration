@@ -45,8 +45,10 @@ Queued serving is by design; the timeout misreads queue depth as upstream
 death. **Diagnosed, NOT rectified** — user ruling: mark known issue only;
 remediation options (workers / timeouts / keepalive / X-Accel) are open in the
 diagnosis record: `opencode/plans/deploy-validation-2026-11-12.md`
-("Diagnosis — cache serve failures"). No deploy of remote-builder until the
-dual-TLS-termination flag in that record is ruled on.
+("Diagnosis — cache serve failures"). remote-builder was **deployed
+2026-11-16** (user authority) — the dual-TLS-termination flag is now LIVE:
+the machine-local nginx/ACME `cache.johnbargman.net` vhost coexists with
+topology DNS pointing the name at cortex-alpha. Ruling still open.
 
 ### Architecture Boundary — READ THIS FIRST
 
