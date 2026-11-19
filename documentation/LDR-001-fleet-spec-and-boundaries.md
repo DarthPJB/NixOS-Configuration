@@ -60,7 +60,7 @@ boundary for parent-side validation. Implementation follows in the `lib` toolkit
 |---|---|---|
 | **overlord-II planar topology** | Two-layer JSON→generator architecture live fleetwide; `topology-derive.nix` archived (archive removed 2026-11-11, mayo-split dead-code prune); B1–B5 closed (B5 backup validated on 4 machines) | AGENTS.md Current Issues 2026-11-12; `mayo:lib/ketchup/mktopology.nix` |
 | **Fabrication Forge / Gitea unification** | Gitea canonical forge: multi-domain + reverse-proxy auth → LDAP/form auth; fleet PostgreSQL; `fabrication-forge` branding; **gitolite retired** (`git-ssh.nix` owns `git@` on WG :22) | documentation/gitea-fabrication-forge.md; git log 2026-10-01 |
-| **In-house binary cache** | Signed nix-serve on remote-builder:5001, TLS `cache.johnbargman.net`, wired into flake + fleet substituters | services/nix-cache-serve.nix; flake.nix:5-12 |
+| **In-house binary cache** | Signed harmonia on remote-builder:5001 (ex-nix-serve, 2026-11-16), TLS `cache.johnbargman.net`, wired into flake + fleet substituters | services/nix-cache-serve.nix; flake.nix:5-12 |
 | **Backup / offsite replication** | `genBackup` + `topology.backup` on gaming-host-1, LINDA, local-nas, terminal-zero; B2/rclone offsite on local-nas | topology/*.json `backup` keys; `mayo:lib/mayo/rclone-target.nix` |
 | **Monitoring Phase 1** | All dashboards generative (genDashboard + inventory); no static dashboard JSON | documentation/monitoring-automation.md |
 | **AI stack (live)** | Ollama on LINDA + pillar-of-autum, LiteLLM gateway on alpha-three; vLLM **undeployed** (migration executed then reversed) | machines/alpha-three/default.nix backends |

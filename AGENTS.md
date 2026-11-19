@@ -48,7 +48,10 @@ diagnosis record: `opencode/plans/deploy-validation-2026-11-12.md`
 ("Diagnosis — cache serve failures"). remote-builder was **deployed
 2026-11-16** (user authority) — split-horizon DNS is by design: external
 clients terminate TLS on remote-builder's nginx/ACME, internal clients on
-cortex-alpha. The 504s known issue remains open.
+cortex-alpha. **Remediation landed 2026-11-16 (user-ordered):** `nix-serve`
+→ **harmonia** in `services/nix-cache-serve.nix` (async Rust — no
+fork-per-request, no Prefork workers). Known issue stays OPEN until the user
+deploys and validates manually.
 
 ### Architecture Boundary — READ THIS FIRST
 

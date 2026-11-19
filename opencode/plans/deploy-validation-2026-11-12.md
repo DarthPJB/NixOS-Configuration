@@ -151,6 +151,18 @@ caching answer is **FlakeHub Cache** (cloud SaaS + post-build push events) —
 a third-party intermediary over build artifacts, doctrinally inadmissible
 without express user authorization (LDR-001 / in-house cache doctrine).
 
+### Implementation (2026-11-16, user-ordered — awaiting manual deploy)
+
+Swap landed on `jb/phase-C`: `services/nix-cache-serve.nix` now drives
+**`services.harmonia.cache`** (harmonia 3.1.0 via pinned nixpkgs_stable)
+instead of `services.nix-serve`. Preserved byte-for-byte: bind `0.0.0.0:5001`,
+`priority = 30` (explicit — the module's mkDefault is 50), secrix key
+(`/run/harmonia-keys/cache-priv-key`, bound to harmonia lifetime via
+`forceRuntimeDirs` + `additionalRuntimeDirNames`), `nix.settings.secret-key-files`.
+Golden untouched (the swap lives outside `safeSections` — remote-builder
+golden validated bit-identical). Gates green: fmt, deadnix, 3× structure.
+Known issue stays **OPEN** until user deploys + tests manually.
+
 ## Error protocol
 
 1. User reports an error verbatim (deploy output / eval failure / build failure).

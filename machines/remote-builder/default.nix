@@ -29,7 +29,7 @@
   # Ports 80/443 for nginx TLS termination (ACME + HTTPS cache)
   networking.firewall.allowedTCPPorts = [ 80 443 5001 ];
 
-  # TLS termination for cache.johnbargman.net → nix-serve on localhost:5001
+  # TLS termination for cache.johnbargman.net → harmonia on localhost:5001
   services.nginx = {
     enable = true;
     virtualHosts."cache.johnbargman.net" = {

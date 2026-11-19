@@ -23,7 +23,8 @@ is configured.
 
 **In-House Binary Cache: OPERATIONAL.** We operate our own signed Nix binary
 cache, dogfooding our infrastructure capabilities: `services/nix-cache-serve.nix`
-runs signed `nix-serve` on remote-builder (port 5001), published over TLS via
+runs signed `harmonia` on remote-builder (port 5001; `nix-serve` until
+2026-11-16), published over TLS via
 nginx at `cache.johnbargman.net`, with the signing key managed by secrix
 (`secrets/cache-priv-key`). Builds substitute from the in-house cache first
 and only build locally on cache misses. Approved substituters are
