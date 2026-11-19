@@ -50,8 +50,10 @@ diagnosis record: `opencode/plans/deploy-validation-2026-11-12.md`
 clients terminate TLS on remote-builder's nginx/ACME, internal clients on
 cortex-alpha. **Remediation landed 2026-11-16 (user-ordered):** `nix-serve`
 → **harmonia** in `services/nix-cache-serve.nix` (async Rust — no
-fork-per-request, no Prefork workers). Known issue stays OPEN until the user
-deploys and validates manually.
+fork-per-request, no Prefork workers). **Deployed 2026-11-19 and
+probe-validated** (metadata 0.09 s vs 35 s; a formerly-504ing NAR streams in
+0.59 s; zero fork children live). Known issue stays OPEN until the user
+validates the original parallel-fetch failure scenario manually.
 
 ### Architecture Boundary — READ THIS FIRST
 

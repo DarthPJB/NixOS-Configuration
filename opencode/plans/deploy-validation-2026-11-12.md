@@ -34,7 +34,7 @@
 | local-nas | ✅ **SUCCESS** | 2026-11-13 | user-deployed — monitoring host; first live re-provision of the mayo-generated dashboards (secret-sauce plan R2 validated in production) |
 | pillar-of-autum | ✅ **SUCCESS** | 2026-11-16 | user-deployed |
 | print-controller | ✅ **SUCCESS** | 2026-11-13 | user-deployed |
-| remote-builder | ✅ **SUCCESS** | 2026-11-16 | user-deployed. Split-horizon by design: WAN clients terminate TLS on remote-builder's nginx/ACME, internal clients on cortex-alpha. Cache-serve 504s known issue remains open (deploy changed no behavior) |
+| remote-builder | ✅ **SUCCESS** | 2026-11-16 | user-deployed. Split-horizon by design: WAN clients terminate TLS on remote-builder's nginx/ACME, internal clients on cortex-alpha. **Re-deployed 2026-11-19 with harmonia** (nix-serve swap) — probe-validated, see Diagnosis § Implementation |
 | remote-worker | ⬜ pending | | ad-hoc nginx surface |
 | terminal-nx-01 | ✅ **SUCCESS** | 2026-11-12 | user-deployed |
 | terminal-zero | ✅ **SUCCESS** | 2026-11-13 | user-deployed (config unaffected by `732db00` — LINDA-only change) |
@@ -162,6 +162,18 @@ instead of `services.nix-serve`. Preserved byte-for-byte: bind `0.0.0.0:5001`,
 Golden untouched (the swap lives outside `safeSections` — remote-builder
 golden validated bit-identical). Gates green: fmt, deadnix, 3× structure.
 Known issue stays **OPEN** until user deploys + tests manually.
+
+**Validation (2026-11-19, post user deploy):**
+- `GET /nix-cache-info` ×3: **0.40 s / 0.09 s / 0.09 s** (was 35.4 s + >60 s
+  timeouts) — the queue-wait pathology is gone at the metadata layer.
+- NAR fetch of `gusb-0.4.9` — one of the exact paths that 504'd in the
+  original failure log: **HTTP 200, 153 KB in 0.59 s**.
+- Live box: `harmonia.service` active (4 actix workers, socket-activated on
+  `0.0.0.0:5001`, watchdog enabled); **zero** `dump-path`/`starman`/`nix-serve`
+  processes exist. Benign journal WARN only: LoadCredential key copy perms
+  0440 vs recommended 0600 (systemd-managed, not a fault).
+- **KNOWN ISSUE closure pending** user's manual `nix run`-class validation
+  (the original failure scenario: parallel fleet-wide fetches).
 
 ## Error protocol
 
