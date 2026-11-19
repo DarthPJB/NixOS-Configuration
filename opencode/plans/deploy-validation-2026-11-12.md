@@ -129,6 +129,28 @@ pure queue wait); three follow-up probes exceeded 60 s and timed out.
 | R4 | Serve NARs at nginx layer (X-Accel-Redirect from nix-serve) | Removes PSGI bottleneck entirely | Architectural change; new generator/service work |
 | R5 | Move cache traffic off WG bottleneck (LAN/direct route) | Raises throughput floor | Network topology change |
 
+### Replacement research (2026-11-16, user request)
+
+Survey of `nixpkgs_llm` + Determinate docs for a `nix-serve` replacement
+(per-request fork + Prefork workers is indefensible for serving files):
+
+| Candidate | In tree | Architecture | Verdict |
+|---|---|---|---|
+| **harmonia** 3.1.0 | `pkgs/by-name/ha/harmonia`, module `services.harmonia.cache`, `nixosTests.harmonia` | Single Rust binary, tokio async — **no Nix CLI runtime dep** (buildInputs = openssl only): in-process NAR serialization via nix-compat, zero fork-per-request | **RECOMMENDED** — drop-in protocol (nix-cache-info/narinfo/nar), same port 5001 + nginx + secrix key; `priority = 30` to match nix-serve's cache-info default |
+| attic-server | `pkgs/by-name/at/attic-server`, module `services.atticd` | Chunked deduplicating push-cache (own storage, SQLite/Postgres, JWT tokens) | Reject — different dataflow (builds must PUSH); multi-tenant public-cache design, overkill for "serve my own store" |
+| nix-binary-cache | `pkgs/by-name/ni/nix-binary-cache` | 2014 CGI script over lighttpd — forks a shell per request | Reject — worse than the incumbent |
+| nix-serve-ng | **not present** in nixpkgs_llm | (out of scope per search constraint) | — |
+
+**Determinate Nixd: NO serve support.** Full daemon surface reviewed
+(docs.determinate.systems/determinate-nix/determinate-nixd/): macOS cert
+management, managed GC, FlakeHub auth (all flavors), fix-hashes, device
+tokens, upgrade/version/init/bug/completion, config
+(`garbageCollector`, `authentication.additionalNetrcSources`, `builder.*`,
+`telemetry.sentry`). **No cache-serve command or option exists.** Determinate's
+caching answer is **FlakeHub Cache** (cloud SaaS + post-build push events) —
+a third-party intermediary over build artifacts, doctrinally inadmissible
+without express user authorization (LDR-001 / in-house cache doctrine).
+
 ## Error protocol
 
 1. User reports an error verbatim (deploy output / eval failure / build failure).
