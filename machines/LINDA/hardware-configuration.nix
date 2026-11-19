@@ -71,7 +71,7 @@
       what = "/speed-storage/opencode2";
       options = "bind";
     }
-{
+    {
       where = "/var/tmp";
       what = "/speed-storage/tmp";
       options = "bind";
