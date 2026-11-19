@@ -28,7 +28,7 @@
 | alpha-three | ✅ **SUCCESS** | 2026-11-16 | user-deployed |
 | arm-builder | ✅ **SUCCESS** | 2026-11-16 | user-deployed — aarch64 native runner deploy path validated |
 | cortex-alpha | ⬜ pending | | hub — exercises genFirewall/genDns/genNginx/genWireguard heavily |
-| display-1 | ⬜ pending | | |
+| display-1 | ✅ **SUCCESS** | 2026-11-16 | user-deployed |
 | display-2 | ⬜ pending | | |
 | gaming-host-1 | ✅ **SUCCESS** | 2026-11-16 | user-deployed — child-flake consumption (extendModules + schema) validated in production |
 | local-nas | ✅ **SUCCESS** | 2026-11-13 | user-deployed — monitoring host; first live re-provision of the mayo-generated dashboards (secret-sauce plan R2 validated in production) |
