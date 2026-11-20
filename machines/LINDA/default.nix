@@ -93,6 +93,13 @@ in
     };
   };
   nix.gc.automatic = lib.mkForce false; # Never collect this nix-store and it's cache.
+  # Upstream shield: the pinned nixpkgs-weekly dropped `services.varnish` but
+  # kept `services.prometheus.exporters.varnish`, whose `instance` default
+  # dereferences the removed module and kills config eval. Defining the option
+  # means the broken default never evaluates. LINDA is the machine where the
+  # fault escapes the golden serializer's tryEval guard; remove when upstream
+  # fixes the exporter.
+  services.prometheus.exporters.varnish.instance = null;
   services.sunshine = {
     enable = true;
     autoStart = true;
