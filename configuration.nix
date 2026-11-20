@@ -4,6 +4,7 @@
 , pkgs
 , self
 , lib
+, options
 , ...
 }:
 let
@@ -93,19 +94,36 @@ in
   # };
 
 
-  services.journald = {
-    extraConfig = ''
-      Storage=persistent
-      SystemMaxUse=2G
-      RuntimeMaxUse=1G
-      RateLimitIntervalSec=0
-      RateLimitBurst=0
-      MaxLevelStore=debug
-      MaxLevelSyslog=debug
-      MaxLevelKMsg=debug
-      MaxLevelConsole=debug
-    '';
-  };
+  # Dual-surface journald config: nixpkgs_stable (most machines) takes
+  # `extraConfig`; nixpkgs_unstable/weekly (LINDA) removed it in favour of
+  # `settings.Journal`. Branch on the options tree so both module surfaces
+  # receive identical semantics without tripping either's deprecation.
+  services.journald =
+    if options.services.journald ? settings then {
+      settings.Journal = {
+        Storage = "persistent";
+        SystemMaxUse = "2G";
+        RuntimeMaxUse = "1G";
+        RateLimitIntervalSec = "0";
+        RateLimitBurst = "0";
+        MaxLevelStore = "debug";
+        MaxLevelSyslog = "debug";
+        MaxLevelKMsg = "debug";
+        MaxLevelConsole = "debug";
+      };
+    } else {
+      extraConfig = ''
+        Storage=persistent
+        SystemMaxUse=2G
+        RuntimeMaxUse=1G
+        RateLimitIntervalSec=0
+        RateLimitBurst=0
+        MaxLevelStore=debug
+        MaxLevelSyslog=debug
+        MaxLevelKMsg=debug
+        MaxLevelConsole=debug
+      '';
+    };
 
   boot.kernel.sysctl = {
     "kernel.printk" = "7 7 7 7"; # Maximum verbosity for dmesg

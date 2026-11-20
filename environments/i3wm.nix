@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, options, ... }:
 
 let
   # vimix-gtk-themes was removed from nixpkgs (depended on gtk-engine-murrine, dropped
@@ -31,11 +31,20 @@ in
   ];
   # polkit-gnome agent removed: polkitd rules authorize services (libvirtd, NM, rtkit, CUPS)
   # without GUI prompts. The GNOME agent was unnecessary in an i3 environment.
-  # Ensure journald is configured to persist logs
-  services.journald.extraConfig = ''
-    Storage=persistent
-    MaxRetentionSec=1month
-  '';
+  # Ensure journald is configured to persist logs (dual-surface, see
+  # configuration.nix: `extraConfig` on stable, `settings.Journal` on weekly).
+  services.journald =
+    if options.services.journald ? settings then {
+      settings.Journal = {
+        Storage = "persistent";
+        MaxRetentionSec = "1month";
+      };
+    } else {
+      extraConfig = ''
+        Storage=persistent
+        MaxRetentionSec=1month
+      '';
+    };
   programs.dconf.enable = true;
 
   # Enable xdg-desktop-portal for Chromium/Vivaldi custom URL scheme handoff

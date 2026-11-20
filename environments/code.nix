@@ -25,7 +25,6 @@
     pkgs.progress
     pkgs.dnsutils
     pkgs.openssl
-    pkgs.tmate
     pkgs.terminator
     pkgs.enlightenment.terminology
     pkgs.conky
@@ -42,5 +41,9 @@
     pkgs.inotify-tools
     pkgs.rsync
     pkgs.git
-  ];
+  ]
+  # tmate is marked insecure on nixpkgs_unstable (unpatched since 2022);
+  # the refusal lives in outPath evaluation, so probe that depth. Install
+  # only where the pin permits evaluation.
+  ++ lib.optional (builtins.tryEval pkgs.tmate.outPath).success pkgs.tmate;
 }

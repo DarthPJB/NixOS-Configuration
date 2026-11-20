@@ -232,7 +232,6 @@
     "<derivation:progress-0.17>",
     "<derivation:bind-9.20.30>",
     "<derivation:openssl-3.6.5>",
-    "<derivation:tmate-unstable-2022-08-07>",
     "<derivation:terminator-2.1.5>",
     "<derivation:terminology-1.14.0>",
     "<derivation:conky-1.22.3>",

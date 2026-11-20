@@ -1,6 +1,7 @@
 { config
 , pkgs
 , unstable
+, lib
 , ...
 }:
 {
@@ -10,10 +11,12 @@
     pkgs.obsidian
     pkgs.vivaldi
     pkgs.chromium
-    pkgs.brave
     pkgs.jq
     pkgs.ffmpeg-full
-  ];
+  ]
+  # brave was removed from nixpkgs_unstable (LINDA's surface: "no committers
+  # to unblock security issues"); keep it only where the pin still carries it.
+  ++ lib.optional (builtins.tryEval pkgs.brave).success pkgs.brave;
 
   # Browsers render dark by default. The system already reports
   # prefers-color-scheme: dark (org.gnome.desktop.interface.color-scheme =
