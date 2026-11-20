@@ -52,7 +52,11 @@ let
           name = "${namePrefix}-${toString i}";
           inherit package url tokenFile;
           replace = true;
-          extraLabels = extraLabels ++ [ "runner-${toString i}" ];
+          # Registration-generation marker: the module re-registers on any
+          # config-JSON change. Bumping this forces a clean_state + re-register
+          # after server-side registration purges (GitHub deletes registrations
+          # of runners offline >~14 days). Current gen: 2026-11-19.
+          extraLabels = extraLabels ++ [ "runner-${toString i}" "regen-20261119" ];
           extraEnvironment = extraEnvironment;
           serviceOverrides = {
             # Baremetal runner on trusted VPN — share host's nix store
