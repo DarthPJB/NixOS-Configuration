@@ -2,12 +2,13 @@
 # GitHub Actions self-hosted runners for remote-builder.
 #
 # Runner groups:
-#   disgust     — DarthPJB/parsec-gaming-nix (PAT)
-#   hate-filled — DarthPJB/NixOS-Configuration (PAT, gitlab-aware, eval cache)
+#   disgust           — DarthPJB/parsec-gaming-nix (PAT)
+#   rat-infested      — DarthPJB/ratty (PAT)
+#   entropy-is-origin — Bargman-Tech org (org runner token, gitlab-aware)
+#   hate-filled       — DarthPJB/NixOS-Configuration (PAT, gitlab-aware, eval cache)
 #
-# Removed 2026-11-19 (user ruling, registrations purged server-side):
-# rat-infested, entropy-is-origin. Restored same day on user order —
-# disgust + hate-filled stand; user mints replacement registration tokens.
+# All four restored 2026-11-19 (user order) after a brief strike of the
+# server-side purged registrations; user mints replacement tokens.
 #
 # GitLab auth: netrc from gitlab-credentials.nix, passed via GIT_ASKPASS.
 # All runners share the nix-daemon and store — builds dispatch to hyperhyper/arm-builder.
@@ -28,7 +29,7 @@ let
     '';
   };
 
-  # PAT for personal repos (shared across disgust, hate-filled)
+  # PAT for personal repos (shared across disgust, rat-infested, hate-filled)
   patTokenFile = config.secrix.system.secrets.hate-filled-generator.decrypted.path;
 
   # Inline runner factory — generates N concurrent runner instances.
@@ -78,6 +79,24 @@ in
       count = 1;
       extraLabels = [ "self-hosted" ];
     }) //
+    # rat-infested — DarthPJB/ratty
+    (mkRunners {
+      namePrefix = "rat-infested";
+      url = "https://github.com/DarthPJB/ratty";
+      tokenFile = patTokenFile;
+      count = 1;
+      extraLabels = [ "self-hosted" ];
+    }) //
+    # entropy-is-origin — Bargman-Tech org (org runner token, gitlab-aware)
+    (mkRunners {
+      namePrefix = "entropy-is-origin";
+      url = "https://github.com/Bargman-Tech";
+      tokenFile = config.secrix.system.secrets.github_org_runner_token.decrypted.path;
+      count = 1;
+      extraLabels = [ "self-hosted" ];
+      extraEnvironment = { GIT_ASKPASS = lib.getExe gitlabAskpass; };
+      gitlabNetrcPath' = gitlabNetrcPath;
+    }) //
     # hate-filled — DarthPJB/NixOS-Configuration (gitlab-aware + eval cache)
     (mkRunners {
       namePrefix = "hate-filled";
@@ -99,6 +118,10 @@ in
   secrix.system.secrets.hate-filled-generator.encrypted.file =
     "${self}/secrets/hate-filled-generator";
 
+  # Org runner token for Bargman-Tech (entropy-is-origin)
+  secrix.system.secrets.github_org_runner_token.encrypted.file =
+    "${self}/secrets/github_org_runner_token";
+
   # Ensure /nix/cache exists and is writable by the build user.
   systemd.tmpfiles.rules = [
     "d /nix/cache 0755 build users - -"
@@ -115,6 +138,6 @@ in
         wants = lib.mkAfter [ "gitlab-netrc-copy.service" ];
       };
     })
-    [ "hate-filled-1" "hate-filled-2" ]
+    [ "hate-filled-1" "hate-filled-2" "entropy-is-origin-1" ]
   );
 }
