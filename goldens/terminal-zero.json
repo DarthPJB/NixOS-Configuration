@@ -227,6 +227,8 @@
     "<derivation:arandr-0.1.11>",
     "<derivation:prismlauncher-11.1.1>",
     "<derivation:vintagestory-1.22.7>",
+    "<derivation:claude-code-2.1.223>",
+    "<derivation:cursor-cli-0-unstable-2026-05-16>",
     "<derivation:gpp-2.25>",
     "<derivation:git-lfs-3.8.1>",
     "<derivation:entr-5.8>",

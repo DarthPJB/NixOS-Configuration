@@ -9,6 +9,8 @@
     code = "lite-xl .&";
   };
   environment.systemPackages = with pkgs; [
+    pkgs.claude-code
+    pkgs.cursor-cli
     pkgs.gpp
     pkgs.git-lfs
     pkgs.entr

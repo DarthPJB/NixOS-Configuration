@@ -712,6 +712,7 @@
             # librex11 — overlay xorg-server with xlibre-xserver + X11 drivers
             xlibre-overlay.nixosModules.overlay-xlibre-xserver
             xlibre-overlay.nixosModules.overlay-all-xlibre-drivers
+            ./modifier_imports/xlibre-patch-compat.nix
           ];
         };
 
@@ -724,6 +725,7 @@
             xlibre-overlay.nixosModules.overlay-xlibre-xserver
             xlibre-overlay.nixosModules.overlay-all-xlibre-drivers
             xlibre-overlay.nixosModules.nvidia-ignore-ABI
+            ./modifier_imports/xlibre-patch-compat.nix
             denton-glasses.nixosModules.eye-tracking
             denton-glasses.nixosModules.voxtype
             LLM-CORE.nixosModules.opencode-fleet
