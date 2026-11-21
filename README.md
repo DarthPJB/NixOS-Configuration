@@ -20,7 +20,25 @@ So; here's a little summary for the TL;DR types.
 
 For the current add-machine procedure, see `documentation/development-guide.md#adding-a-new-machine`.
 The topology-driven workflow requires creating a `topology/<machine>.json` file,
-generating a golden test, and running `check-network` before deployment.
+generating a golden test, and validating it (`nix run .#validate-goldens -- <machine>`)
+before deployment.
+
+## Shared Libraries
+
+The shared engines live in public library repos and are consumed as flake
+inputs (LDR-001 D-10/D-12 — this repo vendors no library code):
+
+- **[mayo](https://github.com/Bargman-Tech/mayo)** — Ketchup layer (topology
+  generators, registry, host management) + Mayo layer (rclone-target, golden
+  tooling, structure lints, monitoring/dashboard tooling). AGPL-3.0-or-later.
+- **[nix-github-ci](https://github.com/Bargman-Tech/nix-github-ci)** — the
+  GitHub Actions CI engine (`mkCi` + workflow apps, gitlab-ci-style
+  consumption); fleet data is passed in from `flake.nix`.
+
+The child machine repo **[gaming-host-1](https://gitlab.com/mecha-team-zero/gaming-host-1)**
+(private GitLab) is the first extraction of the machine-repo pattern; the
+next phase (machine-repo roll-out + service port-outs) is tracked in
+`opencode/plans/phase4-portout-PLAN.md`.
 
 ## VPN
 WireGuard VPN is managed via `modules/enable-wg-topology.nix` on client machines; see `documentation/operations-runbooks.md`.
@@ -41,7 +59,7 @@ nix run .#validate-ci-workflow
 ```
 
 ### CI Features
-- **17 Machine Coverage**: All machines tested (12 x86_64, 5 ARM)
+- **18 Machine Coverage**: All machines tested (12 x86_64, 6 ARM)
 - **Job Dependencies**: Validation → Security → Builds → Deploy
 - **Artifact Preservation**: 7-day build retention, 30-day logs
 - **Enhanced Security**: Gitleaks + pattern matching + IP validation
@@ -51,7 +69,7 @@ nix run .#validate-ci-workflow
 1. **Validation** - Formatting, flake check, dead code detection
 2. **Security** - Gitleaks scanning, secret detection, IP validation
 3. **Build x86** - Parallel builds for 12 x86_64 machines
-4. **Build ARM** - Parallel builds for 5 ARM machines
+4. **Build ARM** - Parallel builds for 6 ARM machines
 5. **Deploy** - Manual trigger for single machine deployment
 
 ## Hardware Assimilation (assimilator-probe)

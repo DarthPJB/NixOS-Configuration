@@ -25,9 +25,10 @@
   enableWgTopology.enable = true;
   environment.systemPackages = [
     pkgs.google-chrome
-    pkgs.brave
     pkgs.moonlight-qt
-  ];
+  ]
+  # brave was removed from nixpkgs_unstable; keep it only where available.
+  ++ lib.optional (builtins.tryEval pkgs.brave).success pkgs.brave;
 
   # Use the GRUB 2 boot loader.
   # Use the systemd-boot EFI boot loader.

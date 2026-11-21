@@ -151,8 +151,21 @@ in
 
   systemd.services.gitea-minio-provision = {
     description = "Provision MinIO user and git-lfs bucket for Gitea";
-    after = [ "minio.service" ];
+    # The provisioning script reads secrix-decrypted credentials; order on the
+    # secret units or first boot races decryption and fails on a missing
+    # /run/system-keys file (pattern: services/gitlab-credentials.nix).
+    after = [
+      "minio.service"
+      "secrix-system-secret-minio-rootCredentialsFile.service"
+      "secrix-system-secret-gitea-minio-access-key.service"
+      "secrix-system-secret-gitea-minio-secret-key.service"
+    ];
     wants = [ "minio.service" ];
+    requires = [
+      "secrix-system-secret-minio-rootCredentialsFile.service"
+      "secrix-system-secret-gitea-minio-access-key.service"
+      "secrix-system-secret-gitea-minio-secret-key.service"
+    ];
     before = [ "gitea.service" ];
     requiredBy = [ "gitea.service" ];
     serviceConfig = {
@@ -193,9 +206,24 @@ in
   ];
 
   systemd.services.gitea = {
-    after = [ "minio.service" "gitea-minio-provision.service" ];
+    # preStart (seedSecrets) installs secrix-decrypted key material into confDir;
+    # order on the secret units (pattern: services/gitlab-credentials.nix).
+    after = [
+      "minio.service"
+      "gitea-minio-provision.service"
+      "secrix-system-secret-gitea-secret-key.service"
+      "secrix-system-secret-gitea-internal-token.service"
+      "secrix-system-secret-gitea-lfs-jwt-secret.service"
+      "secrix-system-secret-gitea-oauth2-jwt-secret.service"
+    ];
     wants = [ "minio.service" ];
-    requires = [ "gitea-minio-provision.service" ];
+    requires = [
+      "gitea-minio-provision.service"
+      "secrix-system-secret-gitea-secret-key.service"
+      "secrix-system-secret-gitea-internal-token.service"
+      "secrix-system-secret-gitea-lfs-jwt-secret.service"
+      "secrix-system-secret-gitea-oauth2-jwt-secret.service"
+    ];
     # stateDir is a directory on the pool, not its own mount.
     unitConfig.RequiresMountsFor = [ "/bulk-storage" ];
     # nixpkgs sets ProtectHome=true; HOME is stateDir, so preStart cannot mkdir.
@@ -326,8 +354,10 @@ in
   # Declarative admin user — created on first boot, idempotent on subsequent boots.
   systemd.services.gitea-create-admin = {
     description = "Create Gitea admin user";
-    after = [ "gitea.service" ];
-    requires = [ "gitea.service" ];
+    # The script reads the secrix-decrypted admin password; order on the secret
+    # unit (pattern: services/gitlab-credentials.nix).
+    after = [ "gitea.service" "secrix-system-secret-gitea-admin-password.service" ];
+    requires = [ "gitea.service" "secrix-system-secret-gitea-admin-password.service" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       Type = "oneshot";

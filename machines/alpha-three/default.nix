@@ -22,12 +22,16 @@
     ../../services/gitlab-credentials.nix
     ../../services/litellm.nix
     ../../services/ollama-ui.nix
-    (import ../../services/acme_server.nix { fqdn = "johnbargman.net"; })
+    (import ../../services/acme_server.nix {
+      fqdn = "johnbargman.net";
+      secretName = "dns01-porkbun";
+      secretFile = ../../secrets/porkbun-dns01-envfile;
+      extraDomainNames = [ "*.johnbargman.net" ];
+    })
   ];
   enableWgTopology.enable = true;
   security.acme.defaults.email = "commander@johnbargman.net";
   # Wildcard cert serves agentic-gateway + ollama UI via useACMEHost (topology vhosts)
-  security.acme.certs."johnbargman.net".extraDomainNames = [ "*.johnbargman.net" ];
 
   # ── Fleet LLM Gateway ──────────────────────────────────────────
   # Backends on the WireGuard plane (10.88.127.0/24):

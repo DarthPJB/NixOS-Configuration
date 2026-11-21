@@ -160,7 +160,7 @@ nix run .#secrix edit secrets/existing_file -- -i ~/.ssh/id_ed25519
 | `secrets/rclone-config-file` | rclone remote config (MinIO) for local backup targets | active — consumed via `topology/*.json` `backup.configFile` |
 | `secrets/rclone-b2-config-file` | rclone B2 offsite config | active — consumed by `topology/local-nas.json` B2 replication targets |
 | `secrets/b2_master_sync_token` | Backblaze B2 master application key | **Held in reserve (intentional, user decision 2026-10-05)** — not referenced by config today; retained for future use (e.g. bucket lifecycle management, account-level tooling). Do NOT delete as "orphan". |
-| `secrets/cache-priv-key` | nix-serve signing key (in-house cache) | active — `services/nix-cache-serve.nix` |
+| `secrets/cache-priv-key` | cache signing key (in-house cache; harmonia, ex-nix-serve) | active — `services/nix-cache-serve.nix` |
 | `secrets/gandi_dns01_token` | Gandi DNS-01 ACME | active |
 | `secrets/public_keys/wireguard/wg_*_pub` | WireGuard public keys | active |
 

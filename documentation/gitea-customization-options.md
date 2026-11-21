@@ -373,7 +373,7 @@ git -C /speed-storage/repo/gitea log --oneline -1 origin/main
 
 ### 7.1 Golden impact (expected)
 
-`lib/serialize-config.nix` captures `services.openssh`, `services.nginx`,
+`mayo:lib/mayo/golden/serialize-config.nix` captures `services.openssh`, `services.nginx`,
 `services.dnsmasq` and `networking.*` — so the identity/SSH changes are
 golden-tracked. `services.gitea.*` is NOT serialized (theme + login settings
 are golden-free). Current `validate-goldens` results:

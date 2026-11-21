@@ -16,6 +16,7 @@
     ../../modules/enable-wg-topology.nix
     ../../environments/sshd.nix
     ../../environments/metrics.nix
+    ../../modules/nixos-deployment-exporter.nix
     ../../modifier_imports/flakes.nix
     ../../users/darthpjb.nix
     ../../users/build.nix
@@ -89,6 +90,15 @@
   # smartd can't detect SMART through the USB-NVMe bridge — disable it.
   # smartctl_exporter (from metrics.nix) handles USB devices directly.
   services.smartd.enable = false;
+
+  # Deployment-state exporter — arm-builder disables configuration.nix so we
+  # duplicate the fleet-wide wiring here (same pattern as the FlakeHub binding).
+  services.nixos-deployment-exporter = {
+    enable = true;
+    port = 3111;
+  };
+  networking.firewall.interfaces."wireg0".allowedTCPPorts =
+    [ config.services.nixos-deployment-exporter.port ];
 
   # FlakeHub token for Determinate Nix — arm-builder disables configuration.nix
   # so we duplicate the fleet-wide secrix binding here.

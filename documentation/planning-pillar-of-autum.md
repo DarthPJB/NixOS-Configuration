@@ -55,7 +55,7 @@ minimal librex11 headed system.
 | 2.2 | Add `services/ollama.nix` to machine config | ✅ done | `machines/pillar-of-autum/ollama.nix`; iGPU drivers in `default.nix` |
 | 2.3 | Pre-load 1–2 models | ✅ done | `qwen2.5:3b` + `qwen2.5:7b` pulled; Modelfile profiles `pillar-qwen3b` / `pillar-qwen7b` created |
 | 2.4 | Register backend in `machines/alpha-three/default.nix` LiteLLM | ✅ done | `pillar-qwen3b` + `pillar-qwen7b` backends on `http://10.88.127.110:11434/v1` |
-| 2.5 | Prometheus scrape target + Grafana dashboard entry | ⏳ pending (scrape only) | Dashboard entry is DONE automatically — dashboards are generated (`lib/topology/genDashboard.nix` + `lib/monitoring/inventory.nix`), pillar-of-autum auto-present (see `documentation/monitoring-automation.md`). Only the Prometheus scrape target remains (monitoring Phase 2). |
+| 2.5 | Prometheus scrape target + Grafana dashboard entry | ⏳ pending (scrape only) | Dashboard entry is DONE automatically — dashboards are generated (`mayo:lib/mayo/monitoring/genDashboard.nix` + `lib/monitoring/inventory.nix`), pillar-of-autum auto-present (see `documentation/monitoring-automation.md`). Only the Prometheus scrape target remains (monitoring Phase 2). |
 | 2.6 | Regenerate golden + deploy | ✅ done | Topology firewall (port 11434 on wireg0) + golden + deployed |
 
 **Live validation (2026-09-18):**
@@ -107,7 +107,7 @@ migration to systemd-boot deferred (low priority, GRUB works).
 | # | Task | Notes |
 |---|------|-------|
 | 4.1 | Add to `~/.ssh/config` (inspect + deploy) | Port 1108 |
-| 4.2 | CI build job (x86_64 machine list) | `ci.nix` auto-derives from nixosConfigurations |
+| 4.2 | CI build job (x86_64 machine list) | `nix-github-ci` `mkCi` auto-derives from nixosConfigurations |
 | 4.3 | Backup topology key (if applicable) | `topology.backup` |
 | 4.4 | genWireguard migration (overlord-iii) | Pipeline has landed hub-side (cortex-alpha via `topology.wireguard`); remaining work is client migration off `modules/enable-wg-topology.nix` |
 

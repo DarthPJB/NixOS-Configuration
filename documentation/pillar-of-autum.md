@@ -124,8 +124,8 @@ bootloader migration (systemd-boot on the NVMe) is a documented follow-up
 | XLibre overlay applied | `… .config.services.xserver.terminateOnReset` | `false` |
 | Golden generated | `nix run .#dump-config -- pillar-of-autum \| jq -S . > goldens/pillar-of-autum.json` | 85 KB |
 | Golden matches | `nix run .#validate-goldens -- pillar-of-autum` | ✓ matches |
-| Topology coverage | `lib/golden_coverage.nix` | 100% (12/12), no missing |
-| Topology registry | `lib/topology/mkRegistry.nix` | 0 errors, 0 warnings |
+| Topology coverage | `mayo:lib/mayo/golden/coverage.nix` | 100% (12/12), no missing |
+| Topology registry | `mayo:lib/ketchup/mkRegistry.nix` | 0 errors, 0 warnings |
 
 **Note on git tracking:** Nix flakes only see git-tracked paths. New files required
 `git add -N <path>` (intent-to-add) before `nix eval`/`nix run` could resolve them.

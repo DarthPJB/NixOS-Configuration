@@ -7,13 +7,13 @@
 
 {
   programs.steam = {
-    package = unstable.steam;
+    package = pkgs.steam;
     enable = true; # you probably already have this
-    extraCompatPackages = [ pkgs_llm.proton-ge-bin unstable.proton-ge-bin ];
+    extraCompatPackages = [ pkgs.proton-ge-bin ];
   };
 
   # Nice-to-have for any game (highly recommended for SE)
-  programs.gamemode.enable = true; # Feral's gamemode
+  #programs.gamemode.enable = true; # Feral's gamemode
   environment.systemPackages = [
     pkgs_llm.prismlauncher
     unstable.vintagestory

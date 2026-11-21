@@ -7,6 +7,9 @@
 #   entropy-is-origin — Bargman-Tech org (org runner token, gitlab-aware)
 #   hate-filled       — DarthPJB/NixOS-Configuration (PAT, gitlab-aware, eval cache)
 #
+# All four restored 2026-11-19 (user order) after a brief strike of the
+# server-side purged registrations; user mints replacement tokens.
+#
 # GitLab auth: netrc from gitlab-credentials.nix, passed via GIT_ASKPASS.
 # All runners share the nix-daemon and store — builds dispatch to hyperhyper/arm-builder.
 { config, lib, pkgs, self, pkgs_llm, ... }:
@@ -49,7 +52,11 @@ let
           name = "${namePrefix}-${toString i}";
           inherit package url tokenFile;
           replace = true;
-          extraLabels = extraLabels ++ [ "runner-${toString i}" ];
+          # Registration-generation marker: the module re-registers on any
+          # config-JSON change. Bumping this forces a clean_state + re-register
+          # after server-side registration purges (GitHub deletes registrations
+          # of runners offline >~14 days). Current gen: 2026-11-19.
+          extraLabels = extraLabels ++ [ "runner-${toString i}" "regen-20261119" ];
           extraEnvironment = extraEnvironment;
           serviceOverrides = {
             # Baremetal runner on trusted VPN — share host's nix store

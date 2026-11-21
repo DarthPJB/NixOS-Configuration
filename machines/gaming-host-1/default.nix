@@ -9,7 +9,7 @@
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
-    ../../services/dynamic_domain_gandi.nix
+    ../../services/dynamic_domain_porkbun.nix
     ../../modules/enable-wg-topology.nix
     # GAME SERVERS DISABLED 2026-10-05 — see documentation/gaming-host-1.md
     # ../../server_services/game_servers/space-engineers.nix
@@ -17,7 +17,11 @@
     # ../../server_services/game_servers/windrose.nix
     # ../../server_services/game_servers/terratech.nix
     # ../../server_services/game_servers/minecraft-curseforge.nix
-    (import ../../services/acme_server.nix { fqdn = "gaming-host-1.johnbargman.net"; })
+    (import ../../services/acme_server.nix {
+      fqdn = "gaming-host-1.johnbargman.net";
+      secretName = "dns01-porkbun";
+      secretFile = ../../secrets/porkbun-dns01-envfile;
+    })
   ];
   security.acme.defaults.email = "commander@johnbargman.net";
   enableWgTopology.enable = true;

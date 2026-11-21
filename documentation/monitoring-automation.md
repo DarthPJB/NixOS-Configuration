@@ -11,9 +11,11 @@ Nix store, all `provisioned`, legacy DB state clean.
 
 ## Dashboard inventory
 
-All 9 dashboards are generated from `lib/topology/dashboard_templates/` via
-`lib/topology/genDashboard.nix` + `lib/monitoring/inventory.nix`. There is no
-static dashboard JSON.
+All 9 dashboards are generated from `mayo:lib/mayo/monitoring/dashboard_templates/`
+via `mayo:lib/mayo/monitoring/genDashboard.nix` + the parent's
+`lib/monitoring/inventory.nix` (data injection — secret-sauce plan R2, moved
+to mayo 2026-11-12; outputs proven byte-identical). There is no static
+dashboard JSON.
 
 | UID | Title | Covers | Host generation |
 |---|---|---|---|
@@ -48,9 +50,11 @@ self.nixosConfigurations ──→ config introspection ──→ enabled export
                                           │
                        explicit externals ┘  (hyperhyper, cluster-box specials)
                                           ↓
-              lib/monitoring/inventory.nix  (union + job mapping + stable order)
+              lib/monitoring/inventory.nix  (union + job mapping + stable order
+                                           + fleet presentation data)
                                           ↓
-              lib/topology/genDashboard.nix  +  dashboard_templates/
+     mayo:lib/mayo/monitoring/genDashboard.nix  +  dashboard_templates/
+             (datasource + inventory injected by services/prometheus.nix)
                                           ↓
                      generated Grafana dashboards (store)
                                           ↓
@@ -59,15 +63,18 @@ self.nixosConfigurations ──→ config introspection ──→ enabled export
 
 **Files:**
 - `lib/monitoring/inventory.nix` — the monitoring inventory (union of baseline
-  and config-derived discovery). Reads evaluated NixOS config via `self`.
-  Deliberately **not** in `lib/topology/` — the topology toolset must stay pure
-  (JSON in, attrset out). See `documentation/topology-principle.md`.
-- `lib/topology/genDashboard.nix` — pure inventory → dashboard generator.
-- `lib/topology/dashboard_templates/` — dashboard templates (fleet, network,
-  per-machine CPU fan-out, service health, storage, AI, deployment).
-- `services/prometheus.nix` — wires the inventory and provisions generated
-  dashboards from the Nix store. All dashboards are generated — there is no
-  static dashboard JSON.
+  and config-derived discovery) plus the fleet presentation data injected into
+  mayo's templates (workstation split, label overrides). Reads evaluated NixOS
+  config via `self` — deliberately parent-side; the pure toolset must stay
+  pure (JSON in, attrset out). See `documentation/topology-principle.md`.
+- `mayo:lib/mayo/monitoring/genDashboard.nix` — pure inventory → dashboard
+  generator (Mayo layer; takes `inventory` + `datasource` as injected args).
+- `mayo:lib/mayo/monitoring/dashboard_templates/` — dashboard templates
+  (fleet, network, per-machine CPU fan-out, service health, storage, AI,
+  deployment); reached via `mayoLib.monitoring.dashboards`.
+- `services/prometheus.nix` — wires the inventory, supplies the datasource,
+  and provisions generated dashboards from the Nix store. All dashboards are
+  generated — there is no static dashboard JSON.
 
 ### Inventory construction
 
@@ -105,7 +112,7 @@ Auto-generate the monitoring inventory and all Grafana dashboards.
   ZFS/storage/disk-health, `ai-systems`, `ai-inference`, `fleet-deployment`) or
   folded into existing ones (`remote-builder`'s unique panels → `fleet-cpu-disk`
   "Node Detail"). No static dashboard JSON remains.
-- **Golden impact: none.** Grafana is not serialized in `lib/serialize-config.nix`,
+- **Golden impact: none.** Grafana is not serialized in `mayo:lib/mayo/golden/serialize-config.nix`,
   so the inventory and dashboards can shift freely.
 
 Verified: adding a machine with exporters enabled (e.g. `pillar-of-autum`) now
