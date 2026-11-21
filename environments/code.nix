@@ -1,6 +1,7 @@
 { config
 , lib
 , pkgs
+, pkgs_llm
 , ...
 }:
 
@@ -9,8 +10,10 @@
     code = "lite-xl .&";
   };
   environment.systemPackages = with pkgs; [
-    pkgs.claude-code
-    pkgs.cursor-cli
+    # LLM tooling tracks nixpkgs_llm (latest unstable) via the pkgs_llm module
+    # arg — the same pattern as environments/steam.nix and services/ollama.nix.
+    pkgs_llm.claude-code
+    pkgs_llm.cursor-cli
     pkgs.gpp
     pkgs.git-lfs
     pkgs.entr
